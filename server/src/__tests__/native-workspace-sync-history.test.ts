@@ -64,6 +64,11 @@ describe("native warm workspace Git history", () => {
       process.env.PAPERCLIP_INSTANCE_ID = "test";
       const host = path.join(root, "host");
       const remote = path.join(root, "remote");
+      const remoteCwd = process.platform === "win32"
+        ? remote
+          .replace(/^([A-Za-z]):\\/, (_match, drive: string) => `/${drive.toLowerCase()}/`)
+          .replace(/\\/g, "/")
+        : remote;
       async function initRepo(dir: string) {
         await mkdir(dir, { recursive: true });
         await git(dir, "init", "-b", "work");
@@ -101,7 +106,7 @@ describe("native warm workspace Git history", () => {
       };
       const target: AdapterSandboxExecutionTarget = {
         kind: "remote", transport: "sandbox", providerKey: "test", leaseId: lease.id,
-        remoteCwd: remote, runner, timeoutMs: 30_000,
+        remoteCwd, runner, timeoutMs: 30_000,
         sandboxLeaseAcquisition: { outcome: "created", providerLeaseId: "sandbox" },
       };
       const input = { db: db as unknown as Db, companyId: "company", workspaceId: "workspace", workspaceLocalDir: host, lease, target };

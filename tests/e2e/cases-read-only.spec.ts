@@ -216,7 +216,7 @@ test("browses passive cases and rolled-up task documents without starting work o
   await testInfo.attach("case-history-in-audit", { body: await page.screenshot({ fullPage: true }), contentType: "image/png" });
   await created.getByRole("link", { name: `${receipt.identifier} · ${receipt.title}`, exact: true }).click();
   await expect(casePage.getByRole("heading", { name: receipt.title, exact: true })).toBeVisible();
-  await page.getByRole("navigation", { name: "breadcrumb", exact: true }).getByRole("link", { name: "Cases", exact: true }).click();
+  await page.getByRole("navigation", { name: "Breadcrumb", exact: true }).getByRole("link", { name: "Cases", exact: true }).click();
   await expect(page).toHaveURL(filteredUrl);
   await page.reload();
   await expect(page.getByRole("textbox", { name: "Search cases" })).toHaveValue("Pacific");

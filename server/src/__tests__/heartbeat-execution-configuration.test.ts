@@ -22,6 +22,7 @@ import * as aiRuntime from "../services/ai-connection-runtime.js";
 import * as sentry from "../sentry.js";
 import { waitForPendingRunFailureReports } from "../services/run-failure-report.js";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
+import { BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX } from "../services/bundled-paperclip-skills.js";
 
 const skillFailures = vi.hoisted(() => new Map<string, string>());
 
@@ -220,7 +221,13 @@ describePostgres("heartbeat execution configuration through adapter dispatch", (
     }
   });
 
-  async function configuration(f: Awaited<ReturnType<typeof seed>>, config: Record<string, unknown>, snapshot: Record<string, unknown> = {}, type = "paperclip_runner") {
+  async function configuration(
+    f: Awaited<ReturnType<typeof seed>>,
+    config: Record<string, unknown>,
+    snapshot: Record<string, unknown> = {},
+    type = "paperclip_runner",
+    useManagedConnection = false,
+  ) {
     const [agent] = await db.update(agents).set({ adapterType: type, adapterConfig: config }).where(eq(agents.id, f.agentId)).returning();
     const [run] = await db.insert(heartbeatRuns).values({ companyId: f.companyId, agentId: f.agentId, issueId: f.issueId, scopeKind: "issue", status: "running", contextSnapshot: snapshot }).returning();
     const resolvedInstanceSettings = await instanceSettingsService(db).get();
@@ -229,7 +236,10 @@ describePostgres("heartbeat execution configuration through adapter dispatch", (
       task: { issueId: f.issueId, context: { ...snapshot, issueId: f.issueId }, responsibleUserId: null,
         acceptedPlanContinuationWake: false, acceptedPlanWakeRoutingDecision: null,
         taskProjectContext: null, routineEnvContext: { routineId: null, env: null, responsibleUserId: null } },
-      config: { sourceWorkspaceConfig: config, aiBinding: undefined },
+      config: {
+        sourceWorkspaceConfig: config,
+        aiBinding: useManagedConnection ? aiRuntimeConnectionBindingSchema.parse(agent.runtimeConfig!.aiConnection) : undefined,
+      },
       policy: { trustPreset: { kind: "standard", preset: "standard", boundary: null, sourcePresets: {} }, useIsolatedTaskDirectory: false, explicitTaskDirectory: false },
       environment: { selectedEnvironmentId: null, selectedEnvironmentForConfig: null,
         resolvedInstanceSettings, persistedNativeExecutionInput: null },
@@ -269,9 +279,15 @@ describePostgres("heartbeat execution configuration through adapter dispatch", (
   });
 
   it.each(["selected native", "legacy operational"])("retains the cache exclusion for %s skills", async kind => {
-    const f = await seed();
+    const f = await seed(true);
     const selected = await companySkillService(db).createLocalSkill(f.companyId, { name: "Selected lock control" });
-    const input = await configuration(f, { paperclipSkillSync: { desiredSkills: kind === "selected native" ? [selected.key] : [] } }, {}, kind === "selected native" ? "paperclip_runner" : "codex_local");
+    const input = await configuration(
+      f,
+      { paperclipSkillSync: { desiredSkills: kind === "selected native" ? [selected.key] : [] } },
+      {},
+      kind === "selected native" ? "paperclip_runner" : "codex_local",
+      true,
+    );
     let release!: () => void;
     let acquired!: () => void;
     const ready = new Promise<void>(resolve => { acquired = resolve; });
@@ -286,11 +302,11 @@ describePostgres("heartbeat execution configuration through adapter dispatch", (
     } finally { release(); await holder; }
     const result = await pending;
     expect(result.prepared).toBe(true);
-    if (result.prepared) expect(result.runtimeSkillEntries.some(entry => entry.key === (kind === "selected native" ? selected.key : "paperclipai/paperclip/paperclip"))).toBe(true);
+    if (result.prepared) expect(result.runtimeSkillEntries.some(entry => entry.key === (kind === "selected native" ? selected.key : `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}paperclip`))).toBe(true);
   });
 
   it("applies project environment and issue overrides and replaces caller-supplied runtime fields", async () => {
-    const f = await seed();
+    const f = await seed(true);
     const { finished, input } = await execute(f);
     expect(finished.status, finished.error ?? undefined).toBe("succeeded");
     expect(input?.config).toMatchObject({ model: "issue-model", env: { SHARED_VALUE: "project", AGENT_ONLY: "agent-only", PROJECT_ONLY: "project-only" } });
@@ -398,7 +414,7 @@ describePostgres("heartbeat execution configuration through adapter dispatch", (
   });
 
   it("snapshots only selected immutable skills and omits inaccessible optional assignments", async () => {
-    const f = await seed();
+    const f = await seed(true);
     const skills = companySkillService(db);
     const selected = await skills.createLocalSkill(f.companyId, { name: "Selected workflow", markdown: "# Selected\nUse the original workflow.\n" });
     const unused = await skills.createLocalSkill(f.companyId, { name: "Unused workflow" });

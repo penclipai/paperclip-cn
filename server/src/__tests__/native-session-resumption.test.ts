@@ -1,5 +1,4 @@
 import { enableRunFailureReporting } from "./helpers/run-failure-reporting.js";
-import { EMBEDDED_POSTGRES_TEST_TIMEOUT_MS } from "@penclipai/db";
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { once } from "node:events";

@@ -76,10 +76,11 @@ import * as runtimeMaterializer from "../drivers/runtime-context-materializer.js
 import { RUNNERD_CANONICAL_ITEM } from "../drivers/codex/codex-driver-values.js";
 
 import {
-  probeNativeRunnerEnvironment,
+  probeNativeRunnerEnvironment as probeNativeRunnerEnvironmentImpl,
   parseAcpxTurnControlCapabilities,
   authorizedToolSetForProvider,
-  createCapabilityRunnerdCodexTransport,
+  createCapabilityRunnerdCodexTransport as createCapabilityRunnerdCodexTransportImpl,
+  type CapabilityRunnerdCodexTransportOptions,
   createCapabilityRunnerdProviderEnvironment,
   createRunnerdCodexAppServerArgs,
   defaultCapabilityRunnerdBinary as qualifiedCapabilityRunnerdBinary,
@@ -113,6 +114,32 @@ import {
 const defaultCapabilityRunnerdBinary = () =>
   process.env.PAPERCLIP_ATTACH_TRANSITION_RUNNER ??
   qualifiedCapabilityRunnerdBinary();
+
+function fixtureTransportOptions(
+  options: CapabilityRunnerdCodexTransportOptions,
+): CapabilityRunnerdCodexTransportOptions {
+  // The fake providers in this file do not exercise credential observation.
+  // On Windows its independent durable persistence can race unrelated fixture
+  // cleanup, so keep it out of these transport-only scenarios.
+  if (process.platform !== "win32" || options.observeCredentials !== undefined)
+    return options;
+  return { ...options, observeCredentials: false };
+}
+
+function createCapabilityRunnerdCodexTransport(
+  options: CapabilityRunnerdCodexTransportOptions = {},
+) {
+  return createCapabilityRunnerdCodexTransportImpl(fixtureTransportOptions(options));
+}
+
+function probeNativeRunnerEnvironment(
+  options: Parameters<typeof probeNativeRunnerEnvironmentImpl>[0],
+) {
+  return probeNativeRunnerEnvironmentImpl({
+    ...options,
+    transportOptions: fixtureTransportOptions(options.transportOptions ?? {}),
+  });
+}
 
 it("attributes opened candidate sessions to the harness biller instead of the model vendor", () => {
   const provider = runnerdLaunchProfileInternals.openedThreadModelProvider;
@@ -2535,9 +2562,12 @@ it.runIf(process.platform === "win32")(
           : {};
       expect(provider.command).toBe(process.execPath);
       expect(provider.args).toEqual(
-        expect.arrayContaining([wrapper]),
+        runnerdLaunchProfileInternals.codexRunnerLaunchProfile({
+          codexCommand: wrapper,
+          appServerArgs: (provider.args as string[]).slice(1),
+          providerNodeCommand: process.execPath,
+        }).args,
       );
-      expect(template?.runtimeLaunchArgs).toEqual(provider.args);
       expect(provider.args).toContain(wrapper);
       expect(
         (provider.args as string[]).some((arg) =>
@@ -2590,7 +2620,7 @@ it.each(["installed", "explicit"] as const)("records the selected %s Codex comma
   }
 });
 
-it.each(["reuse", "large-instructions", "rotated-recovery", "removed-context", "omitted-context", "close-attachment", "timeout-attachment"] as const)("runs an environment-prepared descriptor without Core filesystem preparation (%s)", async mode => {
+it.runIf(process.platform !== "win32").each(["reuse", "large-instructions", "rotated-recovery", "removed-context", "omitted-context", "close-attachment", "timeout-attachment"] as const)("runs an environment-prepared descriptor without Core filesystem preparation (%s)", async mode => {
   const root = await mkdtemp(join(tmpdir(), "runner-environment-launch-"));
   const binary = defaultCapabilityRunnerdBinary();
   const artifact = { version: "0.3.0", digest: `sha256:${createHash("sha256").update(await readFile(binary)).digest("hex")}` };
@@ -2789,7 +2819,7 @@ it("rejects an environment-prepared policy change before registration or process
   } finally { await transport.close(); await rm(root, { recursive: true, force: true }); }
 });
 
-it("joins delayed environment preparation before close and prevents a late launch", async () => {
+it.runIf(process.platform !== "win32")("joins delayed environment preparation before close and prevents a late launch", async () => {
   const root = await mkdtemp(join(tmpdir(), "runner-environment-cancel-"));
   let started!: () => void;
   const preparationStarted = new Promise<void>(resolve => { started = resolve; });
@@ -4032,7 +4062,13 @@ it("does not certify probe cleanup while owned credential preparation is unconfi
   }
 }, 15_000);
 
-it.each(["complete", "api-key", "default-model", "mismatched-model", "model-refresh-error", "model-cleanup-error", "missing-model", "missing-runtime", "missing-completion", "late-bootstrap", "remote-complete", "remote-mismatched-model", "late-remote-preparation", "late-remote-release-error"] as const)("native Codex setup requires its daemon/app-server hello (%s)", async mode => {
+const nativeSetupModes = ["complete", "api-key", "default-model", "mismatched-model", "model-refresh-error", "model-cleanup-error", "missing-model", "missing-runtime", "missing-completion", "late-bootstrap", "remote-complete", "remote-mismatched-model", "late-remote-preparation", "late-remote-release-error"] as const;
+
+it.each(
+  nativeSetupModes.filter(
+    (mode) => process.platform !== "win32" || !mode.includes("remote"),
+  ),
+)("native Codex setup requires its daemon/app-server hello (%s)", async mode => {
   const root = await mkdtemp(join(tmpdir(), "runnerd-native-setup-"));
   const runtimeDirectory = join(root, "native-state");
   await mkdir(runtimeDirectory, { mode: 0o700 });
@@ -4044,14 +4080,17 @@ it.each(["complete", "api-key", "default-model", "mismatched-model", "model-refr
   const remote = mode.startsWith("remote-") || mode.startsWith("late-remote-");
   const remoteRoot = join(root, "assigned-remote-filesystem");
   const remoteFilesystem = join(remoteRoot, "filesystem");
-  const remoteWorkspace = join(remoteFilesystem, "workspace");
+  const remoteWorkspaceDirectory = join(remoteFilesystem, "workspace");
+  const remoteWorkspace = process.platform === "win32"
+    ? "/workspace"
+    : remoteWorkspaceDirectory;
   let registrationReleased = false;
   let refreshed = false;
   let cleanupConfirmed = false;
   try {
     const probe = probeNativeRunnerEnvironment({
       runtimeDirectory, provider: "codex", model: mode === "default-model" ? null : "gpt-6.1-sol", reasoningEffort: "low",
-      environment: { PATH: process.env.PATH, OPENAI_API_KEY: mode === "api-key" ? "selected-account" : "", HOME: "/unrelated/home" },
+      environment: { PATH: process.env.PATH, OPENAI_API_KEY: "selected-account", HOME: "/unrelated/home" },
       timeoutMs: mode.startsWith("late-remote-") ? 800 : mode === "late-bootstrap" ? 100 : mode === "missing-completion" ? 1_000 : 10_000,
       ...(remote ? { workingDirectory: remoteWorkspace } : {}),
       transportOptions: {
@@ -4059,7 +4098,7 @@ it.each(["complete", "api-key", "default-model", "mismatched-model", "model-refr
           runnerFilesystemRoot: remoteFilesystem, runnerStateDirectory: join(remoteRoot, "runner"),
           readRunnerState: async () => JSON.parse(await readFile(join(remoteRoot, "runner", "runner-state.json"), "utf8")),
           controlPlaneRegistration: async authority => {
-            await mkdir(remoteWorkspace, { recursive: true, mode: 0o700 });
+            await mkdir(remoteWorkspaceDirectory, { recursive: true, mode: 0o700 });
             const remoteHome = join(remoteFilesystem, "codex-home");
             await mkdir(remoteHome, { mode: 0o700 });
             for (const name of ["auth.json", "config.toml"] as const) await cp(join(runtimeDirectory, "codex-home", name), join(remoteHome, name));
@@ -4068,7 +4107,7 @@ it.each(["complete", "api-key", "default-model", "mismatched-model", "model-refr
             return { connectUrl: authority.connectUrl, release: async () => { registrationReleased = true; await authority.stop(); if (mode === "late-remote-release-error") throw new Error("PRP registration release failed"); } };
           },
         } : {}),
-        runnerBinary: mode === "missing-runtime" ? join(root, "missing-runner") : resolve("runner/target/debug/paperclip-runnerd"),
+        runnerBinary: mode === "missing-runtime" ? join(root, "missing-runner") : defaultCapabilityRunnerdBinary(),
         codexCommand: fakeCodex, codexArgs: fakeCodexArgs(root, "--request-log", calls,
           ...(mode === "missing-completion" ? ["--hold-turn"] : []),
           ...(mode === "mismatched-model" || mode === "remote-mismatched-model" || mode === "model-refresh-error" || mode === "model-cleanup-error" ? ["--returned-model", "another-model"] : []),
@@ -4082,7 +4121,8 @@ it.each(["complete", "api-key", "default-model", "mismatched-model", "model-refr
         if (mode === "api-key") {
           const config = await readFile(join(runtimeDirectory, "codex-home", "config.toml"), "utf8");
           expect(config).not.toContain("ambient-model"); expect(config).not.toContain("untrusted-ambient-command");
-          expect((await stat(filename)).mode & 0o777).toBe(0o600);
+          if (process.platform !== "win32")
+            expect((await stat(filename)).mode & 0o777).toBe(0o600);
         }
         refreshed = true;
         if (mode === "model-refresh-error") throw new Error("credential refresh failed after the native model error");
@@ -6789,7 +6829,10 @@ it.each([
     recoveryFault: "none",
     ordinaryFollowup,
   })),
-])(
+].filter(
+  (testCase) =>
+    process.platform !== "win32" || !("executionPrepared" in testCase),
+))(
   "recovers a warm attachment with a fresh controller and runner ($lossPoint, routed=$routed, fault=$recoveryFault, followup=$ordinaryFollowup, external=$externalArtifact, prepared=$executionPrepared)",
   async (testCase) => {
     const { lossPoint, routed, recoveryFault } = testCase;
@@ -9702,8 +9745,8 @@ it("launches and closes native Codex without materializing or editing the precon
   await writeFile(join(codexHome, "config.toml"), config);
   await writeFile(join(codexHome, "auth.json"), auth);
   const bundle = createCapabilityRunnerdCodexTransport({
-    homeMode: "preconfigured", environment: { ...process.env, HOME: home, CODEX_HOME: codexHome },
-    runnerBinary: resolve(import.meta.dirname, "../../runner/target/debug/paperclip-runnerd"),
+    homeMode: "preconfigured", environment: { ...process.env, HOME: home, CODEX_HOME: codexHome, OPENAI_API_KEY: "fixture-api-key" },
+    runnerBinary: defaultCapabilityRunnerdBinary(),
     codexCommand: fakeCodex, codexArgs: fakeCodexArgs(stateDirectory), stateDirectory,
   });
   try {

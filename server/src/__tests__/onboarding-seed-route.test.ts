@@ -12,6 +12,7 @@ import {
 } from "@penclipai/db";
 import { onboardingSeedRoutes } from "../routes/onboarding-seed.js";
 import { logActivity } from "../services/activity-log.js";
+import { BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX } from "../services/bundled-paperclip-skills.js";
 import {
   describeEmbeddedPostgres,
   resetCompanyIssueFixtures,
@@ -35,6 +36,13 @@ const SEED = {
   agent: { name: "Ada", role: "Chief of Staff" },
   firstTask: { title: "Draft the one-page strategy", details: "One page, no more" },
 };
+
+const ONBOARDING_CORE_SKILL_KEYS = [
+  "paperclip-board",
+  "paperclip-converting-plans-to-tasks",
+  "paperclip-create-agent",
+  "para-memory-files",
+].map((slug) => `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}${slug}`);
 
 describeEmbeddedPostgres("POST /api/companies/:companyId/onboarding-seed", () => {
   const ctx = useEmbeddedPostgres("onboarding-seed-route");
@@ -95,12 +103,7 @@ describeEmbeddedPostgres("POST /api/companies/:companyId/onboarding-seed", () =>
     expect(companyAgents[0]?.role).toBe("ceo");
     expect(companyAgents[0]?.adapterConfig).toMatchObject({
       paperclipSkillSync: {
-        desiredSkills: expect.arrayContaining([
-          "paperclipai/paperclip/paperclip-board",
-          "paperclipai/paperclip/paperclip-converting-plans-to-tasks",
-          "paperclipai/paperclip/paperclip-create-agent",
-          "paperclipai/paperclip/para-memory-files",
-        ]),
+        desiredSkills: expect.arrayContaining(ONBOARDING_CORE_SKILL_KEYS),
       },
     });
 
@@ -156,7 +159,7 @@ describeEmbeddedPostgres("POST /api/companies/:companyId/onboarding-seed", () =>
       expect(response.status).toBe(200);
       const [agent] = await ctx.db.select().from(agents).where(eq(agents.companyId, companyId));
       expect(agent).toMatchObject({ adapterType: "paperclip_runner", adapterConfig: { provider: "codex" } });
-      expect(agent?.adapterConfig).toMatchObject({ paperclipSkillSync: { desiredSkills: expect.arrayContaining(["paperclipai/paperclip/paperclip-create-agent"]) } });
+      expect(agent?.adapterConfig).toMatchObject({ paperclipSkillSync: { desiredSkills: expect.arrayContaining(ONBOARDING_CORE_SKILL_KEYS) } });
       expect((await post(app, companyId, SEED)).body.changed).toBe(false);
       const [replayed] = await ctx.db.select().from(agents).where(eq(agents.companyId, companyId));
       expect(replayed?.adapterConfig).toEqual(agent?.adapterConfig);

@@ -3688,7 +3688,22 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
   });
 
   it("preserves a replacement legacy controller and its lease when selection loses ownership", async () => {
-    const { companyId, runId } = await seedQueuedIssueRunFixture();
+    const { companyId, agentId, runId } = await seedQueuedIssueRunFixture();
+    const secrets = secretService(db);
+    const apiKey = await secrets.create(companyId, {
+      name: `controller-ownership-${randomUUID()}`,
+      provider: "local_encrypted",
+      value: "fixture-controller-ownership-key",
+    });
+    const env = {
+      OPENAI_API_KEY: { type: "secret_ref" as const, secretId: apiKey.id },
+    };
+    await secrets.syncEnvBindingsForTarget(
+      companyId,
+      { targetType: "agent", targetId: agentId },
+      env,
+    );
+    await db.update(agents).set({ adapterConfig: { env } }).where(eq(agents.id, agentId));
     const replacementControllerBootId = randomUUID();
     const runtime = environmentRuntimeService(db);
     const releaseRunLeases = vi.spyOn(runtime, "releaseRunLeases");

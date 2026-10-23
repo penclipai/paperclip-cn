@@ -45,27 +45,7 @@ afterEach(() => {
   }
 });
 
-async function writeHelpWithoutEffortClaudeCommand(commandPath: string): Promise<void> {
-  const script = `#!/usr/bin/env node
-if (process.argv.includes("--version")) { console.log("2.1.286 (Claude Code)"); process.exit(0); }
-const argv = process.argv.slice(2);
-if (argv.includes("--help")) {
-  process.stdout.write("Usage: claude [options]\\n  --print\\n  --model <id>\\n");
-  process.exit(0);
-}
-if (argv.includes("--effort")) {
-  process.stderr.write("error: unknown option '--effort'\\n");
-  process.exit(1);
-}
-console.log(JSON.stringify({ type: "assistant", message: { content: [{ type: "text", text: "hello" }] } }));
-console.log(JSON.stringify({ type: "result", result: "hello", usage: { input_tokens: 1, cache_read_input_tokens: 0, output_tokens: 1 } }));
-`;
-  await fs.writeFile(commandPath, script, "utf8");
-  await fs.chmod(commandPath, 0o755);
-}
-
-
-function createLocalSandboxRunner() {
+function createLocalSandboxRunner(executeCalls: Array<{ command: string; args?: string[] }> = []) {
   return {
     execute: async (input: {
       command: string;
@@ -78,6 +58,29 @@ function createLocalSandboxRunner() {
       onSpawn?: (meta: { pid: number; startedAt: string }) => Promise<void>;
     }) => {
       await input.onSpawn?.({ pid: 1, startedAt: new Date().toISOString() });
+      executeCalls.push({ command: input.command, args: input.args });
+      if (input.command === "sh") {
+        return {
+          exitCode: 0,
+          signal: null,
+          timedOut: false,
+          stdout: "/usr/bin/claude\n",
+          stderr: "",
+          pid: 1,
+          startedAt: new Date().toISOString(),
+        };
+      }
+      if (input.args?.includes("--version")) {
+        return {
+          exitCode: 0,
+          signal: null,
+          timedOut: false,
+          stdout: "2.1.286 (Claude Code)\n",
+          stderr: "",
+          pid: 1,
+          startedAt: new Date().toISOString(),
+        };
+      }
       if (input.args?.includes("--help")) {
         return {
           exitCode: 0,
@@ -389,35 +392,6 @@ describe("claude_local environment diagnostics", () => {
     await fs.writeFile(path.join(sourceConfigDir, "CLAUDE.md"), "seed instructions", "utf8");
     await fs.writeFile(path.join(sourceConfigDir, "credentials.json"), JSON.stringify({ token: "local" }), "utf8");
     await fs.writeFile(path.join(remoteHome, ".claude", ".credentials.json"), JSON.stringify({ token: "remote" }), "utf8");
-    await fs.writeFile(commandPath, `#!/usr/bin/env node
-if (process.argv.includes("--version")) { console.log("2.1.286 (Claude Code)"); process.exit(0); }
-const fs = require("fs");
-const path = require("path");
-const configDir = process.env.CLAUDE_CONFIG_DIR || "";
-function fail(message) {
-  process.stderr.write(message + "\\n");
-  process.exit(2);
-}
-if (!configDir.includes(".paperclip-runtime/claude/config")) {
-  fail("missing managed CLAUDE_CONFIG_DIR: " + configDir);
-}
-const settings = JSON.parse(fs.readFileSync(path.join(configDir, "settings.json"), "utf8"));
-if (settings.permissions?.defaultMode !== "default") fail("permissions were not sanitized");
-if (settings.hooks || settings.mcpServers || settings.permissionMode || settings.skipDangerousModePermissionPrompt) {
-  fail("local-only settings leaked into sandbox config");
-}
-if (fs.existsSync(path.join(configDir, "credentials.json"))) fail("host credentials leaked into sandbox config");
-const remoteCredentials = JSON.parse(fs.readFileSync(path.join(configDir, ".credentials.json"), "utf8"));
-if (remoteCredentials.token !== "remote") fail("sandbox credentials were not preserved");
-if (fs.readFileSync(path.join(configDir, "CLAUDE.md"), "utf8") !== "seed instructions") {
-  fail("CLAUDE.md seed was not materialized");
-}
-console.log(JSON.stringify({ type: "assistant", message: { content: [{ type: "text", text: "hello" }] } }));
-console.log(JSON.stringify({ type: "result", result: "hello", usage: { input_tokens: 1, cache_read_input_tokens: 0, output_tokens: 1 } }));
-`, "utf8");
-    await fs.chmod(commandPath, 0o755);
-
-
     process.env.CLAUDE_CONFIG_DIR = sourceConfigDir;
     process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
     process.env.PAPERCLIP_INSTANCE_ID = "test-instance";
@@ -445,6 +419,17 @@ console.log(JSON.stringify({ type: "result", result: "hello", usage: { input_tok
                   signal: null,
                   timedOut: false,
                   stdout: "/usr/bin/claude\n",
+                  stderr: "",
+                  pid: 1,
+                  startedAt: new Date().toISOString(),
+                };
+              }
+              if (input.args?.includes("--version")) {
+                return {
+                  exitCode: 0,
+                  signal: null,
+                  timedOut: false,
+                  stdout: "2.1.286 (Claude Code)\n",
                   stderr: "",
                   pid: 1,
                   startedAt: new Date().toISOString(),
@@ -493,6 +478,7 @@ console.log(JSON.stringify({ type: "result", result: "hello", usage: { input_tok
 
   it("warns and omits --effort for sandbox probes when the installed Claude CLI does not advertise it", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-claude-envtest-sandbox-effort-"));
+    const executeCalls: Array<{ command: string; args?: string[] }> = [];
 
     try {
       const result = await testEnvironment({
@@ -508,13 +494,14 @@ console.log(JSON.stringify({ type: "result", result: "hello", usage: { input_tok
           transport: "sandbox",
           providerKey: "daytona",
           remoteCwd: "/workspace/paperclip",
-          runner: createLocalSandboxRunner(),
+          runner: createLocalSandboxRunner(executeCalls),
         },
         environmentName: "QA Daytona",
       });
 
       expect(result.checks.some((check) => check.code === "claude_effort_flag_unsupported")).toBe(true);
       expect(result.checks.some((check) => check.code === "claude_hello_probe_passed")).toBe(true);
+      expect(executeCalls.find(call => call.command === "/usr/bin/claude")?.args).not.toContain("--effort");
     } finally {
       await fs.rm(root, { recursive: true, force: true });
     }

@@ -59,6 +59,19 @@ describeDatabase("selected runtime skill reconciliation", () => {
           delivered: entries.map(entry => entry.key) }));
         expect(entries.map(entry => entry.key).sort()).toEqual([PAPERCLIP_OPERATIONAL_SKILL_KEY, ...PAPERCLIP_FEEDBACK_SKILL_KEYS].sort());
         expect(entries.every(entry => entry.sourceStatus === "available" && entry.versionId)).toBe(true);
+        expect(entries.find(entry => entry.key === PAPERCLIP_OPERATIONAL_SKILL_KEY)).toMatchObject({
+          key: "penclipai/paperclip-cn/paperclip",
+          runtimeName: "paperclip",
+        });
+        const operational = (await companySkillService(db).listFull(companyId))
+          .find(skill => skill.key === PAPERCLIP_OPERATIONAL_SKILL_KEY);
+        expect(operational).toMatchObject({
+          key: "penclipai/paperclip-cn/paperclip",
+          metadata: {
+            sourceKind: "paperclip_bundled",
+            skillKey: "penclipai/paperclip-cn/paperclip",
+          },
+        });
       } finally {
         select.mockRestore();
         insert.mockRestore();
@@ -67,18 +80,13 @@ describeDatabase("selected runtime skill reconciliation", () => {
     }
   }, 30_000);
 
-  it("canonicalizes legacy bundled metadata to the CN bundled skill identity", async () => {
-    const [imported] = await companySkillService(db).importPackageFiles(companyId, {
+  it("rejects untrusted legacy bundled metadata from package imports", async () => {
+    await expect(companySkillService(db).importPackageFiles(companyId, {
       "legacy/SKILL.md": `---\nname: Legacy bundled skill\nmetadata:\n  sourceKind: paperclip_bundled\n  skillKey: paperclipai/paperclip/legacy-bundled\n---\n\nLegacy bundled content.\n`,
-    });
+    })).rejects.toMatchObject({ status: 422 });
 
-    expect(imported?.skill).toMatchObject({
-      key: "penclipai/paperclip-cn/legacy-bundled",
-      metadata: {
-        sourceKind: "paperclip_bundled",
-        skillKey: "penclipai/paperclip-cn/legacy-bundled",
-      },
-    });
+    expect((await companySkillService(db).listFull(companyId))
+      .some(skill => skill.key === "penclipai/paperclip-cn/legacy-bundled")).toBe(false);
   });
 
   it("bounds project-source authorization work without caching changed permissions", async () => {

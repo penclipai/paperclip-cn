@@ -5504,53 +5504,17 @@ async function waitForAllocatedPortBind(input: {
     input.port,
     windowsStrictOwnershipQueryOptions(ownershipQueryTimeoutMs()),
   );
-  // A strict ownership-query failure never proves a port is free. Once a
-  // listener is independently observed, however, it does prove this child
-  // cannot safely claim the allocation. Surface that as a bind collision so
-  // the caller abandons only its own child and never adopts or terminates the
-  // unverified listener. Without a listener, retain the typed unavailable
-  // error for the caller to fail closed on the unknown state.
-  const readOwnerOrRejectPresentListener = async () => {
-    try {
-      return await readOwner();
-    } catch (error) {
-      if (
-        error instanceof LocalServiceOwnershipQueryUnavailableError
-        && await hasLoopbackPortListener(input.port)
-      ) {
-        throw new RuntimeServicePortBindCollision(
-          input.port,
-          "listener ownership unavailable",
-          false,
-          error,
-        );
-      }
-      throw error;
-    }
-  };
+  // An unavailable ownership query leaves the listener's owner unknown even
+  // when a listener is present. Do not turn that unknown state into a
+  // retryable collision: retries would exhaust the range and conceal the
+  // fail-closed ownership error from the caller.
+  const readOwnerOrRejectPresentListener = readOwner;
   const isOwnedByChild = (ownerPid: number, childPid: number) => isLocalServiceProcessOwnedBy(
     ownerPid,
     childPid,
     windowsStrictOwnershipQueryOptions(ownershipQueryTimeoutMs()),
   );
-  const isOwnedByChildOrRejectPresentListener = async (ownerPid: number, childPid: number) => {
-    try {
-      return await isOwnedByChild(ownerPid, childPid);
-    } catch (error) {
-      // A resolved owner is independent evidence that a listener exists. An
-      // unavailable ancestry query cannot establish that it belongs to this
-      // child, so reject the allocation without touching that process.
-      if (error instanceof LocalServiceOwnershipQueryUnavailableError) {
-        throw new RuntimeServicePortBindCollision(
-          input.port,
-          "listener ownership unavailable",
-          false,
-          error,
-        );
-      }
-      throw error;
-    }
-  };
+  const isOwnedByChildOrRejectPresentListener = isOwnedByChild;
   while (Date.now() < deadline) {
     if (input.child.exitCode !== null || input.child.signalCode !== null) {
       throw new Error("service process exited before binding its allocated port");

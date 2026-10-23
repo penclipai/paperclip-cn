@@ -1123,7 +1123,11 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
         .for("update")
         .limit(1)
         .then((rows) => rows[0] ?? null);
-      if (lockedRun.controllerBootId && persisted?.controllerBootId !== legacyControllerBootId) {
+      // The controller lease may have been claimed after the run snapshot that
+      // started this executor was read.  Fence against the persisted owner,
+      // rather than that stale snapshot, so this executor cannot terminalize a
+      // replacement legacy controller during its teardown.
+      if (persisted?.controllerBootId && persisted.controllerBootId !== legacyControllerBootId) {
         onNativeOwnershipHeld();
         return false;
       }

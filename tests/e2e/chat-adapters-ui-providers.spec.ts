@@ -108,7 +108,9 @@ async function exerciseGitHubReviewSetup(page: Page, mock: ChatMock, seed: Seed,
   const recoveryNotice = page.getByRole("region", { name: "GitHub connection needs repair" });
   await expect(recoveryNotice).toBeVisible();
   await recoveryNotice.getByRole("link", { name: "Reconnect GitHub", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Reconnect GitHub", exact: true })).toBeVisible();
+  const setupProgress = page.getByRole("navigation", { name: "Setup progress", exact: true });
+  await expect(setupProgress.getByRole("button", { name: "Reconnect GitHub", exact: true })).toHaveAttribute("aria-current", "step");
+  await expect(page.getByRole("heading", { name: "Connect GitHub", exact: true })).toBeVisible();
   await expect(page.getByText(/using its saved credentials/)).toBeVisible();
   await expect(page.getByRole("button", { name: "Choose an agent", exact: true })).toHaveCount(0);
   await expect(page.getByLabel("Private key", { exact: true })).toHaveCount(0);
