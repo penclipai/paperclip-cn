@@ -186,11 +186,9 @@ export function SlackSearchView({
 export function SlackToolsSettings({
   companyId,
   endpointId,
-  connectionId,
 }: {
   companyId: string;
   endpointId: string;
-  connectionId?: string | null;
 }) {
   useTranslation();
   const query = useQuery({
@@ -204,13 +202,6 @@ export function SlackToolsSettings({
         capabilities={query.data}
         error={query.error?.message}
       />
-      {connectionId && (
-        <Link
-          className="text-sm underline underline-offset-4"
-          to={`/apps/${connectionId}/permissions`}
-        >
-          {translateInstant("Manage action permissions")}</Link>
-      )}
     </div>
   );
 }

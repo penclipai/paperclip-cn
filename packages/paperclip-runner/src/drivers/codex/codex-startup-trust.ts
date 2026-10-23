@@ -92,14 +92,14 @@ export function trustCodexStartupRoot(codexHome: string, cwd: string): void {
   const path = join(codexHome, "config.toml");
   const source = existsSync(path) ? readFileSync(path, "utf8") : "";
   const config = parse(source);
-  const projects = config.projects ?? {};
+  const projects = config.projects ?? parse("");
   if (
     typeof projects !== "object" ||
     Array.isArray(projects) ||
     projects instanceof Date
   )
     throw new Error("codex_startup_trust_invalid_projects");
-  const project = projects[root] ?? {};
+  const project = projects[root] ?? parse("");
   if (
     typeof project !== "object" ||
     Array.isArray(project) ||

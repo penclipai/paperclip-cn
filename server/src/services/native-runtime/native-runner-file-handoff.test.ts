@@ -122,6 +122,7 @@ describe("native runner file handoff", () => {
     overrides: Partial<{
       companyId: string;
       executionTargetKind: "local" | "remote";
+      readRemoteTaskFile: (input: { contentRef: string; byteSize: number; sha256: string }) => Promise<Buffer>;
       readRemoteWorkspaceFile: (input: { contentRef: string; byteSize: number; sha256: string }) => Promise<Buffer>;
     }> = {},
   ) {
@@ -133,6 +134,7 @@ describe("native runner file handoff", () => {
       workspaceRoot,
       executionTargetKind: overrides.executionTargetKind ?? "local",
       readRemoteWorkspaceFile: overrides.readRemoteWorkspaceFile,
+      readRemoteTaskFile: overrides.readRemoteTaskFile,
       storage: createStorageService(
         createLocalDiskStorageProvider(storageRoot),
       ),
@@ -598,6 +600,15 @@ describe("native runner file handoff", () => {
     await expect(authority({ executionTargetKind: "remote", readRemoteWorkspaceFile: badReader })
       .execute(callFor("remote-only/drift.txt", body, "remote-drift")))
       .rejects.toThrow(/size|hash/);
+  });
+
+  it("registers an absolute file only through a task-location-authorizing reader", async () => {
+    const body=Buffer.from("Home output\n");const reader=vi.fn(async()=>body);
+    const call=callFor("/home/agent/proof.txt",body,"home-output");
+    await expect(authority({executionTargetKind:"remote",readRemoteWorkspaceFile:reader}).execute(call)).rejects.toThrow("path_denied");
+    expect(reader).not.toHaveBeenCalled();
+    await expect(authority({executionTargetKind:"remote",readRemoteTaskFile:reader}).execute(call)).resolves.toBeDefined();
+    expect(reader).toHaveBeenCalledWith(expect.objectContaining({contentRef:"/home/agent/proof.txt"}));
   });
 
   it("stages only exact wake-bound inbound bytes without exposing an API credential", async () => {

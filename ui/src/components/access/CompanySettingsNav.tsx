@@ -2,18 +2,18 @@ import { PageTabBar } from "@/components/PageTabBar";
 import { Tabs } from "@/components/ui/tabs";
 import { useCloudInstance } from "@/hooks/useCloudInstance";
 import { useHiddenSettings } from "@/hooks/useHiddenSettings";
-import { useFastResponsesEnabled } from "@/hooks/useFastResponsesEnabled";
 import { INSTANCE_SETTINGS_PATH_PREFIX } from "@/lib/instance-settings";
 import { useLocation, useNavigate } from "@/lib/router";
+import { useTranslation } from "react-i18next";
 
 const items = [
-  { value: "general", label: "General", href: "/company/settings" },
+  { value: "general", labelKey: "common.general", href: "/company/settings" },
   { value: "export", label: "Export", href: "/company/export" },
   { value: "import", label: "Import", href: "/company/import" },
   { value: "members", label: "Members", href: "/company/settings/members" },
   { value: "secrets", label: "Secrets", href: "/company/settings/secrets" },
   { value: "instance-profile", label: "Profile", href: `${INSTANCE_SETTINGS_PATH_PREFIX}/profile` },
-  { value: "instance-environments", label: "Environments", href: `${INSTANCE_SETTINGS_PATH_PREFIX}/environments` },
+  { value: "instance-environments", labelKey: "companySettings.environments", href: `${INSTANCE_SETTINGS_PATH_PREFIX}/environments` },
   { value: "connections", label: "Connections", href: "/company/settings/connections" },
   { value: "instance-access", label: "Access", href: `${INSTANCE_SETTINGS_PATH_PREFIX}/access` },
   { value: "instance-experimental", label: "Experimental", href: `${INSTANCE_SETTINGS_PATH_PREFIX}/experimental` },
@@ -99,16 +99,15 @@ export function getCompanySettingsTab(pathname: string): CompanySettingsTab {
 }
 
 export function CompanySettingsNav() {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { hidden: hiddenSettings } = useHiddenSettings();
-  const { enabled: fastResponsesEnabled } = useFastResponsesEnabled();
   // Import is floored server-side on cloud-managed instances (403 cloud_managed), so the
   // tab is suppressed there rather than dead-ending.
   const isCloud = Boolean(useCloudInstance());
   const activeTab = getCompanySettingsTab(location.pathname);
   const visibleItems = items.filter((item) => {
-    if (item.value === "connections" && !fastResponsesEnabled) return false;
     if (item.value === "import" && isCloud) return false;
     const hiddenKey = hiddenSettingKeyByTab[item.value];
     return !hiddenKey || !hiddenSettings.has(hiddenKey);
@@ -123,7 +122,14 @@ export function CompanySettingsNav() {
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange}>
       <PageTabBar
-        items={visibleItems.map(({ value, label }) => ({ value, label }))}
+        items={visibleItems.map((item) => ({
+          value: item.value,
+          label: item.value === "general"
+            ? t("common.general")
+            : item.value === "instance-environments"
+              ? t("companySettings.environments")
+              : item.label,
+        }))}
         value={activeTab}
         onValueChange={handleTabChange}
         align="start"

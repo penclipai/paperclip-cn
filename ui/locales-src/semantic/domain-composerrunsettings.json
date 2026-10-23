@@ -1,0 +1,12 @@
+{
+  "composerRunSettings.agentSettings": {
+    "en": "Agent run settings",
+    "zh-CN": "智能体运行设置",
+    "reviewedEnglishHash": "88b233f12482d5d9e30de02aa98745830a8b48b45a9fb1836035802a1bf6f8c6"
+  },
+  "composerRunSettings.museManaged": {
+    "en": "Muse chooses its model and effort. Paperclip has no per-task override.",
+    "zh-CN": "Muse 会选择模型和推理强度。Paperclip 不提供单个任务覆盖。",
+    "reviewedEnglishHash": "5d31df37a834e44ea33d2d0bc8bacfe350c18f101e0f97504c99a0c93095b84f"
+  }
+}

@@ -29,6 +29,11 @@ const EVENT_COPY: Record<CaseEventKind, { key: string; defaultValue: string }> =
   attachment_added: { key: "caseComponents.activity.events.attachmentAdded", defaultValue: "attachment added" },
   label_added: { key: "caseComponents.activity.events.labelAdded", defaultValue: "label added" },
   label_removed: { key: "caseComponents.activity.events.labelRemoved", defaultValue: "label removed" },
+  handoff_requested: { key: "caseComponents.activity.events.handoffRequested", defaultValue: "handoff requested" },
+  handoff_applied: { key: "caseComponents.activity.events.handoffApplied", defaultValue: "task handed off" },
+  handoff_delivered: { key: "caseComponents.activity.events.handoffDelivered", defaultValue: "agent wake queued" },
+  handoff_completed: { key: "caseComponents.activity.events.handoffCompleted", defaultValue: "case completed" },
+  handoff_cancelled: { key: "caseComponents.activity.events.handoffCancelled", defaultValue: "handoff cancelled" },
 };
 
 function eventLabel(kind: CaseEventKind, t: TFunction): string {

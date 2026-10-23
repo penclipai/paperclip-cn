@@ -1,0 +1,12 @@
+{
+  "connectionSetup.availabilityFailed": {
+    "en": "Could not load connector availability. Refresh to try again.",
+    "zh-CN": "无法加载连接器可用性。请刷新后重试。",
+    "reviewedEnglishHash": "e90597733387fe0524eaaaf0648af89285cfc88bd323a5fa91657e50a0f64174"
+  },
+  "connectionSetup.loadingSettings": {
+    "en": "Loading connection settings…",
+    "zh-CN": "正在加载连接设置…",
+    "reviewedEnglishHash": "4613b00ad0644e3cc86af5e98f91654670583a940df48790ff0c5a997139f16d"
+  }
+}

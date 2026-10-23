@@ -6,16 +6,38 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
-import { defaultSuiteWeight, loadShardDurations } from "../general-server-shard.mjs";
+import {
+  defaultSuiteWeight,
+  loadShardDurations,
+} from "../general-server-shard.mjs";
 import { IGNORED_SPECS, listE2eSpecs, selectE2eShard } from "../e2e-shard.mjs";
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+const repoRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
+);
 const script = path.join(repoRoot, "scripts", "e2e-shard.mjs");
-const durationsManifest = path.join(repoRoot, "scripts", "e2e-shard-durations.json");
-const playwrightConfig = path.join(repoRoot, "tests", "e2e", "playwright.config.ts");
+const durationsManifest = path.join(
+  repoRoot,
+  "scripts",
+  "e2e-shard-durations.json",
+);
+const playwrightConfig = path.join(
+  repoRoot,
+  "tests",
+  "e2e",
+  "playwright.config.ts",
+);
 const prCallerWorkflow = path.join(repoRoot, ".github", "workflows", "pr.yml");
 const trustedPrWorkflowPath = ".github/workflows/pr-trusted.yml";
 const trustedPrWorkflow = path.join(repoRoot, trustedPrWorkflowPath);
+const routingWorkflow = path.join(
+  repoRoot,
+  ".github",
+  "workflows",
+  "ci-routing.yml",
+);
 
 const SHARD_COUNT = 8;
 
@@ -24,7 +46,9 @@ function bashPath(value) {
   const match = /^([A-Za-z]):[\\/](.*)$/.exec(value);
   if (!match) return value.replaceAll("\\", "/");
   const [, drive, rest] = match;
-  const root = process.env.MSYSTEM ? `/${drive.toLowerCase()}` : `/mnt/${drive.toLowerCase()}`;
+  const root = process.env.MSYSTEM
+    ? `/${drive.toLowerCase()}`
+    : `/mnt/${drive.toLowerCase()}`;
   return `${root}/${rest.replaceAll("\\", "/")}`;
 }
 
@@ -33,8 +57,15 @@ function bashQuote(value) {
 }
 
 function runShard(args) {
-  const result = spawnSync(process.execPath, [script, ...args], { cwd: repoRoot, encoding: "utf8" });
-  assert.equal(result.status, 0, `expected success for ${args.join(" ")}: ${result.stderr}`);
+  const result = spawnSync(process.execPath, [script, ...args], {
+    cwd: repoRoot,
+    encoding: "utf8",
+  });
+  assert.equal(
+    result.status,
+    0,
+    `expected success for ${args.join(" ")}: ${result.stderr}`,
+  );
   return result.stdout.trim().split(/\s+/).filter(Boolean);
 }
 
@@ -45,12 +76,26 @@ function readTrustedPrWorkflow() {
     /^\s+uses: penclipai\/paperclip-cn\/\.github\/workflows\/pr-trusted\.yml@[0-9a-f]{40}\s*$/m,
     "pr.yml must call the trusted workflow from an immutable fork commit",
   );
-  const pinnedSha = caller.match(/uses: penclipai\/paperclip-cn\/\.github\/workflows\/pr-trusted\.yml@([0-9a-f]{40})\s*$/m)?.[1];
+  const pinnedSha = caller.match(
+    /uses: penclipai\/paperclip-cn\/\.github\/workflows\/pr-trusted\.yml@([0-9a-f]{40})\s*$/m,
+  )?.[1];
   assert.ok(pinnedSha, "missing immutable trusted workflow SHA");
-  const pinned = spawnSync("git", ["show", `${pinnedSha}:${trustedPrWorkflowPath}`], { cwd: repoRoot, encoding: "utf8" });
-  assert.equal(pinned.status, 0, `Cannot read pinned trusted workflow ${pinnedSha}: ${pinned.stderr}`);
+  const pinned = spawnSync(
+    "git",
+    ["show", `${pinnedSha}:${trustedPrWorkflowPath}`],
+    { cwd: repoRoot, encoding: "utf8" },
+  );
+  assert.equal(
+    pinned.status,
+    0,
+    `Cannot read pinned trusted workflow ${pinnedSha}: ${pinned.stderr}`,
+  );
   const source = pinned.stdout.replaceAll("\r\n", "\n");
-  assert.equal(source, readFileSync(trustedPrWorkflow, "utf8").replaceAll("\r\n", "\n"), "The pinned workflow must match the proposed trusted workflow source");
+  assert.equal(
+    source,
+    readFileSync(trustedPrWorkflow, "utf8").replaceAll("\r\n", "\n"),
+    "The pinned workflow must match the proposed trusted workflow source",
+  );
   return source;
 }
 
@@ -72,11 +117,11 @@ function readWorkflowJobs(workflow) {
 }
 
 function runStackScope(stack, prBaseRef) {
-  const workflow = readTrustedPrWorkflow();
+  const workflow = readFileSync(routingWorkflow, "utf8");
   const match = workflow.match(
-    /      - name: Select stacked PR CI scope[\s\S]*?        run: \|\n([\s\S]*?)\n\n  policy:/,
+    /      - name: Select PR CI scope[\s\S]*?        run: \|\n([\s\S]*?)\s*$/,
   );
-  assert.ok(match, "trusted workflow must define the stacked PR scope script");
+  assert.ok(match, "routing workflow must define the PR CI scope script");
   const script = match[1]
     .split("\n")
     .map((line) => line.replace(/^ {10}/, ""))
@@ -90,14 +135,17 @@ function runStackScope(stack, prBaseRef) {
     // GitHub-hosted runners provide jq. The local Windows test environment can
     // be either Git Bash or WSL and may not, so model only the queries this
     // scope selector uses instead of relying on a machine-global executable.
-    writeFileSync(jqFixture, `const input = JSON.parse(require("node:fs").readFileSync(0, "utf8"));
+    writeFileSync(
+      jqFixture,
+      `const input = JSON.parse(require("node:fs").readFileSync(0, "utf8"));
 const filter = process.argv.at(-1);
 if (filter === "type == \\\"object\\\"") process.exit(input && !Array.isArray(input) && typeof input === "object" ? 0 : 1);
 const match = /^\\.([A-Za-z_][\\w-]*)(?:\\.([A-Za-z_][\\w-]*))? \\//.exec(filter);
 if (!match) process.exit(2);
 const value = match[2] ? input?.[match[1]]?.[match[2]] : input?.[match[1]];
 if (value !== undefined && value !== null) process.stdout.write(String(value));
-`);
+`,
+    );
     const fixtureScript = `function jq() { node ${bashQuote(bashPath(jqFixture))} "$@"; }
 export GITHUB_OUTPUT=${bashQuote(bashPath(output))}
 export PR_BASE_REF=${bashQuote(prBaseRef)}
@@ -108,7 +156,11 @@ ${script}`;
       encoding: "utf8",
       env: process.env,
     });
-    assert.equal(result.status, 0, `${result.error ?? ""}\n${result.signal ?? ""}\n${result.stderr}`);
+    assert.equal(
+      result.status,
+      0,
+      `${result.error ?? ""}\n${result.signal ?? ""}\n${result.stderr}`,
+    );
     return Object.fromEntries(
       readFileSync(output, "utf8")
         .trim()
@@ -125,14 +177,26 @@ test("the e2e shards form a complete, non-overlapping partition", () => {
   assert.ok(specs.length > 0, "expected a non-empty e2e spec set");
 
   const shards = Array.from({ length: SHARD_COUNT }, (_, index) =>
-    runShard(["--shard-index", String(index), "--shard-count", String(SHARD_COUNT)]),
+    runShard([
+      "--shard-index",
+      String(index),
+      "--shard-count",
+      String(SHARD_COUNT),
+    ]),
   );
 
   const combined = shards.flat();
-  assert.equal(combined.length, specs.length, "every spec must land on exactly one shard");
+  assert.equal(
+    combined.length,
+    specs.length,
+    "every spec must land on exactly one shard",
+  );
   assert.deepEqual([...combined].sort(), [...specs].sort());
   for (const shard of shards) {
-    assert.ok(shard.length > 0, "no shard may be empty — Playwright fails a run with no matching specs");
+    assert.ok(
+      shard.length > 0,
+      "no shard may be empty — Playwright fails a run with no matching specs",
+    );
   }
 });
 
@@ -140,16 +204,24 @@ test("the ignored spec list matches playwright.config.ts testIgnore", () => {
   const config = readFileSync(playwrightConfig, "utf8");
   const match = config.match(/testIgnore:\s*\[([^\]]*)\]/);
   assert.ok(match, "expected a testIgnore array in playwright.config.ts");
-  const configured = [...match[1].matchAll(/"([^"]+)"/g)].map((entry) => entry[1]);
+  const configured = [...match[1].matchAll(/"([^"]+)"/g)].map(
+    (entry) => entry[1],
+  );
   assert.deepEqual([...configured].sort(), [...IGNORED_SPECS].sort());
 });
 
 test("the duration manifest only names specs that still exist", () => {
   const durations = loadShardDurations(durationsManifest);
-  assert.ok(Object.keys(durations).length > 0, "expected a populated duration manifest");
+  assert.ok(
+    Object.keys(durations).length > 0,
+    "expected a populated duration manifest",
+  );
   const specs = new Set(listE2eSpecs());
   for (const file of Object.keys(durations)) {
-    assert.ok(specs.has(file), `duration manifest names a spec that no longer runs: ${file}`);
+    assert.ok(
+      specs.has(file),
+      `duration manifest names a spec that no longer runs: ${file}`,
+    );
   }
 });
 
@@ -159,7 +231,10 @@ test("the weighted partition keeps the shards close to balanced", () => {
   // New specs use the scheduler's median estimate until measured durations exist.
   const fallbackWeight = defaultSuiteWeight(durations);
   const weights = Array.from({ length: SHARD_COUNT }, (_, index) =>
-    selectE2eShard(specs, index, SHARD_COUNT, durations).reduce((sum, file) => sum + (durations[file] ?? fallbackWeight), 0),
+    selectE2eShard(specs, index, SHARD_COUNT, durations).reduce(
+      (sum, file) => sum + (durations[file] ?? fallbackWeight),
+      0,
+    ),
   );
 
   const heaviest = Math.max(...weights);
@@ -170,7 +245,9 @@ test("the weighted partition keeps the shards close to balanced", () => {
   // of on the PR critical path. A single indivisible spec (smoke-lab) can
   // legitimately exceed the even cut on its own, so the bound is floored at
   // the largest per-spec weight — the best any file-level partition can do.
-  const largestSpec = Math.max(...specs.map((file) => durations[file] ?? fallbackWeight));
+  const largestSpec = Math.max(
+    ...specs.map((file) => durations[file] ?? fallbackWeight),
+  );
   const bound = Math.max((total / SHARD_COUNT) * 1.15, largestSpec);
   assert.ok(
     heaviest <= bound,
@@ -184,7 +261,10 @@ test("shard arguments are validated", () => {
     ["--shard-index", "-1", "--shard-count", "2"],
     ["--shard-index", "0", "--shard-count", "0"],
   ]) {
-    const result = spawnSync(process.execPath, [script, ...args], { cwd: repoRoot, encoding: "utf8" });
+    const result = spawnSync(process.execPath, [script, ...args], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    });
     assert.notEqual(result.status, 0, `expected failure for ${args.join(" ")}`);
   }
 });
@@ -201,9 +281,20 @@ test("the trusted PR workflow keeps a stable aggregate check named e2e over the 
   const jobs = readWorkflowJobs(workflow);
 
   const aggregate = jobs.get("e2e");
-  assert.ok(aggregate, "pr-trusted.yml must define an `e2e` job to satisfy branch protection");
-  assert.match(aggregate, /^ {4}name: e2e$/m, "the aggregate job must be named exactly `e2e`");
-  assert.match(aggregate, /^ {4}if: \$\{\{ always\(\) \}\}$/m, "the aggregate must run even when a shard fails");
+  assert.ok(
+    aggregate,
+    "pr-trusted.yml must define an `e2e` job to satisfy branch protection",
+  );
+  assert.match(
+    aggregate,
+    /^ {4}name: e2e$/m,
+    "the aggregate job must be named exactly `e2e`",
+  );
+  assert.match(
+    aggregate,
+    /^ {4}if: \$\{\{ always\(\) \}\}$/m,
+    "the aggregate must run even when a shard fails",
+  );
   assert.match(
     aggregate,
     /^ {4}needs: \[gate, (?:policy, )?e2e_shards\]$/m,
@@ -227,25 +318,72 @@ test("the trusted PR workflow keeps a stable aggregate check named e2e over the 
     shardLabel: match.groups.shardLabel,
   }));
 
-  assert.equal(matrixEntries.length, SHARD_COUNT, "the shard matrix must define exactly SHARD_COUNT entries");
+  assert.equal(
+    matrixEntries.length,
+    SHARD_COUNT,
+    "the shard matrix must define exactly SHARD_COUNT entries",
+  );
   assert.deepEqual(
     matrixEntries.map((entry) => entry.shardIndex).sort((a, b) => a - b),
     Array.from({ length: SHARD_COUNT }, (_, index) => index),
     "the shard matrix must define each shard index exactly once",
   );
   for (const entry of matrixEntries) {
-    assert.equal(entry.shardCount, SHARD_COUNT, "each shard matrix entry must use the same SHARD_COUNT");
-    assert.equal(entry.shardLabel, `${entry.shardIndex + 1}/${SHARD_COUNT}`, "each shard label must match its index");
+    assert.equal(
+      entry.shardCount,
+      SHARD_COUNT,
+      "each shard matrix entry must use the same SHARD_COUNT",
+    );
+    assert.equal(
+      entry.shardLabel,
+      `${entry.shardIndex + 1}/${SHARD_COUNT}`,
+      "each shard label must match its index",
+    );
   }
+});
+
+test("runner selection has reserved AWS capacity and executes metadata checks only", () => {
+  const workflow = readFileSync(routingWorkflow, "utf8");
+  const jobs = readWorkflowJobs(workflow.split(/^jobs:\n/m)[1]);
+  assert.deepEqual([...jobs.keys()], ["gate"]);
+  assert.match(
+    jobs.get("gate"),
+    /^ {4}runs-on: \$\{\{ vars\.AWS_CI_ENABLED[\s\S]*paperclip-ci-routing-x64/m,
+  );
+  assert.doesNotMatch(jobs.get("gate"), /uses:|actions\/checkout|secrets\./);
+  assert.match(
+    workflow,
+    /^ {6}runner:\n {8}value: \$\{\{ jobs\.gate\.outputs\.runner \}\}$/m,
+  );
+  assert.match(
+    workflow,
+    /^ {6}full_ci:\n {8}value: \$\{\{ jobs\.gate\.outputs\.full_ci \}\}$/m,
+  );
+  assert.doesNotMatch(
+    workflow,
+    /^ {2}(?:actions|contents|pull-requests): write$/m,
+  );
 });
 
 test("the trusted PR workflow limits full CI to merge-relevant stack layers", () => {
   const workflow = readTrustedPrWorkflow();
   const jobs = readWorkflowJobs(workflow);
-  const gate = jobs.get("gate");
+  assert.match(
+    jobs.get("gate"),
+    /uses: \.\/\.github\/workflows\/ci-routing\.yml/,
+  );
+  const gate = readWorkflowJobs(readFileSync(routingWorkflow, "utf8")).get(
+    "gate",
+  );
 
-  assert.match(gate, /^ {6}full_ci: \$\{\{ steps\.scope\.outputs\.full_ci \}\}$/m);
-  assert.match(gate, /STACK_JSON: \$\{\{ toJSON\(github\.event\.pull_request\.stack\) \}\}/);
+  assert.match(
+    gate,
+    /^ {6}full_ci: \$\{\{ steps\.scope\.outputs\.full_ci \}\}$/m,
+  );
+  assert.match(
+    gate,
+    /STACK_JSON: \$\{\{ toJSON\(github\.event\.pull_request\.stack\) \}\}/,
+  );
   assert.match(gate, /stack_position == stack_size/);
   assert.match(gate, /"\$stack_base_ref" == "\$PR_BASE_REF"/);
 
@@ -277,18 +415,27 @@ test("the trusted PR workflow limits full CI to merge-relevant stack layers", ()
     /^ {4}needs: \[gate, policy, typecheck_release_registry, general_tests, verify_paperclip_runner, build, docker_context_integrity\]$/m,
   );
   assert.match(verify, /POLICY_RESULT: \$\{\{ needs\.policy\.result \}\}/);
-  assert.match(verify, /test "\$TYPECHECK_RELEASE_REGISTRY_RESULT" = "skipped"/);
+  assert.match(
+    verify,
+    /test "\$TYPECHECK_RELEASE_REGISTRY_RESULT" = "skipped"/,
+  );
   assert.match(verify, /test "\$GENERAL_TESTS_RESULT" = "skipped"/);
   // Runner verification must participate in the legacy aggregate required
   // check, or a runner regression could be merged while `verify` succeeds.
-  assert.match(verify, /RUNNER_VERIFICATION_RESULT: \$\{\{ needs\.verify_paperclip_runner\.result \}\}/);
+  assert.match(
+    verify,
+    /RUNNER_VERIFICATION_RESULT: \$\{\{ needs\.verify_paperclip_runner\.result \}\}/,
+  );
   assert.match(verify, /test "\$RUNNER_VERIFICATION_RESULT" = "success"/);
   assert.match(verify, /test "\$RUNNER_VERIFICATION_RESULT" = "skipped"/);
   assert.match(verify, /test "\$BUILD_RESULT" = "skipped"/);
   // Both halves of the docker-context lane's gating: the result must be
   // wired into the aggregate's env AND asserted successful on full CI —
   // dropping either would let `verify` pass after the lane fails.
-  assert.match(verify, /DOCKER_CONTEXT_INTEGRITY_RESULT: \$\{\{ needs\.docker_context_integrity\.result \}\}/);
+  assert.match(
+    verify,
+    /DOCKER_CONTEXT_INTEGRITY_RESULT: \$\{\{ needs\.docker_context_integrity\.result \}\}/,
+  );
   assert.match(verify, /test "\$DOCKER_CONTEXT_INTEGRITY_RESULT" = "success"/);
   assert.match(verify, /test "\$DOCKER_CONTEXT_INTEGRITY_RESULT" = "skipped"/);
 
@@ -301,19 +448,27 @@ test("the trusted PR workflow limits full CI to merge-relevant stack layers", ()
 test("the stacked PR scope selector runs full CI only where intended", () => {
   assert.equal(runStackScope(null, "master").full_ci, "true");
   assert.equal(
-    runStackScope({ position: 11, size: 11, base: { ref: "master" } }, "stack-10").full_ci,
+    runStackScope(
+      { position: 11, size: 11, base: { ref: "master" } },
+      "stack-10",
+    ).full_ci,
     "true",
   );
   assert.equal(
-    runStackScope({ position: 1, size: 11, base: { ref: "master" } }, "master").full_ci,
+    runStackScope({ position: 1, size: 11, base: { ref: "master" } }, "master")
+      .full_ci,
     "true",
   );
   assert.equal(
-    runStackScope({ position: 6, size: 11, base: { ref: "master" } }, "stack-5").full_ci,
+    runStackScope({ position: 6, size: 11, base: { ref: "master" } }, "stack-5")
+      .full_ci,
     "false",
   );
   assert.equal(
-    runStackScope({ position: "invalid", size: 11, base: { ref: "master" } }, "stack-5").full_ci,
+    runStackScope(
+      { position: "invalid", size: 11, base: { ref: "master" } },
+      "stack-5",
+    ).full_ci,
     "true",
   );
 });
@@ -341,7 +496,9 @@ test("the trusted PR workflow regenerates stale stacked lockfiles", () => {
     /policy:\n    needs: \[gate\][\s\S]{0,160}timeout-minutes: 10/,
     "the unconditional resolution step needs the same timeout headroom as the lockfile refresh workflow",
   );
-  const policy = workflow.split("  policy:\n")[1].split("  typecheck_release_registry:\n")[0];
+  const policy = workflow
+    .split("  policy:\n")[1]
+    .split("  typecheck_release_registry:\n")[0];
   assert.doesNotMatch(
     policy,
     /cache: pnpm|uses: actions\/cache/,
@@ -356,9 +513,10 @@ test("the trusted PR workflow regenerates stale stacked lockfiles", () => {
   // Test lanes no longer wait on a policy-job artifact: each install step
   // resolves a stale lockfile inline, so a manifest-changing or stacked PR
   // still installs while the policy job validates resolution in parallel.
-  const fallbackInstalls = workflow.match(
-    /if ! pnpm install --frozen-lockfile; then\n[\s\S]{0,240}?pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile\n\s+pnpm install --frozen-lockfile\n\s+fi/g,
-  ) ?? [];
+  const fallbackInstalls =
+    workflow.match(
+      /if ! pnpm install --frozen-lockfile; then\n[\s\S]{0,240}?pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile\n\s+pnpm install --frozen-lockfile\n\s+fi/g,
+    ) ?? [];
   assert.equal(
     fallbackInstalls.length,
     7,

@@ -1,7 +1,10 @@
 import type { IssueDocument } from "@penclipai/shared";
 import { Lightbulb, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTaskChatShimmer } from "./TaskChatShimmer";
 import type { TaskChatProviderActivityItem } from "./task-chat-model";
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 
 const PLAN_PREVIEW_LINE_COUNT = 3;
 
@@ -13,7 +16,7 @@ export function planPreviewContent(markdown: string) {
   const headingIndex = lines.findIndex((line) => /^#\s+/.test(line));
   const title = headingIndex >= 0
     ? lines[headingIndex]!.replace(/^#\s+/, "").trim()
-    : "Plan";
+    : translateInstant("issueThreadInteraction.plan");
   const preview = lines
     .filter((line, index) => index !== headingIndex && !/^(```|~~~|---+$|\*\*\*+$|___+$)/.test(line))
     .map((line) => line
@@ -54,7 +57,7 @@ export interface TaskChatPlanPreviewCardProps {
 function livePlanContent(activity: TaskChatProviderActivityItem) {
   const title = activity.title.trim() && activity.title.trim().toLowerCase() !== "plan"
     ? activity.title.trim()
-    : "Plan";
+    : translateInstant("issueThreadInteraction.plan");
   const preview = activity.steps
     .map((step) => step.label.trim())
     .filter(Boolean)
@@ -82,11 +85,13 @@ export function TaskChatPlanPreviewCard({
   testId = "task-chat-plan-preview",
   className,
 }: TaskChatPlanPreviewCardProps) {
+  useTranslation();
+  const shimmer = useTaskChatShimmer(source.kind === "live" ? source.activity.id : "saved-plan");
   const revision = planRevision(source);
   const content = source.kind === "saved" && source.document
     ? planPreviewContent(source.document.body)
     : source.kind === "saved"
-      ? { title: source.fallbackTitle?.trim() || "Plan", preview: [] as string[] }
+      ? { title: source.fallbackTitle?.trim() || translateInstant("issueThreadInteraction.plan"), preview: [] as string[] }
       : livePlanContent(source.activity);
   const live = source.kind === "live";
   const headerDetail = revision == null
@@ -99,12 +104,12 @@ export function TaskChatPlanPreviewCard({
           aria-hidden
           className={cn("h-4 w-4 shrink-0", live && "text-(--status-agent-running)")}
         />
-        <span className={cn("font-medium", live && "shimmer-text shimmer-text-muted")} data-testid={live ? "task-chat-plan-streaming-status" : undefined}>
-          {live ? "Writing plan" : "Plan"}
+        <span className={cn("font-medium", live && shimmer && "shimmer-text shimmer-text-muted")} data-testid={live ? "task-chat-plan-streaming-status" : undefined}>
+          {live ? "Writing plan" : translateInstant("issueThreadInteraction.plan")}
         </span>
         {headerDetail ? (
           <span
-            className={cn("text-xs", live && "shimmer-text shimmer-text-muted")}
+            className="text-xs"
           >
             · {headerDetail}
           </span>

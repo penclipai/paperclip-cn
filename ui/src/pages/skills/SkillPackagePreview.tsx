@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ExternalLink, FileImage, AlertTriangle } from 'lucide-react';
-import type { SkillSourceDiscoveryRequest } from '@penclipai/shared';
+import type { SkillSourceDiscoveryRequest, SkillRepositoryPackage } from '@penclipai/shared';
 import { skillSourcesApi } from '@/api/skillSources';
 import { queryKeys } from '@/lib/queryKeys';
 import { FileTree, buildFileTree, collectAllPaths } from '@/components/FileTree';
@@ -12,9 +12,9 @@ import { Button } from '@/components/ui/button';
 import { Link } from '@/lib/router';
 import type { SkillTreeCandidate } from './SkillSourceTree';
 
-export function SkillPackagePreview({ companyId, repository, commitSha, skill, initialFile, onClose }: {
+export function SkillPackagePreview({ companyId, repository, commitSha, skill, initialFile, repositoryPackage, onClose }: {
   companyId: string; repository: SkillSourceDiscoveryRequest; commitSha: string | null;
-  skill: SkillTreeCandidate; initialFile?: string; onClose: () => void;
+  repositoryPackage?: SkillRepositoryPackage; skill: SkillTreeCandidate; initialFile?: string; onClose: () => void;
 }) {
   useTranslation();
   const inspection = skill.inspection;
@@ -23,13 +23,14 @@ export function SkillPackagePreview({ companyId, repository, commitSha, skill, i
   const [collapsed, setCollapsed] = useState(new Set<string>());
   const expanded = new Set([...collectAllPaths(nodes, 'dir')].filter(path => !collapsed.has(path)));
   const file = inspection?.files.find(file => file.path === filePath);
-  const preview = useQuery({
-    queryKey: queryKeys.skillSources.preview(companyId, repository.repositoryUrl, repository.connectionId ?? null, commitSha, skill.path, filePath),
-    queryFn: () => skillSourcesApi.preview(companyId, { ...repository, commitSha: commitSha!, skillPath: skill.path, filePath }),
-    enabled: Boolean(commitSha && file && !skill.error), retry: false, staleTime: 5 * 60_000, refetchOnWindowFocus: false,
-  });
   const root = skill.path.includes('/') ? skill.path.slice(0, skill.path.lastIndexOf('/')) : '';
-  const githubPath = filePath === 'SKILL.md' ? skill.path : [root, filePath].filter(Boolean).join('/');
+  const repositoryFilePath = repositoryPackage ? filePath : filePath === 'SKILL.md' ? skill.path : [root, filePath].filter(Boolean).join('/');
+  const preview = useQuery({
+    queryKey: [...queryKeys.skillSources.preview(companyId, repository.repositoryUrl, repository.connectionId ?? null, commitSha, skill.path, filePath), repository.packageMode ?? 'skills'],
+    queryFn: () => skillSourcesApi.preview(companyId, { ...repository, commitSha: commitSha!, skillPath: skill.path, filePath: repository.packageMode === 'repository' ? repositoryFilePath : filePath }),
+    enabled: Boolean(commitSha && file), retry: false, staleTime: 5 * 60_000, refetchOnWindowFocus: false,
+  });
+  const githubPath = repositoryPackage ? filePath : filePath === 'SKILL.md' ? skill.path : [root, filePath].filter(Boolean).join('/');
   const githubUrl = commitSha ? `${repository.repositoryUrl}/blob/${commitSha}/${githubPath.split('/').map(encodeURIComponent).join('/')}` : repository.repositoryUrl;
   return <Dialog open onOpenChange={open => { if (!open) onClose(); }}>
     <DialogContent className="flex max-h-(--sz-calc-18) flex-col overflow-y-auto p-4 sm:max-w-4xl sm:p-6">

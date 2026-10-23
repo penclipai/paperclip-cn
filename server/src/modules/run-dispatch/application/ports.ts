@@ -42,6 +42,9 @@ export type CancelStaleQueuedRunInput = {
 };
 
 export type DispatchResolvedInteractionInput<T> = CancelStaleQueuedRunInput & {
+  reservationId: string;
+  recoveryLeaseOwner?: string;
+  enforceContinuationOwnership?: boolean;
   dispatch: (markDispatchStarted: () => void) => Promise<T>;
 };
 
@@ -52,6 +55,7 @@ export type DispatchCurrentRunInput<T> = CancelStaleQueuedRunInput & {
 
 export type DispatchResolvedInteractionOutcome<T> =
   | { dispatched: true; resultPromise: Promise<T> }
+  | { dispatched: false; admissionBlockReason: string }
   | { dispatched: false; cancellation: CancelStaleQueuedRunOutcome };
 
 export type DispatchCurrentRunOutcome<T> =

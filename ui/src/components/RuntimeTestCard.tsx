@@ -56,6 +56,7 @@ export function RuntimeTestCard({
   onTest,
   disabled = false,
   variant = "connection",
+  metadataOnly = false,
 }: {
   state: TestState | "warn";
   result: AdapterEnvironmentTestResult | null;
@@ -63,16 +64,24 @@ export function RuntimeTestCard({
   onTest: () => void;
   disabled?: boolean;
   variant?: "connection" | "prerequisites";
+  metadataOnly?: boolean;
 }) {
   useTranslation();
   const missingRuntime = state === "fail"
     ? result?.checks.find((check) => check.code === "acpx_runtime_package_missing")
     : undefined;
-  const content = (variant === "prerequisites" ? prerequisiteCopy : copy)[state];
-  const title = missingRuntime ? translateInstant("Runtime missing") : translateInstant(content.title);
-  const description = state === "fail" && error
+  const content = missingRuntime
+    ? { ...copy.fail, title: "Runtime missing", description: missingRuntime.message }
+    : (variant === "prerequisites" ? prerequisiteCopy : copy)[state];
+  const description = metadataOnly && state === "idle"
+    ? "Verify your saved token, runtime installation, and selected model without sending a model prompt."
+    : metadataOnly && state === "running"
+      ? "Checking the saved token, runtime, and selected model…"
+      : content.description;
+  const title = translateInstant(content.title);
+  const localizedDescription = state === "fail" && error
     ? error
-    : missingRuntime?.message ?? translateInstant(content.description);
+    : missingRuntime?.message ?? translateInstant(description);
   const Icon =
     state === "running"
       ? Loader2
@@ -112,7 +121,9 @@ export function RuntimeTestCard({
             className="min-w-0 space-y-1"
           >
             <h3 className="text-sm font-medium">{title}</h3>
-            <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              {localizedDescription}
+            </p>
           </div>
           <Button
             type="button"

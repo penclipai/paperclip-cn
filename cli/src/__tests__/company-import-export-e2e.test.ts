@@ -1,5 +1,6 @@
 import { execFile, spawn } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
@@ -11,6 +12,7 @@ import {
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
 import { createStoredZipArchive } from "./helpers/zip.js";
+import { removeTestHome } from "../../../tests/helpers/remove-test-home.js";
 
 const execFileAsync = promisify(execFile);
 type ServerProcess = ReturnType<typeof spawn>;
@@ -24,13 +26,6 @@ function execPnpm(args: string[], options: Parameters<typeof execFileAsync>[2]) 
     return execFileAsync(process.env.ComSpec ?? "cmd.exe", ["/d", "/s", "/c", PNPM_COMMAND, ...args], options);
   }
   return execFileAsync(PNPM_COMMAND, args, options);
-}
-
-function spawnPnpm(args: string[], options: Parameters<typeof spawn>[2]) {
-  if (process.platform === "win32") {
-    return spawn(process.env.ComSpec ?? "cmd.exe", ["/d", "/s", "/c", PNPM_COMMAND, ...args], options);
-  }
-  return spawn(PNPM_COMMAND, args, options);
 }
 
 async function getAvailablePort(): Promise<number> {
@@ -276,18 +271,6 @@ async function bestEffortCleanup(cleanup: Promise<unknown> | undefined, timeoutM
   ]);
 }
 
-function removeTempRoot(root: string) {
-  try {
-    rmSync(root, { recursive: true, force: true });
-  } catch (error) {
-    const code = (error as NodeJS.ErrnoException).code;
-    if (process.platform === "win32" && (code === "EPERM" || code === "EBUSY" || code === "ENOTEMPTY")) {
-      return;
-    }
-    throw error;
-  }
-}
-
 async function api<T>(baseUrl: string, pathname: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${baseUrl}${pathname}`, init);
   const text = await res.text();
@@ -388,8 +371,9 @@ describeEmbeddedPostgres("penclip company import/export e2e", () => {
 
     const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
     const output = { stdout: [] as string[], stderr: [] as string[] };
-    const child = spawnPnpm(
-      ["penclip", "run", "--config", configPath],
+    const child = spawn(
+      process.execPath,
+      ["--import", createRequire(import.meta.url).resolve("tsx"), path.join(repoRoot, "cli/src/index.ts"), "run", "--config", configPath],
       {
         cwd: repoRoot,
         env: createServerEnv(configPath, port, tempDb.connectionString, {
@@ -415,7 +399,7 @@ describeEmbeddedPostgres("penclip company import/export e2e", () => {
     await stopServerProcess(serverProcess);
     await bestEffortCleanup(tempDb?.cleanup(), 10_000);
     if (tempRoot) {
-      removeTempRoot(tempRoot);
+      removeTestHome(tempRoot);
     }
   });
 

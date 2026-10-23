@@ -1,0 +1,12 @@
+{
+  "budgetIncident.dismissWarning": {
+    "en": "Dismiss warning",
+    "zh-CN": "关闭警告",
+    "reviewedEnglishHash": "9f6e4da35a68bbaf98a15e67f4bb571b9363c7d271a40ad5912796aaa0328ddd"
+  },
+  "budgetIncident.warning": {
+    "en": "budget warning",
+    "zh-CN": "预算警告",
+    "reviewedEnglishHash": "508a0c024825d092e023ae19cc8ff0e7260bfa12a79fa9a5c12c1fdf0d5642c0"
+  }
+}

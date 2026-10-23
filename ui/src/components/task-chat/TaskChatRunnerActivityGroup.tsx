@@ -25,6 +25,7 @@ import {
 } from "./TaskChatProtocolActivityRow";
 import { TaskChatUsageReadout } from "./TaskChatUsageReadout";
 import { toolActivityPresentation } from "./tool-taxonomy";
+import { useTaskChatShimmer } from "./TaskChatShimmer";
 
 type Activity = TaskChatActivityPhaseItem["items"][number];
 
@@ -112,6 +113,7 @@ function ActivityContent({
   active: boolean;
 }) {
   const row = presentation(item, active);
+  const shimmer = useTaskChatShimmer(item.id);
   if (!row) return null;
   const Icon = row.icon;
   return (
@@ -132,11 +134,12 @@ function ActivityContent({
       >
         <Icon className="size-3.5" aria-hidden="true" />
       </span>
-      <span className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden whitespace-nowrap">
+      <span data-conversation-tool-running={row.running && shimmer && (item.kind === "tool" || (item.kind === "protocol" && item.surface === "provider_activity" && item.family === "tool_execution")) ? "true" : undefined} className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden whitespace-nowrap">
         <span
           className={cn(
             "max-w-full shrink-0 truncate text-xs",
             row.running && "text-foreground",
+            row.running && shimmer && item.kind === "thinking" && "shimmer-text",
           )}
         >
           {row.label}
@@ -212,7 +215,7 @@ function RollingActivity({
 function ActivityDetails({ item }: { item: Activity }) {
   useTranslation();
   if (item.kind === "thinking")
-    return <MarkdownBody softBreaks>{item.lines.join("\n")}</MarkdownBody>;
+    return <div data-conversation-text="progress"><MarkdownBody softBreaks>{item.lines.join("\n")}</MarkdownBody></div>;
   if (item.kind === "usage") return <TaskChatUsageReadout item={item} />;
   if (item.kind === "protocol")
     return <TaskChatProtocolActivityDetails item={item} neutral />;
@@ -339,6 +342,7 @@ export function TaskChatRunnerActivityGroup({
         <div
           className="min-w-0 px-1 text-sm text-foreground/90"
           data-testid="task-chat-phase-interstitial"
+          data-conversation-text={item.interstitial.channel === "final" ? "final" : "progress"}
         >
           <MarkdownBody softBreaks linkIssueReferences>
             {item.interstitial.text}

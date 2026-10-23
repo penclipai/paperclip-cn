@@ -102,7 +102,6 @@ export function Sidebar({ children }: { children?: ReactNode }) {
   // shell keeps its Inbox row even with the flag on.
   const combinedInboxTasks = streamlinedUiEnabled && experimentalSettings?.enableCombinedInboxTasks === true;
   const showWorkspacesLink = !chatRail && experimentalSettings?.enableIsolatedWorkspaces === true;
-  const showPipelines = experimentalSettings?.enablePipelines === true;
   const showStatusCards = experimentalSettings?.enableStatusCards === true;
   const goalsLinkPending = experimentalSettings === undefined;
   const showGoalsLink = experimentalSettings?.enableGoalsSidebarLink === true;
@@ -240,9 +239,6 @@ export function Sidebar({ children }: { children?: ReactNode }) {
           {showCases ? (
             <SidebarNavItem to="/cases" label={translateInstant("Cases")} icon={Layers} textBadge="beta" />
           ) : null}
-          {showPipelines ? (
-            <SidebarNavItem to="/pipelines" label={translateInstant("sidebar.pipelines")} icon={GitBranch} />
-          ) : null}
           {showGoalsLink ? (
             <SidebarNavItem to="/goals" label={translateInstant("sidebar.goals")} icon={Target} />
           ) : goalsLinkPending ? (
@@ -296,12 +292,13 @@ export function Sidebar({ children }: { children?: ReactNode }) {
               label={translateInstant("Organization")}
               collapsible={{ open: organizationOpen, onOpenChange: setOrganizationOpen }}
             >
-              <SidebarNavItem to="/org" label={translateInstant("sidebar.org")} icon={Network} />
-              <SidebarNavItem to="/apps" label={translateInstant("Connectors")} icon={Unplug} />
-              <SidebarNavItem to="/timeline" label={translateInstant("sidebar.timeline")} icon={GanttChartSquare} />
-              <SidebarNavItem to="/costs" label={translateInstant("sidebar.costs")} icon={DollarSign} />
-              <SidebarNavItem to="/activity" label={translateInstant("sidebar.activity")} icon={History} />
-              <SidebarNavItem to="/company/settings" label={translateInstant("sidebar.settings")} icon={Settings} />
+              <SidebarNavItem to="/org" label="Org" icon={Network} />
+              <SidebarNavItem to="/apps" label="Connectors" icon={Unplug} />
+              <SidebarNavItem to="/timeline" label="Timeline" icon={GanttChartSquare} />
+              <SidebarNavItem to="/costs" label="Costs" icon={DollarSign} />
+              <SidebarNavItem to="/activity" label="Activity" icon={History} />
+              <SidebarNavItem to="/activity/commentary" label="Commentary" icon={History} />
+              <SidebarNavItem to="/company/settings" label="Settings" icon={Settings} />
             </SidebarSection>
           </>
         )}

@@ -145,6 +145,7 @@ interface TaskChatComposerProps {
     { label: string; image: string | null }
   > | null;
   currentAssigneeValue?: string;
+  suggestedAssigneeValue?: string;
   onPendingAssigneeChange?: (value: string | null) => void;
   issueStatus?: string;
   /** Mobile document-flow host: 16px editor text so iOS doesn't zoom on focus. */
@@ -400,6 +401,7 @@ export function TaskChatComposer({
   assigneeAdapterOverrides,
   userProfileMap,
   currentAssigneeValue = "",
+  suggestedAssigneeValue,
   onPendingAssigneeChange,
   issueStatus,
   mobile = false,
@@ -642,12 +644,10 @@ export function TaskChatComposer({
   const showAssignee = Boolean(
     enableReassign && reassignOptions && reassignOptions.length > 0,
   );
-  const assigneeValue = creation ? currentAssigneeValue : pendingAssignee ?? currentAssigneeValue;
-  const selectedAssignee = assigneeValue
-    ? reassignOptions?.find((option) => option.id === assigneeValue)
-    : undefined;
-  const assigneeLabel = selectedAssignee?.label ?? t("Unassigned");
-  const assigneeName = selectedAssignee?.label ?? t("taskChatComposer.defaultAgentName");
+  const assigneeValue = creation ? currentAssigneeValue : pendingAssignee ?? suggestedAssigneeValue ?? currentAssigneeValue;
+  const selectedAssignee = reassignOptions?.find((o) => o.id === assigneeValue);
+  const assigneeLabel = selectedAssignee?.label ?? "Unassigned";
+  const assigneeName = selectedAssignee ? assigneeLabel : t("taskChatComposer.defaultAgentName");
   const effectivePlaceholder = queuedEdit
     ? t("Edit queued message…")
     : (placeholder ?? modePlaceholder(pendingMode, assigneeName, mobile, t));
@@ -1419,7 +1419,7 @@ export function TaskChatComposer({
                       </AttachmentTitle>
                       <AttachmentDescription className="max-w-48">
                         {attachment.status === "uploading"
-                          ? "Uploading…"
+                          ? t("artifactUpload.uploading")
                           : attachment.status === "error"
                             ? (attachment.error ?? "Upload failed")
                             : [kind.label, sizeLabel]
