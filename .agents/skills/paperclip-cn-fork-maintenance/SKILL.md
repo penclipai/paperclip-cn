@@ -49,6 +49,7 @@ Load the skill references conditionally:
 - Read [ui-localization-policy.md](references/ui-localization-policy.md) for localization architecture, content ownership, terminology, key design, wording, formatting, or rebrand decisions.
 - Read [browser-i18n-audit.md](references/browser-i18n-audit.md) for browser review, a request to inspect every page/dialog/subpage, or rendered translation regressions.
 - Read [maintenance-checklists.md](references/maintenance-checklists.md) for drift, Windows, Electron, adapter, rebrand, or detailed source i18n audits.
+- Read [desktop-maintenance.md](references/desktop-maintenance.md) for packaging side effects, installer lifecycle acceptance, payload-size changes, or replacement of existing Release installers.
 
 ## Durable Fork Contract
 
@@ -134,7 +135,7 @@ Use the detailed state machine for commands and evidence. The core sequence is:
 6. Capture and compare the post-sync i18n key snapshot.
 7. Run a findings-first review, fix actionable regressions, and repeat until clean.
 8. Run required verification, push to the fork, and create or update the PR.
-9. When explicitly requested, run latest-head PR checks, merge, verify canary, dry-run stable, publish stable, and verify external surfaces.
+9. When explicitly requested, run latest-head PR checks, merge, verify canary, then follow the current nightly/Beta promotion, observation, notes, stable dry-run, and publication gates. Installer-only repair of an existing Release follows the separate desktop repair path.
 
 Default branch conventions:
 
@@ -166,11 +167,12 @@ catalog. The checked-in files at `ui/public/locales/en/common.json` and
 `ui/public/locales/zh-CN/common.json` are generated runtime artifacts: do not
 hand-edit them.
 
-Each source entry contains exactly `en`, `zh-CN`, and
-`reviewedEnglishHash`. Semantic keys belong in
-`semantic/domain-<first-prefix-lowercase>.json`; controlled source-text keys
-belong in `source-text/<first-ascii-letter-lowercase-or-other>.json`. A key has
-one source-file owner. Duplicate definitions and implicit overrides are errors.
+Update paired `en`/`zh-CN` entries and their `reviewedEnglishHash` in the sole
+source owner. Preserve paired placeholders, including the documented
+`scheduleDescription.dayOfMonthOrdinal` exception. Follow
+[ui-localization-policy.md](references/ui-localization-policy.md#key-design-and-catalog-maintenance)
+for key selection, file placement, English review hashes, placeholder contracts,
+and the per-key review command.
 
 Use this sequence for a locale edit:
 
@@ -179,28 +181,9 @@ pnpm i18n:build
 pnpm check:i18n
 ```
 
-`i18n:build` validates the editable sources and writes sorted UTF-8/LF runtime
-catalogs. `check:i18n` is read-only; it rejects out-of-date generated catalogs
-and English entries whose exact-string SHA-256 hash has not been explicitly
-reviewed. After reviewing a changed English value, acknowledge only the intended
-key:
-
-```sh
-pnpm i18n:review -- --key <exact-key>
-pnpm i18n:build
-pnpm check:i18n
-```
-
-The review command changes review metadata only. It does not translate text or
-approve a different key. A Chinese value may remain unchanged after a confirmed
-English change, but the explicit review is still required. Preserve the sole
-placeholder-set exception, `scheduleDescription.dayOfMonthOrdinal`: English
-uses `ordinal`, zh-CN uses `count`, and its caller supplies both. All other
-paired values must expose the same placeholders.
-
-The small upstream `translation` resources and their tests are separate from
-the production common catalog. Do not merge their ownership, keys, or runtime
-loading behavior into this workflow.
+`check:i18n` is read-only; generated output and explicitly reviewed English
+must be current. Keep the small upstream `translation` resources separate
+from the production `common` catalog.
 
 ### Static i18n key audit
 
@@ -269,6 +252,7 @@ Evaluate merge readiness against the latest PR head SHA. Every required check mu
 For explicit latest requests:
 
 - prove the automatic canary corresponds to the merged fork `master` SHA
+- pin the selected promotion candidate separately from workflow `headSha`; verify its Beta evidence, observation period, reviewed notes, and required environment approvals
 - resolve stable version with the release helper and an explicit `stable_date`
 - never derive stable version from a canary tag or wall-clock date
 - run stable dry-run before live promotion using the same source ref and stable date
@@ -276,6 +260,11 @@ For explicit latest requests:
 - verify remote stable tag, GitHub Release, release jobs, smoke, and documented desktop asset contract
 
 Keep exact release commands in `doc/RELEASING.md`; do not duplicate them here.
+
+For an existing Release installer replacement, preserve the stable version,
+tag, npm state, and unrelated assets. Follow the desktop reference through
+complete-platform build evidence, recoverable replacement, and public-download
+hash verification; do not restart stable promotion merely to repair installers.
 
 ## Output
 

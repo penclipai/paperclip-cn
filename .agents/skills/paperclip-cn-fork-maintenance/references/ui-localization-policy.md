@@ -103,6 +103,14 @@ Classify text before translating it. English characters alone do not prove a def
 
 Mixed UI can contain a translated label followed by a raw user name or technical identifier. Classify each fragment independently.
 
+For audit/activity rows and plugin actions, map known application-owned event
+codes to localized action templates in the shared presentation helper. Preserve
+the stored event ID and interpolate raw package names and entity identifiers.
+An unknown event or third-party payload stays inspectable through the existing
+raw fallback; do not translate arbitrary identifiers by splitting or replacing
+their English words. Cover known templates, unknown fallback, and language
+switching when changing the shared mapping.
+
 ### Controlled Seeded Names
 
 Known repository seed names may use `ui/src/lib/seeded-display.ts` and `displaySeededName()` for presentation mapping while the stored value remains stable.
@@ -220,6 +228,17 @@ requires an explicit per-key review; it does not imply that Chinese must change.
 The `i18n:review` command updates only selected review metadata and never
 translates copy. Runtime catalogs are sorted with ordinal comparison, UTF-8,
 LF, and a final newline. Do not manually edit generated `common.json` files.
+
+After reviewing a changed English value, acknowledge only the intended key:
+
+```sh
+pnpm i18n:review -- --key <exact-key>
+pnpm i18n:build
+pnpm check:i18n
+```
+
+A Chinese value may remain unchanged after that review. Do not bulk-refresh
+review hashes merely to make a sync pass.
 
 `scheduleDescription.dayOfMonthOrdinal` is the only placeholder-set exception:
 English uses `ordinal`, zh-CN uses `count`, and callers provide both. All other

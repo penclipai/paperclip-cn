@@ -11,9 +11,10 @@ Use this reference for every upstream sync, interrupted task, PR continuation, m
 5. Sync and review stages
 6. Lockfile and test discipline
 7. PR and merge rules
-8. Canary and stable rules
-9. Publication verification
-10. Blockers and output
+8. Canary, Beta, and stable rules
+9. npm publication readiness
+10. Publication verification and installer repair
+11. Blockers and output
 
 ## Repository Identity
 
@@ -60,6 +61,11 @@ Default names:
 - fork base branch: `master`
 
 Continue an existing associated branch instead of creating a date-renamed duplicate. For a genuinely new sync, create the work branch from the explicit fork base ref, then create the safety branch before merging upstream.
+
+When the user requests an upstream-version date in the branch name, resolve
+that date from the selected upstream release or commit metadata and record its
+source. Do not substitute today's date or rename a resumed branch again unless
+requested.
 
 Default to merge, not rebase:
 
@@ -120,15 +126,21 @@ If the PR head changes after a push, discard the previous check conclusion and r
 
 ### Release state
 
-Inspect release state only when the requested terminal stage reaches canary or stable. Record:
+Inspect release state when the request reaches a release channel or repairs an
+existing Release. Keep these identities distinct:
 
-- fork `master` SHA after merge
-- release workflow runs for that SHA
-- canary tag and npm canary dist-tag
-- stable dry-run and live runs for the chosen source ref and stable date
+- fork base-branch merge SHA and its canary run/tag/registry evidence
+- selected promotion source SHA and its nightly/Beta version, tag, exact-version smoke, and observation evidence
+- workflow revision (`headSha`/`github.sha`) and resolved build/publish source SHA; a dispatch from `master` may select a different source
+- stable dry-run and live runs for the chosen source ref and stable date, reviewed notes, and environment approvals
 - stable tag, GitHub Release, registry state, smoke, and desktop assets
 
 Do not treat a local tag, workflow summary, or npm CLI package alone as proof of a complete stable release.
+
+Retain a small credential-free checkpoint with the requested terminal stage,
+these refs, PR/run IDs and attempts, artifact identities, completed evidence,
+remaining gates, and explicit user decisions. On resume, re-read authoritative
+state; the checkpoint is an index, not proof that a remote action completed.
 
 ## Stage Model
 
@@ -143,10 +155,16 @@ Locate the first stage whose completion evidence is missing or invalid. Skip ear
 | 4. Local verification | required targeted and broad gates green on current HEAD | PR delivery |
 | 5. PR delivery | branch pushed to fork; PR created or updated with required template and evidence | stop or run PR loop |
 | 6. PR readiness | latest-head checks terminal green; mergeability known; draft cleared | merge |
-| 7. Merge and canary | PR merged to fork base; canary workflow/tag/registry point to merge SHA | stop or stable dry-run |
-| 8. Stable dry-run | dry-run succeeds for explicit source ref and stable date | live stable |
-| 9. Stable live | live workflow succeeds for the same source ref and stable date | external verification |
-| 10. Published latest | all release-enabled packages, tag, GitHub Release, smoke, and desktop contract verified | complete |
+| 7. Merge and canary | PR merged to fork base; canary workflow/tag/registry point to merge SHA | stop or select promotion candidate |
+| 8. Promotion readiness | selected candidate's channel/smoke/observation evidence and reviewed notes satisfy the current release runbook, or its supported exception is explicitly authorized and recorded | stable dry-run |
+| 9. Stable dry-run | dry-run succeeds for explicit source ref and stable date; live-only gates identified | live stable |
+| 10. Stable live | required environment approval and full live workflow succeed for the same source ref and stable date | external verification |
+| 11. Published latest | all release-enabled packages, tag, GitHub Release, smoke, and desktop contract verified | complete |
+
+An existing stable installer repair branches from reconciliation to
+[desktop-maintenance.md](desktop-maintenance.md#repairing-existing-release-installers).
+Its terminal evidence is the verified replacement asset set; it does not repeat
+promotion, npm publication, or stable version allocation.
 
 If a pre-sync snapshot is unavailable because the merge already occurred, do not fabricate it or restart the merge. Mark the baseline unavailable, inspect the merge range and touched locale/UI files, capture the current snapshot, and continue with explicit reduced evidence.
 
@@ -242,6 +260,12 @@ For ordinary `sync-fork`, a draft PR is acceptable as the terminal artifact. For
 
 Never merge from an older green SHA or infer readiness from a single aggregate check.
 
+Review comments against the exact current file and head before changing code.
+Record evidence for stale or false-positive findings instead of manufacturing a
+fix. A user waiver of a review score applies only to that named gate and scope;
+it does not waive actionable findings, required tests, or GitHub protection.
+Do not convert a one-release decision into a standing waiver.
+
 ### Repository-safe PR check overlay
 
 The CN fork's resolved repository identity overrides repository-implicit examples in the generic `$prcheckloop` skill:
@@ -254,7 +278,7 @@ The CN fork's resolved repository identity overrides repository-implicit example
 
 Do not execute a repository-implicit example verbatim in a checkout with multiple remotes.
 
-## Canary And Stable Rules
+## Canary, Beta, And Stable Rules
 
 ### Canary
 
@@ -265,7 +289,23 @@ After merge, verify that the automatic canary belongs to the fork base-branch me
 - npm `canary` reports the expected published candidate
 - required canary smoke is successful
 
-Do not promote a canary associated with an older base-branch commit.
+Do not substitute an older canary for proof of the just-merged commit. Selecting
+an older qualified Beta for stable is a separate, supported promotion decision;
+do not silently replace that pinned candidate with the newest `master`.
+
+### Promotion readiness
+
+Follow `doc/RELEASING.md` for the current nightly/Beta selection and candidate
+branch paths. Record the selected source commit, exact-version smoke, registry
+publish time used by the observation gate, and the reviewed notes file. Branch
+age, a browser approval message, or a green dry-run does not prove those gates.
+
+Apply the runbook's observation period to the exact candidate. A candidate with
+new cherry-picked bits needs the runbook's new-candidate or exception path;
+it does not inherit a previous candidate's completed observation. Use
+`skip_soak_justification` only for an explicitly authorized exception and record
+the actual reason. Verify notes and required GitHub environment approvals;
+do not copy PR-only metadata into public release notes.
 
 ### Stable version resolution
 
@@ -282,7 +322,46 @@ Do not:
 
 Run stable dry-run first. Continue to live only when the dry-run is successful for the intended source ref and stable date. Before dispatching live, recheck that no intervening publication changed the resolved version or candidate assumptions.
 
+A dry-run can report an unsatisfied observation gate without failing. Validate
+the live gate separately before treating dry-run success as promotion readiness.
+
 Dispatch live with the same source ref and stable date, then wait for the full workflow graph to finish. A successful publish job is not enough if downstream smoke or desktop jobs fail.
+
+If dispatch rejects a raw SHA as its workflow ref, use a supported named ref and
+keep `source_ref` pinned. Verify the created run's workflow revision and selected
+source before consuming its artifacts. If dispatch outcome is uncertain, find
+the run first rather than issuing a duplicate.
+
+## npm Publication Readiness
+
+Use `doc/PUBLISHING.md` and `doc/RELEASE-AUTOMATION-SETUP.md` for the current
+bootstrap and Trusted Publisher mechanisms. Enumerate
+`scripts/release-package-manifest.json` entries with `publishFromCi: true`;
+never carry a fixed package count or remembered list forward.
+
+For publication readiness or an authorized trust configuration task:
+
+- Read back each package's relationship and compare repository, workflow,
+  direct-publish permission, and environment coverage against the actual job.
+  Empty environment text is not evidence of universal coverage.
+- Check existing relationships before creating or deleting any. Record only
+  package names, sanitized configuration differences, and completion status so
+  a resumed batch skips verified work. Reconcile unknown mutation outcomes
+  before retrying.
+- Separate npm login, package creation/publish access, and Trusted Publisher
+  configuration. One successful operation does not prove authority for another;
+  a token is not an assumed substitute for an interactive trust challenge.
+- Start a short-lived challenge when the user is ready. Let the user complete
+  Windows Hello/security-key verification and any OTP in the official page or
+  originating interactive terminal. Keep PINs, OTPs, tokens, recovery codes,
+  challenge URLs, and raw auth-session output out of chat, logs, and checkpoints.
+- Confirm success from the waiting CLI/API operation and read-back, not just the
+  browser. Do not assume a temporary challenge exemption transfers to another
+  process. After a repeated failure, stop issuing fresh challenges, inspect the
+  specific error and session state, and change the approach before retrying.
+
+An installer-only repair does not require refreshing npm authentication or
+reconfiguring trust when publication is outside its scope.
 
 ## Publication Verification
 
@@ -305,6 +384,12 @@ Verify all external surfaces:
 6. Desktop assets satisfy the platform and naming contract in `doc/RELEASING.md`.
 
 Warnings and annotations may be reported separately, but completion is determined by required contracts and terminal job conclusions rather than incidental log text.
+
+For desktop publication or replacement, also apply the complete-platform,
+manifest, and public-download checks in
+[desktop-maintenance.md](desktop-maintenance.md). If npm already succeeded but
+tags, Release metadata, or assets failed, reconcile those surfaces and use the
+runbook's partial-release recovery; do not republish an existing npm version.
 
 ## Blockers And Output
 

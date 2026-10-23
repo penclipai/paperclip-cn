@@ -72,6 +72,11 @@ Inspect touched scripts, runtime helpers, package scripts, and tests for:
 
 Prefer existing repository helpers over new wrappers. Keep platform-specific behavior bounded and covered at the helper or route level when possible.
 
+When installer hooks, deployment staging, or elevated execution change, use
+[desktop-maintenance.md](desktop-maintenance.md) for same-drive temporary data,
+source dependency isolation, and the distinction between NSIS probes and full
+installation/UAC/data-retention evidence.
+
 ## Electron
 
 Inspect desktop code, shared UI, packaging, scripts, docs, and release automation for:
@@ -86,7 +91,12 @@ Inspect desktop code, shared UI, packaging, scripts, docs, and release automatio
 - desktop smoke coverage for dev, packaged, core acceptance, and full acceptance flows
 - stable desktop version injection and asset naming
 - supported platform and architecture assets matching `doc/RELEASING.md`
-- desktop assets remaining stable-live-only; canary publication must not emit them
+- public desktop assets belonging to a stable release or its explicitly requested installer repair; canary publication must not emit them
+
+Use [desktop-maintenance.md](desktop-maintenance.md) for payload selection,
+native final-container checks, size budgets, full-platform upload gates, and
+existing Release replacement. Build success, installation success, and a real
+agent journey are separate claims; select evidence for the requested scope.
 
 Preserve data-path boundaries:
 
