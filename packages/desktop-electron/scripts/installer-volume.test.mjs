@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, realpath, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, test } from "node:test";
@@ -12,7 +12,7 @@ afterEach(async () => {
 });
 
 async function ownedMount() {
-  const root = await mkdtemp(path.join(tmpdir(), "paperclip-installer-volume-"));
+  const root = await realpath(await mkdtemp(path.join(tmpdir(), "paperclip-installer-volume-")));
   roots.push(root);
   const mountPoint = path.join(root, "volume");
   return { root, mountPoint };
