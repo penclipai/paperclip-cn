@@ -3098,11 +3098,18 @@ export function companySkillService(db: Db, options: { actor?: AuthorizationActo
 
   async function collectVersionFileInventoryFromDirectory(
     skillDir: string,
+    previousInventory?: CompanySkillVersionFileInventoryEntry[],
   ): Promise<CompanySkillVersionFileInventoryEntry[]> {
     const inventory = await collectLocalSkillInventory(skillDir);
-    return Promise.all(inventory.map(async (entry) => ({
-      ...snapshotFile(entry.path, entry.kind, await fs.readFile(path.join(skillDir, entry.path)), Boolean((await fs.stat(path.join(skillDir, entry.path))).mode & 0o111)),
-    })));
+    return Promise.all(inventory.map(async (entry) => {
+      const mode = (await fs.stat(path.join(skillDir, entry.path))).mode;
+      return snapshotFile(
+        entry.path,
+        entry.kind,
+        await fs.readFile(path.join(skillDir, entry.path)),
+        resolveExecutableIntent(mode, previousInventory?.find((previous) => previous.path === entry.path)?.executable),
+      );
+    }));
   }
 
   async function ensureBundledSkillReleases(companyId: string, bundledSkills: CompanySkill[]) {
@@ -4140,7 +4147,9 @@ export function companySkillService(db: Db, options: { actor?: AuthorizationActo
         updatedAt: new Date(),
       })
       .where(and(eq(companySkills.id, source.id), eq(companySkills.companyId, companyId)));
-    await createVersion(companyId, forked.id, { label: "Initial version" }, actor);
+    await createVersion(companyId, forked.id, { label: "Initial version" }, actor, {
+      fileInventory: await collectVersionFileInventoryFromDirectory(forkDir, repositoryFiles ?? sourceVersion?.fileInventory),
+    });
     const persistedFork = await getById(companyId, forked.id).then((skill) => {
       if (!skill) throw notFound("Forked skill not found");
       return skill;
@@ -4723,7 +4732,10 @@ export function companySkillService(db: Db, options: { actor?: AuthorizationActo
             .set({ forkCount: sql`${companySkills.forkCount} + 1`, installCount: sql`${companySkills.installCount} + 1`, updatedAt: new Date() })
             .where(and(eq(companySkills.id, forkSource.id), eq(companySkills.companyId, companyId)));
         }
-        const versionInventory = await collectVersionFileInventoryFromDirectory(skillDir);
+        const versionInventory = await collectVersionFileInventoryFromDirectory(
+          skillDir,
+          repositoryFiles ?? forkVersion?.fileInventory,
+        );
         await createVersion(companyId, created.id, { label: "Initial version" }, actor, {
           database: tx,
           skipInventoryRefresh: true,
@@ -6277,14 +6289,17 @@ export function companySkillService(db: Db, options: { actor?: AuthorizationActo
       if (options.snapshotLatest && unpinned && (!skill.currentVersionId || installedDirectory)) {
         // Capture installed bytes only. Older remote imports can have no
         // version yet; execution must not fetch their missing files upstream.
+        const previous = skill.currentVersionId ? await getVersion(companyId, skill.id, skill.currentVersionId) : null;
+        const previousInventory = previous?.repositorySnapshotId
+          ? await runtimeVersionInventory(companyId, previous)
+          : previous?.fileInventory;
         const installed: RuntimeSkillSourceResolution | null = installedDirectory ? { status: "available", source: installedDirectory }
           : await resolveRuntimeSkillSource(companyId, skill, { ...options, snapshotLatest: false, materializeMissing: false });
         const inventory = installed?.status === "available"
-          ? await collectVersionFileInventoryFromDirectory(installed.source)
+          ? await collectVersionFileInventoryFromDirectory(installed.source, previousInventory)
           : skill.fileInventory.length === 1 && skill.fileInventory[0]?.path === "SKILL.md" && skill.markdown
             ? [{ path: "SKILL.md", kind: "skill" as const, content: skill.markdown }] : null;
         if (inventory) {
-          const previous = skill.currentVersionId ? await getVersion(companyId, skill.id, skill.currentVersionId) : null;
           if (!previous || skillSnapshotHash(previous.fileInventory) !== skillSnapshotHash(inventory)) {
             const version = await createVersion(companyId, skill.id, { label: "Execution snapshot" }, { type: "system" },
               { skipInventoryRefresh: true, skill, fileInventory: inventory });
