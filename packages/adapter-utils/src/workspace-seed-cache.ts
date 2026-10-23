@@ -129,7 +129,8 @@ export async function publishWorkspaceSeedGeneration(
         const copy = async (source: string, name: string) => {
           const target = path.join(temporary, name);
           await fs.link(source, target).catch(() => fs.copyFile(source, target));
-          const file = await fs.open(target, "r");
+          // Windows FlushFileBuffers requires a handle opened for writing.
+          const file = await fs.open(target, process.platform === "win32" ? "r+" : "r");
           try { await file.sync(); } finally { await file.close(); }
           return digest(target);
         };

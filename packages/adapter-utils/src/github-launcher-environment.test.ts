@@ -21,9 +21,11 @@ import {
 const exec = promisify(execFile);
 const roots: string[] = [];
 function asFixtureRemotePath(value: string, root: string, remoteRoot: string) {
-  return process.platform === "win32"
-    ? value.replace(root, remoteRoot).replaceAll("\\", "/")
-    : value;
+  if (process.platform !== "win32") return value;
+  const escapedRoot = root.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return value.replace(new RegExp(`${escapedRoot}(?:\\\\[^'"]*)*`, "g"), match =>
+    `${remoteRoot}${match.slice(root.length).replaceAll("\\", "/")}`,
+  );
 }
 
 afterEach(async () => {
@@ -73,7 +75,7 @@ async function sandbox(layout: string, concurrent?: boolean) {
       const directScript = process.platform === "win32" && path.isAbsolute(input.command) && !/\.(?:exe|cmd|bat)$/i.test(input.command);
       const command = directScript ? "bash" : input.command;
       const args = directScript
-        ? ["-c", `exec '${input.command.replaceAll("'", "'\\\"'\\\"'")}' \"$@\"`, "--", ...(input.args ?? [])]
+        ? ["-c", 'exec "$0" "$@"', input.command, ...(input.args ?? [])]
         : input.args;
       const remoteEnv = Object.fromEntries(Object.entries(input.env ?? {}).map(([key, value]) => [
         key,
@@ -107,7 +109,10 @@ async function sandbox(layout: string, concurrent?: boolean) {
           if (error.code === "EPIPE") resolve();
           else reject(error);
         });
-        stdin.end(input.stdin ?? "", resolve);
+        const stdinPayload = process.platform === "win32" && input.stdin
+          ? asFixtureRemotePath(input.stdin, root, remoteRoot)
+          : input.stdin ?? "";
+        stdin.end(stdinPayload, resolve);
       });
       const [result] = await Promise.all([execution, inputComplete]);
       return { ...result, exitCode: 0, signal: null, timedOut: false, pid: null, startedAt };
@@ -176,7 +181,7 @@ describe("managed GitHub launcher environment", () => {
       const script = await readFile(path.join(env.PAPERCLIP_GITHUB_LAUNCHER_DIR, name), "utf8");
       const result = await fixture.runner.execute({ command: "sh", args: ["-c", `${script}\nprintf '%s' "$PATH"`] });
       expect(result.exitCode, result.stderr).toBe(0);
-      expect(result.stdout).toBe(env.PATH);
+      expect(result.stdout).toBe(fixture.remotePathFor(env.PATH));
     }
   });
 
@@ -260,9 +265,11 @@ describe("managed GitHub launcher environment", () => {
 
   it("hash-skips a complete batch and repairs a missing executable bit", async () => {
     const fixture = await sandbox("usr/bin");
-    const directory = path.join(fixture.root, "batch 'quoted'");
-    const files = [{ remoteDir: directory, remotePath: path.join(directory, "entry"), body: "#!/bin/sh\nprintf done\n",
-      label: "entry", action: "stage fixture", lockDir: path.join(directory, ".entry.lock"), executable: true }];
+    // The provider accepts POSIX paths. Keep the quoted remote name intact
+    // instead of translating an already shell-quoted Windows path afterward.
+    const directory = path.posix.join(fixture.remoteRoot, "batch 'quoted'");
+    const files = [{ remoteDir: directory, remotePath: path.posix.join(directory, "entry"), body: "#!/bin/sh\nprintf done\n",
+      label: "entry", action: "stage fixture", lockDir: path.posix.join(directory, ".entry.lock"), executable: true }];
     const input = { runner: fixture.runner, remoteCwd: fixture.root, files, action: "stage fixtures" };
     expect((await syncRemoteTextFilesWithHashSkip(input))[0]?.uploaded).toBe(true);
     const firstHash = (await syncRemoteTextFilesWithHashSkip(input))[0]?.sha256;
@@ -272,7 +279,7 @@ describe("managed GitHub launcher environment", () => {
     const result = await fixture.runner.execute({ command: files[0]!.remotePath });
     expect(result.exitCode, result.stderr).toBe(0);
     expect(result.stdout).toBe("done");
-    expect(await readdir(directory)).toEqual(["entry"]);
+    expect(await readdir(path.join(fixture.root, "batch 'quoted'"))).toEqual(["entry"]);
   });
 
   it.each([0, 17])("rejects an invalid batch size before remote work (%s)", async count => {
@@ -449,6 +456,9 @@ describe("managed GitHub launcher environment", () => {
   it("preserves local host credential helpers and validates worktree metadata", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-host-git-")); roots.push(root);
     vi.stubEnv("HOME", root);
+    // This fixture owns its HOME-level Git configuration, including when the
+    // surrounding test runner supplies an explicit isolated global config.
+    vi.stubEnv("GIT_CONFIG_GLOBAL", undefined);
     vi.stubEnv("GH_TOKEN", "legacy-token");
     await writeFile(path.join(root, ".gitconfig"), '[credential]\n  helper = store\n');
     await exec("git", ["init", path.join(root, "repo")]);

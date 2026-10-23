@@ -5,6 +5,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { afterEach, expect, it } from "vitest";
 import { prepareSandboxManagedRuntime, type SandboxManagedRuntimeClient } from "./sandbox-managed-runtime.js";
+import { prepareTestPosixShell } from "./test-fixtures/posix-shell.js";
 
 const exec = promisify(execFile);
 const roots: string[] = [];
@@ -32,7 +33,10 @@ async function deletedFixture(names: string[], beforeDelete?: (remote: string) =
     readFile: file => fs.readFile(file),
     listFiles: directory => fs.readdir(directory),
     remove: file => fs.rm(file, { recursive: true, force: true }),
-    run: async command => { await exec("sh", ["-c", command]); },
+    run: async command => {
+      const shell = prepareTestPosixShell({ command: "sh", args: ["-c", command] });
+      await exec(shell.command, shell.args, { env: process.platform === "win32" ? shell.env : process.env });
+    },
     syncIn: async operations => {
       for (const operation of operations) {
         for (const mapping of operation.files) {
@@ -41,7 +45,8 @@ async function deletedFixture(names: string[], beforeDelete?: (remote: string) =
         }
         for (const { command } of operation.postUploadCommands ?? []) {
           if (command.includes("xargs -0")) await beforeDelete?.(remote);
-          await exec("sh", ["-c", command]);
+          const shell = prepareTestPosixShell({ command: "sh", args: ["-c", command] });
+          await exec(shell.command, shell.args, { env: process.platform === "win32" ? shell.env : process.env });
         }
       }
       return { operations: [] };
@@ -53,8 +58,10 @@ async function deletedFixture(names: string[], beforeDelete?: (remote: string) =
   }) };
 }
 
-it("deletes multiple bounded batches with newline, whitespace, Unicode and leading-dash filenames", async () => {
-  const names = [" space ", "line\nbreak", "-option", "雪-💾", "wild[?]*",
+it("deletes multiple bounded batches with unusual filenames", async () => {
+  const names = process.platform === "win32"
+    ? ["in ternal space", "-option", "雪-💾", "wild [x]", "tab name"]
+    : [" space ", "line\nbreak", "-option", "雪-💾", "wild[?]*",
     ...Array.from({ length: 130 }, (_, index) => `nested/file-${index}`)];
   const fixture = await deletedFixture(names);
   const runtime = await fixture.prepare();

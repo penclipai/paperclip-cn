@@ -29,7 +29,8 @@ describe("workspace snapshot threads", () => {
     const root = await fixture(), outside = await fixture();
     await fs.mkdir(path.join(root, "nested"));
     for (let index = 0; index < 39; index++) {
-      const name = path.join(root, index < 20 ? "" : "nested", `name ${index}\nbytes`);
+      const separator = process.platform === "win32" ? " 字节 " : "\n";
+      const name = path.join(root, index < 20 ? "" : "nested", `name ${index}${separator}bytes`);
       await fs.writeFile(name, Buffer.from(`entry ${index}\0content`));
       await fs.chmod(name, index % 2 ? 0o600 : 0o755);
     }

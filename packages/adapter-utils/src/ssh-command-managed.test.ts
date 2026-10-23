@@ -2,6 +2,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { prepareTestPosixShell } from "./test-fixtures/posix-shell.js";
 
 vi.mock("node:child_process", async (importOriginal) => {
   const actual = await importOriginal<typeof import("node:child_process")>();
@@ -9,11 +10,13 @@ vi.mock("node:child_process", async (importOriginal) => {
     ...actual,
     execFile: vi.fn((file: string, args: string[], options: object, callback: Parameters<typeof actual.execFile>[3]) => {
       if (file !== "ssh") throw new Error(`Unexpected subprocess ${file}`);
-      return actual.execFile("sh", ["-c", args.at(-1)!], options, callback);
+      const shell = prepareTestPosixShell({ command: "sh", args: ["-c", args.at(-1)!], env: (options as { env?: NodeJS.ProcessEnv }).env });
+      return actual.execFile(shell.command, shell.args, { ...options, env: shell.env }, callback);
     }),
     spawn: vi.fn((file: string, args: string[], options: Parameters<typeof actual.spawn>[2]) => {
       if (file !== "ssh") throw new Error(`Unexpected subprocess ${file}`);
-      return actual.spawn("sh", ["-c", args.at(-1)!], options);
+      const shell = prepareTestPosixShell({ command: "sh", args: ["-c", args.at(-1)!], env: options?.env });
+      return actual.spawn(shell.command, shell.args, { ...options, env: shell.env });
     }),
   };
 });

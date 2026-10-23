@@ -3,6 +3,7 @@ import path from "node:path";
 import os from "node:os";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { pathToFileURL } from "node:url";
 import { DatabaseSync } from "node:sqlite";
 import { afterEach, expect, it, vi } from "vitest";
 import { captureDirectorySnapshot, disposeDirectorySnapshot, type DirectorySnapshot } from "./workspace-restore-merge.js";
@@ -87,7 +88,7 @@ process.once('exit', () => fs.writeFileSync(process.env.CHECKPOINT_FIXTURE_STATS
 `);
   const output = path.join(temp, "output");
   const statsPath = path.join(temp, "stats.json");
-  const run = () => execute(process.execPath, ["--import", tracker, script, root, manifest, output, "[]"], {
+  const run = () => execute(process.execPath, ["--import", pathToFileURL(tracker).href, script, root, manifest, output, "[]"], {
     timeout: 10_000,
     env: { ...process.env, CHECKPOINT_FIXTURE_FAILURE: failure, CHECKPOINT_FIXTURE_STATS: statsPath },
   });
@@ -127,8 +128,10 @@ it("captures every changed file across bounded batches with valid directory pare
     expect((await fs.readFile(path.join(payload, `file-${String(index).padStart(2, "0")}`)))
       .equals(Buffer.alloc(64 * 1024, index + 1))).toBe(true);
   }
-  expect((await fs.stat(path.join(payload, "file-00"))).mode & 0o777).toBe(0o755);
-  expect(await fs.readlink(path.join(payload, "link"))).toBe("nested/inner/new");
+  const sourceMode = (await fs.stat(path.join(f.root, "file-00"))).mode & 0o777;
+  if (process.platform !== "win32") expect(sourceMode).toBe(0o755);
+  expect((await fs.stat(path.join(payload, "file-00"))).mode & 0o777).toBe(sourceMode);
+  expect(await fs.readlink(path.join(payload, "link"))).toBe(path.join("nested", "inner", "new"));
   const stats = await f.stats();
   expect(stats.peak).toBeLessThanOrEqual(8);
   expect(stats.active).toBe(0);

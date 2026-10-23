@@ -8,6 +8,7 @@ import { captureDirectorySnapshot, disposeDirectorySnapshot, mergeDirectoryWithB
 import { writeCheckpointBaseline, workspaceCheckpointScript, readCheckpointSnapshot, validateCheckpointPayload } from "./workspace-checkpoint.js";
 import { publishWorkspaceSeedGeneration, readWorkspaceSeedGeneration, workspaceSeedGeneration } from "./workspace-seed-cache.js";
 import { WorkspaceManifestWriter } from "./workspace-manifest.js";
+import { prepareTestPosixShell } from "./test-fixtures/posix-shell.js";
 const execute = promisify(execFile);
 const roots: string[] = [];
 afterEach(async () => { vi.unstubAllEnvs(); await Promise.all(roots.splice(0).map((root) => fs.rm(root, { recursive: true, force: true }))); });
@@ -74,7 +75,7 @@ describe("workspace sparse checkpoint", () => {
       await fs.mkdir(path.join(f.root, "a")); await fs.writeFile(path.join(f.root, "a", "old"), "old child");
     }
     const baseline = await captureDirectorySnapshot(f.root, { diskBacked: true, exclude: ["cache"] });
-    const host = path.join(f.temp, "host"); await fs.cp(f.root, host, { recursive: true });
+    const host = path.join(f.temp, "host"); await fs.cp(f.root, host, { recursive: true, verbatimSymlinks: true });
     await fs.rm(path.join(f.root, "a"), { recursive: true });
     if (transition === "file_to_directory") {
       await fs.mkdir(path.join(f.root, "a", "nested"), { recursive: true });
@@ -100,8 +101,8 @@ describe("workspace sparse checkpoint", () => {
     await disposeDirectorySnapshot(result.snapshot); await disposeDirectorySnapshot(f.baseline);
   });
   it("merges one changed file, deletion, unusual names and a safe link without copying unchanged files", async () => {
-    const f = await fixture(); const host = path.join(f.temp, "host"); await fs.cp(f.root, host, { recursive: true });
-    const name = "new\nfile"; await fs.writeFile(path.join(f.root, name), "changed");
+    const f = await fixture(); const host = path.join(f.temp, "host"); await fs.cp(f.root, host, { recursive: true, verbatimSymlinks: true });
+    const name = process.platform === "win32" ? "new file 雪" : "new\nfile"; await fs.writeFile(path.join(f.root, name), "changed");
     await fs.unlink(path.join(f.root, "deleted")); await fs.symlink(name, path.join(f.root, "link"));
     const result = await f.capture(); expect(result.receipt.files).toBe(1); expect(result.receipt.bytes).toBe(7);
     await mergeDirectoryWithBaseline({ baseline: f.baseline, sourceDir: result.payload, targetDir: host, snapshots: { source: result.snapshot } });
@@ -114,7 +115,7 @@ describe("workspace sparse checkpoint", () => {
   });
   it.each(["absolute", "escaping"])("omits an %s link while restoring ordinary changes and safe links", async (kind) => {
     const f = await fixture();
-    const host = path.join(f.temp, "host"); await fs.cp(f.root, host, { recursive: true });
+    const host = path.join(f.temp, "host"); await fs.cp(f.root, host, { recursive: true, verbatimSymlinks: true });
     const outside = path.join(f.temp, "secret"); await fs.writeFile(outside, "outside bytes");
     await fs.symlink(kind === "absolute" ? outside : "../secret", path.join(f.root, "unsafe"));
     await fs.writeFile(path.join(f.root, "unchanged"), "edited");
@@ -142,7 +143,7 @@ describe("workspace sparse checkpoint", () => {
     await disposeDirectorySnapshot(result.snapshot); await disposeDirectorySnapshot(f.baseline);
   });
   it("replays a checkpoint after interruption and preserves a concurrently edited deletion", async () => {
-    const f = await fixture(); const host = path.join(f.temp, "host"); await fs.cp(f.root, host, { recursive: true });
+    const f = await fixture(); const host = path.join(f.temp, "host"); await fs.cp(f.root, host, { recursive: true, verbatimSymlinks: true });
     await fs.writeFile(path.join(f.root, "new"), "remote"); await fs.unlink(path.join(f.root, "deleted"));
     await fs.writeFile(path.join(host, "deleted"), "host edit");
     const result = await f.capture();
@@ -244,7 +245,8 @@ it("uses sparse native transfer end-to-end, including replay and unsupported-run
   let failVerification = false, verificationCalls = 0;
   const run = async (command: string) => {
     if (!supportsCheckpoint && command.startsWith("node --input-type=module")) throw new Error("node unavailable");
-    await execute("sh", ["-c", command]);
+    const shell = prepareTestPosixShell({ command: "sh", args: ["-c", command] });
+    await execute(shell.command, shell.args, { env: process.platform === "win32" ? shell.env : process.env });
   };
   const sync = async (operations: import("./sandbox-managed-runtime.js").SandboxSyncOperation[]) => {
     for (const operation of operations) {
@@ -348,7 +350,10 @@ async function exportFailureFixture(failure: "low_disk" | "full_root" | "full_sp
   const run = async (command: string) => {
     const capture = command.includes("checkpoint.mjs");
     if (capture) counts.captures++;
-    try { await execute("sh", ["-c", command]); }
+    try {
+      const shell = prepareTestPosixShell({ command: "sh", args: ["-c", command] });
+      await execute(shell.command, shell.args, { env: process.platform === "win32" ? shell.env : process.env });
+    }
     catch (error) {
       if (capture && ["low_disk", "full_root", "full_special"].includes(failure)) {
         expect(String(error)).toContain("Workspace checkpoint storage is below its free-space reserve");
@@ -372,7 +377,10 @@ async function exportFailureFixture(failure: "low_disk" | "full_root" | "full_sp
         await fs.mkdir(path.dirname(file.targetPath), { recursive: true });
         await fs.cp(file.sourcePath, file.targetPath, { recursive: true, verbatimSymlinks: true,
           filter: source => !file.exclude?.some(exclude => path.relative(file.sourcePath, source) === exclude) });
-        if (file.sourcePath === remote && failure === "full_special") await execute("mkfifo", [path.join(file.targetPath, "unsafe-pipe")]);
+        if (file.sourcePath === remote && failure === "full_special") {
+          const shell = prepareTestPosixShell({ command: "sh", args: ["-c", `mkfifo '${path.join(file.targetPath, "unsafe-pipe")}'`] });
+          await execute(shell.command, shell.args, { env: process.platform === "win32" ? shell.env : process.env });
+        }
         if (["low_disk", "full_root", "full_special"].includes(failure) && file.targetPath.endsWith("/checkpoint.mjs")) {
           const script = await fs.readFile(file.targetPath, "utf8");
           await fs.writeFile(file.targetPath, script.replace("const __name", "fs.statfs = async () => ({ bavail: 128n * 1024n, bsize: 1024n });\nconst __name"));
@@ -444,7 +452,8 @@ it.each(["digest", "path", "symlink"] as const)("never falls back after returned
   await f.prepared.cleanupWorkspaceSnapshot();
 }, 30000);
 
-it.each(["full_root", "full_special"] as const)("rejects unsafe %s data before host writes after capacity fallback", async attack => {
+const unsafeExportAttacks: Array<"full_root" | "full_special"> = process.platform === "win32" ? ["full_root"] : ["full_root", "full_special"];
+it.each(unsafeExportAttacks)("rejects unsafe %s data before host writes after capacity fallback", async attack => {
   const f = await exportFailureFixture(attack);
   await expect(f.prepared.restoreWorkspace()).rejects.toThrow("Unsafe workspace export directory");
   expect(f.counts).toEqual({ captures: 1, fullExports: 1, capacityFailures: 1 });

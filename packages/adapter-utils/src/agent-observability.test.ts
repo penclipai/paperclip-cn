@@ -54,7 +54,7 @@ it("creates invocation-owned profiles, preserves selected profile settings, and 
   const parsed = parse(await readFile(join(root, a.filename), "utf8"));
   expect(parsed.model).toBe("chosen-model");
   expect(parsed.otel).toMatchObject({ log_agent_responses: true, tool_result: { max_bytes: 65536 } });
-  expect((await stat(join(root, a.filename))).mode & 0o777).toBe(0o600);
+  if (process.platform !== "win32") expect((await stat(join(root, a.filename))).mode & 0o777).toBe(0o600);
   const args = ["exec", "--profile=review", "resume", "session", "-"];
   replaceCodexProfileArgs(args, a.name);
   expect(args).toEqual(["--profile", a.name, "exec", "resume", "session", "-"]);
@@ -82,8 +82,10 @@ it("isolates overlapping ACPX export settings while sharing the saved provider c
   expect(parse(await readFile(join(b, "config.toml"), "utf8")).otel).toMatchObject({ exporter: "none" });
   expect(parse(await readFile(join(a, "config.toml"), "utf8")).model).toBe("retained-model");
   expect(await readFile(join(home, "config.toml"), "utf8")).toBe('model = "retained-model"\n');
-  expect((await stat(a)).mode & 0o777).toBe(0o700);
-  expect((await stat(join(a, "config.toml"))).mode & 0o777).toBe(0o600);
+  if (process.platform !== "win32") {
+    expect((await stat(a)).mode & 0o777).toBe(0o700);
+    expect((await stat(join(a, "config.toml"))).mode & 0o777).toBe(0o600);
+  }
 });
 
 it.each([true, false])("preserves refreshed Codex credentials across repeated and replacement preparations with export %s", async enabled => {

@@ -1013,7 +1013,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
         `const path = require("path");`,
         `const mode = process.env.PAPERCLIP_TEST_PROBE_LIFETIME;`,
         `const sessionDir = process.env.PAPERCLIP_PROCESS_SESSION_DIR;`,
-        `const probePath = path.join(sessionDir, ".paperclip-birthtime-probe-" + process.pid + "-1");`,
+        `const probePath = path.posix.join(sessionDir, ".paperclip-birthtime-probe-" + process.pid + "-1");`,
         `const tracePath = path.join(sessionDir, ".probe-lifetime.json");`,
         `const events = [];`,
         `let probeHandle;`,

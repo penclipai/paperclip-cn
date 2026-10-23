@@ -40,7 +40,10 @@ describe("bounded workspace snapshot reads", () => {
       expected.set(directory, { kind: "dir" });
     }
     for (let index = 0; index < 73; index++) {
-      const relative = `${index < 35 ? "" : "nested/deeper/"}${index % 3 === 0 ? "line\nbreak" : "-space name"}-${index}`;
+      // NTFS disallows control characters; keep the POSIX newline case and
+      // exercise Unicode plus whitespace on Windows.
+      const unusualName = process.platform === "win32" ? "行 分隔" : "line\nbreak";
+      const relative = `${index < 35 ? "" : "nested/deeper/"}${index % 3 === 0 ? unusualName : "-space name"}-${index}`;
       const content = Buffer.from(`snapshot ${index}\0bytes`);
       const filePath = path.join(root, relative);
       await fs.writeFile(filePath, content);

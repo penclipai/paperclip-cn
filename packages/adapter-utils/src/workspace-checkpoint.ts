@@ -36,6 +36,10 @@ async function checkpointMain(
   const available = space.bavail * space.bsize - 256n * 1024n * 1024n;
   if (available <= 0n) throw new Error("Workspace checkpoint storage is below its free-space reserve");
   result.exec(`PRAGMA max_page_count=${Math.min(Number(available / 4n / 4096n), 4_294_967_294)}`);
+  const contains = (parent: string, child: string) => {
+    const relative = path.relative(parent, child);
+    return relative === "" || (!path.isAbsolute(relative) && relative !== ".." && !relative.startsWith(`..${path.sep}`));
+  };
   result.exec("PRAGMA journal_mode=DELETE; PRAGMA cache_size=-1024; PRAGMA temp_store=FILE; CREATE TABLE records(category TEXT,path TEXT,value TEXT NOT NULL, PRIMARY KEY(category,path)) WITHOUT ROWID; BEGIN;");
   const insert = result.prepare("INSERT INTO records VALUES('baseline',?,?)");
   let files = 0, bytes = 0, scanned = 0;
@@ -61,7 +65,7 @@ async function checkpointMain(
       else if (before.isSymbolicLink()) {
         const target = await fs.readlink(source);
         const resolved = path.resolve(path.dirname(source), target);
-        if (path.isAbsolute(target) || (resolved !== root && !resolved.startsWith(`${root}/`))) return;
+        if (path.isAbsolute(target) || !contains(root, resolved)) return;
         entry = { kind: "symlink", target };
       } else return;
       if (fingerprint(before) !== fingerprint(await fs.lstat(source))) throw new Error("Workspace changed during checkpoint capture");
@@ -136,6 +140,10 @@ export async function validateCheckpointPayload(input: { baseline: DirectorySnap
   const ignored = workspacePathMatcher(input.baseline.ignoredPaths);
   let actual: DirectorySnapshot | null = null;
   const equal = (left: unknown, right: unknown) => JSON.stringify(left) === JSON.stringify(right);
+  const contains = (parent: string, child: string) => {
+    const relative = path.relative(parent, child);
+    return relative === "" || (!path.isAbsolute(relative) && relative !== ".." && !relative.startsWith(`..${path.sep}`));
+  };
   const assertIncluded = (relative: string) => {
     if (shouldExcludePath(relative, input.baseline.exclude) || ignored.matches(relative)) {
       throw new Error("Excluded workspace checkpoint entry");
@@ -152,7 +160,7 @@ export async function validateCheckpointPayload(input: { baseline: DirectorySnap
       }
       if (entry.kind === "symlink") {
         const target = path.resolve(input.payload, path.dirname(relative), entry.target);
-        if (path.isAbsolute(entry.target) || (target !== path.resolve(input.payload) && !target.startsWith(`${path.resolve(input.payload)}/`))) {
+        if (path.isAbsolute(entry.target) || !contains(path.resolve(input.payload), target)) {
           throw Object.assign(new Error("Unsafe workspace checkpoint symlink"), { code: "WORKSPACE_RESTORE_UNSAFE_ARCHIVE" });
         }
       }

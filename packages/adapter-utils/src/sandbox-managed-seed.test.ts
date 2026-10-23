@@ -6,6 +6,7 @@ import { promisify } from "node:util";
 import { afterEach, expect, it, vi } from "vitest";
 import { createTarballFromDirectory, prepareSandboxManagedRuntime, type SandboxSyncOperation } from "./sandbox-managed-runtime.js";
 import { captureDirectorySnapshot } from "./workspace-restore-merge.js";
+import { prepareTestPosixShell } from "./test-fixtures/posix-shell.js";
 
 const execute = promisify(execFile);
 function deferred<T>() {
@@ -48,7 +49,10 @@ it.each([undefined, "all"] as const)("keeps nested Git metadata sanitized in col
     await git(repository, "rm", "--cached", "notes.txt");
     await fs.unlink(path.join(repository, "absent.txt"));
   }
-  const run = async (command: string) => { await execute("sh", ["-c", command]); };
+  const run = async (command: string) => {
+    const shell = prepareTestPosixShell({ command: "sh", args: ["-c", command] });
+    await execute(shell.command, shell.args, { env: process.platform === "win32" ? shell.env : process.env });
+  };
   const sync = async (operations: SandboxSyncOperation[]) => {
     for (const operation of operations) {
       for (const file of operation.files) {

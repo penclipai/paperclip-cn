@@ -21,7 +21,8 @@ export async function commandVersion(command: string): Promise<string | null> {
   try {
     const result = await runCommand(command, ["--version"], { timeoutMs: 5_000 });
     if (result.exitCode !== 0) return null;
-    return `${result.stdout}${result.stderr}`.trim();
+    // Startup warnings on stderr are independent of a successful version line.
+    return result.stdout.trim() || result.stderr.trim();
   } catch {
     return null;
   }
