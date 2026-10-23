@@ -2413,6 +2413,16 @@ Manual desktop workflow runs default to all four targets. Select a single
 installer for seven days as a separate diagnostic artifact; it does not pass
 the normal artifact or release-upload gates.
 
+Release uploads require `target=all` and a successful four-target matrix. A
+separate upload job checks each downloaded manifest, version, target, and exact
+installer filename before staging all four installers and regenerating
+`SHA256SUMS.txt`. A failed or missing target prevents the entire upload job.
+For an installer-only repair of an existing release, build with its original
+`release_version`, retain the old installers and checksums, and validate the
+complete replacement cohort before uploading it. GitHub asset replacement is
+not atomic, so preserve those backups until public downloads match the new
+checksums.
+
 After changing installer packaging, run `pnpm desktop:dist:win`, install the
 resulting NSIS executable, and compare every installed runtime file with
 `release/win-unpacked` before testing the installed application. An installer exit

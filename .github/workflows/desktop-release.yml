@@ -73,7 +73,17 @@ jobs:
         shell: bash
         env:
           DESKTOP_TARGET: ${{ inputs.target || 'all' }}
+          UPLOAD_TO_RELEASE: ${{ inputs.upload_to_release }}
+          GITHUB_RELEASE_TAG: ${{ inputs.github_release_tag }}
         run: |
+          if [ "$UPLOAD_TO_RELEASE" = "true" ] && [ -z "$GITHUB_RELEASE_TAG" ]; then
+            echo "github_release_tag is required when upload_to_release=true." >&2
+            exit 1
+          fi
+          if [ "$UPLOAD_TO_RELEASE" = "true" ] && [ "$DESKTOP_TARGET" != "all" ]; then
+            echo "upload_to_release=true requires target=all." >&2
+            exit 1
+          fi
           node - <<'NODE' >> "$GITHUB_OUTPUT"
           // desktop-target-matrix:start
           const targets = {
@@ -98,7 +108,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
     permissions:
-      contents: write
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -230,29 +240,68 @@ jobs:
             packages/desktop-electron/release/*.AppImage
             packages/desktop-electron/release/*.exe
 
+  upload_desktop_assets_to_release:
+    needs: build_desktop_assets
+    if: inputs.upload_to_release && needs.build_desktop_assets.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout release uploader
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Download Windows installer bundle
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.artifact_name }}-win-x64
+          path: desktop-bundles/${{ inputs.artifact_name }}-win-x64
+
+      - name: Download Intel macOS installer bundle
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.artifact_name }}-mac-x64
+          path: desktop-bundles/${{ inputs.artifact_name }}-mac-x64
+
+      - name: Download Apple Silicon macOS installer bundle
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.artifact_name }}-mac-arm64
+          path: desktop-bundles/${{ inputs.artifact_name }}-mac-arm64
+
+      - name: Download Linux installer bundle
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.artifact_name }}-linux-x64
+          path: desktop-bundles/${{ inputs.artifact_name }}-linux-x64
+
+      - name: Validate and prepare release asset cohort
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+          ARTIFACT_PREFIX: ${{ inputs.artifact_name }}
+        run: |
+          node .github/scripts/prepare-desktop-release-assets.mjs \
+            --bundles-dir desktop-bundles \
+            --output-dir release-assets \
+            --release-version "$RELEASE_VERSION" \
+            --artifact-prefix "$ARTIFACT_PREFIX"
+
       - name: Upload desktop assets to GitHub Release
-        if: inputs.upload_to_release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.github_release_tag }}
+          RELEASE_REPOSITORY: ${{ github.repository }}
         run: |
-          if [ -z "${{ inputs.github_release_tag }}" ]; then
-            echo "github_release_tag is required when upload_to_release=true." >&2
-            exit 1
-          fi
-
-          assets=()
-          while IFS= read -r asset_path; do
-            if [ -n "$asset_path" ]; then
-              assets+=("$asset_path")
-            fi
-          done <<EOF
-          ${{ steps.manifest.outputs.release_asset_paths }}
-          EOF
-
-          if [ "${#assets[@]}" -eq 0 ]; then
-            echo "No desktop release assets were listed in the manifest output." >&2
-            exit 1
-          fi
-
-          gh release upload "${{ inputs.github_release_tag }}" "${assets[@]}" --repo "${{ github.repository }}" --clobber
+          gh release upload "$RELEASE_TAG" release-assets/* --repo "$RELEASE_REPOSITORY" --clobber
