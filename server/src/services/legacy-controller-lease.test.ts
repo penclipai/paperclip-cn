@@ -196,6 +196,24 @@ const support = await getEmbeddedPostgresTestSupport();
 });
 
 describe("legacy controller lease loss attribution", () => {
+  it("rejects a renewal whose committed controller belongs to another deployment", async () => {
+    const foreignControllerBootId = randomUUID();
+    const foreignDb = fakeRenewalDb(() => Promise.resolve([
+      { id: "run", controllerBootId: foreignControllerBootId },
+    ]));
+    const controller = new AbortController();
+    const watch = watchLegacyControllerLease(foreignDb, {
+      id: randomUUID(), companyId: randomUUID(), runtimeMode: "legacy",
+      controllerBootId: legacyControllerBootId,
+      controllerLeaseExpiresAt: new Date(Date.now() + LEGACY_CONTROLLER_LEASE_MS),
+    } as WatchArgs[1], controller);
+    try {
+      await expect(watch.assertOwned("dispatching")).rejects.toThrow("lease lost");
+      expect(controller.signal.reason).toBeInstanceOf(LegacyControllerLeaseLostError);
+      expect(controller.signal.reason.leaseLossCause).toBe("renewal_rejected");
+    } finally { watch.stop(); }
+  });
+
   it("attributes a failing renewal query to renewal_error", async () => {
     const failingDb = fakeRenewalDb(() => Promise.reject(new Error("connection reset")));
     vi.useFakeTimers();
@@ -218,7 +236,7 @@ describe("legacy controller lease loss attribution", () => {
     let calls = 0;
     const stallingDb = fakeRenewalDb(() => {
       calls += 1;
-      return calls <= 2 ? Promise.resolve([{ id: "run" }]) : new Promise(() => {});
+      return calls <= 2 ? Promise.resolve([{ id: "run", controllerBootId: legacyControllerBootId }]) : new Promise(() => {});
     });
     vi.useFakeTimers();
     const controller = new AbortController();
@@ -241,7 +259,7 @@ describe("legacy controller lease loss attribution", () => {
       if (calls === 1) {
         return new Promise((_, reject) => setTimeout(() => reject(Object.assign(new Error("statement timeout"), { code: "57014" })), timeoutAfterMs));
       }
-      return calls === 2 ? Promise.resolve([{ id: "run" }]) : new Promise(() => {});
+      return calls === 2 ? Promise.resolve([{ id: "run", controllerBootId: legacyControllerBootId }]) : new Promise(() => {});
     });
     vi.useFakeTimers();
     const controller = new AbortController();

@@ -260,6 +260,7 @@ import {
 
 import {
   legacyControllerBootId,
+  LegacyControllerLeaseLostError,
   watchLegacyControllerLease,
 } from "./legacy-controller-lease.js";
 
@@ -3640,7 +3641,24 @@ export function heartbeatService(
         });
       }
     } catch (outerErr) {
-      if (
+      const leaseLossObserved = outerErr instanceof LegacyControllerLeaseLostError ||
+        executionControl.controller.signal.reason instanceof LegacyControllerLeaseLostError;
+      if (leaseLossObserved) {
+        try {
+          const setupFailureWrite = await runCompletion.failRunSetup({
+            run, runId, outerErr, signal: executionControl.controller.signal,
+            providerDispatchStarted: legacyAdapterEntered || nativeDispatchStarted,
+            identityRedactor, readFailureReportSecrets,
+            expectedLegacyControllerBootId: legacyControllerBootId,
+          });
+          if (!setupFailureWrite.updated) nativeOwnershipHeld = true;
+        } catch (settlementError) {
+          // A lease-loss outcome must fail closed: an unverified terminal
+          // write is never authority to release another controller's lease.
+          nativeOwnershipHeld = true;
+          logger.warn({ err: settlementError, runId }, "controller lease-loss settlement could not be verified");
+        }
+      } else if (
         nativeOwnershipHeld ||
         outerErr instanceof NativeRunnerOwnershipUnverifiedError
       ) {

@@ -142,6 +142,8 @@ export interface FailHeartbeatRunSetupInput {
   providerDispatchStarted: boolean;
   identityRedactor: Pick<ReturnType<typeof createAgentIdentityRedactor>, "redact">;
   readFailureReportSecrets: () => string[];
+  /** Fence a lease-loss terminal write to this legacy controller. */
+  expectedLegacyControllerBootId?: string;
 }
 
 function nonRetryablePreflightFailureCode(error: unknown): string | null {
@@ -1279,7 +1281,7 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
   }
 
   async function failRunSetup(input: FailHeartbeatRunSetupInput) {
-    const { run, runId, outerErr, signal, providerDispatchStarted, identityRedactor, readFailureReportSecrets } = input;
+    const { run, runId, outerErr, signal, providerDispatchStarted, identityRedactor, readFailureReportSecrets, expectedLegacyControllerBootId } = input;
     // The lease watchdog stopped preparation because this host no longer owns
     // the run. That is host infrastructure, not a defect in the agent or setup.
     // A post-dispatch error can also land here (for example a failed usage
@@ -1394,7 +1396,9 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
         : setupFailureResultJson
           ? { resultJson: setupFailureResultJson }
           : {}),
-    }, { error: outerErr, phase: "setup", secretValues: readFailureReportSecrets() }).catch(() => ({ run: null, updated: false as const }));
+    }, { error: outerErr, phase: "setup", secretValues: readFailureReportSecrets() }, expectedLegacyControllerBootId
+      ? { writeConditions: [eq(heartbeatRuns.controllerBootId, expectedLegacyControllerBootId)] }
+      : undefined).catch(() => ({ run: null, updated: false as const }));
     if (!setupFailureWrite.updated) {
       logger.info(
         {
@@ -1508,6 +1512,7 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
         keepIdleOnFailure: Boolean(nonRetryablePreflightCode) || controllerLeaseLost,
       }).catch(() => undefined);
     }
+    return setupFailureWrite;
   }
 
   return { completeRun, failRun, failRunSetup };

@@ -3708,41 +3708,27 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const runtime = environmentRuntimeService(db);
     const releaseRunLeases = vi.spyOn(runtime, "releaseRunLeases");
     const originalAcquireRunLease = runtime.acquireRunLease.bind(runtime);
-    let acquiredForRun = false;
+    let replacementInjected = false;
     const acquireRunLease = vi.spyOn(runtime, "acquireRunLease").mockImplementation(async input => {
       const acquired = await originalAcquireRunLease(input);
-      if (input.heartbeatRunId === runId) acquiredForRun = true;
+      if (input.heartbeatRunId === runId) {
+        // A replacement controller takes ownership after the environment lease
+        // is acquired but before workspace preparation renews this controller.
+        await db.update(heartbeatRuns).set({
+          controllerBootId: replacementControllerBootId,
+          controllerLeaseExpiresAt: new Date(Date.now() + 60_000),
+        }).where(eq(heartbeatRuns.id, runId));
+        replacementInjected = true;
+      }
       return acquired;
     });
-    const originalUpdate = db.update.bind(db);
-    const update = vi.spyOn(db, "update").mockImplementation(((table: typeof heartbeatRuns) => {
-      const builder = originalUpdate(table);
-      const originalSet = builder.set.bind(builder);
-      builder.set = ((values: Record<string, unknown>) => {
-        if (
-          table === heartbeatRuns &&
-          acquiredForRun &&
-          values.controllerBootId === undefined &&
-          values.controllerLeaseExpiresAt !== undefined
-        ) {
-          // The post-acquisition ownership renewal has succeeded, but another
-          // controller wins immediately before runtime selection reads its CAS.
-          return originalSet({
-            ...values,
-            controllerBootId: replacementControllerBootId,
-            controllerLeaseExpiresAt: new Date(Date.now() + 60_000),
-          });
-        }
-        return originalSet(values);
-      }) as typeof builder.set;
-      return builder;
-    }) as typeof db.update);
     const heartbeat = heartbeatService(db, { environmentRuntime: runtime });
     try {
       await heartbeat.resumeQueuedRuns();
       await heartbeat.drainActiveRunExecutions();
 
       expect(acquireRunLease).toHaveBeenCalled();
+      expect(replacementInjected).toBe(true);
       expect(await heartbeat.getRun(runId)).toMatchObject({
         status: "running",
         controllerBootId: replacementControllerBootId,
@@ -3762,7 +3748,6 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       expect(releaseRunLeases).not.toHaveBeenCalled();
       expect(mockAdapterExecute).not.toHaveBeenCalled();
     } finally {
-      update.mockRestore();
       acquireRunLease.mockRestore();
       releaseRunLeases.mockRestore();
     }

@@ -54,6 +54,7 @@ import {
   or,
   sql,
 } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
 import type { Db } from "@penclipai/db";
 import {
   ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY,
@@ -1101,8 +1102,9 @@ export function createHeartbeatLifecycle(db: Db, dependencies: HeartbeatLifecycl
     status: string,
     patch?: Partial<typeof heartbeatRuns.$inferInsert>,
     failureReport?: RunFailureReportOptions,
+    options?: { writeConditions?: SQL[] },
   ) {
-    return setRunStatusFromLive(runId, status, ["running"], patch, failureReport);
+    return setRunStatusFromLive(runId, status, ["running"], patch, failureReport, undefined, options);
   }
 
   // Move a run to a new status only when its current status is one of
@@ -1117,6 +1119,7 @@ export function createHeartbeatLifecycle(db: Db, dependencies: HeartbeatLifecycl
     patch?: Partial<typeof heartbeatRuns.$inferInsert>,
     failureReport?: RunFailureReportOptions,
     cancellationCondition?: ReturnType<typeof nativeRetryCancellationCommitCondition>,
+    options?: { writeConditions?: SQL[] },
   ) {
     // fromStatuses can name a terminal status as its own source (for example,
     // an idempotent "still failed" patch), so the write below is not always a
@@ -1167,7 +1170,7 @@ export function createHeartbeatLifecycle(db: Db, dependencies: HeartbeatLifecycl
             patch,
             fromStatuses,
             reconcileIfNeeded: true,
-            writeConditions: [nativeRunnerOwnershipNotHeldCondition(), ...(cancellationCondition ? [cancellationCondition] : [])],
+            writeConditions: [nativeRunnerOwnershipNotHeldCondition(), ...(cancellationCondition ? [cancellationCondition] : []), ...(options?.writeConditions ?? [])],
           })
         : writer
             .update(heartbeatRuns)
@@ -1195,6 +1198,7 @@ export function createHeartbeatLifecycle(db: Db, dependencies: HeartbeatLifecycl
                   ]
                   : []),
                 ...(cancellationCondition ? [cancellationCondition] : []),
+                ...(options?.writeConditions ?? []),
                 ...(isHeartbeatRunTerminalStatus(status)
                   ? [nativeRunnerOwnershipNotHeldCondition()]
                   : []),

@@ -48,8 +48,13 @@ export async function renewLegacyControllerLease(
     eq(heartbeatRuns.runtimeMode, "legacy"), eq(heartbeatRuns.status, "running"),
     eq(heartbeatRuns.controllerBootId, legacyControllerBootId),
     gt(heartbeatRuns.controllerLeaseExpiresAt, sql`clock_timestamp()`),
-  )).returning({ id: heartbeatRuns.id });
-  return Boolean(renewed);
+  )).returning({
+    id: heartbeatRuns.id,
+    controllerBootId: heartbeatRuns.controllerBootId,
+  });
+  // A row count alone cannot prove ownership if the committed write changes
+  // the controller identifier. Use the value returned by this exact UPDATE.
+  return renewed?.controllerBootId === legacyControllerBootId;
 }
 
 /** One attempt may wait at most this long; a timed-out attempt is retried

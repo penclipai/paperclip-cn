@@ -110,7 +110,11 @@ describe.skipIf(!support.supported)("heartbeat run completion boundary", () => {
     };
     const completion = createHeartbeatRunCompletion(db, deps);
     const failure = (err: unknown): FailHeartbeatRunInput => ({ ...input, runId: run.id, err, identityRedactor: createAgentIdentityRedactor("private-identity-material"), requiredWorkspaceRestoreEvidence: { workspaceRestoreFailure: { reason: "missing_base" } }, legacyAdapterEntered: true, goalCheckpointSession: { current: null }, previousSessionDisplayId: "previous-session", taskSession: null });
-    const setup = (outerErr: unknown, providerDispatchStarted = false) => ({ run, runId: run.id, outerErr, signal: controller.signal, providerDispatchStarted, identityRedactor: createAgentIdentityRedactor(), readFailureReportSecrets: () => [] });
+    const setup = (
+      outerErr: unknown,
+      providerDispatchStarted = false,
+      expectedLegacyControllerBootId?: string,
+    ) => ({ run, runId: run.id, outerErr, signal: controller.signal, providerDispatchStarted, identityRedactor: createAgentIdentityRedactor(), readFailureReportSecrets: () => [], expectedLegacyControllerBootId });
     return { run, agent, wake, deps, controller, input, completion, failure, setup };
   }
   const read = (id: string) => db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, id)).then(rows => rows[0]!);
@@ -364,6 +368,56 @@ describe.skipIf(!support.supported)("heartbeat run completion boundary", () => {
       executionRecovery: { kind: "bootstrap", providerWorkStarted: false } } });
     expect(f.deps.releaseIssueExecutionAndPromote).toHaveBeenCalledOnce();
     expect(f.deps.finalizeAgentStatus).toHaveBeenCalledWith(f.agent.id, "failed", expect.any(String), expect.objectContaining({ keepIdleOnFailure: true }));
+  });
+
+  it("fences a setup lease-loss finalization to the controller that observed it", async () => {
+    const controllerBootId = randomUUID();
+    const f = await fixture({ controllerBootId });
+    f.controller.abort(new LegacyControllerLeaseLostError("renewal_rejected"));
+
+    await f.completion.failRunSetup(
+      f.setup(f.controller.signal.reason, false, controllerBootId),
+    );
+
+    expect(await read(f.run.id)).toMatchObject({
+      status: "failed",
+      errorCode: "controller_lease_lost",
+    });
+    expect(f.deps.setRunStatusIfRunning).toHaveBeenCalledWith(
+      f.run.id,
+      "failed",
+      expect.any(Object),
+      expect.any(Object),
+      expect.objectContaining({ writeConditions: [expect.any(Object)] }),
+    );
+  });
+
+  it("does not finalize or release work when another controller takes over during setup failure", async () => {
+    const previousControllerBootId = randomUUID();
+    const replacementControllerBootId = randomUUID();
+    const f = await fixture({ controllerBootId: previousControllerBootId });
+    f.controller.abort(new LegacyControllerLeaseLostError("renewal_rejected"));
+    const write = f.deps.setRunStatusIfRunning.getMockImplementation()!;
+    f.deps.setRunStatusIfRunning.mockImplementationOnce(async (...args) => {
+      await db.update(heartbeatRuns)
+        .set({ controllerBootId: replacementControllerBootId, controllerLeaseExpiresAt: new Date(Date.now() + 60_000) })
+        .where(eq(heartbeatRuns.id, f.run.id));
+      return write(...args);
+    });
+
+    await f.completion.failRunSetup(
+      f.setup(f.controller.signal.reason, false, previousControllerBootId),
+    );
+
+    expect(await read(f.run.id)).toMatchObject({
+      status: "running",
+      controllerBootId: replacementControllerBootId,
+    });
+    expect(f.deps.setWakeupStatus).not.toHaveBeenCalled();
+    expect(f.deps.finalizeIssueCommentPolicy).not.toHaveBeenCalled();
+    expect(f.deps.scheduleBoundedRetryForRun).not.toHaveBeenCalled();
+    expect(f.deps.releaseIssueExecutionAndPromote).not.toHaveBeenCalled();
+    expect(f.deps.finalizeAgentStatus).not.toHaveBeenCalled();
   });
 
   it("attributes a lease loss even when a setup step throws its own abort error", async () => {
