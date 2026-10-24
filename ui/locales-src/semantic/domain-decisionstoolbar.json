@@ -1,0 +1,17 @@
+{
+  "decisionsToolbar.controls": {
+    "en": "Decisions controls",
+    "zh-CN": "审批事项控件",
+    "reviewedEnglishHash": "46d825044ae4cbdc48e95e09b02ecee803b38c8f3e680d13d7c3047c79da8bff"
+  },
+  "decisionsToolbar.search": {
+    "en": "Search decisions",
+    "zh-CN": "搜索审批事项",
+    "reviewedEnglishHash": "a941e56ee6706b3c80e1343dac913426078613874cc6eb6966524ccc1678d3ff"
+  },
+  "decisionsToolbar.searchPlaceholder": {
+    "en": "Search decisions…",
+    "zh-CN": "搜索审批事项…",
+    "reviewedEnglishHash": "bc11c32527257c00c371d7e249c8fa3ed0751663cc5e606c43d453f40406b387"
+  }
+}

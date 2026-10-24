@@ -1,23 +1,22 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { spawn, execFile, type ChildProcess } from "node:child_process";
 import { mkdtemp, mkdir, readFile, rm, writeFile, access } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { promisify } from "node:util";
-import type { CommandManagedRuntimeRunner } from "@penclipai/adapter-utils/command-managed-runtime";
+import type { CommandManagedDuplexChannel, CommandManagedRuntimeRunner } from "@penclipai/adapter-utils/command-managed-runtime";
+import { startAdapterExecutionTargetPaperclipBridge } from "@penclipai/adapter-utils/execution-target";
+
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { createInterface } from "node:readline";
 import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 import { createNativeGitHubAccess, type NativeGitHubAccess } from "./native-github-access.js";
+import { OpenCodeServerDriver } from "@penclipai/paperclip-runner";
+import { createCapabilityRunnerdProviderEnvironment } from "@penclipai/paperclip-runner/live";
 const scope = { companyId: "company-a", agentId: "agent-a", issueId: "task-a" };
 const run = (runId: string) => ({ ...scope, runId });
 const cleanups: (() => Promise<unknown>)[] = [];
-afterEach(async () => {
-  const errors: unknown[] = [];
-  for (const cleanup of cleanups.splice(0).reverse()) {
-    try { await cleanup(); } catch (error) { errors.push(error); }
-  }
-  if (errors.length > 0) throw new AggregateError(errors, "native GitHub fixture cleanup failed");
-});
+afterEach(async () => { for (const cleanup of cleanups.splice(0).reverse()) await cleanup(); });
 
 function shellQuote(value: string) {
   return `'${value.replace(/'/g, `"'"'`)}'`;
@@ -34,10 +33,36 @@ function toHostFixturePath(value: string) {
   if (process.platform !== "win32") return value;
   return value.replace(/^\/([A-Za-z])\//, (_match, drive: string) => `${drive.toUpperCase()}:\\`).replaceAll("/", "\\");
 }
+function localDuplexChannel(command: readonly string[], cwd: string): CommandManagedDuplexChannel {
+  const executable = command[0] === "sh" && process.platform === "win32"
+    ? ["C:\\Program Files\\Git\\usr\\bin\\sh.exe", "C:\\Program Files\\Git\\bin\\bash.exe"].find(existsSync) ?? command[0]
+    : command[0]!;
+  const child = spawn(executable, command.slice(1), { cwd, stdio: ["pipe", "pipe", "pipe"], windowsHide: true });
+  const buffered: Buffer[] = [];
+  let dataListener: ((chunk: Uint8Array) => void) | undefined;
+  let exitListener: ((exit: { exitCode: number | null }) => void) | undefined;
+  let exit: { exitCode: number | null } | undefined;
+  child.stdin.on("error", () => undefined);
+  child.stderr.resume();
+  child.stdout.on("data", (chunk: Buffer) => dataListener ? dataListener(chunk) : buffered.push(chunk));
+  const closed = new Promise<void>(resolve => child.once("close", code => {
+    exit = { exitCode: code };
+    exitListener?.(exit);
+    resolve();
+  }));
+  return {
+    write: data => { child.stdin.write(data); },
+    onData: listener => { dataListener = listener; for (const chunk of buffered.splice(0)) listener(chunk); },
+    onExit: listener => { exitListener = listener; if (exit) listener(exit); },
+    stop: () => { child.kill(); },
+    close: async () => { child.kill(); await closed; },
+  };
+}
 
 async function broker(resolveCredentials = vi.fn(async (binding: ReturnType<typeof run>) => ({
   status: "available", env: { GH_TOKEN: `fixture-${binding.runId}` },
-})), remote = false, bridgeUnavailable = false, onLog?: (stream: "stdout" | "stderr", chunk: string) => Promise<void>) {
+})), remote = false, bridgeUnavailable = false, onLog?: (stream: "stdout" | "stderr", chunk: string) => Promise<void>,
+duplex?: { enabled?: boolean; capability: boolean; unavailable?: boolean }) {
   const root = await mkdtemp(path.join(tmpdir(), "native-github-reuse-"));
   const bin = path.join(root, "real-bin");
   const remoteRoot = toPosixFixturePath(root);
@@ -70,7 +95,8 @@ async function broker(resolveCredentials = vi.fn(async (binding: ReturnType<type
   const fixturePath = remote
     ? `${remoteBin}:${nodeBin}:/usr/bin:/bin`
     : [bin, path.dirname(process.execPath)].join(path.delimiter);
-  const execute: CommandManagedRuntimeRunner["execute"] = async (input) => {
+  const execute = vi.fn<CommandManagedRuntimeRunner["execute"]>(async (input) => {
+
     const startedAt = new Date().toISOString();
     const directScript = process.platform === "win32" && path.isAbsolute(input.command) && !/\.(?:exe|cmd|bat)$/i.test(input.command);
     const command = directScript ? "sh" : input.command;
@@ -137,34 +163,141 @@ async function broker(resolveCredentials = vi.fn(async (binding: ReturnType<type
     }
     const result = await executePrepared();
     return { ...result, exitCode: 0, signal: null, timedOut: false, pid: null, startedAt };
-  };
+  });
+  const openDuplexChannel = vi.fn<NonNullable<CommandManagedRuntimeRunner["openDuplexChannel"]>>(async input => {
+    if (duplex?.unavailable) throw new Error("fixture channel unavailable");
+    return localDuplexChannel(input.command, root);
+  });
   const target = remote ? { kind: "remote" as const, transport: "sandbox" as const, providerKey: "test",
-    remoteCwd: root, runner: { execute }, streamRunLogs: false } : null;
+    remoteCwd: root, runner: { execute, ...(duplex ? { openDuplexChannel } : {}) }, streamRunLogs: false,
+    ...(duplex ? { enableSandboxDuplexBridge: duplex.enabled, effectiveCapabilities: {
+      reusableLeases: true, nativeSyncIn: false, nativeSyncOut: false, persistentProcessSessions: false,
+      independentControlCommands: true, incrementalSessionOutput: false, concurrentSyncOperations: false,
+      duplexCommandStream: duplex.capability, runnerWebSocketIngress: false,
+    } } : {}) } : null;
+  const bridgeModes: (string | undefined)[] = [];
   const result = await createNativeGitHubAccess({ scope, target, cwd: root,
     env: { PATH: fixturePath, PAPERCLIP_API_KEY: "old-run-api-key" }, resolveCredentials, onLog },
-    bridgeUnavailable ? async () => { throw new Error("fixture bridge unavailable"); } : undefined);
+    bridgeUnavailable ? async () => { throw new Error("fixture bridge unavailable"); } : async input => {
+      const bridge = await startAdapterExecutionTargetPaperclipBridge(input);
+      bridgeModes.push(bridge?.env.PAPERCLIP_API_BRIDGE_MODE);
+      return bridge;
+    });
+
   cleanups.push(result.stop);
   // The remote fixture executes POSIX commands through Git Bash, but its live
-  // parent is a native Windows Node process. Translate only that test-host
-  // process's executable lookup path; the staged remote environment stays
-  // POSIX and is exercised through `execute` above.
+  // parent is a native Windows Node process. Keep its executable lookup PATH
+  // native while the staged remote environment remains POSIX.
   const parentEnv = remote && process.platform === "win32"
     ? { ...result.env, PATH: [result.env.PAPERCLIP_GITHUB_LAUNCHER_DIR, bin, path.dirname(process.execPath)].join(path.delimiter) }
     : result.env;
-  return { ...result, root, resolveCredentials, execute,
-    // The launcher is a native Node process, so it must retain the Windows
-    // delimiter in PATH to resolve the fixture's gh.cmd sibling.
-    parentEnv };
+  return Object.assign(result, { root, resolveCredentials, execute, openDuplexChannel, bridgeModes, parentEnv });
+
 }
 function request(broker: NativeGitHubAccess, extra: RequestInit = {}, endpoint = "/runtime-tools/github/credentials") {
   return fetch(broker.env.PAPERCLIP_GITHUB_BROKER_URL + endpoint, {
     method: "POST", body: "{}", headers: { authorization: `Bearer ${broker.env.PAPERCLIP_GITHUB_BRIDGE_TOKEN}`, "content-type": "application/json" }, ...extra,
   });
 }
+
 it.runIf(process.platform === "win32")("uses the native PATH delimiter for local GitHub launchers", async () => {
   const b = await broker();
   expect(b.env.PATH.startsWith(`${b.env.PAPERCLIP_GITHUB_LAUNCHER_DIR}${path.delimiter}`)).toBe(true);
 });
+
+it.each([false, true])("resolves managed GitHub credentials from OpenCode shell operations (runner projection: %s)", async throughRunner => {
+  const b = await broker();
+  const command = path.join(b.root, "fake-opencode-server.mjs");
+  const fixture = new URL("../../../../packages/paperclip-runner/test/fixtures/fake-opencode-server.mjs", import.meta.url);
+  await writeFile(command, await readFile(fixture), { mode: 0o700 });
+  const source = { ...b.env, OPENROUTER_API_KEY: "fixture-provider-key", PAPERCLIP_API_KEY: "controller-must-not-cross" };
+  const environment = throughRunner ? createCapabilityRunnerdProviderEnvironment({
+    provider: "opencode",
+    options: { environment: source, stateDirectory: b.root },
+    identity: { runnerInstanceId: "runner-a", environmentLeaseId: "lease-a", runId: "a", normalizedSessionId: "github", turnId: "turn-a", itemId: "item-a" },
+    codexHome: path.join(b.root, "codex-home"),
+    runtimeContextPath: path.join(b.root, "context.json"),
+    hasRuntimeContext: false,
+  }) : source;
+  const driver = new OpenCodeServerDriver({
+    model: "openrouter/z-ai/glm-5.3", runtimeDirectory: b.root, command, environment,
+  });
+  const session = await driver.openSession({ runId: "a", normalizedSessionId: "github", workingDirectory: b.root });
+  cleanups.push(() => session.close({ reason: "test complete" }));
+  const operate = async () => {
+    await session.startTurn({ message: { role: "user", text: "managed-github-operation" } });
+    for await (const event of session.events()) {
+      if (event.eventType === "turn.completed") break;
+      if (event.eventType === "turn.failed") throw new Error("OpenCode fixture turn failed");
+    }
+    return JSON.parse(await readFile(path.join(b.root, "github", "data", "fake-github-operation.json"), "utf8"));
+  };
+  const releaseA = b.activate(run("a"));
+  expect(await operate()).toMatchObject({ stdout: "fixture-a", error: null });
+  releaseA();
+  const releaseB = b.activate(run("b"));
+  expect(await operate()).toMatchObject({ stdout: "fixture-b", error: null });
+  releaseB();
+  expect(await operate()).toMatchObject({ stdout: "anonymous", error: null });
+  expect(b.resolveCredentials.mock.calls.map(([binding]) => binding.runId)).toEqual(["a", "b"]);
+  const childEnvironment = JSON.parse(await readFile(path.join(b.root, "github", "data", "fake-environment.json"), "utf8"));
+  expect(childEnvironment.keys).not.toContain("PAPERCLIP_API_KEY");
+  expect(childEnvironment.githubTokenPresent).toBe(false);
+}, 30000);
+it("uses the selected duplex transport across credential rotation without file polling", async () => {
+  const b = await broker(undefined, true, false, undefined, { enabled: true, capability: true });
+  expect(b.bridgeModes).toEqual(["http2_v1"]);
+  expect(b.openDuplexChannel).toHaveBeenCalledOnce();
+  const commandsAfterStartup = b.execute.mock.calls.length;
+  expect((await request(b)).status).toBe(403);
+  const releaseA = b.activate(run("a"));
+  expect(await (await request(b)).json()).toMatchObject({ env: { GH_TOKEN: "fixture-a" } });
+  releaseA();
+  expect((await request(b)).status).toBe(403);
+  const releaseB = b.activate(run("b"));
+  releaseA();
+  expect(await (await request(b)).json()).toMatchObject({ env: { GH_TOKEN: "fixture-b" } });
+  expect(b.resolveCredentials.mock.calls.map(([binding]) => binding.runId)).toEqual(["a", "b"]);
+  expect(b.execute.mock.calls).toHaveLength(commandsAfterStartup);
+  releaseB();
+  await b.stop();
+  expect(() => b.activate(run("c"))).toThrow("closed");
+});
+it("marks a lost HTTP/2 bridge unavailable before the next warm admission", async () => {
+  const b = await broker(undefined, true, false, undefined, { enabled: true, capability: true });
+  const release = b.activate(run("a"));
+  expect((await request(b)).status).toBe(200);
+  release();
+  expect(b.ready).toBe(true);
+  const channel = await b.openDuplexChannel.mock.results[0]!.value;
+  channel.stop();
+  await vi.waitFor(() => expect(b.ready).toBe(false), { timeout: 2000 });
+});
+it("closes a healthy HTTP/2 bridge without reporting a lost active run", async () => {
+  const onLog = vi.fn(async (_stream: "stdout" | "stderr", _chunk: string) => undefined);
+  const b = await broker(undefined, true, false, onLog, { enabled: true, capability: true });
+  const release = b.activate(run("a"));
+  expect((await request(b)).status).toBe(200);
+  release();
+  await b.stop();
+  expect(b.ready).toBe(false);
+  expect(onLog.mock.calls.filter(([, chunk]) => chunk.includes("channel lost"))).toEqual([]);
+});
+it.each([
+  { enabled: false, capability: true, unavailable: false, opens: 0 },
+  { enabled: undefined, capability: true, unavailable: false, opens: 0 },
+  { enabled: true, capability: false, unavailable: false, opens: 0 },
+  { enabled: true, capability: true, unavailable: true, opens: 1 },
+])("retains authorized file fallback with duplex settings %j", async options => {
+  const b = await broker(undefined, true, false, undefined, options);
+  expect(b.bridgeModes).toEqual(["queue_v1"]);
+  expect(b.openDuplexChannel).toHaveBeenCalledTimes(options.opens);
+  const release = b.activate(run("fallback"));
+  expect(await (await request(b)).json()).toMatchObject({ env: { GH_TOKEN: "fixture-fallback" } });
+  release();
+  expect((await request(b)).status).toBe(403);
+});
+
 it.each([false, true])("keeps one live parent and its original launcher environment across two authorized runs (callback bridge: %s)", async (remote) => {
   const b = await broker(undefined, remote);
   const parent = spawn(process.execPath, ["-e", `

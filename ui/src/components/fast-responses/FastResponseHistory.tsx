@@ -42,5 +42,5 @@ export function FastResponseHistory({
           {translateInstant("Try again")}</Button>
       </div>
     );
-  return <DecisionHistoryTable entries={query.data ?? []} fastResponse connectionsEnabled={enabled} />;
+  return <DecisionHistoryTable entries={query.data ?? []} fastResponse fastResponsesEnabled={enabled} />;
 }

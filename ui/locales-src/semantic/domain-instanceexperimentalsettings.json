@@ -364,6 +364,11 @@
     "zh-CN": "项位于配置的回溯范围之外，不会被处理。",
     "reviewedEnglishHash": "8309687fcfb19a5d2b1fca0d7fb690edfe554fbbba0f522a07782307110f51af"
   },
+  "instanceExperimentalSettings.paperclipRunnerDescription": {
+    "en": "Allow agents to select Paperclip Runner, including authenticated runner ingress when a sandbox requires it. First-run setup offers qualified GitHub Copilot. Turning this off hides the choice without affecting existing native runs.",
+    "zh-CN": "允许智能体选择 Paperclip Runner；当沙盒需要时支持已认证的 runner 入口。首次设置会提供符合条件的 GitHub Copilot。关闭后会隐藏该选项，不影响现有原生运行。",
+    "reviewedEnglishHash": "7878163dcb50af7ede49188cda418f24d74cb39c25b66dc7f08ce5568b9568b2"
+  },
   "instanceExperimentalSettings.planDecompositionDescription": {
     "en": "Show accepted-plan decomposition history on task detail pages. Intended for debugging and validating subtask creation behavior while the presentation is still being refined.",
     "zh-CN": "在任务详情页显示已接受计划的分解历史，用于调试和验证子任务创建行为；界面仍在完善中。",
@@ -429,15 +434,15 @@
     "zh-CN": "恢复目标",
     "reviewedEnglishHash": "969dd1c5df90680279c5df99ff13298892f344b1c186ae40a0a3079f8ccb20b1"
   },
-  "instanceExperimentalSettings.runNow": {
-    "en": "Run now",
-    "zh-CN": "立即运行",
-    "reviewedEnglishHash": "0991397702fabb407256a08adbb643c936aa03a49b9e78a2e62f4303c8a03e4c"
-  },
   "instanceExperimentalSettings.runningAfter": {
     "en": "Running tasks created after",
     "zh-CN": "运行创建于此时间之后的任务",
     "reviewedEnglishHash": "590de07dbd7e534957fea808ecdbc048de816026cf2b29724ef0d7b2dad85518"
+  },
+  "instanceExperimentalSettings.runNow": {
+    "en": "Run now",
+    "zh-CN": "立即运行",
+    "reviewedEnglishHash": "0991397702fabb407256a08adbb643c936aa03a49b9e78a2e62f4303c8a03e4c"
   },
   "instanceExperimentalSettings.saveHours": {
     "en": "Save hours",

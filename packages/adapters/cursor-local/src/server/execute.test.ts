@@ -96,10 +96,14 @@ function createFreshLeaseSandboxRunner(options: {
 }) {
   let counter = 0;
   const installCommands: string[] = [];
+  const fixtureBin = path.join(options.homeDir, "fixture-system-bin");
+  const fixtureReady = (async () => {
+    await fs.mkdir(fixtureBin, { recursive: true });
+    await fs.symlink(process.execPath, path.join(fixtureBin, "node"));
+    await fs.writeFile(path.join(fixtureBin, "curl"), "#!/bin/sh\nexit 97\n", { mode: 0o755 });
+  })();
   const systemPath = [
-    "/usr/local/bin",
-    "/opt/homebrew/bin",
-    "/usr/local/sbin",
+    fixtureBin,
     "/usr/bin",
     "/bin",
     "/usr/sbin",
@@ -118,6 +122,7 @@ function createFreshLeaseSandboxRunner(options: {
       onLog?: (stream: "stdout" | "stderr", chunk: string) => Promise<void>;
       onSpawn?: (meta: { pid: number; startedAt: string }) => Promise<void>;
     }) => {
+      await fixtureReady;
       counter += 1;
       const args = [...(input.args ?? [])];
       if (args[1] === SANDBOX_INSTALL_COMMAND) {
@@ -125,7 +130,8 @@ function createFreshLeaseSandboxRunner(options: {
         args[1] = buildInstallSimulationCommand(options.installCommandPath, options.captureDir);
       }
 
-      const inheritedPath = input.env?.PATH ?? systemPath;
+      // A fresh remote lease has its own PATH, independent of installed host agents.
+      const inheritedPath = systemPath;
       const pathWithLocalBin = `${path.join(options.homeDir, ".local", "bin")}${path.delimiter}${inheritedPath}`;
       const env = {
         ...(input.env ?? {}),
@@ -137,6 +143,9 @@ function createFreshLeaseSandboxRunner(options: {
         ? options.installCommandPath
         : input.command;
       const shell = prepareTestPosixShell({ command, args, env });
+      if (["agent", "cursor-agent"].includes(path.basename(command)) && command !== options.installCommandPath) {
+        throw new Error("Fresh sandbox fixture refused an agent outside its installation path");
+      }
       return await runChildProcess(`cursor-fresh-lease-${counter}`, shell.command, shell.args, {
         cwd: input.cwd ?? process.cwd(),
         env: shell.env,

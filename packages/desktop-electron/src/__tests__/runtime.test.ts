@@ -1,16 +1,20 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildWorkerEnvironment,
   getDesktopTitlebarThemeConfig,
+  normalizeDesktopAppPath,
+  readDesktopPreferences,
   readDesktopThemePreference,
   resolveDesktopPreferencesPath,
   resolveDesktopTheme,
+  resolveDesktopWindowState,
   resolveServerEntrypoint,
   resolveDesktopUserDataDir,
   type DesktopRuntimeInput,
+  writeDesktopPreferences,
   writeDesktopThemePreference,
 } from "../runtime.js";
 
@@ -191,6 +195,122 @@ describe("buildWorkerEnvironment", () => {
     fs.writeFileSync(resolveDesktopPreferencesPath(invalidUserDataDir), '{"theme":"sepia"}', "utf8");
     expect(readDesktopThemePreference(resolveDesktopPreferencesPath(invalidUserDataDir))).toBeNull();
     expect(resolveDesktopTheme(invalidUserDataDir, false)).toBe("light");
+  });
+
+  it("keeps valid defaults when the preference document is malformed", () => {
+    const userDataDir = createTempDir();
+    const preferencesPath = resolveDesktopPreferencesPath(userDataDir);
+    fs.writeFileSync(preferencesPath, '{"theme":"dark","window":{"bounds":{"x":null}}}', "utf8");
+
+    expect(readDesktopPreferences(preferencesPath)).toEqual({
+      theme: "dark",
+      closeToTray: true,
+      notificationsEnabled: true,
+    });
+  });
+
+  it("atomically merges known preference fields without overwriting theme or layout", () => {
+    const userDataDir = createTempDir();
+    const preferencesPath = resolveDesktopPreferencesPath(userDataDir);
+    writeDesktopPreferences(preferencesPath, {
+      theme: "dark",
+      window: {
+        bounds: { x: 20, y: 30, width: 1000, height: 700 },
+        maximized: true,
+        lastPath: "/companies/acme/issues/42?stale=query",
+      },
+    });
+
+    const written = writeDesktopPreferences(preferencesPath, {
+      closeToTray: false,
+      notificationsEnabled: false,
+    });
+
+    expect(written).toMatchObject({
+      theme: "dark",
+      closeToTray: false,
+      notificationsEnabled: false,
+      window: {
+        bounds: { x: 20, y: 30, width: 1000, height: 700 },
+        maximized: true,
+        lastPath: "/companies/acme/issues/42",
+      },
+    });
+    expect(JSON.parse(fs.readFileSync(preferencesPath, "utf8"))).toEqual(written);
+    expect(fs.readdirSync(userDataDir).filter((name) => name.endsWith(".tmp"))).toEqual([]);
+  });
+
+  it("retains the last valid preference file when atomic replacement is interrupted", () => {
+    const userDataDir = createTempDir();
+    const preferencesPath = resolveDesktopPreferencesPath(userDataDir);
+    writeDesktopPreferences(preferencesPath, { theme: "light", closeToTray: false });
+    const rename = vi.spyOn(fs, "renameSync").mockImplementation(() => {
+      throw new Error("simulated interrupted rename");
+    });
+
+    expect(() => writeDesktopPreferences(preferencesPath, { theme: "dark" })).toThrow("simulated interrupted rename");
+    expect(readDesktopPreferences(preferencesPath)).toMatchObject({ theme: "light", closeToTray: false });
+    expect(fs.readdirSync(userDataDir).filter((name) => name.endsWith(".tmp"))).toEqual([]);
+    rename.mockRestore();
+  });
+
+  it("restores a visible, bounded window after monitors change", () => {
+    expect(resolveDesktopWindowState({
+      bounds: { x: 5000, y: 100, width: 1200, height: 900 },
+      maximized: true,
+    }, [{ x: 0, y: 0, width: 1024, height: 768 }], { x: 0, y: 0, width: 1024, height: 768 })).toEqual({
+      bounds: { x: 0, y: 0, width: 1024, height: 768 },
+      maximized: true,
+    });
+
+    expect(resolveDesktopWindowState(null, [{ x: 0, y: 0, width: 1600, height: 1000 }], {
+      x: 0,
+      y: 0,
+      width: 1600,
+      height: 1000,
+    })).toEqual({
+      bounds: { x: 0, y: 0, width: 1280, height: 800 },
+      maximized: false,
+    });
+
+    expect(resolveDesktopWindowState({
+      bounds: { x: 5000, y: 100, width: 1200, height: 900 },
+      maximized: false,
+    }, [
+      { x: 4000, y: 0, width: 1000, height: 800 },
+      { x: 0, y: 0, width: 1600, height: 1000 },
+    ], { x: 0, y: 0, width: 1600, height: 1000 })).toEqual({
+      bounds: { x: 0, y: 0, width: 1280, height: 800 },
+      maximized: false,
+    });
+  });
+
+  it("accepts only internal, non-sensitive desktop routes", () => {
+    expect(normalizeDesktopAppPath("/companies/acme/issues/42?tab=activity#comment")).toBe(
+      "/companies/acme/issues/42",
+    );
+    for (const candidate of [
+      "https://example.test/",
+      "//example.test/",
+      "/api/companies",
+      "/auth/callback",
+      "/dot-connect/pairing-token",
+      "/login",
+      "/setup",
+      "/invite/abc",
+      "/invitations/abc",
+      "/pairing/code",
+      "/board-claim/secret",
+      "/cli-auth/device",
+      "/mcp-connect/service",
+      "/oauth-handoff",
+      "/companies/../secrets",
+      "/companies%2fsecret",
+      "\\\\server\\share",
+      "/companies/acme\nissues",
+    ]) {
+      expect(normalizeDesktopAppPath(candidate)).toBeNull();
+    }
   });
 
   it("allows tests to override the desktop user data directory", () => {

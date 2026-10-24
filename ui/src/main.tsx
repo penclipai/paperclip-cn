@@ -1,3 +1,5 @@
+import { VoiceCallProvider } from "./components/voice/VoiceCallProvider";
+import { useAccountIdentity } from "./api/companies-query";
 import * as React from "react";
 import { StrictMode, Suspense } from "react";
 import * as ReactDOM from "react-dom";
@@ -9,6 +11,7 @@ import { AppErrorBoundary } from "./components/AppErrorBoundary";
 import { SentryGate } from "./components/SentryGate";
 import { CompanyProvider, useCompany } from "./context/CompanyContext";
 import { LiveUpdatesProvider } from "./context/LiveUpdatesProvider";
+import { DesktopBridge } from "./components/DesktopBridge";
 import { BreadcrumbProvider } from "./context/BreadcrumbContext";
 import { PanelProvider } from "./context/PanelContext";
 import { SidebarProvider } from "./context/SidebarContext";
@@ -17,6 +20,7 @@ import { EditorAutocompleteProvider } from "./context/EditorAutocompleteContext"
 import { PrimaryAgentProvider } from "./context/PrimaryAgentProvider";
 import { ToastProvider } from "./context/ToastContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { DesignSandboxProvider } from "./context/DesignSandboxContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { initPluginBridge } from "./plugins/bridge-init";
 import { PluginLauncherProvider } from "./plugins/launchers";
@@ -45,6 +49,12 @@ function CompanyAwareBreadcrumbProvider({ children }: { children: React.ReactNod
   return <BreadcrumbProvider companyName={selectedCompany?.name ?? null}>{children}</BreadcrumbProvider>;
 }
 
+function CompanyVoiceCalls({ children }: { children: React.ReactNode }) {
+  const { selectedCompanyId } = useCompany();
+  const { userId } = useAccountIdentity();
+  return <VoiceCallProvider companyId={selectedCompanyId} userId={userId}>{children}</VoiceCallProvider>;
+}
+
 function AppBootstrapFallback() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background text-sm text-muted-foreground" aria-busy="true">
@@ -61,36 +71,39 @@ getOrCreatePaperclipReactRoot(window, rootElement).render(
     <I18nextProvider i18n={i18n}>
       <Suspense fallback={<AppBootstrapFallback />}>
         <AppErrorBoundary>
-          <QueryClientProvider client={queryClient}>
-            <SentryGate />
-            <ThemeProvider>
-              <BrowserRouter>
-                <CompanyProvider>
-                  <EditorAutocompleteProvider>
-                    <ToastProvider>
-                      <PrimaryAgentProvider>
-                        <LiveUpdatesProvider>
-                          <TooltipProvider>
-                            <CompanyAwareBreadcrumbProvider>
-                              <SidebarProvider>
-                                <PanelProvider>
-                                  <PluginLauncherProvider>
-                                    <DialogProvider><App /></DialogProvider>
-                                  </PluginLauncherProvider>
-                                </PanelProvider>
-                              </SidebarProvider>
-                            </CompanyAwareBreadcrumbProvider>
-                          </TooltipProvider>
-                        </LiveUpdatesProvider>
-                      </PrimaryAgentProvider>
-                    </ToastProvider>
-                  </EditorAutocompleteProvider>
-                </CompanyProvider>
-              </BrowserRouter>
-            </ThemeProvider>
-          </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <SentryGate />
+        <ThemeProvider>
+          <BrowserRouter>
+            <CompanyProvider>
+              <EditorAutocompleteProvider>
+                <ToastProvider>
+                  <PrimaryAgentProvider>
+                  <LiveUpdatesProvider>
+                    <DesktopBridge />
+                    <TooltipProvider>
+                      <CompanyAwareBreadcrumbProvider>
+                        <SidebarProvider>
+                          <PanelProvider>
+                            <PluginLauncherProvider>
+                              <DialogProvider>
+                                <DesignSandboxProvider><CompanyVoiceCalls><App /></CompanyVoiceCalls></DesignSandboxProvider>
+                              </DialogProvider>
+                            </PluginLauncherProvider>
+                          </PanelProvider>
+                        </SidebarProvider>
+                      </CompanyAwareBreadcrumbProvider>
+                    </TooltipProvider>
+                  </LiveUpdatesProvider>
+                  </PrimaryAgentProvider>
+                </ToastProvider>
+              </EditorAutocompleteProvider>
+            </CompanyProvider>
+          </BrowserRouter>
+        </ThemeProvider>
+      </QueryClientProvider>
         </AppErrorBoundary>
       </Suspense>
     </I18nextProvider>
-  </StrictMode>,
+  </StrictMode>
 );

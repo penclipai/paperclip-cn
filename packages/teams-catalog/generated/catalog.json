@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "packageName": "@penclipai/teams-catalog",
   "packageVersion": "0.1.0",
-  "generatedAt": "2026-10-12T04:28:58.779Z",
+  "generatedAt": "2026-10-23T11:44:53.803Z",
   "teams": [
     {
       "id": "paperclipai:bundled:company-defaults:core-exec-team",
@@ -374,6 +374,78 @@
       "trustLevel": "assets",
       "compatibility": "compatible",
       "contentHash": "sha256:de7eca76fd2d07aaed20b14dd313614a6ae52067a8b26c7861133835755999f4"
+    },
+    {
+      "id": "paperclipai:optional:communications:speko-company-phone-agent",
+      "key": "paperclipai/optional/communications/speko-company-phone-agent",
+      "kind": "optional",
+      "category": "communications",
+      "slug": "speko-company-phone-agent",
+      "name": "Speko Company Phone Agent",
+      "description": "Optional company voice receptionist for greeting, intake, clarification, delegation, and concise task follow-up through Speko.",
+      "path": "catalog/optional/communications/speko-company-phone-agent",
+      "entrypoint": "TEAM.md",
+      "schema": "agentcompanies/v1",
+      "defaultInstall": false,
+      "recommendedForCompanyTypes": [
+        "agency",
+        "services",
+        "software"
+      ],
+      "tags": [
+        "speko",
+        "voice",
+        "phone",
+        "intake"
+      ],
+      "counts": {
+        "agents": 1,
+        "projects": 0,
+        "tasks": 0,
+        "routines": 0,
+        "localSkills": 0,
+        "catalogSkills": 0,
+        "externalSkillSources": 0
+      },
+      "rootAgentSlugs": [
+        "speko-company-phone-agent"
+      ],
+      "agentSlugs": [
+        "speko-company-phone-agent"
+      ],
+      "projectSlugs": [],
+      "requiredSkills": [],
+      "envInputs": [],
+      "sourceRefs": [],
+      "files": [
+        {
+          "path": "TEAM.md",
+          "kind": "team",
+          "sizeBytes": 1123,
+          "sha256": "780f365d7a76314eefc33ac94e0ed04422df9a34227f53c1e1f16fbd39f7bd4b"
+        },
+        {
+          "path": "agents/speko-company-phone-agent/AGENTS.md",
+          "kind": "agent",
+          "sizeBytes": 3228,
+          "sha256": "a428a097549f0ee8dd842403e8b316fa6489d131a63f7cb379e118827f869fae"
+        },
+        {
+          "path": "LICENSE",
+          "kind": "other",
+          "sizeBytes": 1090,
+          "sha256": "526e937d673d264af663f53d3be7118c59840810097d492e1550b363a5c91000"
+        },
+        {
+          "path": "README.md",
+          "kind": "readme",
+          "sizeBytes": 1432,
+          "sha256": "2ccef001058dfced92d70d842d0ea128fa2dfaa6ea1194c5f85864a2beaccb30"
+        }
+      ],
+      "trustLevel": "assets",
+      "compatibility": "compatible",
+      "contentHash": "sha256:4c352efd5f514c4bb1caa699ddaa1c349114ef90e4b761f6a6bb25f2a816c249"
     },
     {
       "id": "paperclipai:optional:content:content-machine",

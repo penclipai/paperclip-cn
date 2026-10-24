@@ -4,6 +4,7 @@ import request from "supertest";
 import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { activityLog, agents, companies, companyMemberships, createDb, heartbeatRuns, issues, principalPermissionGrants } from "@penclipai/db";
+
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -634,8 +635,9 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
     });
 
     const app = createApp(companyId);
-    const now = Date.now();
-    const dateNow = vi.spyOn(Date, "now").mockReturnValue(now);
+    // Filling the cache can take longer than its five-second expiry on CI.
+    // Keep entries alive so this test measures capacity eviction alone.
+    const clock = vi.spyOn(Date, "now").mockReturnValue(Date.now());
     try {
       for (let index = 0; index < ISSUE_LIST_SERVER_CACHE_MAX_ENTRIES + 5; index += 1) {
         const res = await request(app)
@@ -646,7 +648,8 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
 
       expect(__getIssueListResponseCacheSizeForTests()).toBe(ISSUE_LIST_SERVER_CACHE_MAX_ENTRIES);
     } finally {
-      dateNow.mockRestore();
+      clock.mockRestore();
+
     }
   });
 

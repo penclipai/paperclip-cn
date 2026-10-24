@@ -41,6 +41,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { RoutinesToolbar, type RoutineGroupBy, type RoutineSortField, type RoutineSortDir } from "@/components/RoutinesToolbar";
 import {
   Select,
   SelectContent,
@@ -101,10 +102,7 @@ function autoResizeTextarea(element: HTMLTextAreaElement | null) {
   element.style.height = `${element.scrollHeight}px`;
 }
 
-type RoutineGroupBy = "folder" | "none" | "project" | "assignee";
 type RoutinesTab = "routines" | "runs";
-type RoutineSortField = "updated" | "created" | "title" | "lastRun";
-type RoutineSortDir = "asc" | "desc";
 
 type RoutineViewState = {
   sortField: RoutineSortField;
@@ -380,6 +378,7 @@ export function Routines() {
   const routineViewStateKey = selectedCompanyId
     ? `paperclip:routines-view:${selectedCompanyId}`
     : "paperclip:routines-view";
+  const [query, setQuery] = useState("");
   const [routineViewState, setRoutineViewState] = useState<RoutineViewState>(() => getRoutineViewState(routineViewStateKey));
   const folderSelection = normalizeFolderSelection(searchParams.get("folder"));
 
@@ -715,8 +714,15 @@ export function Routines() {
     };
   }, [routineFolders, visibleRoutines]);
   const sortedRoutines = useMemo(
-    () => sortRoutines(folderFilteredRoutines, routineViewState.sortField, routineViewState.sortDir),
-    [folderFilteredRoutines, routineViewState.sortDir, routineViewState.sortField],
+    () => {
+      const terms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      const matches = folderFilteredRoutines.filter(routine => {
+        const text = `${routine.title} ${routine.description ?? ""}`.toLowerCase();
+        return terms.every(term => text.includes(term));
+      });
+      return sortRoutines(matches, routineViewState.sortField, routineViewState.sortDir);
+    },
+    [folderFilteredRoutines, query, routineViewState.sortDir, routineViewState.sortField],
   );
   const routineSections = useMemo(
     () => buildRoutineSections(sortedRoutines, routineViewState.groupBy, projectById, agentById, folderById),
@@ -860,23 +866,16 @@ export function Routines() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-xl font-bold">{translateInstant("Routines")}</h1>
-          <p className="text-sm text-muted-foreground">
-            {translateInstant("routines.description")}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {streamlinedUiEnabled ? (
-            <Button variant="outline" asChild>
-              <Link to={auditSectionHref("runs", {})}>{translateInstant("View all runs")}</Link>
-            </Button>
-          ) : null}
-          <Button onClick={openCreateRoutine}>
-            <Plus className="mr-2 h-4 w-4" />
-            {translateInstant("routines.create")}</Button>
-        </div>
-      </div>
+      <RoutinesToolbar
+        query={query} onQueryChange={setQuery}
+        sortField={routineViewState.sortField} sortDir={routineViewState.sortDir} groupBy={routineViewState.groupBy}
+        onSortChange={(sortField, sortDir) => updateRoutineView({ sortField, sortDir })}
+        onGroupChange={groupBy => updateRoutineView({ groupBy, collapsedGroups: [] })}
+        onNewFolder={routineViewState.groupBy === "folder" && !hasRoutineFolders ? () => openCreateFolder() : undefined}
+        onCreateRoutine={openCreateRoutine}
+        runsHref={streamlinedUiEnabled ? auditSectionHref("runs", {}) : undefined}
+        selectMode={selectMode} onToggleSelect={showFolderRail ? () => setSelectMode(current => !current) : undefined}
+      />
 
       {!streamlinedUiEnabled ? (
         <Tabs value={activeTab} onValueChange={handleLegacyTabChange}>
@@ -1332,14 +1331,14 @@ export function Routines() {
             <div className="py-12">
               <EmptyState
                 icon={Repeat}
-                message={translateInstant("routines.noActiveRoutines")}
+                message={query.trim() ? translateInstant("routines.noSearchResults") : translateInstant("routines.noActiveRoutines")}
               />
             </div>
           ) : sortedRoutines.length === 0 ? (
             <div className="py-12">
               <EmptyState
                 icon={Repeat}
-                message={folderSelection === "all" ? translateInstant("folders.noRoutinesMatch") : translateInstant("folders.empty")}
+                message={query.trim() ? translateInstant("routines.noSearchResults") : folderSelection === "all" ? translateInstant("folders.noRoutinesMatch") : translateInstant("folders.empty")}
               />
               {folderSelection !== "all" ? (
                 <div className="mt-3 flex justify-center">

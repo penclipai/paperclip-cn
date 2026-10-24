@@ -43,7 +43,8 @@ export function AiConnectionSelect({
   onReconnect,
   onChange,
   adapterType,
-}: AiConnectionPickerProps & { adapterType: string }) {
+  model,
+}: AiConnectionPickerProps & { adapterType: string; model?: string }) {
   useTranslation();
   const selectId = useId();
   const personal = personalAiDefault(connections, requirement, currentUserId);
@@ -53,6 +54,8 @@ export function AiConnectionSelect({
       : connections.find(
           (c) => c.id === value?.connectionId && c.grantId === value?.grantId,
         );
+  const compatibilityModel = (provider: string) => adapterType === "pi_local"
+    ? model || `${provider}/` : provider === "openrouter" ? "openrouter/" : undefined;
   const compatible = connections
     .filter(
       (c) =>
@@ -60,7 +63,7 @@ export function AiConnectionSelect({
         isAiConnectionCompatible(
           c,
           adapterType,
-          c.provider === "openrouter" ? "openrouter/" : undefined,
+          compatibilityModel(c.provider),
         ),
     )
     .sort(
@@ -83,7 +86,7 @@ export function AiConnectionSelect({
       mode: "responsible_user",
     },
     adapterType,
-    requirement.provider === "openrouter" ? "openrouter/" : undefined,
+    compatibilityModel(requirement.provider),
   );
   const incompatible =
     selected && !compatible.some((c) => c.id === selected.id);

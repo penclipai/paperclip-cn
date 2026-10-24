@@ -1,5 +1,6 @@
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { useShowAgentCreatedTasks } from "../hooks/useShowAgentCreatedTasks";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { Link, useParams, useNavigate, useLocation, Navigate } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -189,6 +190,7 @@ function ProjectTilePicker({
 /* ── List (issues) tab content ── */
 
 function ProjectIssuesList({ projectId, companyId }: { projectId: string; companyId: string }) {
+  const showAgentCreatedTasks = useShowAgentCreatedTasks(companyId, "paperclip:project-issues-view");
   const queryClient = useQueryClient();
 
   const { data: agents } = useQuery({
@@ -221,8 +223,8 @@ function ProjectIssuesList({ projectId, companyId }: { projectId: string; compan
   });
 
   const { data: issues, isLoading, error } = useQuery({
-    queryKey: queryKeys.issues.listByProject(companyId, projectId),
-    queryFn: () => issuesApi.list(companyId, { projectId }),
+    queryKey: [...queryKeys.issues.listByProject(companyId, projectId), showAgentCreatedTasks],
+    queryFn: () => issuesApi.listAll(companyId, { projectId, includeRoutineExecutions: true, includeAgentCreatedTasks: showAgentCreatedTasks }),
     enabled: !!companyId,
   });
   const liveIssueIds = useMemo(() => collectLiveIssueIds(liveRuns, issues), [issues, liveRuns]);
@@ -245,6 +247,7 @@ function ProjectIssuesList({ projectId, companyId }: { projectId: string; compan
       projects={projects}
       liveIssueIds={liveIssueIds}
       projectId={projectId}
+      enableAgentCreatedVisibilityFilter
       viewStateKey="paperclip:project-issues-view"
       onUpdateIssue={(id, data) => updateIssue.mutate({ id, data })}
     />

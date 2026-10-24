@@ -83,7 +83,6 @@ export function Sidebar() {
   const liveRunCount = liveRuns?.length ?? 0;
   const showWorkspacesLink = experimentalSettings?.enableIsolatedWorkspaces === true;
   const showApps = experimentalSettings?.enableApps === true;
-  const showPipelines = experimentalSettings?.enablePipelines === true;
   const showStatusCards = experimentalSettings?.enableStatusCards === true;
   const goalsLinkPending = experimentalSettings === undefined;
   const showGoalsLink = experimentalSettings?.enableGoalsSidebarLink === true;
@@ -187,10 +186,7 @@ export function Sidebar() {
           {showCases ? (
             <SidebarNavItem to="/cases" label={translateInstant("Cases")} icon={Layers} textBadge="beta" />
           ) : null}
-          <SidebarNavItem to="/routines" label={translateInstant("Routines")} icon={Repeat} />
-          {showPipelines ? (
-            <SidebarNavItem to="/pipelines" label={translateInstant("pipelines.title")} icon={GitBranch} />
-          ) : null}
+          <SidebarNavItem to="/routines" label="Routines" icon={Repeat} />
           {showGoalsLink ? (
             <SidebarNavItem to="/goals" label={translateInstant("Goals")} icon={Target} />
           ) : goalsLinkPending ? (
@@ -239,8 +235,9 @@ export function Sidebar() {
           <SidebarNavItem to="/timeline" label={translateInstant("sidebar.timeline")} icon={GanttChartSquare} />
           <SidebarNavItem to="/costs" label={translateInstant("Costs")} icon={DollarSign} />
           {/* One entry — /audit merged into the rich Activity feed (PAP-16302). */}
-          <SidebarNavItem to="/activity" label={translateInstant("Activity")} icon={History} />
-          <SidebarNavItem to="/company/settings" label={translateInstant("Settings")} icon={Settings} />
+          <SidebarNavItem to="/activity" label="Activity" icon={History} />
+          <SidebarNavItem to="/activity/commentary" label="Commentary" icon={History} />
+          <SidebarNavItem to="/company/settings" label="Settings" icon={Settings} />
         </SidebarSection>
 
         <PluginSlotOutlet

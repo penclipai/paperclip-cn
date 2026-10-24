@@ -43,7 +43,9 @@ export function ChatConversationList({
         icon={MessageSquare}
         message={translateInstant("No conversations yet")}
         description={
-          provider === "agentmail"
+          provider === "speko"
+            ? "Open an assigned task and choose Talk to agent."
+            : provider === "agentmail"
             ? "Send an email to this agent’s address to start one."
             : "Mention the agent in an enabled destination to start one."
         }

@@ -315,3 +315,32 @@ it.each([
     await vi.waitFor(() => expect(api.post).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ allowWrites: false, allowConfiguration: enabled })));
   } finally { page.cleanup(); }
 });
+
+
+it("shows the fixed Grok agent and authorizing person before granting a Cursor client access", async () => {
+  Object.assign(route, { agentConnection: true, requiresSignIn: true, clientName: "Cursor", clientOrigin: "https://www.cursor.com" });
+  vi.mocked(api.post).mockImplementationOnce(async () => ({ providerKind: "grok_bot", authorizingPerson: "Test Operator",
+    company: { id: "company-one", name: "Acme Research" }, agent: { id: "agent-grok", name: "Night Shift" },
+    permissions: "Work as this agent. Execution requires a current task-bound session.", accessDuration: "Ongoing until revoked",
+    pairingExpiresAt: new Date(Date.now() + 60_000).toISOString() }) as never);
+  const page = setup(false, true);
+  try {
+    await vi.waitFor(() => expect(page.container.querySelector("#dot-pairing-code")).not.toBeNull());
+    const input = page.container.querySelector<HTMLInputElement>("#dot-pairing-code")!;
+    const connect = [...page.container.querySelectorAll("button")].find(button => button.textContent === "Connect Dot with pairing code")!;
+    expect(connect.disabled).toBe(true);
+    expect(page.container.textContent).not.toContain("Connect Dot agent");
+    flushSync(() => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, "g".repeat(32));
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await vi.waitFor(() => expect(page.container.textContent).toContain("Allow this connection to work as Night Shift in Acme Research."));
+    expect(page.container.textContent).toContain("Test Operator");
+    expect(page.container.textContent).toContain("current task-bound session");
+    expect(page.container.querySelector("h1")?.textContent).toBe("Connect Cursor to Paperclip");
+    expect(api.post).toHaveBeenCalledTimes(1);
+    expect(api.post).toHaveBeenCalledWith("/dot-mcp/requests/request-one/dot-pairing/preview", { pairingCode: "g".repeat(32) });
+    flushSync(() => connect.click());
+    await vi.waitFor(() => expect(api.post).toHaveBeenCalledWith("/dot-mcp/requests/request-one/dot-pairing", { pairingCode: "g".repeat(32) }));
+  } finally { page.cleanup(); }
+});

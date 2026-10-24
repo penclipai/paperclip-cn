@@ -7,13 +7,13 @@ import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { DecisionModelSettingsSection } from "../components/decision-models/DecisionModelSettings";
 import { FastResponseSettingsSection } from "../components/fast-responses/FastResponseSettings";
 import { useFastResponsesEnabled } from "../hooks/useFastResponsesEnabled";
-import { Navigate } from "@/lib/router";
+import { PromptInjectionPreventionSettingsSection } from "../components/prompt-injection-prevention/PromptInjectionPreventionSettings";
 
 export function CompanyConnections() {
   useTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
-  const { enabled, loaded } = useFastResponsesEnabled();
+  const { enabled } = useFastResponsesEnabled();
 
   useEffect(() => {
     setBreadcrumbs([
@@ -22,9 +22,6 @@ export function CompanyConnections() {
       { label: translateInstant("apps.sidebar.connections") },
     ]);
   }, [setBreadcrumbs, selectedCompany?.name]);
-
-  if (!loaded) return null;
-  if (!enabled) return <Navigate to="/company/settings" replace />;
 
   if (!selectedCompanyId) {
     return (
@@ -41,8 +38,11 @@ export function CompanyConnections() {
       </div>
       <DecisionModelSettingsSection key={selectedCompanyId} companyId={selectedCompanyId} />
       <div className="max-w-2xl border-t border-border pt-8">
-        <FastResponseSettingsSection key={`fast-${selectedCompanyId}`} companyId={selectedCompanyId} />
+        <PromptInjectionPreventionSettingsSection key={`injection-${selectedCompanyId}`} companyId={selectedCompanyId} />
       </div>
+      {enabled && <div className="max-w-2xl border-t border-border pt-8">
+        <FastResponseSettingsSection key={`fast-${selectedCompanyId}`} companyId={selectedCompanyId} />
+      </div>}
     </div>
   );
 }

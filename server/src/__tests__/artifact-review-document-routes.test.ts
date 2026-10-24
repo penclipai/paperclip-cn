@@ -148,12 +148,11 @@ async function preloadRouteModules() {
 }
 
 async function createApp(options?: { companyIds?: string[] }) {
-  const { issueRoutes } = await vi.importActual<
-    typeof import("../routes/issues.js")
-  >("../routes/issues.js");
-  const { errorHandler } = await vi.importActual<
-    typeof import("../middleware/index.js")
-  >("../middleware/index.js");
+  // Both modules traverse the reset/mocked service graph; concurrent imports
+  // can wait on each other's partially evaluated modules.
+  const { errorHandler } = await vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js");
+  const { issueRoutes } = await vi.importActual<typeof import("../routes/issues.js")>("../routes/issues.js");
+
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {

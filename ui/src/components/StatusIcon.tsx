@@ -120,6 +120,14 @@ function blockedAttentionLabel(
   return t("status.blocked", { defaultValue: "Blocked" });
 }
 
+/** Shared accessible/tooltip copy, including waiting and covered-blocker states. */
+export function getStatusIconLabel(status: string, externalConversationState?: "active" | "waiting" | null, blockerAttention?: IssueBlockerAttention | null): string {
+  const displayStatus = status === "in_review" && externalConversationState === "waiting" ? "idle" : status;
+  return status === "blocked"
+    ? blockedAttentionLabel((key, options) => String(options?.defaultValue ?? key), blockerAttention)
+    : statusLabel(displayStatus);
+}
+
 /**
  * Task/issue status indicator — renders the unified, color-blind-safe
  * {@link StatusGlyph} (one distinct shape per status). With `onChange` it also
@@ -139,7 +147,7 @@ export function StatusIcon({ status, externalConversationState, blockerAttention
   const isCoveredBlocked = status === "blocked" && blockerAttention?.state === "covered";
   const ariaLabel = status === "blocked"
     ? blockedAttentionLabel(t, blockerAttention)
-    : t(`status.${statusKey(displayStatus)}`, { defaultValue: statusLabel(displayStatus) });
+    : getStatusIconLabel(status, externalConversationState, blockerAttention);
   const glyphStatus = isCoveredBlocked ? "in_queue" : displayStatus;
 
   const glyphIcon = (

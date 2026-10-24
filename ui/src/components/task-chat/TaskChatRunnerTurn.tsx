@@ -16,6 +16,7 @@ import { formatTaskChatTimestamp } from "./task-chat-adapter";
 import { TaskChatRunnerActivityGroup } from "./TaskChatRunnerActivityGroup";
 import { TaskChatProtocolCard } from "./TaskChatProtocolCard";
 import { TaskChatPlanPreviewCard } from "./TaskChatPlanPreviewCard";
+import { TaskChatShimmerScope, useTaskChatShimmer } from "./TaskChatShimmer";
 import {
   buildTurnTimelineRows,
   isTerminalRunStatus,
@@ -68,11 +69,13 @@ function RunnerTurnStatus({
   startedAtMs,
   finishedAtMs,
   continuedAfterSteering = false,
+  waitingLabel,
 }: {
   status: string;
   startedAtMs: number | null;
   finishedAtMs?: number | null;
   continuedAfterSteering?: boolean;
+  waitingLabel?: string | null;
 }) {
   const terminal = isTerminalRunStatus(status);
   useSecondTick(!terminal && startedAtMs != null);
@@ -86,15 +89,10 @@ function RunnerTurnStatus({
   const elapsed = formatCompactDuration(elapsedMs);
 
   const failed = terminalStatusFailed(status);
-  const label = terminal ? (failed ? "Stopped" : "Worked") : "Working";
-  const semanticLabel = terminal
-    ? elapsed
-      ? `${label} ${failed ? "after" : "for"} ${elapsed}`
-      : label
-    : `${label} for ${elapsed ?? "0s"}`;
-  const visibleLabel = continuedAfterSteering
-    ? `Continued after steering · ${semanticLabel}`
-    : semanticLabel;
+  const label = terminal ? (failed ? "Stopped" : "Worked") : waitingLabel ?? "Working";
+  const suffix = terminal
+    ? elapsed ? ` ${failed ? "after" : "for"} ${elapsed}` : ""
+    : waitingLabel ? elapsed ? ` · ${elapsed}` : "" : ` for ${elapsed ?? "0s"}`;
 
   return (
     <span
@@ -104,16 +102,17 @@ function RunnerTurnStatus({
       aria-live="polite"
       aria-atomic="true"
     >
-      {visibleLabel}
+      {continuedAfterSteering ? <span data-conversation-meta="">Continued after steering · </span> : null}
+      {label}<span data-conversation-meta="">{suffix}</span>
     </span>
   );
 }
 
-function RunnerCurrentActivityTail({ status }: { status: string }) {
-  useTranslation();
+function RunnerCurrentActivityTail({ status, waitingLabel }: { status: string; waitingLabel?: string | null }) {
+  const shimmer = useTaskChatShimmer("working");
   if (isTerminalRunStatus(status)) return null;
   return <div className="mt-2 flex min-h-8 min-w-0 items-center gap-2 px-1 py-1 text-xs text-muted-foreground" data-testid="task-chat-current-activity" data-turn-position="tail">
-    <span className="shimmer-text shimmer-text-muted" aria-live="polite" data-testid="task-chat-current-activity-label">{translateInstant("Thinking")}</span>
+    <span className={cn(!waitingLabel && shimmer && "shimmer-text shimmer-text-muted")} aria-live="polite" data-testid="task-chat-current-activity-label">{waitingLabel ?? "Thinking"}</span>
   </div>;
 }
 
@@ -124,9 +123,12 @@ export function TaskChatRunnerTurn({
   agent,
   items,
   status,
+  execution,
+  preparationLabel,
   startedAtMs,
   finishedAtMs,
   activityUnavailable = false,
+  allowSummaryFallback = true,
   suppressFinal = false,
   continuedAfterSteering = false,
   onRuntimeRequestDecision,
@@ -139,9 +141,12 @@ export function TaskChatRunnerTurn({
   items: readonly TaskChatItem[];
   status: string;
   execution?: ExecutionProjection | null;
+  /** Presentation only while Send/Retry admission has no run yet. */
+  preparationLabel?: string;
   startedAtMs: number | null;
   finishedAtMs?: number | null;
   activityUnavailable?: boolean;
+  allowSummaryFallback?: boolean;
   /** Accepted wait/interaction authority overrides an early provider final. */
   suppressFinal?: boolean;
   /** The visible tail resumes the same native run after an accepted steer. */
@@ -153,6 +158,8 @@ export function TaskChatRunnerTurn({
 }) {
   useTranslation();
   const terminal = isTerminalRunStatus(status);
+  const waitingLabel = !terminal && execution?.phase === "waiting_for_provider" ? execution.label
+    : !runId && !terminal ? preparationLabel ?? null : null;
   const yielded = items.some(
     (item) =>
       item.kind === "protocol" &&
@@ -162,7 +169,7 @@ export function TaskChatRunnerTurn({
   const observedFinal = suppressFinal
     ? undefined
     : paperclipRunnerFinalResponse(items, {
-        allowFallback: terminal,
+        allowFallback: terminal && allowSummaryFallback,
       });
   const observedProviderText = Boolean(
     observedFinal &&
@@ -206,16 +213,13 @@ export function TaskChatRunnerTurn({
   );
 
   return (
-    <div
+    <TaskChatShimmerScope items={items}><div
       className="flex min-w-0 flex-col"
       data-testid="task-chat-runner-turn"
       data-phase={status === "queued" ? "startup" : undefined}
     >
       <div
-        className={cn(
-          "flex min-h-8 min-w-0 items-center gap-2",
-          status === "queued" ? "pb-1" : "pb-1 pt-2",
-        )}
+        className="flex min-h-8 min-w-0 items-center gap-2 pb-1 pt-2"
         data-testid="task-chat-runner-identity-row"
       >
         {agentName ? (
@@ -226,6 +230,7 @@ export function TaskChatRunnerTurn({
           startedAtMs={startedAtMs}
           finishedAtMs={finishedAtMs}
           continuedAfterSteering={continuedAfterSteering}
+          waitingLabel={waitingLabel}
         />
       </div>
       {activityUnavailable ? (
@@ -283,7 +288,7 @@ export function TaskChatRunnerTurn({
           />
         </div>
       ) : null}
-      {!final && currentActivityItems.length === 0 ? <RunnerCurrentActivityTail status={status} /> : null}
-    </div>
+      {!final && currentActivityItems.length === 0 ? <RunnerCurrentActivityTail status={status} waitingLabel={waitingLabel} /> : null}
+    </div></TaskChatShimmerScope>
   );
 }

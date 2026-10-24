@@ -106,11 +106,13 @@ function McpConnectRequest({ id, device = false, agentPairingOnly = false, onEdi
         <p className="text-sm">{translateInstant("Enter the one-use code from your Dot setup prompt to review this agent’s access. Access is granted when you click “Connect Dot with pairing code”.")}</p>
         <label htmlFor="dot-pairing-code" className="text-sm">{translateInstant("Pairing code")}</label>
         <Input id="dot-pairing-code" type="password" autoComplete="off" value={pairingCode} onChange={event => { setPairingPreview(null); setPairingPreviewError(""); setPairingCode(event.target.value); }} required maxLength={32} />
+        {pairingPreview?.providerKind === "grok_bot" && <p className="text-sm font-medium">Allow this connection to work as {pairingPreview.agent.name} in {pairingPreview.company.name}.</p>}
         {pairingPreview && <dl className="space-y-2 rounded-md border border-border p-3 text-sm">
-          <div><dt className="text-muted-foreground">{translateInstant("Company")}</dt><dd>{pairingPreview.company.name} <span className="text-xs text-muted-foreground">({pairingPreview.company.id})</span></dd></div>
-          <div><dt className="text-muted-foreground">{translateInstant("Agent")}</dt><dd>{pairingPreview.agent.name} <span className="text-xs text-muted-foreground">({pairingPreview.agent.id})</span></dd></div>
-          <div><dt className="text-muted-foreground">{translateInstant("Permissions")}</dt><dd>{pairingPreview.permissions}</dd></div>
-          <div><dt className="text-muted-foreground">{translateInstant("Access duration")}</dt><dd>{pairingPreview.accessDuration}</dd></div>
+          <div><dt className="text-muted-foreground">Company</dt><dd>{pairingPreview.company.name} <span className="text-xs text-muted-foreground">({pairingPreview.company.id})</span></dd></div>
+          <div><dt className="text-muted-foreground">Agent</dt><dd>{pairingPreview.agent.name} <span className="text-xs text-muted-foreground">({pairingPreview.agent.id})</span></dd></div>
+          <div><dt className="text-muted-foreground">Permissions</dt><dd>{pairingPreview.permissions}</dd></div>
+          {pairingPreview.authorizingPerson && <div><dt className="text-muted-foreground">Authorized by</dt><dd>{pairingPreview.authorizingPerson}</dd></div>}
+          <div><dt className="text-muted-foreground">Access duration</dt><dd>{pairingPreview.accessDuration}</dd></div>
         </dl>}
         {pairingPreviewError && <p role="alert" className="text-sm text-destructive">{pairingPreviewError}</p>}
         {pairDot.error && <p role="alert" className="text-sm text-destructive">{pairDot.error.message}</p>}
@@ -169,10 +171,11 @@ export function AssistantConnectionsPage() {
     {active?.length === 0 && <p className="text-sm">{translateInstant("No assistant connections.")}</p>}
     {active?.map((connection) => <Card key={connection.id} className="block space-y-2 p-4">
       <h2 className="font-medium"><Identity name={assistantConnectionDisplayName(connection)} avatarUrl={connection.user?.image} initials={deriveInitials(connection.user?.name ?? "You")} /></h2>
-      <p className="text-sm text-muted-foreground">{translateInstant("Organization:")}{" "}{connection.companyName}</p>
-      <p className="text-sm">{connection.scopes.includes("paperclip:agent") ? translateInstant("Dot agent connection") : connection.scopes.includes("paperclip:write") ? translateInstant("Read and edit work") : translateInstant("Read only")}</p>
-      {connection.scopes.includes("paperclip:configure") && <p className="text-sm">{translateInstant("Configure agents, projects and skills")}</p>}
-      <Button variant="outline" disabled={revoke.isPending} onClick={() => revoke.mutate(connection.id)}>{translateInstant("Revoke connection")}</Button>
+      <p className="text-sm text-muted-foreground">Organization: {connection.companyName}</p>
+      {connection.agent && <p className="text-sm">Works as <Link className="underline" to={`/${connection.companyPrefix ?? connection.companyId}/agents/${connection.agent.id}/runtime`}>{connection.agent.name}</Link>{connection.user ? ` · Authorized by ${connection.user.name}` : ""}</p>}
+      <p className="text-sm">{connection.scopes.includes("paperclip:agent") ? "Agent connection" : connection.scopes.includes("paperclip:write") ? "Read and edit work" : "Read only"}</p>
+      {connection.scopes.includes("paperclip:configure") && <p className="text-sm">Configure agents, projects and skills</p>}
+      <Button variant="outline" disabled={revoke.isPending} onClick={() => revoke.mutate(connection.id)}>Revoke connection</Button>
     </Card>)}
     <Link className="text-sm underline" to="/">{translateInstant("Back to Paperclip")}</Link>
   </div>;

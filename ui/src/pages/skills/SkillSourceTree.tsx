@@ -54,10 +54,11 @@ export function buildSkillPackageTree(candidates: SkillTreeCandidate[]) {
   return { nodes: transform(buildFileTree(Object.fromEntries(candidates.map(skill => [skill.path, null])))), included };
 }
 
-export function SkillSourceTree({ candidates, selected, excludedFolders, onChange, onPreview, disabled = false }: {
+export function SkillSourceTree({ candidates, selected, excludedFolders, onChange, onPreview, disabled = false, packageMode = 'skills' }: {
   candidates: SkillTreeCandidate[]; selected: Set<string>; excludedFolders: string[];
   onChange: (selected: Set<string>, excludedFolders: string[]) => void;
   onPreview?: (skill: SkillTreeCandidate, filePath?: string) => void; disabled?: boolean;
+  packageMode?: 'skills' | 'repository';
 }) {
   useTranslation();
   const [search, setSearch] = useState('');

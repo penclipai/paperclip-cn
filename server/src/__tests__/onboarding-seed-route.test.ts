@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import request from "supertest";
 import { and, eq } from "drizzle-orm";
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import {
   activityLog,
   agents,
@@ -12,6 +12,7 @@ import {
 } from "@penclipai/db";
 import { onboardingSeedRoutes } from "../routes/onboarding-seed.js";
 import { logActivity } from "../services/activity-log.js";
+import { BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX } from "../services/bundled-paperclip-skills.js";
 import {
   describeEmbeddedPostgres,
   resetCompanyIssueFixtures,
@@ -36,10 +37,25 @@ const SEED = {
   firstTask: { title: "Draft the one-page strategy", details: "One page, no more" },
 };
 
+const ONBOARDING_CORE_SKILL_KEYS = [
+  "paperclip-board",
+  "paperclip-converting-plans-to-tasks",
+  "paperclip-create-agent",
+  "para-memory-files",
+].map((slug) => `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}${slug}`);
+
 describeEmbeddedPostgres("POST /api/companies/:companyId/onboarding-seed", () => {
   const ctx = useEmbeddedPostgres("onboarding-seed-route");
+  let runnerSelectionSpy: { mockRestore(): void } | undefined;
+
+  beforeEach(async () => {
+    const selection = await import("../services/agent-runner-selection.js");
+    runnerSelectionSpy = vi.spyOn(selection, "resolveNewAgentRunnerForCompany").mockImplementation(async (_db, _companyId, input) =>
+      selection.resolveNewAgentRunner({ ...input, target: { driver: "local", platform: "linux", architecture: "x64" } }));
+  });
 
   afterEach(async () => {
+    runnerSelectionSpy?.mockRestore();
     await ctx.db.delete(activityLog);
     await ctx.db.delete(companyOnboardingSeeds);
     await ctx.db.delete(issues);
@@ -85,18 +101,9 @@ describeEmbeddedPostgres("POST /api/companies/:companyId/onboarding-seed", () =>
     // The seed's free-text role is a job title; the structural role stays `ceo`.
     expect(companyAgents[0]?.title).toBe("Chief of Staff");
     expect(companyAgents[0]?.role).toBe("ceo");
-    // A seeded CEO arrives with the core paperclip skills enabled. Skills only
-    // reach an agent's runtime through its own desired set, and the default
-    // CEO instructions assume this toolkit.
     expect(companyAgents[0]?.adapterConfig).toMatchObject({
       paperclipSkillSync: {
-        desiredSkills: expect.arrayContaining([
-          "paperclipai/paperclip/paperclip",
-          "paperclipai/paperclip/paperclip-board",
-          "paperclipai/paperclip/paperclip-converting-plans-to-tasks",
-          "paperclipai/paperclip/paperclip-create-agent",
-          "paperclipai/paperclip/para-memory-files",
-        ]),
+        desiredSkills: expect.arrayContaining(ONBOARDING_CORE_SKILL_KEYS),
       },
     });
 
@@ -122,7 +129,7 @@ describeEmbeddedPostgres("POST /api/companies/:companyId/onboarding-seed", () =>
     expect(record[0]?.issueId).toBe(companyIssues[0]?.id);
   });
 
-  it("keeps server-seeded onboarding on a legacy adapter when native runner is requested", async () => {
+  it("uses the qualified Claude default for an unsupported seed adapter override", async () => {
     const previous = process.env.PAPERCLIP_ONBOARDING_SEED_ADAPTER_TYPE;
     process.env.PAPERCLIP_ONBOARDING_SEED_ADAPTER_TYPE = "paperclip_runner";
     try {
@@ -133,13 +140,32 @@ describeEmbeddedPostgres("POST /api/companies/:companyId/onboarding-seed", () =>
       expect(response.status).toBe(200);
       const companyAgents = await ctx.db.select().from(agents).where(eq(agents.companyId, companyId));
       expect(companyAgents).toHaveLength(1);
-      expect(companyAgents[0]?.adapterType).toBe("claude_local");
+      expect(companyAgents[0]).toMatchObject({ adapterType: "paperclip_runner", adapterConfig: { provider: "acpx", acpxAgent: "claude", model: "claude-opus-5-5" } });
     } finally {
       if (previous === undefined) {
         delete process.env.PAPERCLIP_ONBOARDING_SEED_ADAPTER_TYPE;
       } else {
         process.env.PAPERCLIP_ONBOARDING_SEED_ADAPTER_TYPE = previous;
       }
+    }
+  });
+
+  it("uses the creation default for server-seeded Codex", async () => {
+    const previous = process.env.PAPERCLIP_ONBOARDING_SEED_ADAPTER_TYPE;
+    process.env.PAPERCLIP_ONBOARDING_SEED_ADAPTER_TYPE = "codex_local";
+    try {
+      const { companyId, app } = await seedCompany();
+      const response = await post(app, companyId, SEED);
+      expect(response.status).toBe(200);
+      const [agent] = await ctx.db.select().from(agents).where(eq(agents.companyId, companyId));
+      expect(agent).toMatchObject({ adapterType: "paperclip_runner", adapterConfig: { provider: "codex" } });
+      expect(agent?.adapterConfig).toMatchObject({ paperclipSkillSync: { desiredSkills: expect.arrayContaining(ONBOARDING_CORE_SKILL_KEYS) } });
+      expect((await post(app, companyId, SEED)).body.changed).toBe(false);
+      const [replayed] = await ctx.db.select().from(agents).where(eq(agents.companyId, companyId));
+      expect(replayed?.adapterConfig).toEqual(agent?.adapterConfig);
+    } finally {
+      if (previous === undefined) delete process.env.PAPERCLIP_ONBOARDING_SEED_ADAPTER_TYPE;
+      else process.env.PAPERCLIP_ONBOARDING_SEED_ADAPTER_TYPE = previous;
     }
   });
 

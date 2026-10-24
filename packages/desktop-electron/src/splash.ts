@@ -6,8 +6,9 @@ import {
   DESKTOP_WINDOW_TITLE,
   type DesktopTheme,
 } from "./runtime.js";
+import { desktopText } from "./desktop-copy.js";
 
-export type SplashState = "starting" | "waiting" | "error";
+export type SplashState = "starting" | "waiting" | "stopping" | "error";
 
 type SplashLocale = "zh-CN" | "en";
 
@@ -113,6 +114,12 @@ function resolveLocale(locale: string): SplashLocale {
 }
 
 function getSplashCopy(locale: SplashLocale, state: SplashState, detail?: string): SplashCopy {
+  if (state === "stopping") {
+    return {
+      status: desktopText("desktop.shutdown.title", locale),
+      footer: desktopText("desktop.shutdown.message", locale),
+    };
+  }
   if (locale === "zh-CN") {
     if (state === "starting") {
       return {

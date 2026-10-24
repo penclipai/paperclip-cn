@@ -43,7 +43,10 @@ const translate = vi.hoisted(() => (key: string, options?: Record<string, unknow
     "apps.connect.googleSheets.invalidLink": "这看起来不是 Google Sheets 链接。",
     Connect: "连接",
   };
-  const template = locale.value === "zh-CN" ? (zh[key] ?? String(options?.defaultValue ?? key)) : String(options?.defaultValue ?? key);
+  const en: Record<string, string> = {
+    "apps.detail.common.change": "Change",
+  };
+  const template = (locale.value === "zh-CN" ? zh[key] : en[key]) ?? String(options?.defaultValue ?? key);
   return template.replace(/{{(\w+)}}/g, (_match, name: string) => String(options?.[name] ?? ""));
 });
 
@@ -65,6 +68,15 @@ vi.mock("@tanstack/react-query", () => ({
   useQuery: ({ queryKey }: { queryKey: readonly unknown[] }) => {
     if (queryKey[0] === "apps" && queryKey[2] === "gallery") return queryResult;
     if (queryKey[0] === "cloud-connector") return enrollmentQueryResult;
+    if (queryKey[0] === "tools" && queryKey[2] === "applications") {
+      return { ...listQueryResult, data: { applications: [] } };
+    }
+    if (queryKey[0] === "tools" && queryKey[2] === "connections") {
+      return { ...listQueryResult, data: { connections: [] } };
+    }
+    if (queryKey[0] === "instance" && queryKey[1] === "experimental-settings") {
+      return { data: undefined, isLoading: false, isError: false, isFetched: true };
+    }
     if (queryKey[0] === "tools" || queryKey[0] === "agents") return listQueryResult;
     throw new Error(`Unexpected query: ${JSON.stringify(queryKey)}`);
   },
