@@ -5836,6 +5836,7 @@ function leaseDb(
                 : [];
       const query = {
         then: Promise.resolve(rows).then.bind(Promise.resolve(rows)),
+        innerJoin: () => query,
         where: () => query,
         orderBy: () => query,
         for: () => query,
@@ -10907,6 +10908,15 @@ describe("native process ownership", () => {
 });
 
 describe("runnerd provider runtime wiring", () => {
+  beforeEach(() => {
+    // The local credential reader is mocked so Grok tests can assert its exact
+    // launch path. Restore its safe fixture-file behavior for every runnerd
+    // test after any one-shot Grok override has been consumed.
+    readLocalAiCredential.mockReset().mockImplementation(
+      async (filename: string) => readFile(filename, "utf8"),
+    );
+  });
+
   it("keeps remote warm turns open while retaining verified close semantics", async () => {
     const current = scopedNativeExecution("remote-warm-settlement");
     current.session = {

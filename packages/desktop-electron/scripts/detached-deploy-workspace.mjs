@@ -7,6 +7,19 @@ const excludedDirectoryNames = new Set([
 ]);
 const rootFiles = ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", ".npmrc"];
 const packageIgnoreFiles = new Set([".npmignore", ".gitignore"]);
+const copilotClosureManifest = ".paperclip-copilot-closure.json";
+// Keep this list aligned with COPILOT_CLOSURE_SHA256 in the Runner's
+// copilot-installation resolver; no other platform directory is admitted.
+const qualifiedCopilotPlatforms = new Set(["darwin-arm64", "darwin-x64", "linux-x64"]);
+
+export function isQualifiedCopilotPlatform(platform = process.platform, architecture = process.arch) {
+  return qualifiedCopilotPlatforms.has(`${platform}-${architecture}`);
+}
+
+function isCurrentCopilotClosureManifest(source, candidate, allowedRelativePaths, stat) {
+  if (!stat.isFile() || stat.isSymbolicLink()) return false;
+  return allowedRelativePaths?.has(path.relative(source, candidate)) ?? false;
+}
 
 function readJson(filePath) {
   return JSON.parse(readFileSync(filePath, "utf8"));
@@ -67,14 +80,16 @@ export function resolveDeployWorkspaceClosure(repoRoot, entryPackageName) {
   return closure.sort((left, right) => left.relativeDirectory.localeCompare(right.relativeDirectory));
 }
 
-function copyPackageDirectory(source, destination) {
+function copyPackageDirectory(source, destination, allowedHiddenFiles) {
   cpSync(source, destination, {
     recursive: true,
     force: true,
     filter: (candidate) => {
       const name = path.basename(candidate);
-      if (excludedDirectoryNames.has(name) || (name.startsWith(".") && !packageIgnoreFiles.has(name))) return false;
       const stat = lstatSync(candidate);
+      if (excludedDirectoryNames.has(name)) return false;
+      if (name.startsWith(".") && !packageIgnoreFiles.has(name)
+        && !isCurrentCopilotClosureManifest(source, candidate, allowedHiddenFiles, stat)) return false;
       if (stat.isSymbolicLink()) throw new Error(`Refusing source link in detached deploy workspace: ${candidate}`);
       return true;
     },
@@ -131,7 +146,15 @@ export function createDetachedDeployWorkspace({ repoRoot, workspaceRoot, entryPa
 
   const closure = resolveDeployWorkspaceClosure(repoRoot, entryPackageName);
   for (const { relativeDirectory } of closure) {
-    copyPackageDirectory(path.resolve(repoRoot, relativeDirectory), path.resolve(resolvedWorkspaceRoot, relativeDirectory));
+    const allowedHiddenFiles = ["server", path.join("packages", "paperclip-runner")].includes(relativeDirectory)
+      ? new Set([...qualifiedCopilotPlatforms].map((platform) =>
+        path.join("provider-assets", "copilot", platform, copilotClosureManifest)))
+      : undefined;
+    copyPackageDirectory(
+      path.resolve(repoRoot, relativeDirectory),
+      path.resolve(resolvedWorkspaceRoot, relativeDirectory),
+      allowedHiddenFiles,
+    );
   }
   return closure;
 }
