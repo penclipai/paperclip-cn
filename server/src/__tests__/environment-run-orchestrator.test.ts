@@ -776,6 +776,7 @@ describe("native runner lifecycle changes before lease acquisition", () => {
     const input = {
       companyId: "company-1", selectedEnvironmentId: "env-1", localEnvironmentId: "local",
       adapterType: "paperclip_runner", issueId: "existing-task", heartbeatRunId: "run-1", agentId: "agent-1",
+      runnerTaskProjectIds:["anchor","authorized-reference"],
       persistedExecutionWorkspace: { id: "existing-workspace", mode: "shared_workspace" as const },
       executionWorkspaceSettings: null,
     };
@@ -786,6 +787,7 @@ describe("native runner lifecycle changes before lease acquisition", () => {
     expect(warm.environment.config).toEqual({ provider: "daytona", reuseLease: true });
     expect(acquireRunLease.mock.calls[1][0].persistedExecutionWorkspace).toEqual(input.persistedExecutionWorkspace);
     expect(acquireRunLease.mock.calls[1][0].configuredEnvironment).toBe(environment);
+    expect(acquireRunLease.mock.calls[1][0].runnerTaskProjectIds).toEqual(input.runnerTaskProjectIds);
     // Run-scoped adaptation must not change the shared environment or other agents.
     expect(environment.config).toEqual({ provider: "daytona", reuseLease: false });
     const coldAgain = await orchestrator.acquireForRun({ ...input, heartbeatRunId: "run-3", adapterConfig: { lifecycleMode: "per_turn" } });

@@ -94,7 +94,7 @@ import { getNativeReviewAssignment, readNativeReviewAssignmentContext, type Nati
 import { childReviewOutcomes } from "./child-review-outcomes.js";
 import { logActivity, persistActivity, publishActivity } from "../activity-log.js";
 import { captureRunIdentity } from "../run-identity.js";
-import { prepareNativeRunnerFileHandoff, type RemoteWorkspaceFileReader } from "./native-runner-file-handoff.js";
+import { prepareNativeRunnerFileHandoff, readVerifiedWorkspaceFile, type RemoteWorkspaceFileReader } from "./native-runner-file-handoff.js";
 import { MAX_ATTACHMENT_BYTES } from "../../attachment-types.js";
 import {
   READ_CURRENT_WAKE_COMMENTS_TOOL_DEFINITION,
@@ -1927,6 +1927,35 @@ export class PaperclipRunnerToolAuthority {
     if (!workspaceRoot) {
       throw new Error("paperclip_runner_file_handoff_workspace_unavailable");
     }
+    const current = await this.#boundContext();
+    const authorizeWorkspace = async (actor: typeof agents.$inferSelect) => {
+      if (this.binding.dotRuntime) {
+        if (!this.binding.workspaceBridge || actor.adapterConfig?.dotWorkspaceAccess !== true)
+          throw forbidden("Dot workspace access is required to publish workspace files.");
+        assertRunnerWorkspacePathAllowed(typeof input.contentRef === "string" ? input.contentRef : "");
+        await this.binding.assertBridgeAuthority?.();
+      }
+    };
+    await authorizeWorkspace(current.actor);
+    const fileBinding = {
+      companyId: this.binding.companyId,
+      issueId: this.binding.issueId,
+      runId: this.binding.runId,
+      agentId: this.binding.agentId,
+      workspaceRoot,
+      executionTargetKind: this.binding.executionTargetKind ?? "local",
+      readRemoteWorkspaceFile: this.binding.readRemoteWorkspaceFile,
+      readRemoteTaskFile: this.binding.readRemoteTaskFile,
+    } as const;
+    const prior = record(record(current.run.resultJson).semanticToolReceipts)[idempotencyKey];
+    const verifiedFile = prior === undefined ? await readVerifiedWorkspaceFile(fileBinding, {
+      filename: typeof input.filename === "string" ? input.filename : "",
+      contentType: typeof input.contentType === "string" ? input.contentType : "",
+      byteSize: typeof input.byteSize === "number" ? input.byteSize : Number.NaN,
+      sha256: typeof input.sha256 === "string" ? input.sha256 : "",
+      contentRef: typeof input.contentRef === "string" ? input.contentRef : "",
+      title: typeof input.title === "string" ? input.title : "",
+    }) : null;
     let publication:
       Awaited<ReturnType<typeof persistActivity>>["publication"] | null = null;
     let rollbackDefinitePreCommitFailure: (() => Promise<void>) | null = null;
@@ -1935,35 +1964,12 @@ export class PaperclipRunnerToolAuthority {
       idempotencyKey,
       input,
       async (tx, context) => {
-        if (this.binding.dotRuntime) {
-          if (!this.binding.workspaceBridge || context.actor.adapterConfig?.dotWorkspaceAccess !== true)
-            throw forbidden("Dot workspace access is required to publish workspace files.");
-          assertRunnerWorkspacePathAllowed(typeof input.contentRef === "string" ? input.contentRef : "");
-          await this.binding.assertBridgeAuthority?.();
-        }
+        await authorizeWorkspace(context.actor);
+        if (!verifiedFile) throw new Error("paperclip_runner_file_handoff_receipt_changed");
         const prepared = await prepareNativeRunnerFileHandoff({
           db: tx,
-          binding: {
-            companyId: this.binding.companyId,
-            issueId: this.binding.issueId,
-            runId: this.binding.runId,
-            agentId: this.binding.agentId,
-            workspaceRoot,
-            executionTargetKind: this.binding.executionTargetKind ?? "local",
-            readRemoteWorkspaceFile: this.binding.readRemoteWorkspaceFile,
-            readRemoteTaskFile: this.binding.readRemoteTaskFile,
-          },
-          deliverable: {
-            filename: typeof input.filename === "string" ? input.filename : "",
-            contentType:
-              typeof input.contentType === "string" ? input.contentType : "",
-            byteSize:
-              typeof input.byteSize === "number" ? input.byteSize : Number.NaN,
-            sha256: typeof input.sha256 === "string" ? input.sha256 : "",
-            contentRef:
-              typeof input.contentRef === "string" ? input.contentRef : "",
-            title: typeof input.title === "string" ? input.title : "",
-          },
+          binding: fileBinding,
+          verifiedFile,
           storage: this.binding.storage,
         });
         rollbackDefinitePreCommitFailure =

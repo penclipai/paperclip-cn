@@ -7,6 +7,7 @@ import { persistActivity } from "./activity-log.js";
 import { createSystemRecovery, readSystemRecovery } from "./system-recovery-state.js";
 import { updateSystemRecovery } from "./system-recovery.js";
 import { instanceSettingsService } from "./instance-settings.js";
+import { notifyChatActionWork } from "./chat-work-notifications.js";
 
 export async function assertTaskRetryConversationAllowed(
   db: Db,
@@ -182,6 +183,19 @@ export async function reconcileTaskChatRetryReceipts(db: Db) {
     const [receipt] = chat ? await db.select().from(agentWakeupRequests).where(and(
       eq(agentWakeupRequests.companyId, wake.companyId), eq(agentWakeupRequests.id, chat.id),
       eq(agentWakeupRequests.agentId, wake.agentId))) : [];
+    // A deferred chat receipt is admitted input, not a completed dispatch.
+    // Re-stage that exact action through chat's owner; it rechecks authority
+    // and normal queue policy before updating the existing receipt.
+    if (chat?.status === "processed" && chat.payload.taskRetryIntentId === wake.id &&
+        chat.payload.failedRunId === intent.sourceRunId && receipt?.status === "deferred_issue_execution" &&
+        !receipt.runId && receipt.payload?.taskRetryRequestId === wake.id) {
+      await db.transaction(async tx => {
+        await notifyChatActionWork(tx, "failed_run_retry");
+        await tx.update(chatActions).set({ status: "issued", updatedAt: new Date() })
+          .where(and(eq(chatActions.id, chat.id), eq(chatActions.companyId, wake.companyId),
+            eq(chatActions.status, "processed"), eq(chatActions.updatedAt, chat.updatedAt)));
+      });
+    }
     const failed = chat && ["failed", "cancelled"].includes(chat.status);
     await db.update(agentWakeupRequests).set({
       ...(receipt?.runId ? { status: "coalesced", runId: receipt.runId, finishedAt: new Date() }

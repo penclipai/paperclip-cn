@@ -352,7 +352,11 @@ export function setupLiveEventsWebSocketServer(
       const runId = typeof payload.runId === "string" ? payload.runId
         : payload.entityType === "heartbeat_run" && typeof payload.entityId === "string" ? payload.entityId : null;
       if (runId) {
-        const [run] = await db.select().from(heartbeatRuns).where(and(eq(heartbeatRuns.id, runId), eq(heartbeatRuns.companyId, event.companyId)));
+        const [run] = await db.select({
+          companyId: heartbeatRuns.companyId,
+          scopeKind: heartbeatRuns.scopeKind,
+          issueId: heartbeatRuns.issueId,
+        }).from(heartbeatRuns).where(and(eq(heartbeatRuns.id, runId), eq(heartbeatRuns.companyId, event.companyId)));
         if (!run || !(await canActorReadHeartbeatRun(db, access, context!.actor, run))) return null;
       }
       if (event.type.startsWith("heartbeat.run.")) return runId ? event : null;

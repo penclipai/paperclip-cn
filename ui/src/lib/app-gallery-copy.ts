@@ -251,6 +251,7 @@ export function credentialFieldLabel(
   rawLabel: string,
   fieldCount: number,
 ): string {
+  if (/^Paste your\b/.test(rawLabel)) return sanitizeProsumerCopy(rawLabel);
   if (fieldCount <= 1) return translateInstant("apps.gallery.yourAppKey", { appName });
   const cleaned = sanitizeProsumerCopy(rawLabel);
   return cleaned || translateInstant("apps.gallery.yourAppKey", { appName });

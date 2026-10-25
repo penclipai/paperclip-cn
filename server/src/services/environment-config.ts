@@ -111,6 +111,8 @@ const pluginSandboxEnvironmentConfigSchema = z.object({
 }).catchall(z.unknown());
 
 const pluginEnvironmentConfigSchema = z.object({
+  runnerLifecycleMode: z.enum(["inherit", "per_turn", "warm"]).optional(),
+  runnerIdleTimeoutMs: z.number().int().positive().max(86_400_000).optional(),
   pluginKey: z.string().min(1),
   driverKey: z.string().min(1).regex(
     /^[a-z0-9][a-z0-9._-]*$/,

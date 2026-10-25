@@ -35,8 +35,18 @@ export interface RunLogFinalizeSummary {
   compressed: boolean;
 }
 
+export interface RunLogBeginInput {
+  companyId: string;
+  agentId: string;
+  runId: string;
+  // Set only when persisted run lifecycle state proves no earlier attempt
+  // began this log, so no durable prefix can exist to restore. Omitted means
+  // the run may be a retry or recovery and the durable mirror is checked.
+  newRun?: boolean;
+}
+
 export interface RunLogStore {
-  begin(input: { companyId: string; agentId: string; runId: string }): Promise<RunLogHandle>;
+  begin(input: RunLogBeginInput): Promise<RunLogHandle>;
   append(
     handle: RunLogHandle,
     event: { stream: "stdout" | "stderr" | "system"; chunk: string; ts: string; seq?: number },
@@ -300,11 +310,12 @@ export function createDurableRunLogStore(options: DurableRunLogStoreOptions): Ru
       await retireInflightMirror(relPath);
       // Retries share a run ID. Never truncate their earlier evidence. On a
       // new pod, restore the durable prefix before opening another attempt.
+      // A proven-new run has no prefix, so skip the remote round trip.
       const exists = await fs.stat(absPath).then(() => true, (error) => {
         if (error.code === "ENOENT") return false;
         throw error;
       });
-      if (!exists && s3) {
+      if (!exists && s3 && input.newRun !== true) {
         const key = s3Key(relPath);
         const head = await s3.provider.headObject({ objectKey: key });
         if (head.exists) {

@@ -64,6 +64,25 @@ describe("plugin native Runner ownership", () => {
     await registration.release(); await registration.checkpoint("unsettled"); await handle.completion;
     expect(task.mock.calls.find(([op]) => op.kind === "submit")?.[0]).toMatchObject({ preparedLaunchId: "configuration" });
   });
+  it("omits duplicate project validation only when the provider enforces it at submission", async () => {
+    const { task } = provider();
+    const perform = task.getMockImplementation()!;
+    task.mockImplementation(async op => op.kind === "prepare"
+      ? { ...await perform(op) as object, projectAuthCheckAtSubmit: true } : perform(op));
+    const owner = createPluginRunnerTaskOwner({ projectAuthCheckVersion: 1,
+      task, projectIds: [], harness: "codex", pollMs: 1 });
+    await prepare(owner);
+    expect(task.mock.calls.map(([op]) => op.kind)).toEqual(["prepare"]);
+    ingress.connect.mockReturnValue({ ready: Promise.resolve(), close: async () => {} });
+    const registration = await owner.registration({} as never, "run");
+    const handle = owner.launcher(launchSpec());
+    registration.activate(); await registration.ready();
+    await registration.release(); await registration.checkpoint("unsettled"); await handle.completion;
+    expect(task.mock.calls.filter(([op]) => op.kind === "submit")).toHaveLength(1);
+    const unsupported = createPluginRunnerTaskOwner({ task, projectIds: [], harness: "codex" });
+    await expect(prepare(unsupported)).rejects.toThrow("validation unavailable");
+  });
+
   it("does not accept a late preparation after task release", async () => {
     let finish!: () => void;
     const gate = new Promise<void>(resolve => { finish = resolve; });
@@ -302,4 +321,79 @@ describe("plugin task workspace file transfer", () => {
       await expect(owner.readWorkspaceFile("proof.txt",1024)).rejects.toThrow("unavailable");
     } finally {await registration.release();await registration.checkpoint("unsettled");await handle.completion;}
   });
+});
+
+it("reuses a warm Codex process across run authorities without idle status polling", async () => {
+  const {task} = provider();
+  ingress.connect.mockReturnValue({ready:Promise.resolve(),close:async()=>{}});
+  const retained = vi.fn(async()=>{});
+  const input = {task,projectIds:[],harness:"codex",projectAuthCheckVersion:1 as const,warmTaskVersion:1 as const,
+    accountIdentity:"account",credentialIdentity:"revision",pollMs:1,onSessionRetained:retained};
+  const owner = createPluginRunnerTaskOwner(input);
+  await prepare(owner);
+  const registration = await owner.registration({} as never,"run");
+  const spec = launchSpec(); spec.nativeRunner!.lifecyclePolicy = {mode:"warm",idleTimeoutMs:300000};
+  const handle = owner.launcher(spec); registration.activate(); await registration.ready();
+  const observed = task.mock.calls.length;
+  await new Promise(resolve=>setTimeout(resolve,10));
+  expect(task.mock.calls).toHaveLength(observed);
+  const originalTask=task.getMockImplementation()!;
+  const nextTask=vi.fn(async op=>{
+    const result=await originalTask(op) as Record<string,unknown>;
+    return op.kind === "prepare" ? {...result,projectAuthCheckAtSubmit:true} : result;
+  });
+  owner.rebind({...input,task:nextTask});
+  const nextRegistration=await owner.registration({} as never,"next-run");
+  const nextIdentity={...requirements.identity,runId:"next-run",turnId:"next-turn",itemId:"next-item"};
+  await owner.driver.prepareLaunch!({...requirements,identity:nextIdentity});
+  expect(nextTask.mock.calls[0][0]).toMatchObject({kind:"prepare",priorIdentity:requirements.identity,accountIdentity:"account"});
+  expect(nextTask.mock.calls.map(([op])=>op.kind)).toEqual(["prepare","check_project_auth"]);
+  await registration.release(); nextRegistration.activate(); await nextRegistration.ready();
+  expect(nextTask.mock.calls.some(([op])=>op.kind==="submit" || op.kind==="stop" || op.kind==="complete")).toBe(false);
+  await nextRegistration.release(); await nextRegistration.checkpoint("settled"); await handle.completion;
+  expect(retained).toHaveBeenCalledWith(expect.objectContaining(nextIdentity));
+  expect(nextTask.mock.calls.filter(([op])=>op.kind==="stop")).toHaveLength(1);
+});
+
+it("adopts a verified retained Codex task without submitting a replacement", async () => {
+  const {task}=provider();
+  ingress.connect.mockReturnValue({ready:Promise.resolve(),close:async()=>{}});
+  const owner=createPluginRunnerTaskOwner({task,projectIds:[],harness:"codex",projectAuthCheckVersion:1,
+    warmTaskVersion:1,accountIdentity:"account",adoptIdentity:requirements.identity,pollMs:1});
+  const recovered = {configurationId:"saved",requirementsDigest:`sha256:${"a".repeat(64)}`,provider:{}};
+  await expect(owner.driver.prepareLaunch!(requirements,recovered)).resolves.toEqual(recovered);
+  expect(task.mock.calls.map(([op])=>op.kind)).toEqual(["check_project_auth"]);
+  expect(task.mock.calls[0][0]).toMatchObject({configurationId:"saved",projectIds:[]});
+  expect(await owner.driver.adoptExistingRunner!.isAlive()).toBe(true);
+  const registration=await owner.registration({} as never,"run");
+  registration.activate(); await registration.ready();
+  await registration.release(); await registration.checkpoint("settled");
+  expect(task.mock.calls.some(([op])=>op.kind==="submit")).toBe(false);
+  expect(task.mock.calls.some(([op])=>op.kind==="complete")).toBe(true);
+});
+
+it("denies retained process adoption when current project authentication is revoked",async()=>{
+  const {task}=provider();
+  task.mockImplementation(async op=>op.kind === "check_project_auth"
+    ? {kind:"project_auth",taskId:"task",configurationId:op.configurationId,provider:op.provider,allowed:false} as never
+    : {kind:"accepted",taskId:"task"} as never);
+  const owner=createPluginRunnerTaskOwner({task,projectIds:["project"],harness:"codex",projectAuthCheckVersion:1,
+    warmTaskVersion:1,accountIdentity:"account",adoptIdentity:requirements.identity});
+  await expect(owner.driver.prepareLaunch!(requirements,{configurationId:"saved",requirementsDigest:`sha256:${"a".repeat(64)}`,provider:{}}))
+    .rejects.toThrow("project authentication conflicts");
+  expect(task.mock.calls.map(([op])=>op.kind)).toEqual(["check_project_auth"]);
+});
+
+it("refuses warm account or credential generation changes", async()=>{
+  const {task}=provider();
+  const input={task,projectIds:[],harness:"codex",projectAuthCheckVersion:1 as const,warmTaskVersion:1 as const,
+    accountIdentity:"account",credentialIdentity:"revision",pollMs:1};
+  const owner=createPluginRunnerTaskOwner(input);
+  await prepare(owner);
+  const spec=launchSpec();spec.nativeRunner!.lifecyclePolicy={mode:"warm",idleTimeoutMs:300000};
+  const process=owner.launcher(spec);
+  expect(()=>owner.rebind({...input,accountIdentity:"other"})).toThrow("cannot be rebound");
+  expect(()=>owner.rebind({...input,credentialIdentity:"rotated"})).toThrow("cannot be rebound");
+  const registration=await owner.registration({} as never,"run");
+  await registration.checkpoint("unsettled"); await process.completion;
 });

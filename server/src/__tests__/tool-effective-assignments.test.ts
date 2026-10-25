@@ -1,10 +1,11 @@
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { eq, sql } from "drizzle-orm";
 import {
   agents, companies, createDb, toolApplications, toolCatalogEntries,
   toolConnections, toolProfileBindings, toolProfileEntries, toolProfiles, type Db,
 } from "@penclipai/db";
+import { createDatabaseResponseCapture, installDatabaseResponseCapture } from "@penclipai/db/response-capture";
 import { toolAccessService } from "../services/tool-access.js";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 
@@ -49,6 +50,11 @@ describeDatabase("effective tool assignments", () => {
     expect(assignments).toEqual({ ...full, allowedTools: full.allowedTools.map(
       ({ id, applicationId, connectionId, toolName }) => ({ id, applicationId, connectionId, toolName }),
     ) });
+    const connections = await service.getConnectionAssignmentsForAgent(f.company.id, f.agent.id, [f.connection.id]);
+    expect(connections).toEqual({
+      installedConnections: full.installedConnections,
+      allowedConnectionIds: [...new Set(full.allowedTools.filter(tool => tool.connectionId === f.connection.id).map(tool => tool.connectionId))],
+    });
     return { service, full, assignments };
   }
 
@@ -130,4 +136,45 @@ describeDatabase("effective tool assignments", () => {
     expect(observed[1].bytes).toBeLessThan(observed[0].bytes / 100);
     expect(full.allowedTools[0].inputSchema).toEqual(f.read.inputSchema);
   });
+  it("scopes catalog reads, omits rule payloads, and keeps current full definitions", async () => {
+    const f = await fixture();
+    const bulk = randomBytes(128 * 1024).toString("base64");
+    const [rule] = await db.insert(toolProfileEntries).values({ companyId: f.company.id, profileId: f.profile.id,
+      selectorType: "application", effect: "include", applicationId: f.application.id, conditions: { savedRuleMetadata: bulk } }).returning();
+    const [unrelated] = await db.insert(toolConnections).values({ companyId: f.company.id, applicationId: f.application.id,
+      name: "Other connection", uid: randomUUID(), transport: "mcp_remote", status: "active", enabled: true }).returning();
+    await db.insert(toolCatalogEntries).values(Array.from({ length: 100 }, (_, index) => ({ companyId: f.company.id,
+      applicationId: f.application.id, connectionId: unrelated.id, name: `other_${index}`, toolName: `other_${index}`, versionHash: `v${index}` })));
+    const service = toolAccessService(db);
+    const before = await service.getEffectiveToolAssignmentsForAgent(f.company.id, f.agent.id);
+    expect(before.allowedTools).toHaveLength(102);
+    const events: Array<Record<string, unknown>> = [], now = Date.now();
+    const capture = createDatabaseResponseCapture({ start: now - 100, end: now + 59_000 }, event => events.push(event));
+    installDatabaseResponseCapture(db, { toolCatalogEntries, toolProfileEntries }, capture);
+    let scoped: Awaited<ReturnType<typeof service.getConnectionAssignmentsForAgent>>;
+    try { scoped = await service.getConnectionAssignmentsForAgent(f.company.id, f.agent.id, [f.connection.id]); }
+    finally { capture.flush(); }
+    expect(Number(events.at(-1)?.completedQueries)).toBeGreaterThan(0);
+    expect(Number(events.at(-1)?.responseValueBytes)).toBeLessThan(16 * 1024);
+    const catalogQueries = events.filter(event => event.event === "paperclip.db_response_capture.entry.v1"
+      && event.table === "tool_catalog_entries" && event.operation === "select");
+    expect(catalogQueries).toHaveLength(1);
+    expect(catalogQueries[0]).toMatchObject({ calls: 1, rows: 2 });
+    expect(scoped!).toEqual({ allowedConnectionIds: [f.connection.id], installedConnections: before.installedConnections });
+    expect(JSON.stringify(events)).not.toContain(bulk.slice(0, 64));
+    expect((await db.select().from(toolProfileEntries).where(eq(toolProfileEntries.id, rule.id)))[0]).toEqual(rule);
+    expect(await service.getEffectiveToolAssignmentsForAgent(f.company.id, f.agent.id)).toEqual(before);
+    expect((await service.getConnectionAssignmentsForAgent(f.company.id, f.agent.id, [])).allowedConnectionIds).toEqual([]);
+    await db.delete(toolProfileBindings).where(eq(toolProfileBindings.profileId, f.profile.id));
+    expect((await service.getConnectionAssignmentsForAgent(f.company.id, f.agent.id, [f.connection.id])).allowedConnectionIds).toEqual([]);
+  });
+
+  it("keeps other companies' catalog rows out of scoped assignments", async () => {
+    const f = await fixture();
+    const other = await fixture();
+    await db.update(toolProfiles).set({ defaultAction: "allow" }).where(eq(toolProfiles.id, f.profile.id));
+    expect((await toolAccessService(db).getConnectionAssignmentsForAgent(f.company.id, f.agent.id, [other.connection.id])).allowedConnectionIds).toEqual([]);
+    await expect(toolAccessService(db).getConnectionAssignmentsForAgent(f.company.id, other.agent.id, [f.connection.id])).rejects.toThrow("same company");
+  });
+
 });

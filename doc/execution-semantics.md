@@ -837,6 +837,16 @@ An `in_review` issue is stalled when it has no typed participant, no pending int
 
 When a maintained review path is consumed, Paperclip queues one normal-model repair wake per consumed-path fingerprint. If an external check is still pending, that repair must persist a new one-shot issue monitor and report its scheduled check time; a promise to check later does not schedule a wake. If the repair also finishes without a maintained path, Paperclip atomically rechecks the issue's current owner and review paths, then blocks it with a board-owned recovery action and an inline notice linking the repair run. The original assignee is preserved. A new maintained path or a newer run prevents stale finalization from escalating the issue. The stranded-issue sweep retries this same disposition from the saved terminal repair run if a restart or transaction failure prevented finalization. A due or claimed monitor whose bounds remain valid is preserved for monitor dispatch while its owner permits on-demand wakes; passing its due time does not consume it. Disabling those wakes cannot let an overdue monitor hide an exhausted repair indefinitely. Exhaustion never queues another automatic repair wake.
 
+The review-path repair instruction travels in the canonical wake payload's
+`dispositionRepair` block. Both fresh and resumed agent prompts include its
+one-attempt bound and the requirement to save a monitor before promising a later
+check. The server supplies this instruction; arbitrary context text cannot
+replace it or increase the repair budget. The typed repair marker preserves this
+instruction across connection-pool waits and other retries that change the wake
+reason. An ordinary wake without that marker ignores stale raw instruction text.
+This is a normal-model repair, not a status-only recovery that forbids useful
+executor work.
+
 When an execution-policy review stage has a pending agent participant, the participant's run is part of the review path only while it is live or queued. If that participant run reaches a terminal state while `executionState.status` remains `pending`, no decision has been recorded. After a successful run with no review decision, Paperclip should queue one bounded normal-model recovery wake for the same participant when the agent is invokable and no other review path exists. A failed participant instead follows the provider-continuity rules below: local conversational adapters can start a bounded continuation turn, while native sessions use validated resume/replacement. Other adapters retain their action-recovery gates. The original assignee stays unchanged. If that recovery run also finishes while the stage remains pending, or the participant cannot be invoked, Paperclip must move the source issue to an explicit blocked/recovery path instead of leaving `in_review` to drift silently.
 
 ### Issue monitors
@@ -1673,6 +1683,18 @@ controller must recover it through the authenticated ownership checks. This
 preserves active work and queued messages without treating a server restart as
 user cancellation.
 
+During controller shutdown, already registered provider startups share one
+30-second sweep deadline to finish read-only run admission and publish their exact
+sessions for detachment. Its company, run, session, runner and completion-contract binding
+must still match persisted authority. The draining controller cannot checkpoint,
+publish events, submit a turn or settle the run. A new startup after the shutdown
+fence, or admission after the window expires, remains rejected. A Stop pending
+before or after session publication keeps cancellation and cleanup with the
+current owner. Shutdown waits for that owner only until the same sweep deadline;
+it does not detach the session or submit a prompt while Stop is pending. An
+unsettled owner remains explicitly pending for reconciliation. Its timeout does
+not abort detachment of healthy sessions or trigger a global graceful drain.
+
 Recovery restores a structured result proposal from the durable run events when
 its append survived but the active turn's session checkpoint did not. Advancing
 the replay cursor must preserve that proposal for the exact run, session, source,
@@ -1770,6 +1792,15 @@ timeout retain the one-minute host default. A resume failure still preserves
 the recorded sandbox unless the provider proves it lost and replacement passes
 the existing backup checks.
 
+A replacement workspace can also host a newly admitted provider session that
+has never run. That session may start without a backup only when its durable
+identity matches the current run, runner and lease, it has no connections or
+committed events, and all commands are pending bootstrap commands. The runner
+must atomically claim an absent remote session directory under real, readable
+parents. Existing session files, prior activity, missing proof or any saved
+backup retain the verified-restore requirement. Workspace replacement alone
+never authorizes a provider-session reset.
+
 For the native runner, warm mode requests a reusable sandbox lease **before**
 lease acquisition. The environment's explicit runner lifecycle overrides the
 agent default; an inherited lifecycle uses the current agent setting on each
@@ -1788,7 +1819,11 @@ experimental isolated-workspaces UI. Ordinary workspace updates remain gated;
 the runtime can bind only a validated shared workspace in the issue's company
 and project. Follow-ups can therefore reuse the same sandbox and provider
 session. A staged provider package is reused only after the complete expected
-manifest and artifact hashes verify. A missing, changed, or incompatible package
+manifest and artifact hashes verify. Exact live-process reattachment uses the
+controller-owned pack and runner identities recorded after the original session
+passed authentication. It preserves protocol and capability checks. Fresh or
+replacement launches use current release authority. A missing historical receipt
+retains the current release gate; guest files cannot establish old authority. A missing, changed, or incompatible package
 must be replaced and verified before launch.
 
 Warm attachment requires two consecutive authenticated readiness snapshots.

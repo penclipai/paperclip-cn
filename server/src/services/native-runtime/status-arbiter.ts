@@ -1,7 +1,7 @@
 import type { NativeEvidenceAssessment } from "./evidence-classifier.js";
 import { NATIVE_MODEL_REJECTION_MESSAGE, NATIVE_PROVIDER_CAPACITY_MAX_RETRIES, NATIVE_PROVIDER_OVERLOADED_CODE, NATIVE_PROVIDER_OVERLOADED_MESSAGE } from "./native-provider-failure.js";
 
-export const NATIVE_STATUS_ARBITER_POLICY_VERSION = "phase6-v11";
+export const NATIVE_STATUS_ARBITER_POLICY_VERSION = "phase6-v12";
 
 export type NativeAuthoritativeIssueStatus =
   | "backlog"
@@ -111,6 +111,7 @@ export function arbitrateNativeStatus(input: {
   governanceResolvedForRun?: boolean;
   externalChatResponseWaitAuthorization?:
     "authorized" | "revoked" | "not_applicable";
+  publishedExternalReview?: boolean;
   /** Server-verified accepted plan request and normal provider terminal. */
   planWaitAuthorized?: boolean;
   monitorWaitAuthorized?: boolean;
@@ -485,7 +486,8 @@ export function arbitrateNativeStatus(input: {
     if (input.monitorWaitAuthorized) {
       return {
         policyVersion: NATIVE_STATUS_ARBITER_POLICY_VERSION,
-        statusAction: "preserve", toStatus: input.priorIssueStatus,
+        statusAction: input.publishedExternalReview ? "in_review" : "preserve",
+        toStatus: input.publishedExternalReview ? "in_review" : input.priorIssueStatus,
         reasonCode: "scheduled_monitor_waiting", unblockDescriptor: null,
         // The persisted timer owns delivery, never enqueue an immediate wake.
         effects: [{ kind: "release_checkout" }],
@@ -507,8 +509,8 @@ export function arbitrateNativeStatus(input: {
   ) {
     return {
       policyVersion: NATIVE_STATUS_ARBITER_POLICY_VERSION,
-      statusAction: "in_progress",
-      toStatus: "in_progress",
+      statusAction: input.publishedExternalReview ? "in_review" : "in_progress",
+      toStatus: input.publishedExternalReview ? "in_review" : "in_progress",
       reasonCode: "external_chat_response_waiting",
       unblockDescriptor: null,
       // The active, authorized provider conversation is the durable liveness

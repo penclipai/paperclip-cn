@@ -1,4 +1,5 @@
 import { execFile as execFileCallback } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { mkdtemp, mkdir, readFile, readdir, rm, writeFile, access, rename } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -6,7 +7,7 @@ import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { captureDirectorySnapshot, directorySnapshotSha256, serializeDirectorySnapshot } from "@penclipai/adapter-utils/workspace-restore-merge";
 import type { AdapterExecutionTarget } from "@penclipai/adapter-utils/execution-target";
-import { agents, companies, createDb, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS, environmentLeases, executionWorkspaces, executionWorkspaceRepositoryAccess, heartbeatRuns, issues, issueAccessGrants, plugins, projects, projectWorkspaces, type Db } from "@penclipai/db";
+import { agentWakeupRequests, issueRecoveryActions, agents, companies, createDb, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS, environmentLeases, executionWorkspaces, executionWorkspaceRepositoryAccess, heartbeatRuns, issues, issueAccessGrants, plugins, projects, projectWorkspaces, type Db } from "@penclipai/db";
 import { eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
@@ -21,6 +22,8 @@ import { prepareHeartbeatWorkspace, type HeartbeatWorkspacePreparationInput } fr
 import { buildNativeExecutionInput } from "../native-runtime/native-execution-input.js";
 import { nativeRuntimeContextFixture } from "../native-runtime/runtime-context.test-fixture.js";
 import * as managedRepositoryCheckout from "../managed-repository-checkout.js";
+import { readFreshWorkspaceReadiness } from "../fresh-workspace-continuation.js";
+import { createSystemRecovery } from "../system-recovery-state.js";
 import { isolatedRemoteSourcePath } from "../isolated-remote-workspace-source.js";
 import { cleanupExecutionWorkspaceArtifacts } from "../workspace-runtime.js";
 import { buildProjectMentionHref } from "@penclipai/shared";
@@ -261,6 +264,45 @@ describe.skipIf(!support.supported)("heartbeat workspace preparation boundary", 
     await expect(access(join(replacement.executionWorkspace.cwd, "unpublished.txt"))).rejects.toThrow();
     expect((await readIssue(issue.id)).executionWorkspaceId).toBe(replacement.persistedExecutionWorkspace!.id);
   }, 30_000);
+
+  it.each(["historical_first", "recovery_first"] as const)(
+    "prepares the admitted fresh directory with sibling holds in either order: %s", async order => {
+      const { input, source, issue } = await fixture(true);
+      const original = await prepareHeartbeatWorkspace(db, input);
+      await writeFile(join(original.executionWorkspace.cwd, "unpublished.txt"), "keep the old work\n");
+      const sourceRunId = input.run.id, retryIntentId = randomUUID();
+      const [nextRun] = await db.insert(heartbeatRuns).values({ companyId: input.run.companyId,
+        agentId: input.agent.id, issueId: issue.id, scopeKind: "issue", status: "running", runtimeMode: "legacy",
+        contextSnapshot: { issueId: issue.id, taskRetryRequestId: retryIntentId } }).returning();
+      await db.insert(agentWakeupRequests).values({ id: retryIntentId, companyId: input.run.companyId,
+        agentId: input.agent.id, reason: "task_retry", source: "on_demand", status: "coalesced", runId: nextRun.id,
+        payload: { issueId: issue.id } });
+      const readiness = { mode: "fresh_isolated_workspace" as const, retryIntentId, sourceRunId, retainedSourceIds: [] };
+      const evidence = { runId: sourceRunId, explicitUserContinuation: { runId: nextRun.id, readiness } };
+      const hold = { companyId: input.run.companyId, sourceIssueId: issue.id, kind: "active_run_watchdog",
+        status: "resolved", ownerType: "system", nextAction: "Preserve the original source outcome." };
+      const historical = { ...hold, cause: "native_session_retry_exhausted", fingerprint: randomUUID(), evidence };
+      const recovery = { ...hold, cause: "native_continuation_requires_reconciliation", fingerprint: randomUUID(),
+        evidence: { ...evidence, systemRecovery: { ...createSystemRecovery(sourceRunId, retryIntentId),
+          state: "exhausted", freshAttemptRunId: nextRun.id } } };
+      await db.insert(issueRecoveryActions).values(order === "historical_first" ? [historical, recovery] : [recovery, historical]);
+      // Use the same committed-receipt lookup as run preparation, not a
+      // hand-built freshWorkspace input. The historical hold has no generation.
+      input.task.freshWorkspace = await readFreshWorkspaceReadiness(db, nextRun);
+      expect(input.task.freshWorkspace).toEqual(readiness);
+      input.run = nextRun;
+      input.task.issueRef = { ...issue, executionWorkspaceId: null, executionWorkspacePreference: "create_new" };
+      const replacement = await prepareHeartbeatWorkspace(db, input);
+      expect(replacement.executionWorkspace.cwd).not.toBe(original.executionWorkspace.cwd);
+      expect(replacement.executionWorkspace.cwd).not.toBe(source);
+      expect(await readFile(join(replacement.executionWorkspace.cwd, "README.md"), "utf8")).toBe("source content\n");
+      await expect(access(join(replacement.executionWorkspace.cwd, "unpublished.txt"))).rejects.toThrow();
+      expect(await readFile(join(original.executionWorkspace.cwd, "unpublished.txt"), "utf8")).toBe("keep the old work\n");
+      const common = await execFile("git", ["-C", replacement.executionWorkspace.cwd, "rev-parse", "--path-format=absolute", "--git-common-dir"]);
+      expect(common.stdout.trim()).toBe(join(replacement.executionWorkspace.cwd, ".git"));
+      expect((await readIssue(issue.id)).executionWorkspaceId).toBe(replacement.persistedExecutionWorkspace!.id);
+    }, 30_000,
+  );
 
   it("starts a fresh clean task directory without treating it as a Git source", async () => {
     const { input, source, issue } = await fixture();
@@ -565,6 +607,7 @@ describe.skipIf(!support.supported)("heartbeat workspace preparation boundary", 
     await db.insert(projectWorkspaces).values({ companyId: issue.companyId, projectId: readable.id, name: "Provider-only storage", cwd: unavailableCwd });
     await db.update(issues).set({ description: [readable, privateProject].map(project => `[project](${buildProjectMentionHref(project.id)})`).join(" ") }).where(eq(issues.id, issue.id));
     const stopped = new Error("Fixture reached plugin realization");
+    const acquire=vi.spyOn(envOrchestrator,"acquireForRun");
     const realize = vi.spyOn(envOrchestrator, "realizeForRun").mockRejectedValue(stopped);
     try {
       await expect(prepareHeartbeatWorkspace(db, input)).rejects.toBe(stopped);
@@ -572,8 +615,11 @@ describe.skipIf(!support.supported)("heartbeat workspace preparation boundary", 
         runnerTaskProjectIds: enabled ? [issue.projectId, readable.id] : undefined,
         executionWorkspace: expect.objectContaining({ additionalWorkspaces: [] }),
       }));
+      expect(acquire).toHaveBeenCalledWith(expect.objectContaining({runnerTaskProjectIds:
+        enabled ? [issue.projectId,readable.id] : [issue.projectId]}));
       await expect(access(unavailableCwd)).rejects.toMatchObject({ code: "ENOENT" });
     } finally {
+      acquire.mockRestore();
       vi.stubEnv("PAPERCLIP_MULTI_PROJECT_WORKSPACE_SYNC", "true");
       vi.stubEnv("PAPERCLIP_MULTI_PROJECT_WORKSPACE_SYNC_REMOTE", "true");
     }
@@ -598,10 +644,7 @@ describe.skipIf(!support.supported)("heartbeat workspace preparation boundary", 
     const namespace = join(source, ".paperclip-repositories");
     const guard = vi.spyOn(input.services.executionWorkspacesSvc, "assertTaskRepositoryPublicationAllowed")
       .mockImplementation(async () => {
-        const candidates = await readdir(namespace);
-        expect(candidates).toHaveLength(1);
-        expect(candidates[0]).toContain(".clone-");
-        expect(await readFile(join(namespace, candidates[0]!, "README.md"), "utf8")).toBe("source content\n");
+        expect(await readdir(namespace)).toEqual([]);
         throw new Error("Task binding changed during clone");
       });
     await expect(prepareHeartbeatWorkspace(db, input)).rejects.toThrow("Task binding changed during clone");

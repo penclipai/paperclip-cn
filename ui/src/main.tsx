@@ -24,6 +24,7 @@ import { DesignSandboxProvider } from "./context/DesignSandboxContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { initPluginBridge } from "./plugins/bridge-init";
 import { PluginLauncherProvider } from "./plugins/launchers";
+import { startChunkLoadRecovery } from "./lib/chunk-load-recovery";
 import { startPerfMeasureReaper } from "./lib/perf-measure-reaper";
 import { getOrCreatePaperclipReactRoot } from "./lib/react-root";
 import { startServiceWorkerUpdates } from "./lib/service-worker-updates";
@@ -34,6 +35,12 @@ import "./index.css";
 initPluginBridge(React, ReactDOM);
 startPerfMeasureReaper();
 
+startChunkLoadRecovery();
+
+// Parked SPA tabs never navigate, so beyond registering the worker this also
+// re-checks /sw.js on tab focus and hourly, and applies a discovered update
+// with one reload while the tab is hidden — otherwise an old worker and its
+// cached shell can outlive a deploy indefinitely.
 window.addEventListener("load", () => {
   startServiceWorkerUpdates();
 });

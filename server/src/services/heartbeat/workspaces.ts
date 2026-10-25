@@ -7,6 +7,7 @@ import { deriveRepoNameFromRepoUrl, managedProjectCheckoutName, projectRepositor
 import { forbidden } from "../../errors.js";
 import { readGitConnectionFailure } from "../git-connection-failure.js";
 import { materializeManagedProjectWorkspace, ensureManagedRepositoriesIgnored } from "../managed-repository-checkout.js";
+import { addNestedRepositoryWorktree, isVerifiedNestedRepositoryBase, nestedRepositoryBaseCandidates, readLinkedNestedCheckout, repairMovedNestedRepositoryWorktree } from "../nested-repository-worktrees.js";
 export { materializeManagedProjectWorkspace } from "../managed-repository-checkout.js";
 import { sql } from "drizzle-orm";
 import { materializeIsolatedTaskDirectory } from "../isolated-task-directory.js";
@@ -539,6 +540,7 @@ export async function prepareProjectRepositoryWorkspaces(input: {
   beforePublish?: () => Promise<void>;
   prepareLocalSource?: (sourceCwd: string, projectWorkspaceId: string) => Promise<() => Promise<void>>;
   restoredContents?: GitWorkspaceContents;
+  sharedBase?: { companyId: string; projectId: string };
 }): Promise<Array<{ workspaceId: string; cwd: string; repoUrl: string; repoRef: string | null }>> {
   const identity = projectRepositoryIdentity;
   const seen = new Set(input.anchorRepoUrl ? [identity(input.anchorRepoUrl)] : []);
@@ -563,6 +565,11 @@ export async function prepareProjectRepositoryWorkspaces(input: {
     const existing = await fs.lstat(cwd).catch(() => null);
     if (!existing && input.restoredContents?.checkouts.some(checkout => checkout.name === key)) throw new GitCacheRestorationFailure();
     if (existing && (!existing.isDirectory() || existing.isSymbolicLink())) throw new Error("Invalid project repository checkout path");
+    const baseCandidates = input.sharedBase ? nestedRepositoryBaseCandidates({ ...input.sharedBase, repoUrl }) : null;
+    const linked = existing ? await readLinkedNestedCheckout(cwd, baseCandidates ?? []).catch(() => {
+      throw new Error("Invalid project repository checkout path");
+    }) : null;
+    if (linked && !await isVerifiedNestedRepositoryBase(linked.base, baseCandidates!, repoUrl)) throw new Error("Invalid project repository checkout path");
     const configuredLocalSource = workspace.cwd && workspace.cwd !== REPO_ONLY_CWD_SENTINEL ? workspace.cwd : null;
     const localSource = configuredLocalSource
       && await fs.stat(configuredLocalSource).then((entry) => entry.isDirectory()).catch(() => false)
@@ -575,8 +582,17 @@ export async function prepareProjectRepositoryWorkspaces(input: {
       await recheckLocalSource?.();
       await input.beforePublish?.();
     };
-    const result = await materializeManagedProjectWorkspace(cwd, { repoUrl, repoRef: workspace.repoRef, localSource, resolveGitAuth: input.resolveGitAuth, beforePublish });
-    if (result.warning) throw new Error(result.warning);
+    if (!linked) {
+      const shared = input.sharedBase && !existing && !localSource
+        ? await ensureManagedProjectWorkspace({ ...input.sharedBase, repoUrl, resolveGitAuth: input.resolveGitAuth }) : null;
+      if (shared && !shared.warning && await isVerifiedNestedRepositoryBase(shared.cwd, baseCandidates!, repoUrl)) {
+        await addNestedRepositoryWorktree({ base: shared.cwd, cwd, repoUrl, repoRef: workspace.repoRef,
+          resolveGitAuth: input.resolveGitAuth, beforeAdd: beforePublish });
+      } else {
+        const result = await materializeManagedProjectWorkspace(cwd, { repoUrl, repoRef: workspace.repoRef, localSource, resolveGitAuth: input.resolveGitAuth, beforePublish });
+        if (result.warning) throw new Error(result.warning);
+      }
+    }
     await beforePublish();
     results.push({ workspaceId: workspace.id, cwd, repoUrl, repoRef: workspace.repoRef });
   }
@@ -585,8 +601,10 @@ export async function prepareProjectRepositoryWorkspaces(input: {
   for (const entry of await fs.readdir(root)) {
     if (active.has(entry) || entry.startsWith("task-repo-") || entry.includes(".clone-")) continue;
     const retained = path.join(input.cwd, ".paperclip-runtime", "detached-repositories", randomUUID());
+    const linked = await readLinkedNestedCheckout(path.join(root, entry)).catch(() => null);
     await fs.mkdir(path.dirname(retained), { recursive: true });
     await fs.rename(path.join(root, entry), retained);
+    if (linked) await repairMovedNestedRepositoryWorktree(linked.base, retained);
   }
   return results;
 }
@@ -2818,6 +2836,7 @@ function buildSessionConfigCategoryValues(input: {
   // the timestamp here makes every comment invalidate an otherwise reusable
   // task session.
   delete workspaceConfig.issueConfigRevisionAt;
+  delete workspaceConfig.projectConfigRevisionAt;
   // This row is runtime state, not requested configuration. It is absent
   // before the first reusable run is realized and present on the next turn;
   // fingerprinting that transition would rotate the native session exactly

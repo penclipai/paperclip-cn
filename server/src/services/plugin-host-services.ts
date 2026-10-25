@@ -1,5 +1,5 @@
 import { projectInstanceSecretService } from "./project-instance-secrets.js";
-import { pluginAgentRuntimeState } from "./plugin-agent-runtime-state.js";
+import { pluginAgentRuntimeState, pluginAgentRuntimeIdentity } from "./plugin-agent-runtime-state.js";
 import { createAgentLifecycle } from "./agent-lifecycle.js";
 import type { Db } from "@penclipai/db";
 import {
@@ -3002,6 +3002,11 @@ export function buildHostServices(
     },
 
     agents: {
+      async getRuntimeIdentity(params) {
+        const companyId = ensureCompanyId(params.companyId);
+        await ensurePluginAvailableForCompany(companyId);
+        return pluginAgentRuntimeIdentity(db, pluginId, companyId, params.agentId);
+      },
       async getRuntime(params) {
         const companyId = ensureCompanyId(params.companyId);
         await ensurePluginAvailableForCompany(companyId);

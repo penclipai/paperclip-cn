@@ -40,6 +40,13 @@ Installation may return before GitHub's separately delivered signed webhook
 ping. Paperclip keeps the same draft and credentials, shows a waiting state,
 and continues automatically after authenticating the ping. Refreshing or
 resuming that draft must not create another App or bypass signature verification.
+While this Cloud setup screen is waiting, its authenticated advance request also
+drains the existing sealed event queue. It can bypass an older idle-connection
+backoff, at most once every five seconds. Setup and background requests share
+one in-flight lease. The normal stack webhook handler still authenticates the
+original GitHub bytes before setup can continue. This adds no background timer;
+closing the screen stops these readiness requests. Existing background recovery
+and its sleep restrictions remain unchanged.
 
 New connections default to authorized mentions, advisory reviews, linked-member
 access, guests off, and enabled bot GitHub tools. Existing instructions, explicit

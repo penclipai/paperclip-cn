@@ -421,17 +421,17 @@ describe("createHostClientHandlers capability gating for LOOA-641 methods", () =
 
 
 describe("agent runtime reader", () => {
-  it("requires lifecycle capability and the host invocation company before accessing runtime inputs", async () => {
+  it.each(["getRuntime", "getRuntimeIdentity"] as const)("requires lifecycle capability and invocation company for %s", async method => {
     const getRuntime = vi.fn(async () => null);
-    const services = { agents: { getRuntime } } as unknown as HostServices;
+    const services = { agents: { [method]: getRuntime } } as unknown as HostServices;
     const params = { companyId: "company-a", agentId: "agent-a" };
     const context = { invocationScope: { companyId: "company-a" } };
     const denied = createHostClientHandlers({ pluginId: "runtime", capabilities: ["agents.read"], services });
-    await expect(denied["agents.getRuntime"](params, context)).rejects.toBeInstanceOf(CapabilityDeniedError);
+    await expect(denied[`agents.${method}`](params, context)).rejects.toBeInstanceOf(CapabilityDeniedError);
     const allowed = createHostClientHandlers({ pluginId: "runtime", capabilities: ["agents.lifecycle.manage"], services });
-    await expect(allowed["agents.getRuntime"](params, { invocationScope: { companyId: "other" } })).rejects.toBeInstanceOf(InvocationScopeDeniedError);
+    await expect(allowed[`agents.${method}`](params, { invocationScope: { companyId: "other" } })).rejects.toBeInstanceOf(InvocationScopeDeniedError);
     expect(getRuntime).not.toHaveBeenCalled();
-    await expect(allowed["agents.getRuntime"](params, context)).resolves.toBeNull();
+    await expect(allowed[`agents.${method}`](params, context)).resolves.toBeNull();
     expect(getRuntime).toHaveBeenCalledOnce();
   });
 });

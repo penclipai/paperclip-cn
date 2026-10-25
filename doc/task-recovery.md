@@ -18,6 +18,20 @@ Connected conversations use their existing inbound authorization owner. A board
 Retry changes the workspace strategy, not the external principal, source batch,
 conversation access or publication authority.
 
+A connected-conversation Retry can save its exact request while the matching
+system recovery generation verifies the old executor. Saving that wait grants
+no execution authority. The chat owner rechecks the same board intent, external
+principal and source batch when it resumes the deferred receipt. Containment,
+current access, task eligibility, pause and budget gates must still pass before
+one successor starts. Restarts reuse the receipt; they do not create another
+Retry generation or another external publication.
+
+Several retained recovery holds can describe the same failed execution. A
+historical hold without a system recovery record uses the current exact Retry's
+workspace strategy for that run. It does not borrow another run's strategy or
+skip any hold's independent containment and effect checks. Attaching a Retry to
+active automatic recovery preserves its generation, attempt count and deadline.
+
 Agent Chat additionally requires the current conversation owner and enabled
 Agent Chat. Admission and dispatch both recheck these conditions under the
 issue lock. An unadmitted receipt from a former owner cannot own the current

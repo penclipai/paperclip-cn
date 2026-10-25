@@ -1,6 +1,6 @@
 import type { PluginWorkspaceParams, PluginWorkspaceResult } from "./workspace-provider.js";
 import type { PluginEnvironmentTaskParams, PluginEnvironmentTaskResult } from "./environment-tasks.js";
-import type { PluginAgentRuntimeState } from "./types.js";
+import type { PluginAgentRuntimeState, PluginAgentRuntimeIdentity } from "./types.js";
 import type { AgentLifecycleRequest, AgentLifecycleResult } from "@penclipai/shared";
 import type { AiConnectionRouterRequest, AiConnectionRouterResult } from "@penclipai/shared";
 /**
@@ -669,6 +669,8 @@ export interface PluginEnvironmentAcquireLeaseParams extends PluginEnvironmentDr
 }
 
 export interface PluginEnvironmentResumeLeaseParams extends PluginEnvironmentDriverBaseParams {
+  /** New run authority for a retained task; omitted by legacy environment consumers. */
+  runId?: string;
   providerLeaseId: string;
   leaseMetadata?: Record<string, unknown>;
 }
@@ -2145,6 +2147,10 @@ export interface WorkerToHostMethods {
   "agents.list": [
     params: { companyId: string; status?: string; limit?: number; offset?: number },
     result: Agent[],
+  ];
+  "agents.getRuntimeIdentity": [
+    params: { agentId: string; companyId: string },
+    result: PluginAgentRuntimeIdentity | null,
   ];
   "agents.getRuntime": [
     params: { agentId: string; companyId: string },

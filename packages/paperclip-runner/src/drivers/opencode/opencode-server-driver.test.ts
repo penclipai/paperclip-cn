@@ -18,7 +18,7 @@ import { execFile, type ChildProcess } from "node:child_process";
 import { EventEmitter } from "node:events";
 import { promisify } from "node:util";
 import { getCACertificates } from "node:tls";
-import { join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import {
@@ -1455,7 +1455,7 @@ describe("OpenCodeServerDriver", () => {
     await session.close({ reason: "test" });
   });
 
-  it("uses the native system channel, selected skill tree, instruction root, and assigned MCP gateway", async () => {
+  it.each([false, true])("uses the native system channel, selected skill tree, instruction root, and assigned MCP gateway after startup retry=%s", async (retryStartup) => {
     await chmod(fixture, 0o755);
     const root = await mkdtemp(join(tmpdir(), "paperclip-opencode-context-"));
     const workspace = await mkdtemp(
@@ -1479,6 +1479,7 @@ describe("OpenCodeServerDriver", () => {
     ]);
     const systemInstructions = `${PAPERCLIP_EXECUTION_PROMPT}\n\nRead sibling.md\n\nRead-only instruction sibling root: ${instructionRoot}`;
     let submittedPrompt: Record<string, unknown> | null = null;
+    let startupFailurePending = retryStartup;
     const driver = new OpenCodeServerDriver({
       model: "openrouter/deepseek/deepseek-v4-flash-0731",
       runtimeDirectory: root,
@@ -1493,6 +1494,10 @@ describe("OpenCodeServerDriver", () => {
         PAPERCLIP_NATIVE_MCP_TOKEN: "x".repeat(40),
       },
       fetch: async (input, init) => {
+        if (startupFailurePending && String(input).endsWith("/session") && init?.method === "POST") {
+          startupFailurePending = false;
+          return new Response("Fixture startup failure", { status: 503 });
+        }
         if (String(input).endsWith("/prompt_async"))
           submittedPrompt = JSON.parse(String(init?.body));
         return fetch(input, init);
@@ -1524,15 +1529,17 @@ describe("OpenCodeServerDriver", () => {
       PAPERCLIP_EXECUTION_PROMPT,
     );
     const sessionRoot = join(root, "context");
-    const isolatedHomes = (await readdir(sessionRoot)).filter((entry) =>
-      entry.startsWith("home-"),
+    const runtimeEnvironment = JSON.parse(
+      await readFile(join(sessionRoot, "data", "fake-environment.json"), "utf8"),
     );
-    expect(isolatedHomes).toHaveLength(1);
+    const isolatedHome = runtimeEnvironment.home;
+    expect(startupFailurePending).toBe(false);
+    expect(dirname(isolatedHome)).toBe(sessionRoot);
+    expect(basename(isolatedHome)).toMatch(/^home-/);
     await expect(
       readFile(
         join(
-          sessionRoot,
-          isolatedHomes[0]!,
+          isolatedHome,
           ".claude",
           "skills",
           "assigned",

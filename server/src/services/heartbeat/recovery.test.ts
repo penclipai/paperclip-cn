@@ -7,6 +7,7 @@ import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } fro
 import { classifyEnvironmentCapabilities, environmentRuntimeService } from "../environment-runtime.js";
 import { environmentService } from "../environments.js";
 import { createHeartbeatRecovery, type HeartbeatRecoveryDependencies } from "./recovery.js";
+import { createHeartbeatRunState } from "./run-state.js";
 import type { HotRestartIntent } from "../hot-restart.js";
 import type { NativeRestartRecoveryClaim, NativeRestartRecoveryDisposition } from "../native-runtime/index.js";
 import { NATIVE_OWNERSHIP_UNVERIFIED_ERROR_CODE } from "../native-runtime/native-runner-ownership.js";
@@ -48,6 +49,7 @@ function callbacks(db: Db) {
   return {
     enterShutdown: vi.fn(),
     getRun: vi.fn<HeartbeatRecoveryDependencies["getRun"]>(async () => null),
+    getRunWorkspaceSettlement: vi.fn(createHeartbeatRunState(db).getRunWorkspaceSettlement),
     getAgent: vi.fn<HeartbeatRecoveryDependencies["getAgent"]>(async () => null),
     appendRunEvent: vi.fn<HeartbeatRecoveryDependencies["appendRunEvent"]>(async () => undefined),
     setRunStatusIfRunning: vi.fn<HeartbeatRecoveryDependencies["setRunStatusIfRunning"]>(async () => ({ updated: false, run: null })),

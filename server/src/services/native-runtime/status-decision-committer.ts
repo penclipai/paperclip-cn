@@ -1,4 +1,8 @@
 import { scheduledIssueMonitorWait } from "../issue-monitors.js";
+import { hasPublishedGitHubReview } from "../chat-channels/github/review-wait.js";
+import { pendingNativeGovernance } from "./native-governance.js";
+import { findSupersededExternalReviewRequests, supersedeExternalReviewRequestsInTransaction } from "./superseded-external-review-requests.js";
+import { normalizePrpResultSignals, type PrpStructuredRunResult } from "../../vendor/paperclip-runner/index.js";
 import { readNativeMonitorDelivery, type NativeMonitorDelivery } from "./native-monitor-delivery.js";
 import { readNativePlanWait, type NativePlanWaitSource } from "./native-plan-wait.js";
 import { activeIssueInteractionCondition } from "../issue-question-context.js";
@@ -1556,6 +1560,7 @@ export async function commitNativeStatusDecision(input: {
   failpoint?: NativeStatusCommitFailpoint;
   preMaterializedEffects?: NativeMaterializedStatusEffect[];
   supersedesCommittedDecisionId?: string;
+  supersededExternalReviewRequests?: { agentId: string; resultId: string; interactionIds: string[] };
   requireExternalChatResponseWaitAuthorization?: { agentId: string };
   requirePlanWaitSource?: NativePlanWaitSource;
   requireMonitorWait?: { agentId: string; nextCheckAt: string };
@@ -1652,8 +1657,10 @@ export async function commitNativeStatusDecision(input: {
     }
     if (reasonCode === "scheduled_monitor_waiting") {
       const expected = input.requireMonitorWait;
+      const publishedReviewWait = input.decision.statusAction === "in_review" && input.decision.toStatus === "in_review" &&
+        await hasPublishedGitHubReview(tx as unknown as Db, input);
       if (!expected || issue.workMode !== "standard" || issue.executionRunId !== input.runId ||
-          input.decision.statusAction !== "preserve" || input.decision.effects.length !== 1 ||
+          (input.decision.statusAction !== "preserve" && !publishedReviewWait) || input.decision.effects.length !== 1 ||
           input.decision.effects[0]?.kind !== "release_checkout" ||
           scheduledIssueMonitorWait(issue, expected.agentId) !== expected.nextCheckAt) {
         throw new NativeStatusRaceError();
@@ -1856,6 +1863,8 @@ export async function commitNativeStatusDecision(input: {
           decisionId,
           leaseOwner: null,
           leaseExpiresAt: null,
+          recoveryState: null,
+          recoveryRequestId: null,
           failureCode: finalizationError?.cause ?? null,
           failureDetail: finalizationError
             ? {
@@ -1984,6 +1993,27 @@ export async function commitNativeStatusDecision(input: {
       await tx.select({ id: issues.id }).from(issues).where(and(
         eq(issues.id, issue.parentId), eq(issues.companyId, input.companyId),
       )).for("update");
+    }
+
+    if (input.supersededExternalReviewRequests) {
+      const expected = input.supersededExternalReviewRequests;
+      const binding = { companyId: input.companyId, issueId: input.issueId, runId: input.runId, agentId: expected.agentId };
+      const candidates = await findSupersededExternalReviewRequests(tx as unknown as Db, binding);
+      const ids = candidates.map(({ interaction }) => interaction.id);
+      const [accepted] = await tx.select().from(nativeRunResults).where(and(
+        eq(nativeRunResults.id, coordinator.resultId!), eq(nativeRunResults.companyId, input.companyId),
+        eq(nativeRunResults.issueId, input.issueId), eq(nativeRunResults.runId, input.runId), eq(nativeRunResults.schemaStatus, "accepted"),
+      ));
+      const result = record(accepted?.resultJson.result), terminal = record(accepted?.resultJson.terminal);
+      if (ids.length !== expected.interactionIds.length || expected.interactionIds.some(id => !ids.includes(id)) ||
+          terminal.runTerminalState !== "succeeded" || terminal.turnTerminalState !== "completed" ||
+          !["done", "yielded"].includes(String(result.reportedWorkDisposition)) ||
+          !accepted || accepted.id !== expected.resultId || normalizePrpResultSignals(accepted.resultJson.result as PrpStructuredRunResult).actionableAttentionRequests.length !== 0 ||
+          !["completion_claim_policy_accepted", "completion_contract_satisfied", "external_chat_response_waiting", "scheduled_monitor_waiting"].includes(reasonCode) ||
+          await pendingNativeGovernance({ db: tx as unknown as Db, ...binding, executionState: record(issue.executionState), ignoredInteractionIds: ids })) {
+        throw new NativeStatusRaceError();
+      }
+      await supersedeExternalReviewRequestsInTransaction(tx as unknown as Db, binding, candidates, publications);
     }
 
     const materialized: NativeMaterializedStatusEffect[] = [];

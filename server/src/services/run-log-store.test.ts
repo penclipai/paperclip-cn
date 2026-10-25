@@ -175,6 +175,24 @@ describe("createDurableRunLogStore", () => {
     } finally { spy.mockRestore(); }
   });
 
+  it("skips the durable restore request only for a proven-new run", async () => {
+    const { provider, objects, calls } = createMemoryProvider();
+    const store = createDurableRunLogStore({ basePath: baseDir, s3: { provider } });
+    const fresh = await store.begin({ ...begin, newRun: true });
+    expect(calls).toMatchObject({ head: 0, get: 0 });
+    await store.append(fresh, { stream: "stdout", chunk: "first attempt", ts: "t1" });
+    await store.finalize(fresh);
+
+    // Lose local state, then begin again without the proof: the prefix restores.
+    await fs.rm(baseDir, { recursive: true, force: true });
+    const recovered = await store.begin(begin);
+    expect(calls).toMatchObject({ head: 1, get: 1 });
+    await store.append(recovered, { stream: "stdout", chunk: "second attempt", ts: "t2" });
+    await store.finalize(recovered);
+    expect(objects.get(fresh.logRef)!.toString().trim().split("\n").map((line) => JSON.parse(line).chunk))
+      .toEqual(["first attempt", "second attempt"]);
+  });
+
   it("uploads the complete log to S3 on finalize", async () => {
     const { provider, objects, calls } = createMemoryProvider();
     const store = createDurableRunLogStore({ basePath: baseDir, s3: { provider, keyPrefix: "run-logs" } });

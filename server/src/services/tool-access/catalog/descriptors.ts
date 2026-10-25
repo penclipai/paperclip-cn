@@ -1,4 +1,5 @@
 import { nativeProviderCatalogFor } from "../../native-provider-catalogs.js";
+import { restConnectorFor } from "../../connectors/rest-registry.js";
 import { googleWorkspaceToolTarget } from "@penclipai/shared";
 import { BROWSER_USE_TOOLS } from "@penclipai/shared";
 import { isMemoryConnectorId } from "@penclipai/shared";
@@ -291,5 +292,5 @@ export function isGoogleWorkspaceToolAllowed(
 export function shouldQuarantineNewEntries(
   connection: typeof toolConnections.$inferSelect,
 ): boolean {
-  return Boolean(nativeProviderCatalogFor(connection)) || asRecord(connection.config).quarantineNewEntries === true;
+  return Boolean(nativeProviderCatalogFor(connection) || restConnectorFor(connection)) || asRecord(connection.config).quarantineNewEntries === true;
 }

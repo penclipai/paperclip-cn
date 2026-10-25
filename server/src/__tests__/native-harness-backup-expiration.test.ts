@@ -66,7 +66,7 @@ describeEmbeddedPostgres("native harness backup expiration", () => {
     issueStatus?: string;
     closedDaysAgo?: number;
     runStatus?: string;
-    finalization?: { phase: string; recoveryState?: string | null };
+    finalization?: { phase: string; recoveryState?: string | null; leaseOwner?: string | null };
     leaseStatus?: string;
     backupAgeDays?: number;
     cleanupActive?: boolean;
@@ -110,6 +110,7 @@ describeEmbeddedPostgres("native harness backup expiration", () => {
         issueId: issue!.id,
         phase: input.finalization.phase,
         recoveryState: input.finalization.recoveryState ?? null,
+        leaseOwner: input.finalization.leaseOwner ?? null,
       });
     }
     const scope = createHash("sha256").update(randomUUID()).digest("hex");
@@ -172,7 +173,8 @@ describeEmbeddedPostgres("native harness backup expiration", () => {
     ["recently_closed", { closedDaysAgo: 2 }],
     ["live_run", { runStatus: "running" }],
     ["pending_finalization", { finalization: { phase: "settling" } }],
-    ["pending_finalization", { finalization: { phase: "committed", recoveryState: "resuming_session" } }],
+    ["pending_finalization", { finalization: { phase: "observed", recoveryState: "resuming_session" } }],
+    ["pending_finalization", { finalization: { phase: "committed", leaseOwner: "controller" } }],
     ["live_lease", { leaseStatus: "released" }],
     ["recent_backup", { backupAgeDays: 1 }],
     ["cleanup_active", { cleanupActive: true }],
@@ -213,6 +215,15 @@ describeEmbeddedPostgres("native harness backup expiration", () => {
 
   it("settled finalizations and expired leases do not block expiry", async () => {
     const session = await seedSession({ finalization: { phase: "committed" }, leaseStatus: "expired" });
+    expect(await service().tick()).toMatchObject({ expired: 1 });
+    expect(await exists(session.current)).toBe(false);
+  });
+
+  it.each([
+    ["committed", "resuming_session"],
+    ["terminal_failure", "blocked"],
+  ] as const)("stale %s recovery state %s does not block expiry once the issue is closed", async (phase, recoveryState) => {
+    const session = await seedSession({ finalization: { phase, recoveryState } });
     expect(await service().tick()).toMatchObject({ expired: 1 });
     expect(await exists(session.current)).toBe(false);
   });

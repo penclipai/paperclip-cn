@@ -1725,7 +1725,12 @@ export interface PluginAgentRuntimeState {
   instanceSecrets: Record<string, string>;
 }
 
+export type PluginAgentRuntimeIdentity = Pick<PluginAgentRuntimeState, "revision" | "instanceSecrets"> & {
+  agent: Pick<Agent, "id" | "companyId" | "status" | "lifecycleState" | "lifecycleVersion">;
+};
+
 export interface PluginAgentsClient {
+  getRuntimeIdentity(agentId: string, companyId: string): Promise<PluginAgentRuntimeIdentity | null>;
   getRuntime(agentId: string, companyId: string): Promise<PluginAgentRuntimeState | null>;
   list(input: { companyId: string; status?: Agent["status"]; limit?: number; offset?: number }): Promise<Agent[]>;
   get(agentId: string, companyId: string): Promise<Agent | null>;

@@ -99,7 +99,7 @@ describe("heartbeat run-control module boundary", () => {
   it("retains leases while native execution ownership is unverified", async () => {
     const database = guardedDatabase();
     const deps = callbacks(database.db);
-    deps.getRun.mockResolvedValue({ runtimeMode: "native", status: "running", nativePhase: "terminal_failure", errorCode: "native_execution_ownership_unverified" } as Run);
+    deps.getRunCleanupState.mockResolvedValue({ runtimeMode: "native", status: "running", nativePhase: "terminal_failure", errorCode: "native_execution_ownership_unverified" } as Run);
     await createHeartbeatRunControl(database.db, deps).releaseEnvironmentLeasesForRun({ runId: "held", companyId: "company", agentId: "agent", status: "failed", providerResourceDisposition: "destroy" });
     expect(database.access).not.toHaveBeenCalled();
     expect(deps.options.closeWarmNativeSessionsForRun).not.toHaveBeenCalled();
@@ -109,7 +109,7 @@ describe("heartbeat run-control module boundary", () => {
   it("uses the persisted terminal outcome when choosing warm resource retention", async () => {
     const database = guardedDatabase();
     const deps = callbacks(database.db);
-    deps.getRun.mockResolvedValue({ status: "failed", runtimeMode: "legacy" } as Run);
+    deps.getRunCleanupState.mockResolvedValue({ status: "failed", runtimeMode: "legacy" } as Run);
     await createHeartbeatRunControl(database.db, deps).releaseEnvironmentLeasesForRun({ runId: "failed", companyId: "company", agentId: "agent", status: "succeeded", providerResourceDisposition: "keep_running" });
     expect(deps.envOrchestrator.releaseForRun).toHaveBeenCalledWith(expect.objectContaining({ heartbeatRunId: "failed", status: "failed", providerResourceDisposition: "stop_and_retain" }));
     expect(database.access).not.toHaveBeenCalled();
@@ -118,7 +118,7 @@ describe("heartbeat run-control module boundary", () => {
   it("defers destruction when a warm session remains busy", async () => {
     const database = guardedDatabase();
     const deps = callbacks(database.db);
-    deps.getRun.mockResolvedValue({ status: "failed", runtimeMode: "legacy" } as Run);
+    deps.getRunCleanupState.mockResolvedValue({ status: "failed", runtimeMode: "legacy" } as Run);
     deps.options.closeWarmNativeSessionsForRun.mockResolvedValue({ closed: 0, busy: 1, failed: 0 });
     await createHeartbeatRunControl(database.db, deps).releaseEnvironmentLeasesForRun({ runId: "busy", companyId: "company", agentId: "agent", status: "failed", providerResourceDisposition: "destroy" });
     expect(deps.options.closeWarmNativeSessionsForRun).toHaveBeenCalledWith({ runId: "busy", reason: "terminal heartbeat run destroyed its environment lease" });

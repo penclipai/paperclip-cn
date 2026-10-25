@@ -194,7 +194,8 @@ function record(value: unknown): Record<string, unknown> {
 
 function requiresChatOriginProof(source: string): boolean {
   return source === "tool_action_review" || source === "issue.monitor" || source === "native_status_decision" ||
-    source.startsWith("issue.comment") || source === "issue.update";
+    source.startsWith("issue.comment") || source.startsWith("issue.interaction.") ||
+    source === "external_chat.interaction.resolve" || source === "connection_intent.resolved" || source === "issue.update";
 }
 
 export function isExternalChatPresentationContext(

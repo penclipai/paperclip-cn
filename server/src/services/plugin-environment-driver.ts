@@ -169,7 +169,7 @@ export async function resolvePluginSandboxProviderDriverByKey(input: {
   requireRunning?: boolean;
 }): Promise<{ plugin: Awaited<ReturnType<ReturnType<typeof pluginRegistryService>["list"]>>[number]; driver: PluginEnvironmentDriverDeclaration } | null> {
   const pluginRegistry = pluginRegistryService(input.db);
-  const plugins = await pluginRegistry.list();
+  const plugins = await pluginRegistry.list({ sandboxProviderDriverKey: input.driverKey });
   for (const plugin of plugins) {
     const driver = plugin.manifestJson.environmentDrivers?.find(
       (candidate) => candidate.driverKey === input.driverKey && candidate.kind === "sandbox_provider",

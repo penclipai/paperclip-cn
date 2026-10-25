@@ -194,8 +194,19 @@ export async function admitExplicitNativeContinuation(input: {
     const unusedAdmission = run.status === "cancelled" && !run.startedAt &&
       run.errorCode === "execution_reconciliation_required" &&
       !run.processPid && !run.processGroupId && !run.nativeSessionId;
+    // Several retained holds may describe this same failed execution. Reuse
+    // its current explicit Retry strategy for a historical hold that predates
+    // system recovery. Every hold still passes the stop/effect checks below.
+    const sourceRunId = run.id;
+    const strategyEvidence = input.taskRetryRequestId && !Object.hasOwn(action.evidence, "systemRecovery")
+      ? actions.find(candidate => {
+          const recovery = readSystemRecovery(candidate.evidence);
+          return candidate.evidence.runId === sourceRunId && recovery?.sourceRunId === sourceRunId &&
+            recovery.intentId === input.taskRetryRequestId;
+        })?.evidence ?? action.evidence
+      : action.evidence;
     const freshIntent = await canSelectFreshWorkspace({ db, companyId, issueId, agentId, actorId,
-      sourceRunId: run.id, evidence: action.evidence, taskRetryRequestId: input.taskRetryRequestId,
+      sourceRunId: run.id, evidence: strategyEvidence, taskRetryRequestId: input.taskRetryRequestId,
       queuedRequestId: input.queuedCommentRequestId });
     const legacyUserTurn = run.runtimeMode === "legacy" &&
       action.cause === "legacy_execution_requires_reconciliation" &&

@@ -292,6 +292,7 @@ model or rely on an LLM choosing the desired timing.
 | Execution and cleanup both fail | Original execution error retained; cleanup error attached | `native-session-runtime.test.ts` |
 | Retry in same process or after local log loss | Earlier attempts survive locally and in the durable mirror | Server `run-log-store.test.ts` |
 | Two restores overlap and one appends before the other publishes | Complete prefix is published without replacement; both attempts survive | Server `run-log-store.test.ts` |
+| New run whose row has no log reference, output sequence, or log size | No durable-mirror request; a later attempt with a recorded log reference still restores after local loss | Server `run-log-store.test.ts`, `heartbeat/run-output.test.ts` |
 
 ## Residual local trust and revocation window
 

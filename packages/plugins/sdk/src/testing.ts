@@ -2097,6 +2097,10 @@ export function createTestHarness(options: TestHarnessOptions): TestHarness {
       },
     },
     agents: {
+      async getRuntimeIdentity() {
+        requireCapability(manifest, capabilitySet, "agents.lifecycle.manage");
+        throw new Error("Agent runtime identity requires a host service fixture");
+      },
       async getRuntime() {
         requireCapability(manifest, capabilitySet, "agents.lifecycle.manage");
         throw new Error("Agent runtime state requires a host service fixture");

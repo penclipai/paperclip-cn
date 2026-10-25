@@ -140,7 +140,9 @@ describe("Paperclip Runner native provider configuration", () => {
     expect(resolvePaperclipRunnerNativeProviderInput({ backend: "acpx_runtime", adapterConfig: projected })).toMatchObject({ provider: "acpx", acpxAgent: "claude", claudeEffort: "xhigh", acpxPermissionMode: "deny-all" });
     const changedModel = projectPaperclipRunnerTaskConfig("acpx_runtime", base, { model: "claude-sonnet-5" });
     expect(changedModel).not.toHaveProperty("modelReasoningEffort");
-    expect(() => resolvePaperclipRunnerNativeProviderInput({ backend: "acpx_runtime", adapterConfig: { ...base, chrome: true } })).toThrow("Legacy runner");
+    expect(resolvePaperclipRunnerNativeProviderInput({ backend: "acpx_runtime", adapterConfig: { ...base, chrome: true, maxTurnsPerRun: 1000 } }))
+      .toEqual(resolvePaperclipRunnerNativeProviderInput({ backend: "acpx_runtime", adapterConfig: base }));
+    expect(() => resolvePaperclipRunnerNativeProviderInput({ backend: "acpx_runtime", adapterConfig: { ...base, networkScope: "unrestricted" } })).toThrow("Legacy runner");
   });
 
   it("uses an OpenCode task model without changing the Runner provider", () => {

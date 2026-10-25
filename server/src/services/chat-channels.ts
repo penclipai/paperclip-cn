@@ -3437,6 +3437,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     redactError, CONFIRMATION_WAKEUP_RETRY_BACKOFF_MS, get heartbeat() { return options.heartbeat; },
   });
   const { handleAction, handleModalSubmit, reconcileTerminalConfirmationActions } = createChatInteractionCallbacks(db, {
+    heartbeat: options.heartbeat,
     CAPABILITIES, MAX_ERROR_TEXT, actionThreadMatchesConversation, nonDirectDestinationAllowed, sameTeamsThreadIdentity,
     ensurePrincipal, endpointRecord, runtimeCallbackRecord, runtimeCallbackEndpoint,
     requireCurrentExternalActionAuthorization, isExternalActionAuthorizationChange,

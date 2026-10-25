@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { agents, plugins, pluginCompanySettings, resourceLifecycleEvents, type Db } from "@penclipai/db";
-import type { PluginAgentRuntimeState } from "@penclipai/plugin-sdk";
+import type { PluginAgentRuntimeState, PluginAgentRuntimeIdentity } from "@penclipai/plugin-sdk";
 import { agentRecordQueries } from "../lib/agent-records.js";
 import { conflict, forbidden } from "../errors.js";
 import { agentInstructionsService } from "./agent-instructions.js";
@@ -12,7 +12,9 @@ import { skillVersionSelectionMap } from "./runtime-skill-selections.js";
 import { instanceSettingsService } from "./instance-settings.js";
 import { agentInstanceSecretService } from "./agent-instance-secrets.js";
 
-async function readState(db: Db, pluginId: string, companyId: string, agentId: string): Promise<Omit<PluginAgentRuntimeState, "skills" | "connectionAssignments"> | null> {
+async function readState(db: Db, pluginId: string, companyId: string, agentId: string, identityOnly: true): Promise<PluginAgentRuntimeIdentity | null>;
+async function readState(db: Db, pluginId: string, companyId: string, agentId: string, identityOnly?: false): Promise<Omit<PluginAgentRuntimeState, "skills" | "connectionAssignments"> | null>;
+async function readState(db: Db, pluginId: string, companyId: string, agentId: string, identityOnly = false): Promise<PluginAgentRuntimeIdentity | Omit<PluginAgentRuntimeState, "skills" | "connectionAssignments"> | null> {
   return db.transaction(async tx => {
     const [agent] = await tx.select().from(agents)
       .where(and(eq(agents.companyId, companyId), eq(agents.id, agentId))).for("share");
@@ -26,6 +28,12 @@ async function readState(db: Db, pluginId: string, companyId: string, agentId: s
     const [latest] = await tx.select({ id: resourceLifecycleEvents.id }).from(resourceLifecycleEvents)
       .where(and(eq(resourceLifecycleEvents.companyId, companyId), eq(resourceLifecycleEvents.resourceType, "agent_runtime"), eq(resourceLifecycleEvents.resourceId, agentId)))
       .orderBy(desc(resourceLifecycleEvents.id)).limit(1);
+    if (identityOnly) return {
+      revision: String(latest?.id ?? 0),
+      agent: { id: agent.id, companyId: agent.companyId, status: agent.status as PluginAgentRuntimeIdentity["agent"]["status"],
+        lifecycleState: agent.lifecycleState, lifecycleVersion: agent.lifecycleVersion },
+      instanceSecrets: await agentInstanceSecretService(tx as unknown as Db).read({ companyId, agentId, pluginId }),
+    };
     const instructions = await agentInstructionsService().getBundleLocation(agent);
     const records = agentRecordQueries(tx as unknown as Db);
     const companyAgents = await records.listCompanyAgentRows(companyId);
@@ -37,6 +45,10 @@ async function readState(db: Db, pluginId: string, companyId: string, agentId: s
   });
 }
 
+
+export async function pluginAgentRuntimeIdentity(db: Db, pluginId: string, companyId: string, agentId: string): Promise<PluginAgentRuntimeIdentity | null> {
+  return readState(db, pluginId, companyId, agentId, true);
+}
 
 export async function pluginAgentRuntimeState(db: Db, pluginId: string, companyId: string, agentId: string): Promise<PluginAgentRuntimeState | null> {
   for (let attempt = 0; attempt < 3; attempt++) {

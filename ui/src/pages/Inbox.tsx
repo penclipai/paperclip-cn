@@ -398,6 +398,7 @@ export function FailedRunInboxRow({
         : interruption?.state === "waiting_for_user" ? ({
           approval: "Approval required", reconnect: "Reconnect account", assign_agent: "Assign an agent", choose_model: "Choose a supported model",
           resume: "Work is paused", budget: "Budget limit reached",
+          project_access: "Agent needs project access",
         }[interruption.userAction ?? "resume"]) : runFailureMessage(run);
   const retryAvailable = !interruption || interruption.canRetry;
   const showUnreadSlot = unreadState !== null;

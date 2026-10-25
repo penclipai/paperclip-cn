@@ -274,6 +274,7 @@ export interface HostServices {
   /** Provides `agents.list`, `agents.get`, `agents.pause`, `agents.resume`, `agents.invoke`. */
   agents: {
     list(params: WorkerToHostMethods["agents.list"][0]): Promise<WorkerToHostMethods["agents.list"][1]>;
+    getRuntimeIdentity?(params: WorkerToHostMethods["agents.getRuntimeIdentity"][0]): Promise<WorkerToHostMethods["agents.getRuntimeIdentity"][1]>;
     getRuntime?(params: WorkerToHostMethods["agents.getRuntime"][0]): Promise<WorkerToHostMethods["agents.getRuntime"][1]>;
     get(params: WorkerToHostMethods["agents.get"][0]): Promise<WorkerToHostMethods["agents.get"][1]>;
     pause(params: WorkerToHostMethods["agents.pause"][0]): Promise<WorkerToHostMethods["agents.pause"][1]>;
@@ -495,6 +496,7 @@ const METHOD_CAPABILITY_MAP: Record<WorkerToHostMethodName, PluginCapability | n
   "agents.list": "agents.read",
   "agents.get": "agents.read",
   "agents.getRuntime": "agents.lifecycle.manage",
+  "agents.getRuntimeIdentity": "agents.lifecycle.manage",
   "agents.pause": "agents.pause",
   "agents.resume": "agents.resume",
   "agents.invoke": "agents.invoke",
@@ -986,6 +988,10 @@ export function createHostClientHandlers(
     // Agents
     "agents.list": gated("agents.list", async (params) => {
       return services.agents.list(params);
+    }),
+    "agents.getRuntimeIdentity": gated("agents.getRuntimeIdentity", async (params) => {
+      if (!services.agents.getRuntimeIdentity) throw new Error("Agent runtime identity is unavailable");
+      return services.agents.getRuntimeIdentity(params);
     }),
     "agents.getRuntime": gated("agents.getRuntime", async (params) => {
       if (!services.agents.getRuntime) throw new Error("Agent runtime state is unavailable");

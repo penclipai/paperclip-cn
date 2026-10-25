@@ -182,7 +182,11 @@ export async function canActorReadWorkspaceOperation(
   }
   for (const runId of runIds) {
     if (!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(runId)) return false;
-    const [run] = await db.select().from(heartbeatRuns)
+    const [run] = await db.select({
+      companyId: heartbeatRuns.companyId,
+      scopeKind: heartbeatRuns.scopeKind,
+      issueId: heartbeatRuns.issueId,
+    }).from(heartbeatRuns)
       .where(and(eq(heartbeatRuns.id, runId), eq(heartbeatRuns.companyId, operation.companyId))).limit(1);
     if (!run || !(await canActorReadHeartbeatRun(db, access, actor, run))) return false;
   }

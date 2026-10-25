@@ -107,6 +107,12 @@ and service tests do not establish that a live model followed the workflow.
 See [implementation and acceptance](plans/2026-10-19-persistent-case-handoffs.md)
 and the [agent case reference](../skills/paperclip/references/cases.md).
 
+Task detail, heartbeat context, and closed-workspace admission guards read stored
+workspace metadata. They do not inspect Git or refresh live runtime health.
+Task context includes persisted runtime service state; delivery state is unknown
+until an explicit workspace read or lifecycle inspection computes it. Use the
+workspace detail and close-readiness APIs for current Git safety checks.
+
 ## Deployment Modes
 
 For mode definitions and intended CLI behavior, see `doc/DEPLOYMENT-MODES.md`.
@@ -1371,7 +1377,7 @@ publication receipts, binding checks, and lifecycle locks remain authoritative.
 
 ## Project Repository Checkouts
 
-Tasks use every distinct repository attached to their project, including repository-only sources with no local folder. Paperclip creates a managed checkout when no local folder is configured. The selected repository remains at the task workspace root. Other project repositories have editable, independent Git checkouts under `.paperclip-repositories/<name>-<key>`. Workspace hints expose each checkout path to the agent.
+Tasks use every distinct repository attached to their project, including repository-only sources with no local folder. Paperclip creates a managed checkout when no local folder is configured. The selected repository remains at the task workspace root. Other project repositories have editable Git checkouts under `.paperclip-repositories/<name>-<key>`. Workspace hints expose each checkout path to the agent. A repository without a configured local folder is checked out as a Git worktree of one shared managed clone per project and repository URL, on its own `paperclip/<id>/<branch>` branch tracking `origin/<branch>`, so its objects are stored once; see [Recoverable disk cleanup](recoverable-disk-cleanup.md#nested-project-repository-worktrees). Existing standalone checkouts keep working.
 
 When an additional repository has a configured local checkout, Paperclip seeds the task copy from its current commit and uncommitted files. Git-ignored files stay out of that copy. Subsequent task edits stay in the task copy. They do not overwrite the configured source folder. Existing task copies retain their work across runs.
 
@@ -1844,6 +1850,11 @@ preparation. Both phases keep their original ordering in `heartbeat.ts`; they
 acquire no runtime resources. Public-path characterization tests live in
 `server/src/__tests__/heartbeat-session-preparation.test.ts`.
 
+Session compatibility uses effective workspace policy and settings. Generic issue
+and project row timestamps do not reset a session. This includes the first
+project-owned directory binding. Changes to effective execution configuration
+still require a fresh session.
+
 Run-log formatting is in `server/src/services/heartbeat/run-log.ts`. It bounds
 stored event payloads, redacts and shortens log chunks, and caps stdout/stderr
 excerpts. `run-output.ts` owns per-attempt log handles, current-user redaction,
@@ -1875,6 +1886,8 @@ It owns bounded run projections, database encoding checks, task session reads an
 writes, explicit resumes, session compaction, and usage/billing helpers.
 `createHeartbeatRunState(db)` binds these operations without doing database work
 during construction. The encoding-check cache belongs to each factory instance.
+Queued-comment polling reads current issue control fields, the typed issue binding,
+and the selected adapter type. Mutation and execution paths retain their full run reads.
 `heartbeat.ts` keeps run execution and re-exports the
 existing public helpers. Keep session policy changes separate from run
 orchestration changes.
@@ -2679,15 +2692,33 @@ Environment overrides:
   negative, empty, or non-numeric value falls back to the default.
   `PAPERCLIP_NATIVE_HARNESS_BACKUP_EXPIRATION_ENABLED=false` turns expiry off, and
   `PAPERCLIP_NATIVE_HARNESS_BACKUP_EXPIRATION_DRY_RUN=true` only reports candidates.
+- `PAPERCLIP_NATIVE_WORKSPACE_SYNC_RETENTION_DAYS=<days>` sets how long a settled
+  run's native workspace sync folder (descriptor, manifest and seed archives under
+  `<instance>/native-workspace-sync/<run>`) is kept (see
+  `doc/recoverable-disk-cleanup.md`). The default is `7` and the minimum is `1`. A
+  negative, empty, or non-numeric value falls back to the default.
+  `PAPERCLIP_NATIVE_WORKSPACE_SYNC_RETENTION_ENABLED=false` turns retention off, and
+  `PAPERCLIP_NATIVE_WORKSPACE_SYNC_RETENTION_DRY_RUN=true` only reports candidates.
 - `PAPERCLIP_GIT_RESTORE_POINTS_ENABLED=true` lets git cache expiration remove closed
   worktrees with unpushed or uncommitted work after saving an encrypted restore point
   (see `doc/recoverable-disk-cleanup.md`). It is off by default.
-  `PAPERCLIP_GIT_RESTORE_POINT_TERMINAL_DELAY_DAYS=<days>` sets how long the issue tree
-  must be closed first. The default is `3`. A negative, empty, or non-numeric value falls
+  `PAPERCLIP_GIT_RESTORE_POINT_TERMINAL_DELAY_DAYS=<days>` sets how long the issues that
+  use the workspace (the source issue and descendants bound to it) must be closed first. The default is `3`. A negative, empty, or non-numeric value falls
   back to the default.
   `PAPERCLIP_GIT_RESTORE_POINT_IDLE_DAYS=<days>` sets how long an open issue tree's
   worktree must go untouched before it is removed the same way; runs restore it
   automatically. The default is `7`, and `0` turns this off.
+- `PAPERCLIP_TASK_DIRECTORY_RETENTION_ENABLED=true` lets the terminal workspace reaper
+  save and remove plain task directories under `<instance>/isolated-workspaces/` once
+  their issue tree has been closed for `PAPERCLIP_GIT_RESTORE_POINT_TERMINAL_DELAY_DAYS`,
+  and remove orphaned ones (see `doc/recoverable-disk-cleanup.md`). It is off by default
+  and runs as a dry run until `PAPERCLIP_TASK_DIRECTORY_RETENTION_DRY_RUN=false`. Removal
+  needs `PAPERCLIP_GIT_RESTORE_POINTS_ENABLED=true`, because the files are saved in an
+  encrypted restore point first and restored on reopen.
+  `PAPERCLIP_TASK_DIRECTORY_ORPHAN_GRACE_DAYS=<days>` sets how long an orphaned
+  directory's issue tree must be closed and its contents unchanged. The default is `7`
+  and the minimum is `1`. A negative, empty, or non-numeric value falls back to the
+  default.
 - `PAPERCLIP_GIT_RESTORE_POINT_RETENTION_DAYS=<days>` sets how long a git workspace
   restore point is kept after its issue tree closes (see
   `doc/recoverable-disk-cleanup.md`). The default is `90` and the minimum is `1`. A
@@ -2992,6 +3023,31 @@ package avatar PNGs using the API renderer; static hosting needs no API proxy.
 
 ### Investigating polling load
 
+Deferred-message recovery reads run admission fields before calling the release
+policy. The release coordinator reads authentication evidence and then refreshes
+completion identity after post-commit effects. These checks do not load stored
+prompts, Runner profiles, or output excerpts. Full execution and detail reads
+retain those fields. Queue cadence, delivery admission, and cleanup ownership
+remain unchanged.
+
+Runtime progress updates recheck the persisted run status before publication.
+This check selects only the run ID, company ID, agent ID, and status through
+`createHeartbeatRunState().getRunStatus`. It does not fetch prompts, runner
+configuration, or provider results. Keep this read fresh so terminal or deleted
+runs cannot publish late progress from an old executor snapshot.
+
+Native event and retry-exhaustion ingestion lock the run row to verify its
+company and agent bindings. That lock reads only those two fields. Sequence
+allocation, replay checks, and event insertion remain in the same transaction.
+
+Sandbox-provider driver lookup filters plugin manifests by driver key and kind
+in Postgres before returning rows. Install order, status and worker checks still
+select the provider. Each lookup reads current registry state without a cache.
+
+Run-to-issue links authorize through `getRunReadAccess`, which reads only the run
+ID, company ID, scope kind, and issue ID. The existing visibility policy then
+filters linked issues without loading the run's prompt, output, or result.
+
 Run the deterministic native event replay with the normal server test runner:
 
 ```sh
@@ -3039,6 +3095,12 @@ Hidden browser tabs suspend the company live-events connection and transcript
 log reads. Returning to a visible tab refreshes active queries once and resumes
 transcript reads from their retained offsets. A queued live-event invalidation
 that flushes after the tab hides marks data stale without starting a refetch.
+
+Live-event delivery and workspace-operation run checks select only the stored
+company, run scope, and task binding. Event-list access also selects the run ID.
+These checks do not load run context, runner configuration, results, or output.
+Every delivery and request still checks current permissions. Grant revocation,
+deleted tasks, missing runs, and cross-company run IDs remain fail-closed.
 The developer-server health poll also stops in hidden tabs.
 
 Workspace detail responses share concurrent Git inspections and reuse their
@@ -3123,7 +3185,10 @@ the project's repositories and it passes the same checks as the worktree
 state), stock Git storage (no custom hooks), no linked worktrees, no
 unreachable objects, and every commit reachable from its refs or reflogs is
 reachable from a current upstream branch or tag, read fresh from the project
-repository's URL with the company's Git identity. Task repositories
+repository's URL with the company's Git identity. A checkout that is a worktree of the project's shared clone is
+checked against its own `HEAD`, `HEAD` reflog, index and branches under its
+`paperclip/<id>/` prefix instead of the clone's storage and other tasks' refs.
+Task repositories
 (`task-repo-*`) always prevent deletion. Inspection runs Git with
 `core.fsmonitor` disabled, so a repository's local config cannot make it run a
 command. Standard linked-worktree `FETCH_HEAD` records are retained unless every
@@ -3156,6 +3221,33 @@ the composer keeps an editable draft and permits retry after access is restored.
 Both enable switches default off. Rollback disables further expiration while
 leaving saved recipes and restoration support intact. Recovery archives, runner
 backups, non-Git workspaces, and immutable skill snapshots are unaffected.
+
+### Isolated repository source re-home
+
+Workspaces created with a private per-issue clone under
+`isolated-repository-sources/` can be moved onto the project's shared managed
+clone, after which the private clone is deleted. Enable it with
+`PAPERCLIP_ISOLATED_SOURCE_REHOME_ENABLED=true`; it runs only when
+`PAPERCLIP_GIT_CACHE_EXPIRATION_ENABLED=true` and defaults off. Set
+`PAPERCLIP_ISOLATED_SOURCE_REHOME_DRY_RUN=true` to log candidates without changing
+anything. Each attempt logs `execution_workspace.isolated_source_rehome` with its
+outcome, skip reason and reclaimed bytes. See
+[recoverable disk cleanup](recoverable-disk-cleanup.md#isolated-repository-sources)
+for the conditions and the verification it performs.
+
+### Nested clone migration
+
+Tasks prepared before nested project repositories became worktrees of a shared
+clone still hold a full standalone clone in each `.paperclip-repositories/`
+checkout. Enable `PAPERCLIP_NESTED_CLONE_MIGRATION_ENABLED=true` (default off) to
+let the terminal workspace reaper convert those checkouts in open tasks into
+worktrees of the project's shared clone, keeping their exact state and local
+history, and delete the standalone clones. Set
+`PAPERCLIP_NESTED_CLONE_MIGRATION_DRY_RUN=true` to log candidates without changing
+anything. Each attempt logs `execution_workspace.nested_clone_migration` with its
+outcome, skip reason and reclaimed bytes. See
+[recoverable disk cleanup](recoverable-disk-cleanup.md#converting-existing-standalone-nested-clones)
+for the conditions, verification and crash recovery.
 
 ### Terminal workspace compaction
 

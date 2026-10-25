@@ -276,6 +276,13 @@ caller/session permissions and real provider delivery need separate verification
 GitHub review summary headings use the bot display name. Checks remain
 independently scoped by GitHub App and endpoint/PR/commit identity.
 
+After publishing a review, native agents can report `yielded` with
+`response_wake` and no attention requests. Current conversation authorization
+is checked again at commit. The task remains in review without a human card;
+real human dependencies retain the ordinary attention-request path. A timed
+wait requires a confirmed `set_task_monitor` schedule. Database coverage lives
+in `external-chat-wait.integration.test.ts`; this is not live model evidence.
+
 ## `outbound-email`
 
 Capability ID: `chat-channels/outbound-email`.

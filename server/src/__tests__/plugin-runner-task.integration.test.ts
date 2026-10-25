@@ -163,7 +163,7 @@ databaseSuite("Core plugin Runner task lifecycle", () => {
         warnings: [], created: false, branchCreatedByRuntime: false },
       effectiveExecutionWorkspaceMode: null, persistedExecutionWorkspace: null });
     const target = realization.executionTarget;
-    expect(target).toMatchObject({ kind: "remote", transport: "sandbox", remoteCwd: "/local/project", leaseId: acquired.lease.id });
+    expect(target).toMatchObject({ kind: "remote", transport: "sandbox", remoteCwd: ".", leaseId: acquired.lease.id });
     if (target?.kind !== "remote" || target.transport !== "sandbox" || !target.runnerTask) throw new Error("Missing plugin target");
     expect(target.runner).toBeUndefined();
     await expect(target.runnerTask({ kind: "describe" }))

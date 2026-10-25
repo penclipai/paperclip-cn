@@ -9,6 +9,7 @@ import {
   GIT_CREDENTIAL_TOKEN_ENV_KEY,
   buildGitAuthInvocation,
   createGitRemoteAuthProvider,
+  createIssueGitRemoteAuthProvider,
   describeGitAuthFailure,
   isGitHubHttpsRemoteUrl,
   scrubGitCredentialText,
@@ -377,5 +378,41 @@ describe("DEFAULT_GITHUB_TOKEN_SECRET_NAMES", () => {
       "GH_TOKEN",
       "PAPERCLIP_GITHUB_TOKEN",
     ]);
+  });
+});
+
+describe("createIssueGitRemoteAuthProvider", () => {
+  const githubUrl = "https://github.com/paperclipai/private-repo.git";
+  function issueDb(rows: unknown[]) {
+    const where = vi.fn(async () => rows);
+    return { db: { select: vi.fn(() => ({ from: () => ({ where }) })) } as unknown as Db, where };
+  }
+
+  it("resolves credentials with the issue's responsible user and assigned agent", async () => {
+    const { db } = issueDb([{ responsibleUserId: "user-1", assigneeAgentId: "agent-1" }]);
+    const inner = vi.fn(async () => ({ env: {}, configArgs: [], source: "managed_connection" }));
+    const create = vi.fn(() => inner) as unknown as typeof createGitRemoteAuthProvider;
+    const provider = createIssueGitRemoteAuthProvider(db, "company-1", "issue-1", create);
+    await expect(provider(githubUrl)).resolves.toMatchObject({ source: "managed_connection" });
+    expect(create).toHaveBeenCalledWith(db, "company-1", { issueId: "issue-1", responsibleUserId: "user-1", agentId: "agent-1" });
+    expect(inner).toHaveBeenCalledWith(githubUrl);
+  });
+
+  it("looks the issue up once across calls", async () => {
+    const { db } = issueDb([{ responsibleUserId: "user-1", assigneeAgentId: null }]);
+    const inner = vi.fn(async () => null);
+    const create = vi.fn(() => inner) as unknown as typeof createGitRemoteAuthProvider;
+    const provider = createIssueGitRemoteAuthProvider(db, "company-1", "issue-1", create);
+    await provider(githubUrl); await provider(githubUrl);
+    expect(db.select).toHaveBeenCalledTimes(1);
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(inner).toHaveBeenCalledTimes(2);
+  });
+
+  it("falls back to the issue-only context when the issue is missing", async () => {
+    const { db } = issueDb([]);
+    const create = vi.fn(() => vi.fn(async () => null)) as unknown as typeof createGitRemoteAuthProvider;
+    await createIssueGitRemoteAuthProvider(db, "company-1", "issue-1", create)(githubUrl);
+    expect(create).toHaveBeenCalledWith(db, "company-1", { issueId: "issue-1", responsibleUserId: null, agentId: null });
   });
 });

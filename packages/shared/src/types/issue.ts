@@ -493,6 +493,7 @@ export type IssueReviewAttentionPathKind =
   | "interaction"
   | "approval"
   | "monitor"
+  | "external_response"
   | "human_reviewer"
   | "active_run"
   | "queued_wake"

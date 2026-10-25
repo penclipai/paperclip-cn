@@ -48,6 +48,12 @@ Open the affected task from Tasks, Inbox/Blocked, search, or a direct task link.
 Observe one working, backoff, failed or waiting-for-user state. Use Retry after
 an infrastructure failure. No process or file certification is required.
 
+A workspace project denial names the blocked access and links to the agent's
+**Permissions / Trust** settings. After an authorized person adds the required
+project, return to the saved task for an explicit **Retry task** action. Saving
+permissions alone does not wake the agent. Historical setup denials receive the
+same notice on reload; unrelated errors and prior assignees do not.
+
 Thinking appears immediately after Retry, before the request completes.
 Technical source/run details remain in deliberate diagnostics. The
 [task recovery contract](../../doc/task-recovery.md) describes receipt identity,
@@ -66,6 +72,16 @@ stopped-run recovery checks.
 Use the task's Retry action. It can create an isolated attempt after old execution
 is contained even when old-file preservation remains unresolved. Approval,
 credentials, budget and deliberate pause use their existing specific controls.
+
+For a connected conversation, click Retry while an exact retained source still
+needs containment. Observe a saved wait with no new executor. After verified
+containment, the same chat receipt must admit one successor with the original
+source batch. Reload and repeat reconciliation. Check that a paused endpoint,
+changed source, superseded request or revoked access cannot start that work.
+The connected-chat database regression in
+[chat channel integration](../../server/src/__tests__/chat-channels.integration.test.ts)
+exercises admission and queue continuation. It does not establish hosted
+provider recovery or successful delivery.
 
 ### `post-stop-message`
 
@@ -88,6 +104,16 @@ task gates. These tests do not qualify a live provider or prove task completion.
 While viewing an active or recovering task, interrupt the browser connection
 and restore it, or suspend and return to the tab. Reload is a separate check.
 The current task and run state should reconcile with the server.
+
+For a consumed review path, verify that the one automatic repair run receives
+the instruction to save a one-shot monitor before it promises another check.
+Repeat with a fresh session, a resumed session, and a connection-pool retry that
+retains the typed repair marker but changes the wake reason. Confirm a persisted
+schedule before claiming that follow-up will occur; the repair instruction does
+not schedule one by itself. The [wake regression](../../server/src/services/heartbeat/run-preparation.review-path.test.ts)
+exercises the real wake builder, serializer and prompt selector with an empty
+credential-history database boundary. It does not prove a hosted agent scheduled
+or completed the follow-up. Exhaustion still blocks for a board decision.
 
 ## Driving it
 
@@ -149,6 +175,14 @@ exercise timeout recovery with a real listening process, unchanged ownership,
 and rejected identity evidence. The Runner restart tests require positive exit
 evidence before replacement. This coverage does not prove recovery of a
 historical retained sandbox or behavior during a live provider outage.
+
+For a release change during a remote provider session, verify that reattachment
+uses the controller's admitted pack manifest and runner digest. Check useful
+output from the same process without replaying a turn. Repeat with a modified
+sidecar, mismatched receipt scope, replacement lease, and incompatible runner
+protocol. The [authority tests](../../server/src/services/native-runtime/remote-provider-pack-authority.test.ts)
+and executor wiring regressions cover selection and fail-closed scope checks.
+They do not prove a historical retained sandbox was recovered.
 
 For completion recovery, restart after a native completion proposal is appended
 but before its session checkpoint. Verify that the original result is finalized

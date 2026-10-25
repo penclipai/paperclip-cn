@@ -27,6 +27,7 @@ const mockAgentsApi = vi.hoisted(() => ({
   detectModel: vi.fn(),
   list: vi.fn(),
   testEnvironment: vi.fn(),
+  qualifyRunner: vi.fn(),
   startAdapterAuthLogin: vi.fn(),
   getAdapterAuthLoginStatus: vi.fn(),
   getActiveAdapterAuthLoginSession: vi.fn(),
@@ -56,6 +57,7 @@ const mockClipboard = vi.hoisted(() => ({
 const mockEnvironmentsApi = vi.hoisted(() => ({
   list: vi.fn(),
   capabilities: vi.fn(),
+  probe: vi.fn(),
 }));
 
 const mockInstanceSettingsApi = vi.hoisted(() => ({
@@ -787,11 +789,146 @@ describe("AgentConfigForm environment selector", () => {
     expect(findButton(container, "Upgrade runner")).toBeDefined();
   });
 
+  it("switches a saved legacy Claude agent to Paperclip Runner on a Runner-only environment", async () => {
+    mockAdaptersApi.list.mockResolvedValue([{ type: "claude_local", supportedRunners: ["paperclip"], defaultRunner: "paperclip" }]);
+    try {
+      const result = await renderForm([], { adapterType: "claude_local", adapterConfig: { model: "claude-opus-5-5" } });
+      roots.push(result.root);
+      await clickByText(result.container, "Advanced");
+      expect(result.container.querySelector('[aria-label="Runner"]')?.textContent).toContain("Paperclip Runner");
+      await clickByText(result.container, "Save");
+      expect(result.onSave).toHaveBeenCalledWith(expect.objectContaining({ runner: "paperclip" }));
+    } finally { mockAdaptersApi.list.mockResolvedValue([{ type: "codex_local", supportedRunners: ["legacy", "paperclip"], defaultRunner: "legacy" }]); }
+  });
+
+  it("switches a new agent's Legacy choice to Paperclip Runner on a Runner-only environment", async () => {
+    mockAdaptersApi.list.mockResolvedValue([{ type: "claude_local", supportedRunners: ["paperclip"], defaultRunner: "paperclip" }]);
+    try {
+      const result = await renderCreateForm([], { ...defaultCreateValues, adapterType: "claude_local", runner: "legacy" });
+      roots.push(result.root);
+      expect(result.onChange).toHaveBeenCalledWith({ runner: "paperclip" });
+    } finally { mockAdaptersApi.list.mockResolvedValue([{ type: "codex_local", supportedRunners: ["legacy", "paperclip"], defaultRunner: "legacy" }]); }
+  });
+
+  it.each(["explicit", "instance", "managed", "env-draft"])("qualifies a saved Daytona Claude agent and upgrades with its legacy turn limit (%s environment)", async mode => {
+    const environment = makeEnvironment({ id: "daytona-computer", name: "Paperclip Computer", driver: "sandbox", status: "active",
+      config: { provider: "daytona", snapshot: "managed-snapshot" }, metadata: { managedByPaperclip: true } });
+    const inventory = (qualified: boolean) => [
+      { type: "claude_local", supportedRunners: qualified ? ["paperclip", "legacy"] : ["legacy"], defaultRunner: qualified ? "paperclip" : "legacy" },
+      { type: "paperclip_runner", supportedRunners: ["legacy"], defaultRunner: "legacy" },
+    ];
+    mockAdaptersApi.list.mockResolvedValue(inventory(false));
+    mockAgentsApi.qualifyRunner.mockImplementation(async () => {
+      mockAdaptersApi.list.mockResolvedValue(inventory(true));
+      return { ok: true, driver: "sandbox", details: { platformQualificationRecorded: true, leaseId: "probe-lease" } };
+    });
+    if (mode === "instance") mockInstanceSettingsApi.get.mockResolvedValue({ defaultEnvironmentId: environment.id });
+    if (mode === "managed") mockInstanceSettingsApi.getExperimental.mockResolvedValue({ enableManagedSandboxOnly: true, enableEnvironments: false });
+    const result = await renderForm([environment], { adapterType: "claude_local", defaultEnvironmentId: mode === "explicit" || mode === "env-draft" ? environment.id : null,
+      adapterConfig: { model: "claude-opus-5-5", effort: "high", maxTurnsPerRun: 1000, dangerouslySkipPermissions: true } },
+      { environmentVariablesPlacement: "configuration" });
+    roots.push(result.root);
+    expect(result.container.textContent).toContain("Upgrade to Paperclip Runner");
+    expect(result.container.textContent).toContain("Max turns per run");
+    expect(mockAgentsApi.qualifyRunner).not.toHaveBeenCalled();
+    if (mode === "env-draft") {
+      await clickByText(result.container, "Add variable");
+      await act(async () => {
+        setInputValue(result.container.querySelector<HTMLInputElement>('input[aria-label="Variable name"]')!, "MIGRATION_MARKER");
+        setInputValue(result.container.querySelector<HTMLInputElement>('input[aria-label="Variable value"]')!, "kept");
+      });
+      await flushReact();
+    }
+    await clickByText(result.container, "Upgrade runner");
+    expect(mockAgentsApi.qualifyRunner).toHaveBeenCalledWith("agent-1", environment.id, "company-1");
+    expect(result.onSave).toHaveBeenCalledWith(mode === "env-draft" ? expect.objectContaining({
+      runner: "paperclip", replaceAdapterConfig: true,
+      adapterConfig: expect.objectContaining({ env: { MIGRATION_MARKER: { type: "plain", value: "kept" } } }),
+    }) : { runner: "paperclip" });
+  });
+
+  it.each([false, true])("requires saving a changed computer before upgrading (qualified: %s)", async qualified => {
+    const environments = ["saved-computer", "draft-computer"].map(id => makeEnvironment({ id, driver: "sandbox", status: "active",
+      config: { provider: "daytona", snapshot: "managed-snapshot" } }));
+    mockAdaptersApi.list.mockResolvedValue([
+      { type: "claude_local", supportedRunners: qualified ? ["paperclip", "legacy"] : ["legacy"], defaultRunner: qualified ? "paperclip" : "legacy" },
+      { type: "paperclip_runner", supportedRunners: ["legacy"], defaultRunner: "legacy" },
+    ]);
+    const result = await renderForm(environments, { adapterType: "claude_local", defaultEnvironmentId: "saved-computer" });
+    roots.push(result.root);
+    expect(findButton(result.container, "Upgrade runner")?.disabled).toBe(false);
+    await selectEnvironment(result.container, "draft-computer");
+    expect(findButton(result.container, "Upgrade runner")?.disabled).toBe(true);
+    expect(result.container.textContent).toContain("Save your computer change before upgrading the runner.");
+    await clickByText(result.container, "Upgrade runner");
+    expect(mockAgentsApi.qualifyRunner).not.toHaveBeenCalled();
+    expect(result.onSave).not.toHaveBeenCalled();
+    await selectEnvironment(result.container, "saved-computer");
+    expect(findButton(result.container, "Upgrade runner")?.disabled).toBe(false);
+    expect(result.container.textContent).not.toContain("Save your computer change before upgrading the runner.");
+  });
+
+  it.each(["probe", "unsupported", "settings-changed"])("does not save after Daytona %s", async failure => {
+    const environment = makeEnvironment({ id: "daytona-computer", name: "Paperclip Computer", driver: "sandbox", status: "active",
+      config: { provider: "daytona", snapshot: "managed-snapshot" } });
+    mockAdaptersApi.list.mockResolvedValue([{ type: "claude_local", supportedRunners: ["legacy"], defaultRunner: "legacy" }, { type: "paperclip_runner", supportedRunners: ["legacy"], defaultRunner: "legacy" }]);
+    let finish!: () => void;
+    mockAgentsApi.qualifyRunner.mockImplementation(() => new Promise(resolve => { finish = () => resolve({ ok: failure !== "probe",
+      summary: "Could not verify this computer", details: { platformQualificationRecorded: failure !== "probe", leaseId: "lease" } }); }));
+    const result = await renderForm([environment], { adapterType: "claude_local", defaultEnvironmentId: environment.id });
+    roots.push(result.root);
+    await clickByText(result.container, "Upgrade runner");
+    if (failure === "settings-changed") {
+      await act(async () => setInputValue(result.container.querySelector<HTMLInputElement>('input[placeholder="Agent name"]')!, "Edited during probe"));
+    }
+    await act(async () => finish());
+    await flushReact();
+    expect(result.onSave).not.toHaveBeenCalled();
+    expect(result.container.querySelector('[role="alert"]')).not.toBeNull();
+  });
+
+  it.each([true, false])("respects forced Kubernetes instead of probing a saved Daytona default (target exists: %s)", async available => {
+    const daytona = makeEnvironment({ id: "old-daytona", driver: "sandbox", config: { provider: "daytona", snapshot: "old-snapshot" } });
+    const kubernetes = makeEnvironment({ id: "forced-kubernetes", driver: "sandbox", config: { provider: "kubernetes", image: `example.test/runner@sha256:${"a".repeat(64)}` } });
+    mockInstanceSettingsApi.getGeneral.mockResolvedValue({ executionMode: "kubernetes" });
+    const inventory = (qualified: boolean) => [
+      { type: "claude_local", supportedRunners: qualified ? ["paperclip", "legacy"] : ["legacy"], defaultRunner: qualified ? "paperclip" : "legacy" },
+      { type: "paperclip_runner", supportedRunners: ["legacy"], defaultRunner: "legacy" },
+    ];
+    mockAdaptersApi.list.mockResolvedValue(inventory(false));
+    mockAgentsApi.qualifyRunner.mockImplementation(async () => {
+      mockAdaptersApi.list.mockResolvedValue(inventory(true));
+      return { ok: true, details: { platformQualificationRecorded: true, leaseId: "kubernetes-probe" } };
+    });
+    const result = await renderForm(available ? [daytona, kubernetes] : [daytona], {
+      adapterType: "claude_local", defaultEnvironmentId: daytona.id,
+    });
+    roots.push(result.root);
+    if (available) {
+      await clickByText(result.container, "Upgrade runner");
+      expect(mockAgentsApi.qualifyRunner).toHaveBeenCalledWith("agent-1", kubernetes.id, "company-1");
+      expect(mockAdaptersApi.list).toHaveBeenLastCalledWith({ companyId: "company-1", environmentId: kubernetes.id });
+      expect(result.onSave).toHaveBeenCalledWith({ runner: "paperclip" });
+    } else {
+      expect(findButton(result.container, "Upgrade runner")).toBeUndefined();
+      expect(mockAgentsApi.qualifyRunner).not.toHaveBeenCalled();
+    }
+  });
+
   it("does not offer an upgrade when the target only supports Legacy", async () => {
     mockAdaptersApi.list.mockResolvedValueOnce([{ type: "codex_local", supportedRunners: ["legacy"], defaultRunner: "legacy" }]);
     const result = await renderForm([]);
     roots.push(result.root);
     expect(result.container.textContent).not.toContain("Upgrade runner");
+  });
+
+  it("explains ignored options already saved on a native Claude agent", async () => {
+    const result = await renderForm([], { adapterType: "paperclip_runner", adapterConfig: {
+      provider: "acpx", acpxAgent: "claude", model: "claude-opus-5-5", maxTurnsPerRun: 1000,
+    } });
+    roots.push(result.root);
+    expect(result.container.querySelector('[role="status"]')?.textContent).toContain("maxTurnsPerRun");
+    expect(result.container.textContent).toContain("is ignored. The agent can still run.");
   });
 
   it.each(["codex", "claude"].flatMap(harness => ["modelReasoningEffort", "reasoningEffort", "effort"].map(key => ({ harness, key }))))("hydrates saved effort and clears explicit Auto for $harness ($key)", async ({ harness, key }) => {
@@ -907,6 +1044,9 @@ describe("AgentConfigForm environment selector", () => {
   });
 
   beforeEach(() => {
+    mockEnvironmentsApi.probe.mockReset();
+    mockAgentsApi.qualifyRunner.mockReset();
+    mockAdaptersApi.list.mockReset().mockResolvedValue([{ type: "codex_local", supportedRunners: ["legacy", "paperclip"], defaultRunner: "legacy" }]);
     mockAgentsApi.adapterModels.mockResolvedValue([]);
     mockAgentsApi.detectModel.mockResolvedValue(null);
     mockAgentsApi.list.mockResolvedValue([]);

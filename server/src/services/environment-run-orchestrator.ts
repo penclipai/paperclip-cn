@@ -214,6 +214,7 @@ export function environmentRunOrchestrator(
     heartbeatRunId: string;
     persistedExecutionWorkspace: Pick<ExecutionWorkspace, "id" | "mode"> | null;
     executionWorkspaceSettings: IssueExecutionWorkspaceSettings | null;
+    runnerTaskProjectIds?: readonly string[];
     adapterType: string | null;
   }): Promise<EnvironmentRuntimeLeaseRecord> {
     try {
@@ -277,6 +278,7 @@ export function environmentRunOrchestrator(
     agentId: string;
     persistedExecutionWorkspace: Pick<ExecutionWorkspace, "id" | "mode"> | null;
     executionWorkspaceSettings: IssueExecutionWorkspaceSettings | null;
+    runnerTaskProjectIds?: readonly string[];
     /** Existing live runner recovery must use its original active lease, including ephemeral leases. */
     reattachRemoteLease?: { leaseId: string; providerLeaseId: string; remoteCwd: string };
     /** A new controller must stop the previous plugin task before allocating a replacement. */
@@ -317,6 +319,7 @@ export function environmentRunOrchestrator(
       heartbeatRunId: input.heartbeatRunId,
       persistedExecutionWorkspace: input.persistedExecutionWorkspace,
       executionWorkspaceSettings: input.executionWorkspaceSettings,
+      runnerTaskProjectIds: input.runnerTaskProjectIds,
       adapterType: input.adapterType ?? null,
     };
     let leaseRecord: EnvironmentRuntimeLeaseRecord;

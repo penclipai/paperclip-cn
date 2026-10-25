@@ -1,3 +1,4 @@
+import { writeEnvironmentCleanup } from "./environment-cleanup-notifications.js";
 import { resumePreservedResultFinalization } from "./preserved-result-finalization.js";
 import { and, asc, eq, gt, inArray, ne, or, sql } from "drizzle-orm";
 import { agentWakeupRequests, environmentLeases, heartbeatRuns, issues, issueRecoveryActions, workspaceOperations, type Db } from "@penclipai/db";
@@ -298,7 +299,7 @@ export async function scheduleRecoveredWorkspaceCleanup(db: Db, run: typeof hear
     ne(environmentLeases.id, lease.id), eq(environmentLeases.provider, lease.provider!), eq(environmentLeases.providerLeaseId, lease.providerLeaseId!),
   )).limit(1);
   if (other) return;
-  await db.update(environmentLeases).set({ status: "pending_cleanup", cleanupStatus: "failed", leasePolicy: "ephemeral",
+  await writeEnvironmentCleanup(db, tx => tx.update(environmentLeases).set({ status: "pending_cleanup", cleanupStatus: "failed", leasePolicy: "ephemeral",
     updatedAt: new Date(), metadata: sql`(${environmentLeases.metadata} - 'workspaceRestoreRecovery' - 'remoteExecutionTermination') ||
       ${JSON.stringify({ workspaceRecoveryCleanup: { runId: run.id, descriptorSha256: ref.descriptorSha256 },
         pendingCleanupInFlight: false, pendingCleanupRetryAfterMs: 0, pendingCleanupRetryAttempts: 0, pendingCleanupLeaseExpiresAtMs: 0 })}::jsonb`,
@@ -306,7 +307,7 @@ export async function scheduleRecoveredWorkspaceCleanup(db: Db, run: typeof hear
     eq(environmentLeases.heartbeatRunId, run.id), eq(environmentLeases.providerLeaseId, ref.providerLeaseId),
     eq(environmentLeases.status, "released"), eq(environmentLeases.cleanupStatus, "success"),
     sql`${environmentLeases.metadata} = ${JSON.stringify(lease.metadata)}::jsonb`,
-    sql`${environmentLeases.metadata}->>'workspaceRecoveryCleanup' is null`));
+    sql`${environmentLeases.metadata}->>'workspaceRecoveryCleanup' is null`)));
 }
 export function retainedWorkspaceCandidates(db: Db, cursor?: string) {
   return db.select({ action: issueRecoveryActions, run: heartbeatRuns }).from(issueRecoveryActions)

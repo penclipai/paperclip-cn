@@ -2,8 +2,9 @@ import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { COPILOT_MODEL_DISCOVERY_QUERY_OPTIONS } from "@/lib/copilot-task-model-catalog";
 import { useConnectionModels } from "./ai-connections/useConnectionModels";
-import { agentHarnessType, agentRunner, paperclipRunnerProfileForHarness, type AgentRunnerChoice } from "@penclipai/shared";
+import { agentHarnessType, agentRunner, paperclipRunnerProfileForHarness, normalizeClaudeRunnerOptions, type AgentRunnerChoice } from "@penclipai/shared";
 import { adaptersApi } from "../api/adapters";
+import { canQualifyRunnerEnvironment, qualifyRunnerEnvironment } from "../lib/qualify-claude-setup";
 import { AgentRunnerSelect } from "./AgentRunnerSelect";
 import { aiRoutingHarness } from "@penclipai/shared";
 import { AiConnectionField } from "./ai-connections/AiConnectionField";
@@ -448,7 +449,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     // when the experimental environments picker is otherwise hidden).
     enabled:
       Boolean(selectedCompanyId) &&
-      (environmentsEnabled || generalSettings?.executionMode === "kubernetes"),
+      (environmentsEnabled || !isCreate || generalSettings?.executionMode === "kubernetes"),
   });
 
   // Setting-driven: resolve whether the instance forces Kubernetes execution and
@@ -641,28 +642,6 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     enabled: Boolean(selectedCompanyId),
   });
   const runnerAvailability = runnerDiscovery.data?.find(item => item.type === harnessType);
-  const showRunnerUpgrade = !isCreate
-    && ["codex_local", "claude_local"].includes(props.agent.adapterType)
-    && adapterType === props.agent.adapterType
-    && !runnerDiscovery.isError
-    && runnerAvailability?.defaultRunner === "paperclip";
-  const upgradeRunner = async () => {
-    if (isCreate || runnerUpgradePending) return;
-    const agentId = props.agent.id;
-    setRunnerUpgrade({ agentId, status: "pending" });
-    try {
-      const flushedEnv = flushEnvironmentDraft();
-      const nextOverlay = flushedEnv
-        ? { ...overlay, adapterConfig: { ...overlay.adapterConfig, env: flushedEnv } }
-        : overlay;
-      await props.onSave({ ...buildAgentUpdatePatch(props.agent, nextOverlay), runner: "paperclip" });
-      setRunnerUpgrade(current => current?.agentId === agentId ? { agentId, status: "upgraded" } : current);
-    } catch (error) {
-      setRunnerUpgrade(current => current?.agentId === agentId ? {
-        agentId, status: "failed", error: error instanceof Error ? error.message : "Could not upgrade this agent. Try again.",
-      } : current);
-    }
-  };
   const runner: AgentRunnerChoice = isCreate ? props.values.runner ?? "auto" : overlay.runner ?? agentRunner(adapterType);
   const fieldsAdapterType = isRunnerHarness
     ? (runner === "paperclip" || (runner === "auto" && runnerAvailability?.defaultRunner === "paperclip") ? "paperclip_runner" : harnessType)
@@ -673,6 +652,16 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     if (props.values.resolvedRunner !== resolvedRunner) props.onChange({ resolvedRunner });
   }, [props.mode, harnessType, isRunnerHarness, runner, runnerAvailability?.defaultRunner,
     isCreate ? props.values.resolvedRunner : undefined, isCreate ? props.onChange : undefined]);
+  // A Runner-only environment, such as a plugin environment that runs Runner
+  // tasks, offers no Legacy runner. Switch a Legacy choice to Paperclip Runner
+  // so the test and the save both resolve the Runner.
+  const legacyRunnerUnavailable = isRunnerHarness && runner === "legacy"
+    && runnerAvailability?.supportedRunners !== undefined && !runnerAvailability.supportedRunners.includes("legacy");
+  useEffect(() => {
+    if (!legacyRunnerUnavailable) return;
+    if (props.mode === "create") props.onChange({ runner: "paperclip" });
+    else setOverlay(prev => ({ ...prev, runner: "paperclip" }));
+  }, [legacyRunnerUnavailable, props.mode, props.mode === "create" ? props.onChange : undefined]);
   const getCapabilities = useAdapterCapabilities();
   const adapterCaps = getCapabilities(isRunnerHarness ? harnessType : adapterType);
   const runnerProvider = adapterType === "paperclip_runner"
@@ -881,25 +870,33 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   // is on but no managed sandbox is available; a render must not throw, so this
   // resolution catches that case and resolves no login environment. The Test
   // mutation surfaces the same case as a fail-closed error.
-  const effectiveLoginEnvironmentId = useMemo(() => {
-    try {
-      return resolveAdapterTestEnvironmentId({
-        agentDefaultEnvironmentId: rawCurrentDefaultEnvironmentId || null,
-        instanceDefaultEnvironmentId: instanceSettings?.defaultEnvironmentId ?? null,
-        localDefaultEnvironmentId: resolveLocalDefaultEnvironmentId(environments),
-        managedSandboxOnly: experimentalSettings?.enableManagedSandboxOnly === true,
-        managedSandboxEnvironmentId: resolveManagedSandboxEnvironmentId(environments),
-        // The policy hides the local environment, so an agent default that still
-        // points at the hidden local row names no visible environment. Pass the
-        // visible ids so the resolver redirects that stale local default to the
-        // managed sandbox instead of the hidden local id.
-        visibleEnvironmentIds: environments.map((environment) => environment.id),
-      });
-    } catch {
-      return null;
-    }
+  const savedDefaultEnvironmentId = isCreate ? null : props.agent.defaultEnvironmentId ?? null;
+  const { effectiveLoginEnvironmentId, savedLoginEnvironmentId } = useMemo(() => {
+    const resolve = (agentDefaultEnvironmentId: string | null) => {
+      try {
+        return resolveAdapterTestEnvironmentId({
+          agentDefaultEnvironmentId,
+          instanceDefaultEnvironmentId: instanceSettings?.defaultEnvironmentId ?? null,
+          localDefaultEnvironmentId: resolveLocalDefaultEnvironmentId(environments),
+          managedSandboxOnly: experimentalSettings?.enableManagedSandboxOnly === true,
+          managedSandboxEnvironmentId: resolveManagedSandboxEnvironmentId(environments),
+          // The policy hides the local environment, so an agent default that still
+          // points at the hidden local row names no visible environment. Pass the
+          // visible ids so the resolver redirects that stale local default to the
+          // managed sandbox instead of the hidden local id.
+          visibleEnvironmentIds: environments.map((environment) => environment.id),
+        });
+      } catch {
+        return null;
+      }
+    };
+    return {
+      effectiveLoginEnvironmentId: resolve(rawCurrentDefaultEnvironmentId || null),
+      savedLoginEnvironmentId: resolve(savedDefaultEnvironmentId),
+    };
   }, [
     rawCurrentDefaultEnvironmentId,
+    savedDefaultEnvironmentId,
     instanceSettings?.defaultEnvironmentId,
     environments,
     experimentalSettings?.enableManagedSandboxOnly,
@@ -908,6 +905,58 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     () => environments.find((environment) => environment.id === effectiveLoginEnvironmentId) ?? null,
     [environments, effectiveLoginEnvironmentId],
   );
+  const nativeRunnerAvailability = runnerDiscovery.data?.find(item => item.type === "paperclip_runner");
+  const upgradeEnvironment = forcedKubernetes ? kubernetesEnvironment : effectiveLoginEnvironment;
+  const upgradeEnvironmentId = upgradeEnvironment?.id ?? null;
+  const upgradeEnvironmentChanged = !isCreate && !forcedKubernetes
+    && effectiveLoginEnvironmentId !== savedLoginEnvironmentId;
+  const canQualifyRunnerUpgrade = upgradeEnvironment?.status === "active"
+    && canQualifyRunnerEnvironment(upgradeEnvironment)
+    && Boolean(runnerAvailability && !runnerAvailability.disabled && !runnerAvailability.overriddenBuiltin)
+    && Boolean(nativeRunnerAvailability && !nativeRunnerAvailability.disabled && !nativeRunnerAvailability.overriddenBuiltin);
+  const upgradeWarnings = harnessType === "claude_local" ? normalizeClaudeRunnerOptions(effectiveConfig).warnings : [];
+  const upgradeTargetRef = useRef("");
+  const upgradeTarget = JSON.stringify([!isCreate ? props.agent.id : null, selectedCompanyId, adapterType,
+    rawCurrentDefaultEnvironmentId, upgradeEnvironmentId, upgradeEnvironment?.config, effectiveConfig, overlay]);
+  upgradeTargetRef.current = upgradeTarget;
+  useEffect(() => () => { upgradeTargetRef.current = ""; }, []);
+  const showRunnerUpgrade = !isCreate
+    && ["codex_local", "claude_local"].includes(props.agent.adapterType)
+    && adapterType === props.agent.adapterType
+    && !runnerDiscovery.isError
+    && (runnerAvailability?.defaultRunner === "paperclip" || canQualifyRunnerUpgrade);
+  const upgradeRunner = async () => {
+    if (isCreate || runnerUpgradePending || upgradeEnvironmentChanged) return;
+    const agentId = props.agent.id;
+    setRunnerUpgrade({ agentId, status: "pending" });
+    try {
+      const flushedEnv = flushEnvironmentDraft();
+      const nextOverlay = flushedEnv
+        ? { ...overlay, adapterConfig: { ...overlay.adapterConfig, env: flushedEnv } }
+        : overlay;
+      const pendingTarget = upgradeTargetRef.current;
+      if (runnerAvailability?.defaultRunner !== "paperclip") {
+        if (!canQualifyRunnerUpgrade || !upgradeEnvironmentId || !selectedCompanyId) {
+          throw new Error("Could not determine which environment to verify. Retry the upgrade.");
+        }
+        const qualified = await qualifyRunnerEnvironment({
+          adapterType: harnessType,
+          readAdapters: () => adaptersApi.list({ companyId: selectedCompanyId, environmentId: upgradeEnvironmentId }),
+          probeEnvironment: () => agentsApi.qualifyRunner(agentId, upgradeEnvironmentId, selectedCompanyId),
+          isCurrent: () => upgradeTargetRef.current === pendingTarget,
+        });
+        if (!qualified) throw new Error("Agent settings changed during verification. Retry the upgrade with the current settings.");
+        queryClient.setQueryData(queryKeys.adapters.availability(selectedCompanyId, rawCurrentDefaultEnvironmentId || null), qualified.adapters);
+        if (qualified.runner !== "paperclip") throw new Error("This environment does not support Paperclip Runner. Your agent still uses Legacy runner.");
+      }
+      await props.onSave({ ...buildAgentUpdatePatch(props.agent, nextOverlay), runner: "paperclip" });
+      setRunnerUpgrade(current => current?.agentId === agentId ? { agentId, status: "upgraded" } : current);
+    } catch (error) {
+      setRunnerUpgrade(current => current?.agentId === agentId ? {
+        agentId, status: "failed", error: error instanceof Error ? error.message : "Could not upgrade this agent. Try again.",
+      } : current);
+    }
+  };
   // Load the sandbox provider capabilities. A login that runs on a real
   // pseudo-terminal needs a provider that advertises the login pseudo-terminal
   // capability. The login panel gate reads this to hide the panel for a provider
@@ -1454,6 +1503,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   const environmentVariablesEditor = (
     <EnvironmentVariablesEditor
       ref={environmentVariablesEditorRef}
+      disabled={runnerUpgradePending}
       key={environmentEditorKey}
       onDirtyChange={setEnvironmentDraftDirty}
       hideDraftActions={!isCreate && props.hideInlineSave}
@@ -1537,9 +1587,15 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 Keep {harnessType === "claude_local" ? "Claude" : "Codex"}, your model, account, and compatible settings.
                 New sessions start fresh; past runs stay available.
               </p>
-              {isDirty ? <p className="text-xs text-muted-foreground">Your unsaved changes will be included.</p> : null}
+              {canQualifyRunnerUpgrade && runnerAvailability?.defaultRunner !== "paperclip" ? (
+                <p className="text-xs text-muted-foreground">The upgrade will verify your computer first. This can take a few minutes.</p>
+              ) : null}
+              {upgradeWarnings.map(warning => <p key={warning.field} className="text-xs text-muted-foreground">{warning.message}</p>)}
+              {upgradeEnvironmentChanged ? (
+                <p className="text-xs text-muted-foreground">Save your computer change before upgrading the runner.</p>
+              ) : isDirty ? <p className="text-xs text-muted-foreground">Your unsaved changes will be included.</p> : null}
             </div>
-            <Button size="sm" className="self-end sm:self-auto" onClick={upgradeRunner} disabled={runnerUpgradePending || (!isCreate && props.isSaving)}>
+            <Button size="sm" className="self-end sm:self-auto" onClick={upgradeRunner} disabled={runnerUpgradePending || upgradeEnvironmentChanged || (!isCreate && props.isSaving)}>
               {runnerUpgradePending ? <Loader2 className="size-4 animate-spin" /> : null}
               {runnerUpgradePending ? "Upgrading…" : "Upgrade runner"}
             </Button>
@@ -1548,6 +1604,11 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
         </div>
       ) : null}
       {runnerUpgraded ? <p role="status" className="text-sm text-muted-foreground">Upgraded to Paperclip Runner.</p> : null}
+      {adapterType === "paperclip_runner" && upgradeWarnings.length > 0 ? (
+        <div role="status" className="space-y-1 rounded-lg border border-border bg-muted/30 p-4">
+          {upgradeWarnings.map(warning => <p key={warning.field} className="text-sm text-muted-foreground">{warning.message}</p>)}
+        </div>
+      ) : null}
     <ConfigSections order={props.sectionOrder} className={cn("relative", cards && "space-y-6")}>
       {/* ---- Floating Save button (edit mode, when dirty) ---- */}
       {isDirty && !props.hideInlineSave && (

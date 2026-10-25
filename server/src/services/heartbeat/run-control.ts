@@ -1,3 +1,5 @@
+import { notifyEnvironmentCleanup } from "../environment-cleanup-notifications.js";
+import { readNativeStopExecutionEvidence } from "./native-stop-evidence-read.js";
 import { readTaskRetryIntent, reconcileTaskChatRetryReceipts } from "../task-retry.js";
 import { PROCESS_IDENTITY_RECORDED, PROCESS_START_REQUESTED, readNativeLocalProcessStop, recordedLocalExecutionStopped } from "../native-local-process-stop.js";
 import { isHeartbeatRunTerminalStatus } from "./run-lifecycle.js";
@@ -164,7 +166,7 @@ async function withBudgetStopDelivery<T>(db: Db, work: () => Promise<T>): Promis
 
 /** Cancellation shares executor ownership and delegates lifecycle and admission effects. */
 export interface HeartbeatRunControlDependencies extends Pick<ReturnType<typeof createHeartbeatRunState>,
-  "getRun" | "getAgent">,
+  "getRun" | "getAgent" | "getRunCleanupState">,
   Pick<ReturnType<typeof createHeartbeatLifecycle>,
     "mergeRunStopMetadataForAgent" | "setRunStatusFromLive" | "setRunStatus" | "setWakeupStatus" | "appendRunEvent">,
   Pick<HeartbeatRetryDependencies, "finalizeAgentStatus"> {
@@ -324,6 +326,7 @@ function runCancellationFenceSql(input: {
 export function createHeartbeatRunControl(db: Db, dependencies: HeartbeatRunControlDependencies) {
   const {
     getRun,
+    getRunCleanupState,
     options,
     envOrchestrator,
     activeRunExecutions,
@@ -359,7 +362,11 @@ export function createHeartbeatRunControl(db: Db, dependencies: HeartbeatRunCont
       sandboxResource: "keep_running" | "stop_and_reuse" | "destroy_after_turn";
     };
   }) {
-    const leaseOwnerRun = await getRun(input.runId);
+    let leaseOwnerRun = await getRunCleanupState(input.runId);
+    if (leaseOwnerRun && isNativeRunnerOwnershipHeld(leaseOwnerRun)) return;
+    const cancelledRun = leaseOwnerRun?.runtimeMode === "native" && leaseOwnerRun.status === "cancelled"
+      ? await getRun(input.runId) : null;
+    if (cancelledRun) leaseOwnerRun = cancelledRun;
     if (leaseOwnerRun && isNativeRunnerOwnershipHeld(leaseOwnerRun)) return;
     // Recovery can finish workspace copy-back outside the executor's finally.
     // Successful copy-back does not earn warm retention for a failed turn.
@@ -368,11 +375,11 @@ export function createHeartbeatRunControl(db: Db, dependencies: HeartbeatRunCont
       input.providerResourceDisposition,
       status,
     );
-    if (leaseOwnerRun?.runtimeMode === "native" && status === "cancelled"
-      && readNativeWorkspaceSyncReference(leaseOwnerRun.runnerProfileJson?.nativeWorkspaceSync)?.state === "prepared"
-      && !nativeRunHasNoWorkspaceAccess(leaseOwnerRun)) {
+    if (cancelledRun?.runtimeMode === "native" && status === "cancelled"
+      && readNativeWorkspaceSyncReference(cancelledRun.runnerProfileJson?.nativeWorkspaceSync)?.state === "prepared"
+      && !nativeRunHasNoWorkspaceAccess(cancelledRun)) {
       try {
-        const preserved = await preserveNativeFailedWorkspace(db, leaseOwnerRun, { allowPreterminal: true });
+        const preserved = await preserveNativeFailedWorkspace(db, cancelledRun, { allowPreterminal: true });
         if (!preserved || !hasRequiredWorkspaceRecovery(preserved.resultJson)) return;
       } catch {
         // Keep the active source eligible for the bounded retention sweep.
@@ -478,13 +485,14 @@ export function createHeartbeatRunControl(db: Db, dependencies: HeartbeatRunCont
   async function acknowledgeRemoteStop(runId: string, companyId: string) {
     // The provider receipt arrives after adapter settlement. A remote ACP child
     // has no host PID, so only this target-aware boundary can acknowledge Stop.
-    const stopped = await getRun(runId);
-    if (stopped?.runtimeMode === "native") {
+    const state = await getRunCleanupState(runId);
+    if (state?.runtimeMode === "native") {
       const scopes = await stoppedRemoteCleanupScopes(db, companyId, runId);
       for (const remoteCleanupScope of scopes ?? []) {
         completeTerminatedRemoteNativeSessionCleanup({ companyId, runId, remoteCleanupScope });
       }
     }
+    const stopped = state?.runtimeMode === "legacy" && state.status === "cancelled" ? await getRun(runId) : null;
     if (stopped?.runtimeMode === "legacy" && stopped.status === "cancelled" &&
         parseObject(stopped.resultJson?.executionCancellation).state === "requested" &&
         await runUsedConversationAdapter(db, stopped) &&
@@ -516,7 +524,7 @@ export function createHeartbeatRunControl(db: Db, dependencies: HeartbeatRunCont
         !(await recordedLocalExecutionStopped(db, run))) return;
     const issueId = run.nativeIssueId ?? (typeof run.contextSnapshot?.issueId === "string" ? run.contextSnapshot.issueId : null);
     if (!issueId) return;
-    const currentRun = run.runtimeMode === "native" ? await getRun(run.id, { includeExecutionEvidence: true }) : null;
+    const currentRun = run.runtimeMode === "native" ? await readNativeStopExecutionEvidence(db, run.companyId, run.id) : null;
     const [coordinator] = currentRun ? await db.select({ phase: nativeRunFinalizations.phase,
       leaseOwner: nativeRunFinalizations.leaseOwner }).from(nativeRunFinalizations).where(and(
       eq(nativeRunFinalizations.companyId, run.companyId), eq(nativeRunFinalizations.runId, run.id),
@@ -699,6 +707,7 @@ export function createHeartbeatRunControl(db: Db, dependencies: HeartbeatRunCont
             or(isNull(environmentLeases.releasedAt), inArray(environmentLeases.status, ["active", "retained", "pending_cleanup"])),
           )).limit(1);
           if (otherOwner) continue;
+          await notifyEnvironmentCleanup(tx);
           await tx.update(environmentLeases).set({ status: "pending_cleanup", updatedAt: new Date() })
             .where(eq(environmentLeases.id, lease.id));
         }
@@ -814,7 +823,15 @@ export function createHeartbeatRunControl(db: Db, dependencies: HeartbeatRunCont
     options: { suppressImmediateRecovery?: boolean; resumeStrandedQueue?: boolean; deferredPostCommitEffects?: WakeQueuePostCommitEffect[] } = {},
   ) {
     try {
-      const source = await getRun(run.id);
+      const [source] = await db.select({
+        errorCode: heartbeatRuns.errorCode,
+        livenessState: heartbeatRuns.livenessState,
+        resultJson: sql<Record<string, unknown>>`jsonb_build_object(
+          'configurationIncomplete', ${heartbeatRuns.resultJson}->'configurationIncomplete'
+        )`,
+      }).from(heartbeatRuns).where(and(
+        eq(heartbeatRuns.id, run.id), eq(heartbeatRuns.companyId, run.companyId),
+      ));
       const sourceHandoff = await pendingCaseHandoffForRun(db, run.id, run.companyId);
       const { postCommitEffects } = await wakeQueue.releaseIssueExecution({
         companyId: run.companyId,
@@ -830,9 +847,18 @@ export function createHeartbeatRunControl(db: Db, dependencies: HeartbeatRunCont
       } else {
         await applyWakeQueuePostCommitEffects(postCommitEffects);
       }
-      const completed = await getRun(run.id);
-      const issueId = readNonEmptyString(completed?.contextSnapshot?.issueId)
-        ?? readNonEmptyString(completed?.contextSnapshot?.taskId) ?? completed?.nativeIssueId;
+      const [completed] = await db.select({
+        id: heartbeatRuns.id,
+        status: heartbeatRuns.status,
+        startedAt: heartbeatRuns.startedAt,
+        nativeIssueId: heartbeatRuns.nativeIssueId,
+        contextIssueId: sql<unknown>`${heartbeatRuns.contextSnapshot}->'issueId'`,
+        contextTaskId: sql<unknown>`${heartbeatRuns.contextSnapshot}->'taskId'`,
+      }).from(heartbeatRuns).where(and(
+        eq(heartbeatRuns.id, run.id), eq(heartbeatRuns.companyId, run.companyId),
+      ));
+      const issueId = readNonEmptyString(completed?.contextIssueId)
+        ?? readNonEmptyString(completed?.contextTaskId) ?? completed?.nativeIssueId;
       if (sourceHandoff && completed?.status === "cancelled" && !completed.startedAt && issueId) {
         // A cancelled queue entry has no executeRun.finally. The canonical
         // bootstrap proof still needs to release and wake its durable handoff.

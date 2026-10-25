@@ -68,7 +68,7 @@ export interface HeartbeatExecutionConfigurationInput {
     aiBinding: AiConnectionBinding | undefined;
   };
   policy: Pick<HeartbeatWorkspacePreparationInput["policy"],
-    "trustPreset" | "useIsolatedTaskDirectory"> & { explicitTaskDirectory: boolean };
+    "trustPreset" | "useIsolatedTaskDirectory" | "requestedExecutionWorkspaceMode"> & { explicitTaskDirectory: boolean };
   environment: Pick<EnvironmentSelection,
     "selectedEnvironmentId" | "selectedEnvironmentForConfig" | "resolvedInstanceSettings" | "persistedNativeExecutionInput">;
   services: {
@@ -108,14 +108,17 @@ export async function prepareHeartbeatExecutionConfiguration(db: Db, input: Hear
   // preparation step can fail. Subsequent provider/identity values extend it.
   onFailureSecretsResolved(() => []);
   const aiBinding = preconfiguredHome ? undefined : input.config.aiBinding;
-  const { trustPreset, useIsolatedTaskDirectory, explicitTaskDirectory } = input.policy;
+  const { trustPreset, useIsolatedTaskDirectory, explicitTaskDirectory, requestedExecutionWorkspaceMode } = input.policy;
   const { secretsSvc, companySkills, appendRunEvent, finalizeAiConnectionBusyDeferral } = input.services;
   let managedAiRuntime: ManagedAiRuntime | undefined;
+  const forceDirectoryStrategy = useIsolatedTaskDirectory || (explicitTaskDirectory && (
+    requestedExecutionWorkspaceMode === "agent_default" || Object.keys(parseObject(sourceWorkspaceConfig.workspaceStrategy)).length > 0
+  ));
   const mergedConfig = {
     ...sourceWorkspaceConfig,
     // The base below is already task-owned. Keep directory transport while
     // preserving isolated mode and the mandatory sandbox preflight.
-    ...((useIsolatedTaskDirectory || explicitTaskDirectory) ? { workspaceStrategy: { type: "project_primary" } } : {}),
+    ...(forceDirectoryStrategy ? { workspaceStrategy: { type: "project_primary" } } : {}),
   };
   const configSnapshot = buildExecutionWorkspaceConfigSnapshot(
     mergedConfig,

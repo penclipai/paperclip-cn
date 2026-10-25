@@ -116,6 +116,11 @@ runtime test accepts the form’s prospective adapter selection before it is sav
 For a saved-agent test, omitting `environmentId` uses the agent’s saved override.
 Sending `environmentId: null` tests a change back to the instance default.
 
+Saved-agent lifecycle verification checks managed account access before it
+allocates a test execution environment. Missing defaults, revoked accounts, and
+incompatible selections fail without creating a sandbox. The managed probe
+checks account access again after allocation so changes during setup still apply.
+
 ## On-demand usage limits
 
 The AI account detail has **Check usage**. It reads the selected account only

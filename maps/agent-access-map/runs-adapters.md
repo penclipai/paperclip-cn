@@ -199,6 +199,9 @@ existing hashed run ID. Controller startup phase spans carry no custom attribute
 Native controller setup and settlement phases use that same run hash, including
 assigned MCP discovery; neither tool definitions nor credentials are recorded.
 Both retain operator-controlled tracing; unconfigured clients stay silent.
+The native first-text span ends after text is committed for the existing run-events
+reader, including reasoning and completed responses. It exports only the bounded
+text kind and timing, with no text content or new agent access.
 This adds no agent API, credential access, run-log write, or recovery authority.
 See [the tracing contract](../../doc/observability.md#controller-preparation-phases).
 Live latency verification remains separate from the existing access baseline.
@@ -274,6 +277,14 @@ own policy and access review.
 Gaps: Task-session listing and execution-context reset require board agent
 management at their HTTP routes. Native `call_api` preserves these denials; native
 continuation remains server-owned.
+
+Scoped source evidence: replacement of a workspace may bootstrap a newly
+admitted provider session only with matching current run/runner/lease identity,
+no prior activity or backup, and an atomic claim of an absent remote session
+directory. Existing sessions retain verified restore. This adds no reset or
+cleanup authority. Follow the [session recipe](../feature-map/runs-adapters.md#session)
+with a board-owned disposable fixture; live provider and actor-access evidence
+remain separate from the executor regressions.
 
 Scoped source-only evidence: [configuration changes](../../server/src/services/agent-configuration.ts)
 and [native execution/recovery](../../server/src/services/native-runtime/native-session-executor.ts)

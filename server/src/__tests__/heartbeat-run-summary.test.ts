@@ -63,7 +63,7 @@ describe("scheduled continuation presentation", () => {
 });
 
 describe("continuation origin verification", () => {
-  it.each(["native_status_decision", "issue.monitor", "tool_action_review", "issue.comment", "issue.comment.created", "issue.update"])
+  it.each(["native_status_decision", "issue.monitor", "tool_action_review", "issue.comment", "issue.comment.created", "issue.update", "issue.interaction.respond", "issue.interaction.accept", "issue.interaction.reject", "issue.interaction.verdicts", "issue.interaction.cancel", "issue.interaction.withdraw", "external_chat.interaction.resolve", "connection_intent.resolved"])
     ("checks %s without treating candidacy as publication authority", source => {
       expect(isChatOriginPublicationCandidate({ source })).toBe(true);
       expect(isExternalChatPresentationContext({ source })).toBe(false);

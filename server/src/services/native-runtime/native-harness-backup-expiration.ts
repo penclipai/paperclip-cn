@@ -180,7 +180,6 @@ async function sessionRetentionBlocker(
         inArray(nativeRunFinalizations.runId, runIds),
         or(
           notInArray(nativeRunFinalizations.phase, SETTLED_FINALIZATION_PHASES),
-          sql`${nativeRunFinalizations.recoveryState} is not null`,
           sql`${nativeRunFinalizations.leaseOwner} is not null`,
         ),
       ),

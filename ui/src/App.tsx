@@ -54,7 +54,9 @@ const ProductionLayout = lazy(() => import("./components/Layout.production").the
 
 const TaskChatLab = lazy(() => import("./pages/TaskChatLab").then((module) => ({ default: module.TaskChatLab })));
 const Issues = lazy(() => import("./pages/Issues").then((module) => ({ default: module.Issues })));
-const loadIssueDetail = () => import("./pages/IssueDetail").then((module) => ({ default: module.IssueDetail }));
+let issueDetailLoad: Promise<{ default: typeof import("./pages/IssueDetail").IssueDetail }> | undefined;
+const loadIssueDetail = () =>
+  (issueDetailLoad ??= import("./pages/IssueDetail").then((module) => ({ default: module.IssueDetail })));
 const IssueDetail = lazy(loadIssueDetail);
 const AgentChat = lazy(() => import("./pages/AgentChat").then((module) => ({ default: module.AgentChat })));
 const IssueChatLongThreadPerf = lazy(() => import("./pages/IssueChatLongThreadPerf").then((module) => ({ default: module.IssueChatLongThreadPerf })));

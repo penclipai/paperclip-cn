@@ -6,7 +6,7 @@ import { characterStateForAgent } from "@penclipai/shared";
 import { mergeRunLogChunks, readChunkSeq } from "../lib/run-log-chunks";
 import { getPageVisibility, usePageVisibility } from "../lib/page-visibility";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
-import { useParams, useNavigate, Link, Navigate, useBeforeUnload, type NavigateFunction } from "@/lib/router";
+import { useParams, useNavigate, useLocation, Link, Navigate, useBeforeUnload, type NavigateFunction } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import {
   agentsApi,
@@ -60,6 +60,7 @@ import { BuiltInBundlePanel } from "../components/BuiltInBundlePanel";
 import { ConfigureBuiltInAgentModal } from "../components/ConfigureBuiltInAgentModal";
 import { BudgetPolicyCard } from "../components/BudgetPolicyCard";
 import { TrustPresetSection } from "../components/TrustPresetSection";
+import { AgentProjectAccessSettings } from "../components/AgentProjectAccessSettings";
 import { FileTree, buildFileTree } from "../components/FileTree";
 import { ScrollToBottom } from "../components/ScrollToBottom";
 import { SourceResolvedFoldCallout } from "../components/SourceResolvedFoldCallout";
@@ -773,6 +774,7 @@ export function AgentDetail() {
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const location = useLocation();
   const [actionError, setActionError] = useState<string | null>(null);
   const [dismissedLeftAgentIds, setDismissedLeftAgentIds] = useState<Set<string>>(() => new Set());
   const { enabled: chatEnabled, githubEnabled, loaded: chatConnectorsLoaded } = useChatConnectorsEnabled();
@@ -992,10 +994,10 @@ export function AgentDetail() {
                       ? "budget"
                       : "dashboard";
     if (routeAgentRef !== canonicalAgentRef || urlTab !== canonicalTab) {
-      navigate(`/agents/${canonicalAgentRef}/${canonicalTab}`, { replace: true });
+      navigate(`/agents/${canonicalAgentRef}/${canonicalTab}${location.search}`, { replace: true });
       return;
     }
-  }, [agent, routeAgentRef, canonicalAgentRef, urlRunId, urlTab, activeView, navigate, chatConnectorsLoaded]);
+  }, [agent, routeAgentRef, canonicalAgentRef, urlRunId, urlTab, activeView, navigate, chatConnectorsLoaded, location.search]);
 
   useEffect(() => {
     if (!agent?.companyId || agent.companyId === selectedCompanyId) return;
@@ -2205,6 +2207,7 @@ function ConfigurationTab({
       ) : null}
 
       {content === "configuration" ? <TrustPresetSection
+        projectAccessEditor={<AgentProjectAccessSettings agent={agent} />}
         permissions={agent.permissions}
         disabled={updatePermissions.isPending}
         companyId={companyId}

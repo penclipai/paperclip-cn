@@ -4,6 +4,7 @@ import { assertNativeCaseHandoffResult } from "./native-case-handoff.js";
 import { activeIssueInteractionCondition, ordinaryQuestionCondition } from "../issue-question-context.js";
 import { publishedTaskDocuments, validateNativeDeliverableEvidence } from "./native-deliverable-feedback.js";
 import { findAutomaticCompletionReviews } from "./automatic-completion-reviews.js";
+import { findSupersededExternalReviewRequests } from "./superseded-external-review-requests.js";
 import { evaluateAgentInvokabilityFromDb } from "../agent-invokability.js";
 import { issueService } from "../issues.js";
 import { isConversation } from "../agent-conversations.js";
@@ -138,8 +139,15 @@ export async function nativeCompletionFeedback(
     ? continuation.objective : [issue.title, issue.description].filter(Boolean).join("\n");
   await validateNativeDeliverableEvidence(db, { companyId: run.companyId, issueId: issue.id, runId,
     objective, semanticToolReceipts: run.resultJson?.semanticToolReceipts }, result);
+  const canSupersedeReview = result.reportedWorkDisposition === "done" ||
+    (result.reportedWorkDisposition === "yielded" && (result.continuation?.kind === "monitor" ||
+      (result.continuation?.kind === "response_wake" && await resolveExternalChatResponseWaitAuthorization({
+        db, binding: { companyId: run.companyId, issueId: issue.id, runId, agentId: run.agentId },
+      }) === "authorized")));
+  const superseded = canSupersedeReview && signals.actionableAttentionRequests.length === 0
+    ? await findSupersededExternalReviewRequests(db, { companyId: run.companyId, issueId: issue.id, runId, agentId: run.agentId }) : [];
   const retiredCandidates = await findAutomaticCompletionReviews(db, issue.id);
-  const retiredIds = retiredCandidates.map(({ interaction }) => interaction.id);
+  const retiredIds = [...retiredCandidates, ...superseded].map(({ interaction }) => interaction.id);
   const [interaction, approval] = await Promise.all([
     db
       .select({

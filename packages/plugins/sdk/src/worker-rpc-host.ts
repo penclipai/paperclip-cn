@@ -1163,6 +1163,9 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
       },
 
       agents: {
+        async getRuntimeIdentity(agentId, companyId) {
+          return callHost("agents.getRuntimeIdentity", { agentId, companyId });
+        },
         async getRuntime(agentId, companyId) {
           return callHost("agents.getRuntime", { agentId, companyId });
         },

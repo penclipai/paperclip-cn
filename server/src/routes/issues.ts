@@ -3191,6 +3191,42 @@ function decrementIssueListActorClientInflight(actorClientKey: string) {
   else issueListActorClientInflight.set(actorClientKey, next);
 }
 
+const ISSUE_LIST_UUID_QUERY_PARAMS = [
+  "participantAgentId",
+  "projectId",
+  "workspaceId",
+  "executionWorkspaceId",
+  "parentId",
+  "parentIssueId",
+  "descendantOf",
+  "createdFromIssueId",
+  "labelId",
+] as const;
+
+type IssueListUuidQueryParam = (typeof ISSUE_LIST_UUID_QUERY_PARAMS)[number];
+
+function parseIssueListUuidQueryParams(
+  query: Record<string, unknown>,
+):
+  | { ok: true; values: Partial<Record<IssueListUuidQueryParam, string>> }
+  | { ok: false; error: string } {
+  const values: Partial<Record<IssueListUuidQueryParam, string>> = {};
+  for (const name of ISSUE_LIST_UUID_QUERY_PARAMS) {
+    const raw = query[name];
+    if (raw === undefined) continue;
+    if (typeof raw !== "string") {
+      return { ok: false, error: `${name} must be a UUID` };
+    }
+    const trimmed = raw.trim();
+    if (trimmed.length === 0) continue;
+    if (!isUuidLike(trimmed)) {
+      return { ok: false, error: `${name} must be a UUID` };
+    }
+    values[name] = trimmed;
+  }
+  return { ok: true, values };
+}
+
 async function coordinateIssueListGet(input: {
   req: Request;
   companyId: string;
@@ -7212,18 +7248,20 @@ export function issueRoutes(
     id: string;
     assigneeAgentId: string | null;
     executionRunId?: string | null;
-  }) {
+  }, options?: { queueStateOnly: true }) {
     let runToInterrupt = issue.executionRunId
-      ? await heartbeat.getRun(issue.executionRunId)
+      ? options?.queueStateOnly
+        ? await heartbeat.getRunIssueControl(issue.executionRunId)
+        : await heartbeat.getRun(issue.executionRunId)
       : null;
 
     if (
       (!runToInterrupt || runToInterrupt.status !== "running") &&
       issue.assigneeAgentId
     ) {
-      const activeRun = await heartbeat.getActiveRunForAgent(
-        issue.assigneeAgentId,
-      );
+      const activeRun = options?.queueStateOnly
+        ? await heartbeat.getActiveRunIssueControlForAgent(issue.assigneeAgentId)
+        : await heartbeat.getActiveRunForAgent(issue.assigneeAgentId);
       const activeIssueId =
         activeRun &&
         activeRun.contextSnapshot &&
@@ -7687,11 +7725,12 @@ export function issueRoutes(
     return commentCreatedAtMs >= activeRunStartedAtMs;
   }
   async function getClosedIssueExecutionWorkspace(issue: {
+    companyId: string;
     executionWorkspaceId?: string | null;
   }) {
     if (!issue.executionWorkspaceId) return null;
-    const workspace = await executionWorkspacesSvc.getById(
-      issue.executionWorkspaceId,
+    const workspace = await executionWorkspacesSvc.getStoredById(
+      issue.companyId, issue.executionWorkspaceId,
     );
     if (!workspace || !isClosedIsolatedExecutionWorkspace(workspace))
       return null;
@@ -8445,6 +8484,12 @@ export function issueRoutes(
       });
       return;
     }
+    const uuidQuery = parseIssueListUuidQueryParams(req.query);
+    if (!uuidQuery.ok) {
+      res.status(422).json({ error: uuidQuery.error });
+      return;
+    }
+    const uuidFilters = uuidQuery.values;
     const offset = parsedOffset ?? 0;
 
     const listFilters: IssueFilters = {
@@ -8452,20 +8497,18 @@ export function issueRoutes(
       attention: attention === "blocked" ? "blocked" : undefined,
       status: req.query.status as string | string[] | undefined,
       assigneeAgentId,
-      participantAgentId: req.query.participantAgentId as string | undefined,
+      participantAgentId: uuidFilters.participantAgentId,
       assigneeUserId,
       touchedByUserId,
       inboxArchivedByUserId,
       unreadForUserId,
-      projectId: req.query.projectId as string | undefined,
-      workspaceId: req.query.workspaceId as string | undefined,
-      executionWorkspaceId: req.query.executionWorkspaceId as
-        string | undefined,
-      parentId: (req.query.parentId ?? req.query.parentIssueId) as
-        string | undefined,
-      descendantOf: req.query.descendantOf as string | undefined,
-      createdFromIssueId: req.query.createdFromIssueId as string | undefined,
-      labelId: req.query.labelId as string | undefined,
+      projectId: uuidFilters.projectId,
+      workspaceId: uuidFilters.workspaceId,
+      executionWorkspaceId: uuidFilters.executionWorkspaceId,
+      parentId: uuidFilters.parentId ?? uuidFilters.parentIssueId,
+      descendantOf: uuidFilters.descendantOf,
+      createdFromIssueId: uuidFilters.createdFromIssueId,
+      labelId: uuidFilters.labelId,
       originKind: req.query.originKind as string | undefined,
       originKindPrefix: req.query.originKindPrefix as string | undefined,
       originId: req.query.originId as string | undefined,
@@ -8686,22 +8729,27 @@ export function issueRoutes(
       return;
     }
 
+    const countUuidQuery = parseIssueListUuidQueryParams(req.query);
+    if (!countUuidQuery.ok) {
+      res.status(422).json({ error: countUuidQuery.error });
+      return;
+    }
+    const countUuidFilters = countUuidQuery.values;
+
     const blockedCountFilters = {
       readCondition: await issueReadSqlCondition(db, req.actor),
       attention: "blocked",
       status: req.query.status as string | string[] | undefined,
       assigneeAgentId: req.query.assigneeAgentId as string | undefined,
-      participantAgentId: req.query.participantAgentId as string | undefined,
+      participantAgentId: countUuidFilters.participantAgentId,
       assigneeUserId: req.query.assigneeUserId as string | undefined,
-      projectId: req.query.projectId as string | undefined,
-      workspaceId: req.query.workspaceId as string | undefined,
-      executionWorkspaceId: req.query.executionWorkspaceId as
-        string | undefined,
-      parentId: (req.query.parentId ?? req.query.parentIssueId) as
-        string | undefined,
-      descendantOf: req.query.descendantOf as string | undefined,
-      createdFromIssueId: req.query.createdFromIssueId as string | undefined,
-      labelId: req.query.labelId as string | undefined,
+      projectId: countUuidFilters.projectId,
+      workspaceId: countUuidFilters.workspaceId,
+      executionWorkspaceId: countUuidFilters.executionWorkspaceId,
+      parentId: countUuidFilters.parentId ?? countUuidFilters.parentIssueId,
+      descendantOf: countUuidFilters.descendantOf,
+      createdFromIssueId: countUuidFilters.createdFromIssueId,
+      labelId: countUuidFilters.labelId,
       originKind: req.query.originKind as string | undefined,
       originKindPrefix: req.query.originKindPrefix as string | undefined,
       originId: req.query.originId as string | undefined,
@@ -8926,7 +8974,7 @@ export function issueRoutes(
         : null;
 
     const currentExecutionWorkspacePromise = issue.executionWorkspaceId
-      ? executionWorkspacesSvc.getById(issue.executionWorkspaceId)
+      ? executionWorkspacesSvc.getStoredById(issue.companyId, issue.executionWorkspaceId, { includeRuntimeServices: true })
       : Promise.resolve(null);
     const [
       { project, goal },
@@ -9293,7 +9341,7 @@ export function issueRoutes(
       inboxArchiveFieldsPromise,
       timing.time("channel", () => getExternalChannelBindingSummary(db, issue.companyId, issue.id)),
       timing.time("workspace", () => issue.executionWorkspaceId
-        ? executionWorkspacesSvc.getById(issue.executionWorkspaceId)
+        ? executionWorkspacesSvc.getStoredById(issue.companyId, issue.executionWorkspaceId, { includeRuntimeServices: true })
         : Promise.resolve(null)),
       timing.time("work_products", () => workProductsSvc.listForIssue(issue.id)),
       timing.time("created_from", () => resolveVisibleIssueCreationSource(req, issue)),
@@ -16301,7 +16349,7 @@ export function issueRoutes(
     const queue = await buildQueuedCommentQueue({
       executor: db,
       issue,
-      activeRun: await resolveActiveIssueRun(issue),
+      activeRun: await resolveActiveIssueRun(issue, { queueStateOnly: true }),
       actor: getActorInfo(req),
     });
     res.json(

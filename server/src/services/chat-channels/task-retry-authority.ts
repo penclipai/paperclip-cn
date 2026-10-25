@@ -1,9 +1,11 @@
 import { and, eq, sql } from "drizzle-orm";
-import { agentWakeupRequests, environmentLeases, heartbeatRuns, nativeRunFinalizations, type Db } from "@penclipai/db";
+import { agentWakeupRequests, environmentLeases, heartbeatRuns, issueRecoveryActions, nativeRunFinalizations, type Db } from "@penclipai/db";
 import { readTaskRetryIntent } from "../task-retry.js";
 import { hasNativeLocalProcessStop, hasHistoricalSuspendedNativeSession, recordedLocalExecutionStopped } from "../native-local-process-stop.js";
 import { hasRemoteTerminationReceipt } from "../remote-execution-termination.js";
 import { adapterExecutionControls } from "../adapter-execution-control.js";
+import { getExecutionBlocker } from "../execution-blocker.js";
+import { readSystemRecovery } from "../system-recovery-state.js";
 
 /** This receipt changes the workspace strategy, never the external principal,
  * accepted inbound batch, publication scope, or current conversation access. */
@@ -42,4 +44,26 @@ export async function taskChatRetryExecutionStopped(db: Db, run: typeof heartbea
   return await recordedLocalExecutionStopped(db, run) ||
     await hasNativeLocalProcessStop(db, run.companyId, run.id) ||
     await hasHistoricalSuspendedNativeSession(db, run);
+}
+
+/** Admission may persist a wait for the exact recovery this user requested.
+ * This grants no execution authority: promotion and execution still require
+ * containment, and the queue retains the source's current execution blocker. */
+export async function taskChatRetryCanAwaitRecovery(db: Db, run: typeof heartbeatRuns.$inferSelect,
+  issueId: string, intentId: string) {
+  const retry = await readTaskChatRetryIntent(db, { companyId: run.companyId, issueId,
+    agentId: run.agentId, sourceRunId: run.id, intentId });
+  if (!retry || retry.wake.status !== "deferred_issue_execution" || retry.wake.runId) return false;
+  const blocker = await getExecutionBlocker(db, run.companyId, issueId);
+  if (blocker?.runId !== run.id || !blocker.recoveryActionId) return false;
+  const [action] = await db.select({ evidence: issueRecoveryActions.evidence }).from(issueRecoveryActions).where(and(
+    eq(issueRecoveryActions.companyId, run.companyId), eq(issueRecoveryActions.sourceIssueId, issueId),
+    eq(issueRecoveryActions.id, blocker.recoveryActionId),
+  )).for("share", { noWait: true });
+  const recovery = readSystemRecovery(action?.evidence);
+  // Attaching Retry to active automatic recovery preserves that recovery's
+  // generation and budget. Its current intentId binds this user request; the
+  // Retry receipt's generation is a different identity.
+  return Boolean(recovery && recovery.sourceRunId === run.id && recovery.intentId === intentId &&
+    ["scheduled", "running", "awaiting_evidence"].includes(recovery.state));
 }

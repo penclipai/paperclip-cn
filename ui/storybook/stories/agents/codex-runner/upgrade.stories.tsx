@@ -1,3 +1,4 @@
+import { normalizeClaudeRunnerOptions } from "@penclipai/shared";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within, waitFor } from "storybook/test";
 import { Route, Routes } from "@/lib/router";
@@ -50,9 +51,11 @@ function installUpgradeFixture({ harness = "codex_local", failOnce = false, inco
           failOnce = false;
           return Response.json({ error: "Could not save this agent. Try again." }, { status: 503 });
         }
-        if (incompatible && (patch.adapterConfig?.chrome ?? agent.adapterConfig.chrome) === true) return Response.json({ error: "Paperclip Runner cannot honor these settings: chrome. Remove them or select Legacy runner in Advanced." }, { status: 422 });
         const { runner: _runner, replaceAdapterConfig: _replace, adapterConfig, ...rest } = patch;
-        agent = { ...agent, ...rest, adapterType: "paperclip_runner", adapterConfig: { ...agent.adapterConfig, ...adapterConfig, ...profile } };
+        const converted = { ...agent.adapterConfig, ...adapterConfig, ...profile };
+        const normalized = harness === "claude_local" ? normalizeClaudeRunnerOptions(converted) : { config: converted, warnings: [] };
+        agent = { ...agent, ...rest, adapterType: "paperclip_runner", adapterConfig: normalized.config as typeof agent.adapterConfig };
+        return Response.json({ ...agent, configurationWarnings: normalized.warnings });
       }
       return Response.json(agent);
     }
@@ -119,16 +122,15 @@ export const FailureAndRetry: Story = { parameters: { runnerUpgrade: { failOnce:
   await userEvent.click(page.getByRole("button", { name: "Upgrade runner" }));
   await expect(await page.findByText("Upgraded to Paperclip Runner.")).toBeVisible();
 } };
-export const IncompatibleClaudeSetting: Story = { parameters: { runnerUpgrade: { harness: "claude_local", incompatible: true } }, play: async ({ canvasElement }) => {
+export const IncompatibleClaudeSetting: Story = { name: "Ignored Claude setting", parameters: { runnerUpgrade: { harness: "claude_local", incompatible: true } }, play: async ({ canvasElement }) => {
   const page = within(canvasElement);
+  await expect(await page.findByText(/Chrome integration.*is ignored/)).toBeVisible();
   await userEvent.click(await page.findByRole("button", { name: "Upgrade runner" }));
-  await expect(await page.findByRole("alert")).toHaveTextContent("chrome");
-  await expect(page.getByRole("switch", { name: "Enable Chrome" })).toBeChecked();
+  await expect(await page.findByText("Upgraded to Paperclip Runner.")).toBeVisible();
 } };
-export const RepairAndUpgrade: Story = { ...IncompatibleClaudeSetting, play: async context => {
-  await IncompatibleClaudeSetting.play!(context);
-  const page = within(context.canvasElement);
-  await userEvent.click(page.getByRole("switch", { name: "Enable Chrome" }));
+export const RepairAndUpgrade: Story = { ...IncompatibleClaudeSetting, name: "Remove obsolete option and upgrade", play: async ({ canvasElement }) => {
+  const page = within(canvasElement);
+  await userEvent.click(await page.findByRole("switch", { name: "Enable Chrome" }));
   await expect(page.getByText("Your unsaved changes will be included.")).toBeVisible();
   await userEvent.click(page.getByRole("button", { name: "Upgrade runner" }));
   await expect(await page.findByText("Upgraded to Paperclip Runner.")).toBeVisible();

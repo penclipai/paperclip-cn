@@ -345,7 +345,7 @@ function sameFileIdentity(left: Stats, right: Stats): boolean {
   );
 }
 
-async function readVerifiedWorkspaceFile(
+export async function readVerifiedWorkspaceFile(
   binding: NativeRunnerFileHandoffBinding,
   input: NativeRunnerFileHandoffInput,
 ): Promise<VerifiedWorkspaceFile> {
@@ -1192,14 +1192,11 @@ async function assertCurrentBinding(
 export async function prepareNativeRunnerFileHandoff(input: {
   readonly db: Db;
   readonly binding: NativeRunnerFileHandoffBinding;
-  readonly deliverable: NativeRunnerFileHandoffInput;
+  readonly verifiedFile: VerifiedWorkspaceFile;
   readonly storage?: StorageService;
 }): Promise<PreparedNativeRunnerFileHandoff> {
   const { statusVersion } = await assertCurrentBinding(input.db, input.binding);
-  const verified = await readVerifiedWorkspaceFile(
-    input.binding,
-    input.deliverable,
-  );
+  const verified = input.verifiedFile;
 
   const [existing] = await input.db
     .select({

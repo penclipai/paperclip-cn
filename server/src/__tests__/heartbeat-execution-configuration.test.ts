@@ -160,7 +160,7 @@ describePostgres("heartbeat execution configuration through adapter dispatch", (
       config: { sourceWorkspaceConfig: { ...agent.adapterConfig, homeMode: "preconfigured" }, aiBinding: managed
         ? aiRuntimeConnectionBindingSchema.parse(agent.runtimeConfig!.aiConnection) : undefined },
       policy: { trustPreset: { kind: "standard", preset: "standard", boundary: null, sourcePresets: {} },
-        useIsolatedTaskDirectory: false, explicitTaskDirectory: false },
+        useIsolatedTaskDirectory: false, explicitTaskDirectory: false, requestedExecutionWorkspaceMode: "shared_workspace" },
       environment: { selectedEnvironmentId: null, selectedEnvironmentForConfig: null,
         resolvedInstanceSettings: await instanceSettingsService(db).get(), persistedNativeExecutionInput: persisted },
       services: { secretsSvc: secretService(db), companySkills: companySkillService(db), appendRunEvent: vi.fn(), finalizeAiConnectionBusyDeferral: vi.fn() },
@@ -226,6 +226,8 @@ describePostgres("heartbeat execution configuration through adapter dispatch", (
     config: Record<string, unknown>,
     snapshot: Record<string, unknown> = {},
     type = "paperclip_runner",
+    explicitTaskDirectory = false,
+    requestedExecutionWorkspaceMode: HeartbeatExecutionConfigurationInput["policy"]["requestedExecutionWorkspaceMode"] = "shared_workspace",
     useManagedConnection = false,
   ) {
     const [agent] = await db.update(agents).set({ adapterType: type, adapterConfig: config }).where(eq(agents.id, f.agentId)).returning();
@@ -240,13 +242,35 @@ describePostgres("heartbeat execution configuration through adapter dispatch", (
         sourceWorkspaceConfig: config,
         aiBinding: useManagedConnection ? aiRuntimeConnectionBindingSchema.parse(agent.runtimeConfig!.aiConnection) : undefined,
       },
-      policy: { trustPreset: { kind: "standard", preset: "standard", boundary: null, sourcePresets: {} }, useIsolatedTaskDirectory: false, explicitTaskDirectory: false },
+      policy: { trustPreset: { kind: "standard", preset: "standard", boundary: null, sourcePresets: {} }, useIsolatedTaskDirectory: false, explicitTaskDirectory, requestedExecutionWorkspaceMode },
       environment: { selectedEnvironmentId: null, selectedEnvironmentForConfig: null,
         resolvedInstanceSettings, persistedNativeExecutionInput: null },
       services: { secretsSvc: secretService(db), companySkills: companySkillService(db), appendRunEvent: vi.fn(), finalizeAiConnectionBusyDeferral: vi.fn() },
       onFailureSecretsResolved: () => {}, onManagedAiRuntimeAcquired: () => {}, onIdentityRedactorPrepared: () => {},
     }) };
   }
+
+  it("keeps default task-directory configuration stable when the directory is reused", async () => {
+    const f = await seed();
+    const initial = await (await configuration(f, {}, {}, "paperclip_runner", true)).prepare();
+    const reused = await (await configuration(f, {})).prepare();
+    expect(initial.prepared).toBe(true);
+    expect(reused.prepared).toBe(true);
+    if (!initial.prepared || !reused.prepared) throw new Error("Configuration was not prepared");
+    expect(initial.mergedConfig).toEqual(reused.mergedConfig);
+    expect(initial.configSnapshot).toEqual(reused.configSnapshot);
+  });
+
+  it.each([
+    { mode: "shared_workspace" as const, config: { workspaceStrategy: { type: "git_worktree", baseRef: "main" } } },
+    { mode: "agent_default" as const, config: {} },
+  ])("still selects directory transport instead of a $mode strategy", async ({ mode, config }) => {
+    const f = await seed();
+    const prepared = await (await configuration(f, config, {}, "paperclip_runner", true, mode)).prepare();
+    expect(prepared.prepared).toBe(true);
+    if (!prepared.prepared) throw new Error("Configuration was not prepared");
+    expect(prepared.mergedConfig.workspaceStrategy).toEqual({ type: "project_primary" });
+  });
 
   it.each(["fresh", "saved empty"])("prepares a %s native skill selection while another run holds the company cache lock", async kind => {
     const f = await seed();
@@ -303,6 +327,8 @@ describePostgres("heartbeat execution configuration through adapter dispatch", (
       { paperclipSkillSync: { desiredSkills: kind === "selected native" ? [selected.key] : [] } },
       {},
       kind === "selected native" ? "paperclip_runner" : "codex_local",
+      false,
+      "shared_workspace",
       true,
     );
     let release!: () => void;

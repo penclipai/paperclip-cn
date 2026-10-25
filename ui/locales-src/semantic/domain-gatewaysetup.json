@@ -1,0 +1,22 @@
+{
+  "gatewaySetup.description": {
+    "en": "Save the connection, then choose a model and test it with your agent.",
+    "zh-CN": "保存连接后，选择模型并使用你的智能体进行测试。",
+    "reviewedEnglishHash": "2db17a990130cdfd940c3be58f74363c94165a0652141ace635101e06fa918cb"
+  },
+  "gatewaySetup.saveConnection": {
+    "en": "Save connection",
+    "zh-CN": "保存连接",
+    "reviewedEnglishHash": "df24ef128adf67e1234f0740ff776e366e48ebc3392d67c6fb5ade7ff1edb851"
+  },
+  "gatewaySetup.title": {
+    "en": "Custom gateway connection",
+    "zh-CN": "自定义网关连接",
+    "reviewedEnglishHash": "f15646cce977523a191bf2079b363d6d0ffaed6c59cb8de46a4a539b4121e0cf"
+  },
+  "gatewaySetup.useCustom": {
+    "en": "Use a custom gateway",
+    "zh-CN": "使用自定义网关",
+    "reviewedEnglishHash": "528fdd8e5db699ddf3cfd9e956407acff5e15d01e6e8a5246192030b7372e19a"
+  }
+}

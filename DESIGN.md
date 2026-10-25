@@ -47,6 +47,10 @@ Completed Slack setup is a success view: show the full agent avatar, success mes
 and one centered Done action. Omit Save & exit after the connection has been
 confirmed. The shared footer rule applies to its unfinished setup steps.
 
+The New task form opens immediately. Load its code with the board and fill
+agent and project choices in place as their requests finish. Keep text entered
+while those requests are pending.
+
 ## Mobile navigation and text fields
 
 The fixed bottom navigation uses an opaque surface so scrolling content cannot

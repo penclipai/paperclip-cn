@@ -372,7 +372,7 @@ export function activityRoutes(db: Db) {
   router.get("/heartbeat-runs/:runId/issues", async (req, res) => {
     assertAuthenticated(req);
     const runId = req.params.runId as string;
-    const run = await heartbeat.getRun(runId);
+    const run = await heartbeat.getRunReadAccess(runId);
     if (!run || !hasCompanyAccess(req, run.companyId)) {
       // Return `200 []` for both "doesn't exist" and "cross-tenant" — preserves the
       // legacy API contract while keeping the cross-tenant existence oracle closed

@@ -1,5 +1,8 @@
 import { idleWorkSnapshot } from "../services/task-admission.js";
+import { readFreshWorkspaceReadiness } from "../services/fresh-workspace-continuation.js";
 import { requestTaskRetry } from "../services/task-retry.js";
+import { createSystemRecovery } from "../services/system-recovery-state.js";
+import { remoteTerminationReceipt } from "../services/remote-execution-termination.js";
 import { stageReceiptReactionRemovals } from "../services/chat-receipt-reactions.js";
 import type { Db } from "@penclipai/db";
 import * as activityLogModule from "../services/activity-log.js";
@@ -23,7 +26,7 @@ import { toolActionRequests, toolInvocations, toolPolicies } from "@penclipai/db
 import { GitHubPublicationLeaseLost, withGitHubPublicationLease } from "../services/chat-github-publication-lease.js";
 import { secretService } from "../services/secrets.js";
 import { githubChatWizardService } from "../services/chat-github-wizard.js";
-import { dispatchGitHubBotCloudEvent } from "../services/chat-github-cloud-ingress.js";
+import { dispatchGitHubBotCloudEvent, registerGitHubBotCloudSetupPoller } from "../services/chat-github-cloud-ingress.js";
 import { githubChatManagementService } from "../services/chat-github-management.js";
 import { githubChatReviewService } from "../services/chat-github-reviews.js";
 import { resolveGitHubReviewInstructions } from "../services/chat-channels/github/review-instructions.js";
@@ -68,6 +71,7 @@ import {
   eq,
   inArray,
   isNotNull,
+  isNull,
   like,
   notInArray,
   or,
@@ -3373,6 +3377,12 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           limitations: [...parameters.coverage!.limitations.slice(0, 50), "Changed final limitation"] } };
         await expect(gateway.executeTool({ sessionToken: session.token, tool: tool.name, parameters: changedCoverage }))
           .rejects.toMatchObject({ status: 409, reasonCode: "github_idempotency_conflict" });
+        const invalidCoverage = await gateway.executeTool({ sessionToken: session.token, tool: tool.name,
+          parameters: { ...parameters, coverage: { ...parameters.coverage!, reviewedPaths: ["outside-this-pr.ts"] } } })
+          .then(() => null, error => error);
+        expect(invalidCoverage).toMatchObject({ status: 409,
+          message: "Assessment coverage and findings must refer to this PR's allowed changed files" });
+        expect(invalidCoverage).not.toHaveProperty("reasonCode");
       }
       await db.insert(toolPolicies).values({ companyId: f.companyId, name: "Revoke publication", policyType: "block", priority: 0,
         selectors: { catalogEntryId: tool.catalogEntryId! } });
@@ -5127,13 +5137,22 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         (await f.service.get(f.endpoint.id)).setup.webhookVerifiedAt,
       ).toBeNull();
       expect(f.wakeup).not.toHaveBeenCalled();
-      event.payload.githubApp.headers["x-hub-signature-256"] =
-        `sha256=${createHmac("sha256", f.webhookSecret).update(body).digest("hex")}`;
-      expect(await dispatchGitHubBotCloudEvent(db, event)).toBe(true);
-      expect(
-        (await f.service.get(f.endpoint.id)).setup.webhookVerifiedAt,
-      ).toBeTruthy();
-      expect(f.wakeup).not.toHaveBeenCalled();
+      const poll = vi.fn(async () => { await dispatchGitHubBotCloudEvent(db, event); });
+      const unregister = registerGitHubBotCloudSetupPoller(db, poll);
+      try {
+        const waiting = await f.service.githubWizard.advance(f.endpoint.id, "owner-user");
+        expect(waiting.state).toBe("verify");
+        expect(poll).toHaveBeenCalledOnce();
+        expect((await f.service.get(f.endpoint.id)).setup.webhookVerifiedAt).toBeNull();
+        event.payload.githubApp.headers["x-hub-signature-256"] =
+          `sha256=${createHmac("sha256", f.webhookSecret).update(body).digest("hex")}`;
+        const ready = await f.service.githubWizard.advance(f.endpoint.id, "owner-user");
+        expect(ready.state).not.toBe("verify");
+        expect((await f.service.get(f.endpoint.id)).setup.webhookVerifiedAt).toBeTruthy();
+        expect(f.wakeup).not.toHaveBeenCalled();
+        await f.service.githubWizard.advance(f.endpoint.id, "owner-user");
+        expect(poll).toHaveBeenCalledTimes(2);
+      } finally { unregister(); }
     });
     it("legacy name-only registration preserves an explicit empty repository selection", async () => {
       const fixture = await seedCompany();
@@ -40895,6 +40914,46 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     await service.shutdown();
   });
 
+  it.each(["request_confirmation", "request_checkbox_confirmation", "request_item_verdicts", "suggest_tasks", "connection_intent"] as const)("delivers and replaces a Slack %s card through the publication service", async kind => {
+    const previousPublicUrl = process.env.PAPERCLIP_PUBLIC_URL;
+    process.env.PAPERCLIP_PUBLIC_URL = "https://paperclip.example";
+    const fixture = await seedCompany();
+    const { callbacks, endpoint, service } = await configuredSlackEndpoint(fixture);
+    try {
+      const thread = makeThread({ channelId: "C-REVIEW", id: "slack:C-REVIEW:4500.1", name: "reviews" });
+      await deliverMessage({ callbacks, endpointId: endpoint.id, thread: thread.thread, message: makeMessage({ id: "4500.1", text: "@maya review this change", mentioned: true, userId: `U-REVIEW-${randomUUID()}` }), trigger: "mention" });
+      await qualifySetupRoundTrip(service, endpoint.id);
+      await service.test(endpoint.id, "owner-user");
+      const [conversation] = await readChatConversationsByEndpointId(endpoint.id);
+      const sourceRunId = randomUUID();
+      await db.insert(heartbeatRuns).values({ id: sourceRunId, companyId: fixture.companyId, agentId: fixture.assignedAgentId, status: "succeeded", responsibleUserId: "owner-user", contextSnapshot: { issueId: conversation.issueId, taskId: conversation.issueId, source: "automation" } });
+      const interactions = issueThreadInteractionService(db);
+      const issue = { id: conversation.issueId, companyId: fixture.companyId };
+      const interaction = kind === "connection_intent"
+        ? await interactions.createConnectionIntent(issue, { sourceRunId, addresseeUserId: "owner-user", idempotencyKey: `slack-review:${sourceRunId}`, payload: { version: 1, serviceSlug: "notion", serviceName: "Notion", requestingAgentId: fixture.assignedAgentId, requestingAgentName: "Maya", phase: "requested" } })
+        : await interactions.create(issue, { kind, sourceRunId, payload: kind === "suggest_tasks" ? { version: 1, tasks: [{ clientKey: "docs", title: "Review migration notes" }] } : kind === "request_item_verdicts" ? { version: 1, prompt: "Review migration notes", items: [{ id: "docs", label: "Migration notes" }] } : { version: 1, prompt: "Review migration notes", ...(kind === "request_checkbox_confirmation" ? { options: [{ id: "docs", label: "Migration notes" }] } : {}) } } as Parameters<typeof interactions.create>[1], { agentId: fixture.assignedAgentId });
+      await service.processPendingPublications();
+      const rows = () => db.select().from(chatPublications).where(and(eq(chatPublications.endpointId, endpoint.id), eq(sql<string>`${chatPublications.payload}->>'interactionId'`, interaction.id)));
+      const [original] = await rows();
+      expect(original?.state).toBe("published");
+      expect(original?.payload.card?.actions).toEqual(expect.arrayContaining([expect.objectContaining({ type: "callback" })]));
+      if (kind === "connection_intent") expect(original?.payload.card?.actions).toContainEqual({ type: "link", label: "Review connection", url: expect.any(String) });
+      if (kind === "connection_intent") await interactions.resolveConnectionIntent(issue, interaction.id, { version: 1, outcome: "declined" }, { userId: "owner-user" });
+      else if (kind === "request_item_verdicts") await interactions.submitItemVerdicts(issue, interaction.id, { verdicts: [{ id: "docs", verdict: "approve" }] }, { userId: "owner-user" });
+      else await interactions.rejectInteraction(issue, interaction.id, {}, { userId: "owner-user" });
+      await service.processPendingPublications();
+      const publications = await rows();
+      const terminal = publications.find(row => row.id !== original.id);
+      expect(terminal?.state).toBe("published");
+      expect(terminal?.providerMessageId).toBe(original.providerMessageId);
+      expect(terminal?.payload.card?.actions).toBeUndefined();
+    } finally {
+      await service.shutdown();
+      if (previousPublicUrl === undefined) delete process.env.PAPERCLIP_PUBLIC_URL;
+      else process.env.PAPERCLIP_PUBLIC_URL = previousPublicUrl;
+    }
+  });
+
   it("publishes a closed-choice question, settles its Slack card, and delivers its exact continuation response", async () => {
     const fixture = await seedCompany();
     const continuationRunId = randomUUID();
@@ -41953,10 +42012,10 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       };
       expect(metadata).toEqual({ c: expect.any(String), m: view.callback_id });
       const select = view.blocks.find(
-        (block) => block.element.type === "static_select",
+        (block) => block.element?.type === "radio_buttons",
       )!;
       const text = view.blocks.find(
-        (block) => block.element.type === "plain_text_input",
+        (block) => block.element?.type === "plain_text_input",
       )!;
       const production = select.element.options!.find(
         (option) => option.text.text === "Production",
@@ -41975,7 +42034,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               values: {
                 [select.block_id]: {
                   [select.element.action_id]: {
-                    type: "static_select",
+                    type: "radio_buttons",
                     selected_option: production,
                   },
                 },
@@ -42640,7 +42699,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         privateMetadata?: string;
       };
       const selectField = modal.children.find(
-        (child) => child.type === "select",
+        (child) => child.type === (provider === "slack" ? "radio_select" : "select"),
       );
       const textField = modal.children.find(
         (child) => child.type === "text_input",
@@ -60960,6 +61019,196 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           delete process.env.PAPERCLIP_RUNNER_STATE_DIR;
         else process.env.PAPERCLIP_RUNNER_STATE_DIR = previous;
         rmSync(directory, { recursive: true, force: true });
+      }
+    },
+  );
+
+  it.each((["github", "telegram"] as const).flatMap(provider =>
+    (["pending", "historical_sibling", "foreign_source_hold", "automatic_scheduled", "automatic_running", "automatic_awaiting_evidence", "exhausted", "wrong_generation", "paused_endpoint", "paused_after_wait", "paused_agent_after_wait", "edited_after_wait", "superseded_after_wait"] as const).map(gate => ({ provider, gate }))))(
+    "holds an ordinary $provider Retry behind its exact remote recovery: $gate", async ({ provider, gate }) => {
+      const context = await failedChatRetryFixture(provider, undefined, true);
+      try {
+        const companyId = context.fixture.companyId, issueId = context.issue.id;
+        const leaseId = randomUUID();
+        await db.update(heartbeatRuns).set({ runtimeMode: "native", nativeIssueId: issueId,
+          nativePhase: "terminal_failure", runnerProfileJson: {},
+          resultJson: { workspaceRestoreFailure: "restore_failed", workspaceRestoreRecovery: {
+            schema: "paperclip.workspace-restore-recovery.v1", runId: context.runId, leaseIds: [leaseId],
+          } },
+        }).where(eq(heartbeatRuns.id, context.runId));
+        await db.insert(nativeRunFinalizations).values({ companyId, issueId,
+          runId: context.runId, phase: "terminal_failure" });
+        await db.insert(environmentLeases).values({ id: leaseId, companyId, issueId,
+          heartbeatRunId: context.runId, provider: "daytona", providerLeaseId: randomUUID(),
+          status: "pending_cleanup", cleanupStatus: "failed", leasePolicy: "retain_on_failure",
+          metadata: { remoteCwd: "/home/daytona/paperclip-workspace", pendingCleanupInFlight: false },
+        });
+        const priorRecovery = { ...createSystemRecovery(context.runId),
+          state: gate === "automatic_scheduled" ? "scheduled" as const
+            : gate === "automatic_running" ? "running" as const
+              : gate === "automatic_awaiting_evidence" ? "awaiting_evidence" as const : "exhausted" as const,
+          attempts: 2, retriesUsed: 1, attemptId: randomUUID(),
+          firstFailureAt: Date.now() - 1000, deadlineAt: Date.now() + 60_000,
+          preservationOperationIds: [randomUUID()],
+        };
+        const canResume = gate === "pending" || gate === "historical_sibling" || gate.startsWith("automatic_");
+        await db.insert(issueRecoveryActions).values({ companyId, sourceIssueId: issueId,
+          kind: "active_run_watchdog", status: "resolved", ownerType: "system",
+          cause: "native_continuation_requires_reconciliation", fingerprint: randomUUID(),
+          nextAction: "Verify and preserve the exact retained source before continuing.",
+          evidence: { runId: context.runId, automaticRecovery: { replay: "blocked" },
+            workspaceRestoreRecovery: { schema: "paperclip.workspace-restore-recovery.v1", leaseIds: [leaseId] },
+            historicalWorkspaceSource: { schema: "paperclip.historical-workspace-source.v1", runId: context.runId, leaseIds: [leaseId] },
+            systemRecovery: priorRecovery,
+          },
+        });
+        const receipt = await requestTaskRetry({ db, companyId, issueId, actorId: "owner-user",
+          actorSource: "cloud_tenant", observedRunId: context.runId, idempotencyKey: randomUUID(),
+          prepareChatRetry: context.service.prepareFailedChatRunRetry });
+        const [recoveryAction] = await db.select().from(issueRecoveryActions).where(and(
+          eq(issueRecoveryActions.companyId, companyId), eq(issueRecoveryActions.sourceIssueId, issueId),
+          sql`${issueRecoveryActions.evidence}->>'runId' = ${context.runId}`,
+        ));
+        if (gate === "historical_sibling") await db.insert(issueRecoveryActions).values({
+          companyId, sourceIssueId: issueId, kind: "active_run_watchdog", status: "resolved", ownerType: "system",
+          cause: "native_session_retry_exhausted", fingerprint: randomUUID(),
+          nextAction: "Preserve the historical execution outcome.",
+          evidence: { runId: context.runId, automaticRecovery: { replay: "blocked", actionOutcome: "unknown" } },
+        });
+        if (gate.startsWith("automatic_")) expect(recoveryAction.evidence.systemRecovery).toMatchObject({
+          generationId: priorRecovery.generationId, intentId: receipt.requestId,
+          attempts: priorRecovery.attempts, retriesUsed: priorRecovery.retriesUsed,
+          attemptId: priorRecovery.attemptId, deadlineAt: priorRecovery.deadlineAt,
+          preservationOperationIds: priorRecovery.preservationOperationIds,
+        });
+        if (gate === "exhausted" || gate === "wrong_generation") await db.update(issueRecoveryActions).set({
+          evidence: { ...recoveryAction.evidence, systemRecovery: {
+            ...recoveryAction.evidence.systemRecovery as Record<string, unknown>,
+            ...(gate === "exhausted" ? { state: "exhausted" } : { intentId: randomUUID() }),
+          } },
+        }).where(eq(issueRecoveryActions.id, recoveryAction.id));
+        if (gate === "paused_endpoint") await db.update(chatEndpoints).set({ status: "paused" })
+          .where(eq(chatEndpoints.id, context.endpoint.id));
+        // Keep capacity occupied so a regression cannot start a real adapter.
+        await db.update(agents).set({ adapterType: "paperclip_runner", status: "running",
+          runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } } })
+          .where(eq(agents.id, context.fixture.assignedAgentId));
+        await db.insert(heartbeatRuns).values({ companyId,
+          agentId: context.fixture.assignedAgentId, status: "running", startedAt: new Date() });
+        context.wakeup.mockImplementation(heartbeatService(db).wakeup);
+        const outcome = await context.service.processFailedChatRunRetry(receipt.chatActionId!);
+        if (["exhausted", "wrong_generation", "paused_endpoint"].includes(gate)) {
+          expect(outcome).toMatchObject({ status: "failed" });
+          expect(await readAgentWakeupRequestsById(receipt.chatActionId!)).toHaveLength(0);
+          expect((await readHeartbeatRunsByCompanyId(companyId))
+            .filter(run => run.contextSnapshot?.taskRetryRequestId === receipt.requestId)).toHaveLength(0);
+          return;
+        }
+        expect(outcome).toMatchObject({ status: "deferred" });
+        const [wake] = await readAgentWakeupRequestsById(receipt.chatActionId!);
+        expect(wake).toMatchObject({ status: "deferred_issue_execution", runId: null,
+          payload: { taskRetryRequestId: receipt.requestId, retryOfRunId: context.runId } });
+        const [intent] = await readAgentWakeupRequestsById(receipt.requestId!);
+        expect(intent).toMatchObject({ status: "deferred_issue_execution", runId: null });
+        expect((await readHeartbeatRunsByCompanyId(companyId))
+          .filter(run => run.contextSnapshot?.taskRetryRequestId === receipt.requestId)).toHaveLength(0);
+        expect((await db.select().from(environmentLeases).where(eq(environmentLeases.id, leaseId)))[0])
+          .toMatchObject({ status: "pending_cleanup", cleanupStatus: "failed", metadata: { pendingCleanupInFlight: false } });
+        const retryContext = context.wakeup.mock.calls.at(-1)![1].contextSnapshot!;
+        for (const phase of ["promotion", "execution"] as const) {
+          await expect(authorizeFailedChatRunRetryWake(db, db, { phase,
+            wakeupRequestId: receipt.chatActionId!, companyId, issueId,
+            agentId: context.fixture.assignedAgentId, contextSnapshot: retryContext,
+          })).rejects.toMatchObject({ details: { code: "chat_failed_run_retry_not_authorized" } });
+        }
+        const heartbeat = heartbeatService(db);
+        await heartbeat.resumeQueuedRuns();
+        await context.service.processFailedChatRunRetries();
+        expect((await readAgentWakeupRequestsById(receipt.chatActionId!))[0])
+          .toMatchObject({ status: "deferred_issue_execution", runId: null });
+        // Model the recovery worker's validated absence receipt; this test
+        // exercises queue continuation, not the provider's absence signature.
+        const [lease] = await db.select().from(environmentLeases).where(eq(environmentLeases.id, leaseId));
+        await db.update(environmentLeases).set({ status: "released", cleanupStatus: "success", releasedAt: new Date(),
+          failureReason: "workspace_source_unavailable", metadata: { ...lease.metadata,
+            remoteExecutionTermination: remoteTerminationReceipt(lease, { providerLeaseId: lease.providerLeaseId, state: "destroyed" }),
+          } }).where(eq(environmentLeases.id, leaseId));
+        await db.update(issueRecoveryActions).set({ evidence: { ...recoveryAction.evidence,
+          systemRecovery: { ...recoveryAction.evidence.systemRecovery as Record<string, unknown>, state: "exhausted",
+            failure: { code: "source_unavailable", retryClass: "service_required", evidenceFingerprint: "missing-source" } },
+        } }).where(eq(issueRecoveryActions.id, recoveryAction.id));
+        if (gate === "foreign_source_hold") {
+          const foreignRunId = randomUUID();
+          await db.insert(heartbeatRuns).values({ id: foreignRunId, companyId, issueId, nativeIssueId: issueId,
+            agentId: context.fixture.assignedAgentId, runtimeMode: "native", nativePhase: "terminal_failure",
+            status: "failed", createdAt: new Date(Date.now() - 120_000), finishedAt: new Date(Date.now() - 60_000),
+            resultJson: { workspaceRestoreFailure: "restore_failed", workspaceRestoreRecovery: {
+              schema: "paperclip.workspace-restore-recovery.v1", runId: foreignRunId, leaseIds: [] } },
+          });
+          await db.insert(issueRecoveryActions).values({ companyId, sourceIssueId: issueId,
+            kind: "active_run_watchdog", status: "resolved", ownerType: "system",
+            cause: "native_session_retry_exhausted", fingerprint: randomUUID(), nextAction: "An independent source still needs recovery.",
+            evidence: { runId: foreignRunId, automaticRecovery: { replay: "blocked" } },
+          });
+        }
+        if (gate === "paused_after_wait") await db.update(chatEndpoints).set({ status: "paused" })
+          .where(eq(chatEndpoints.id, context.endpoint.id));
+        if (gate === "paused_agent_after_wait") await db.update(agents).set({ status: "paused" })
+          .where(eq(agents.id, context.fixture.assignedAgentId));
+        if (gate === "edited_after_wait") await db.update(issueComments).set({ body: "Changed after waiting", updatedAt: new Date() })
+          .where(eq(issueComments.id, String(context.action.payload.commentId)));
+        if (gate === "superseded_after_wait") {
+          const replacement = await requestTaskRetry({ db, companyId, issueId, actorId: "owner-user",
+            actorSource: "cloud_tenant", observedRunId: context.runId, idempotencyKey: randomUUID(),
+            prepareChatRetry: context.service.prepareFailedChatRunRetry });
+          expect(replacement.requestId).not.toBe(receipt.requestId);
+          // Reconsider only the old action, including a delayed worker after
+          // supersession. The replacement remains owned by its own request.
+          await context.service.processFailedChatRunRetry(receipt.chatActionId!);
+        } else {
+          await heartbeat.resumeQueuedRuns();
+          await context.service.processFailedChatRunRetries();
+        }
+        if (!canResume) {
+          if (gate === "foreign_source_hold") {
+            expect((await readAgentWakeupRequestsById(receipt.chatActionId!))[0]).toMatchObject({
+              status: "deferred_issue_execution", payload: { executionWait: { reason: "workspace_repair_required" } },
+            });
+          } else if (gate !== "superseded_after_wait") {
+            await heartbeat.resumeQueuedRuns();
+            expect((await db.select().from(chatActions).where(eq(chatActions.id, receipt.chatActionId!)))[0])
+              .toMatchObject({ status: "failed" });
+            expect((await readAgentWakeupRequestsById(receipt.requestId!))[0]).toMatchObject({ status: "failed" });
+          }
+          expect((await readAgentWakeupRequestsById(receipt.chatActionId!))[0]).toMatchObject({ runId: null });
+          expect((await readHeartbeatRunsByCompanyId(companyId))
+            .filter(run => run.contextSnapshot?.taskRetryRequestId === receipt.requestId)).toHaveLength(0);
+          return;
+        }
+        const [admitted] = await readAgentWakeupRequestsById(receipt.chatActionId!);
+        expect(admitted).toMatchObject({ status: "queued" });
+        expect(admitted.runId).toBeTruthy();
+        const [successor] = await readHeartbeatRunsById(admitted.runId!);
+        expect(successor).toMatchObject({ status: "queued", retryOfRunId: context.runId,
+          contextSnapshot: { wakeCommentIds: [context.action.payload.commentId], taskRetryRequestId: receipt.requestId } });
+        expect(await readFreshWorkspaceReadiness(db, successor)).toMatchObject({
+          mode: "fresh_isolated_workspace", retryIntentId: receipt.requestId, sourceRunId: context.runId,
+          retainedSourceIds: [leaseId],
+        });
+        await heartbeat.resumeQueuedRuns();
+        await context.service.processFailedChatRunRetries();
+        expect((await readHeartbeatRunsByCompanyId(companyId))
+          .filter(run => run.contextSnapshot?.taskRetryRequestId === receipt.requestId)).toHaveLength(1);
+
+      } finally {
+        await context.service.shutdown();
+        // Remove this case's unadmitted synthetic Retry receipts. Global
+        // notice scans must not consume another case's injected read failure.
+        await db.delete(agentWakeupRequests).where(and(
+          eq(agentWakeupRequests.companyId, context.fixture.companyId),
+          inArray(agentWakeupRequests.reason, ["task_retry", "retry_failed_run"]),
+          isNull(agentWakeupRequests.runId),
+        ));
       }
     },
   );

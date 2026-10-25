@@ -8,6 +8,7 @@ import { canonicalExecutionUuid } from "./execution-identity.js";
 import { assertSelectedWorkspaceTrust, runRetainsIssueIdentity, taskRepositoryRunColumns, taskRepositoryResponsibleUserMatches } from "./task-repository-acquisition.js";
 import { resolveCoreTrustPreset } from "./trust-preset-resolver.js";
 import { isDeepStrictEqual } from "node:util";
+import { ProjectAccessDeniedError } from "./project-access-denial.js";
 import { taskWorkspaceSelectionSchema, type TaskWorkspaceSelection } from "@penclipai/shared";
 
 type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
@@ -19,7 +20,12 @@ export async function assertTaskWorkspaceSourceProjectAccess(
   const decision = await measureRunPhase("workspace.access.authorization", () => accessService(db as Db).decide({
     actor, action: "project:read", resource: { type: "project", companyId, projectId },
   }));
-  if (!decision.allowed) throw forbidden(decision.explanation);
+  if (!decision.allowed) {
+    if (actor.type === "agent" && decision.reason === "deny_low_trust_boundary") {
+      throw new ProjectAccessDeniedError(projectId);
+    }
+    throw forbidden(decision.explanation);
+  }
 }
 
 export async function assertExecutionWorkspaceRecordAccess(

@@ -64,6 +64,15 @@ Repeat terminal reconciliation with native identity and no legacy wake fields.
 Check delayed acknowledgements, check-only assessments followed by formal reviews,
 and combined requests with separate pre-upgrade placeholders.
 
+GitHub review attention regression: publish a 3/5 assessment, then wait for the
+next provider event. The task stays in review without a completion card or Mine
+entry. A later 5/5 review with passing required checks can finish quietly. A real
+repository-access request enters Mine until resolved. The native external-chat
+database suite checks these states and revoked endpoints using stored provider
+receipts; live model adherence remains a separate check.
+It also checks saved monitors, disabled repositories, multiple reviewed heads,
+read-only finish validation, withdrawal rollback, and separate approval gates.
+
 Manual: For each supported provider being changed, send a unique message, verify the intended agent/company receives it, and inspect the actual external reply in the original thread. Repeat with an unlinked/unauthorized sender, duplicate inbound delivery, and one supported attachment. Record provider-specific results separately.
 
 GitHub review prompt regression: open a PR and push twice. Each task message

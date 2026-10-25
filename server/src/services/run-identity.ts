@@ -10,7 +10,7 @@ import {
   type Db,
 } from "@penclipai/db";
 import { conflict, forbidden } from "../errors.js";
-import { boundRunIssueId } from "./run-task-binding.js";
+import { boundRunIssueId, runTaskContextColumn } from "./run-task-binding.js";
 import { isUuidLike } from "@penclipai/shared";
 import { queuedCommentIdsFromRunContext, queuedCommentIdsFromWakePayload } from "./issue-queued-comment-queue.js";
 
@@ -72,7 +72,7 @@ async function lockIdentityTask(
 ) {
   const [run] = await executor
     .select({
-      contextSnapshot: heartbeatRuns.contextSnapshot,
+      contextSnapshot: runTaskContextColumn,
       nativeIssueId: heartbeatRuns.nativeIssueId,
       issueId: heartbeatRuns.issueId,
     })
@@ -150,7 +150,11 @@ async function activate(executor: Executor, context: RunIdentityContext) {
         eq(heartbeatRuns.companyId, context.companyId),
       ),
     )
-    .returning();
+    .returning({
+      nativeIssueId: heartbeatRuns.nativeIssueId,
+      issueId: heartbeatRuns.issueId,
+      contextSnapshot: runTaskContextColumn,
+    });
   const issueId = run ? boundRunIssueId(run) : null;
   if (typeof issueId === "string")
     await executor

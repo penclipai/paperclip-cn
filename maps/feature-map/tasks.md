@@ -17,9 +17,15 @@ Agent access: [companion](../agent-access-map/tasks.md).
 - `create`: `tasks/create` — capture a title/request with the intended agent, project, and attachments.
 - `organize`: `tasks/organize` — filter, sort, group, and navigate tasks without losing the selected context.
 - `properties`: `tasks/properties` — change status, priority, assignee, project, and relationships where authorized.
+
 - `discussion`: `tasks/discussion` — persist comments, references, and files on the task.
 - `completion`: `tasks/completion` — distinguish backlog, active work, review, blocked, done, and cancelled outcomes.
 - `privacy`: `tasks/privacy` — create private tasks, share or revoke access, and inspect parent/project inheritance before changing visibility.
+
+The [Product task-properties journey](../../tests/runner-e2e/PRODUCT-JOURNEYS.md)
+checks only assignment to the signed-in user and persistence after reload. Its
+source is reusable across self-hosted and Cloud; Cloud live qualification is
+separate. It does not cover other property operations or agent authorization.
 
 ## How to get to it (user POV)
 
@@ -61,9 +67,11 @@ Use these checks alongside the entry-point recipes below and the operation recor
 
 ### `new-task`
 
-Automated: [creation dialog](../../ui/src/components/NewIssueDialog.test.tsx) is component coverage with mocked requests.
+Automated: [board dialogs](../../ui/src/components/BoardDialogs.test.tsx) checks that the task form appears on the first synchronous open and retains its draft across reopen. [Creation dialog](../../ui/src/components/NewIssueDialog.test.tsx) covers typing while agent/project requests are pending and retaining that text when defaults arrive. These are component checks with mocked requests.
 
 Manual: Create a uniquely named task with an agent and project. Open its resulting link and reload. Confirm text, attachment, assignment, and project persisted, and verify execution started only when the task and agent are eligible.
+
+On the first New task open after a page load, confirm the form appears without a loading dialog. Delay agent and project responses, type a request, then release the responses. Confirm the choices populate without replacing the form or its text.
 
 Creation is request-first: enter **Describe a task…**, choose the assignee and
 project, and submit **Create task**. A standalone title field is not always shown.

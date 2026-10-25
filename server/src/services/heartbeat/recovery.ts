@@ -1,3 +1,5 @@
+import { pendingCleanupDeadlineSql } from "../environment-cleanup-state.js";
+import { writeEnvironmentCleanup } from "../environment-cleanup-notifications.js";
 import type { WorkspaceWorkers } from "../plugin-workspaces.js";
 import { createHeartbeatAgentStatus } from "./agent-status.js";
 import { preserveWorkspaceRestoreRecoveryMetadataSql } from "../legacy-workspace-restore-recovery.js";
@@ -8,7 +10,7 @@ import {
   hasStopOnlyCleanup,
   settleStopOnlyCleanup,
 } from "../sandbox-stop-and-retain.js";
-import { recordNativeLocalProcessStop } from "../native-local-process-stop.js";
+import { discoverSettledNativeRunProcesses, recordNativeLocalProcessStop, retryPendingSettledNativeRunProcesses } from "../native-local-process-stop.js";
 import { pendingCaseHandoffForRun } from "./case-handoff-lifecycle.js";
 import {
   legacyControllerBootId,
@@ -101,6 +103,7 @@ export interface HeartbeatRecoveryDependencies extends Pick<HeartbeatRetryDepend
   getRun: (runId: string, options?: Parameters<ReturnType<typeof createHeartbeatRunState>["getRun"]>[1]) => Promise<
     Awaited<ReturnType<ReturnType<typeof createHeartbeatRunState>["getRun"]>> | null
   >;
+  getRunWorkspaceSettlement: ReturnType<typeof createHeartbeatRunState>["getRunWorkspaceSettlement"];
   environmentRuntime: ReturnType<typeof environmentRuntimeService>;
   pluginWorkerManager?: WorkspaceWorkers;
   environmentsSvc: Pick<ReturnType<typeof environmentService>, "getById" | "getLeaseById" | "releaseLease">;
@@ -213,20 +216,9 @@ function pendingCleanupAttemptsSql() {
 }
 
 function pendingCleanupRetryDueSql(explicitRetry = false) {
-  // Ownership renewal and retry cooldown are separate clocks. A late renewal
-  // cannot change when a completed attempt may retry. Older claims used the
-  // retry field for both clocks, so retain that fallback until they settle.
-  const deadline = sql`case
-    when ${environmentLeases.metadata}->>'pendingCleanupInFlight' = 'true'
-      and ${environmentLeases.metadata} ? 'pendingCleanupLeaseExpiresAtMs'
-      then ${environmentLeases.metadata}->'pendingCleanupLeaseExpiresAtMs'
-    else ${environmentLeases.metadata}->'pendingCleanupRetryAfterMs' end`;
   return sql`case
     when ${explicitRetry} and coalesce(${environmentLeases.metadata}->>'pendingCleanupInFlight', 'false') != 'true' then true
-    when jsonb_typeof(${deadline}) = 'number'
-      then (${deadline})::numeric <= ${Date.now()}
-        or (${deadline})::numeric > ${Date.now() + 30 * 60_000 + 1_000}
-    else true end`;
+    else ${pendingCleanupDeadlineSql()} <= ${Date.now()} end`;
 }
 
 // Choose the `jsonb_set` target root. A provider can write a scalar or array
@@ -371,6 +363,7 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
     environmentRuntime,
     scheduleNativeSessionResumeDispatch,
     getRun,
+    getRunWorkspaceSettlement,
     executeRun,
     activeRunExecutionPromises,
     cancelHeartbeatNativeRun,
@@ -1536,7 +1529,7 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
       // pending_cleanup sweep can accept the same row in this same tick. A
       // fresh timestamp here would push the row inside that sweep's own
       // backoff window and delay the teardown by one full tick.
-      const flipped = await db
+      const flipped = await writeEnvironmentCleanup(db, tx => tx
         .update(environmentLeases)
         .set({
           status: "pending_cleanup",
@@ -1548,7 +1541,7 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
             eq(environmentLeases.status, "active"),
           ),
         )
-        .returning({ id: environmentLeases.id });
+        .returning({ id: environmentLeases.id }));
       if (flipped.length > 0) recovered += 1;
     }
 
@@ -1578,6 +1571,7 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
     const now = new Date();
     const cutoff = new Date(now.getTime() - backoffMs);
 
+    let deferredFlushFailed = false;
     // Flush the in-process orphan-cleanup buffer first. A failed acquire buffers
     // an orphan there when every synchronous pending-cleanup write failed after a
     // failed teardown. The flush re-inserts each buffered record, so a durable
@@ -1596,9 +1590,8 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
       // later tick, and the database rows below still need this sweep. The caught
       // exception never enters the log, because a write error can carry a
       // credential in its message, code, cause, or stack.
-      logger.warn(
-        "orphan sandbox cleanup buffer flush failed; the sweep continues",
-      );
+      logger.warn("orphan sandbox cleanup buffer flush failed; cleanup will retry");
+      deferredFlushFailed = true;
     }
 
     const rows = await db
@@ -1784,14 +1777,14 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
       }
       // Persist the cooldown independently of process memory. A crash before
       // this write leaves the bounded in-flight lease for a later sweep.
-      await db.update(environmentLeases).set({
+      await writeEnvironmentCleanup(db, tx => tx.update(environmentLeases).set({
         metadata: sql`${pendingCleanupMetadataObjectSql()} || ${JSON.stringify({
           pendingCleanupInFlight: false,
           pendingCleanupRetryAfterMs: Date.now() + (attempts + 1 >= PENDING_CLEANUP_SWEEP_ATTEMPT_CAP
             ? 30 * 60_000 : Math.min(30 * 60_000, Math.max(30_000, backoffMs))),
         })}::jsonb`,
       }).where(and(eq(environmentLeases.id, lease.id),
-        sql`${environmentLeases.metadata}->>'pendingCleanupAttemptId' = ${claimed}`));
+        sql`${environmentLeases.metadata}->>'pendingCleanupAttemptId' = ${claimed}`)));
       if (lease.heartbeatRunId) {
         // Delivery failure must not revert successful provider cleanup. A new
         // message can still use the persisted receipt on its next admission.
@@ -1803,6 +1796,7 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
       }
     }
 
+    if (deferredFlushFailed) throw new Error("Deferred orphan cleanup flush failed");
     return { swept: rows.length, destroyed, capped };
   }
 
@@ -1869,7 +1863,7 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
     agentId: string;
     succeeded: boolean;
   }) {
-    const settledRun = await getRun(input.runId);
+    const settledRun = await getRunWorkspaceSettlement(input.runId);
     const workspaceSyncReference = readNativeWorkspaceSyncReference(
       parseObject(settledRun?.runnerProfileJson).nativeWorkspaceSync,
     );
@@ -1922,6 +1916,8 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
     activeRunExecutionPromises.add(cleanup);
     void cleanup.finally(() => activeRunExecutionPromises.delete(cleanup));
   }
+
+  let settledProcessesDiscovered = false;
 
   async function reapOrphanedRuns(opts?: { staleThresholdMs?: number }) {
     await preserveCancelledNativeWorkspaces(db);
@@ -2132,6 +2128,18 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
         continue;
       }
       if (cleared) claimableNativeRunIds.add(cleared.id);
+    }
+
+    const executingRun = (runId: string) => activeRunExecutions.has(runId) || runningProcesses.has(runId);
+    if (!settledProcessesDiscovered) {
+      settledProcessesDiscovered = await discoverSettledNativeRunProcesses(db, { skip: executingRun }).then(() => true, (error) => {
+        logger.warn({ err: error }, "failed to discover settled native process identities");
+        return false;
+      });
+    } else {
+      await retryPendingSettledNativeRunProcesses(db, { skip: executingRun }).catch((error) => {
+        logger.warn({ err: error }, "failed to retry settled native process identity release");
+      });
     }
 
     // An explicit result-less retryable failure resumes on the original run.
@@ -2573,11 +2581,13 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
     // Recover an active lease whose run already ended before the same-tick
     // pending_cleanup sweep, so this tick can stop the recovered sandbox.
     // Isolate the sweep so its failure never hides the reaper result.
+    let recoveredActiveLeases = 0;
     try {
       await sweepLegacyShutdownWorkspaceSettlements(db);
       const orphanedActiveLeaseSweep = await sweepOrphanedActiveLeases({
         backoffMs: staleThresholdMs,
       });
+      recoveredActiveLeases = orphanedActiveLeaseSweep.recovered;
       if (orphanedActiveLeaseSweep.recovered > 0) {
         logger.warn(
           { recovered: orphanedActiveLeaseSweep.recovered },
@@ -2593,10 +2603,7 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
       );
     }
 
-    // Retry stranded pending_cleanup leases on the same tick. Isolate the sweep
-    // so its failure never hides the reaper result. The backoff equals the
-    // reaper staleness threshold.
-    try {
+    if (reaped.length > 0 || recoveredActiveLeases > 0) try {
       const sweep = await sweepPendingCleanupLeases({
         backoffMs: staleThresholdMs,
       });
