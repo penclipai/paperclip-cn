@@ -14,5 +14,5 @@ permissions:
 jobs:
   ci:
     # Use an immutable fork commit for the reviewed CI definition.
-    uses: penclipai/paperclip-cn/.github/workflows/pr-trusted.yml@a38e8c0bb25b198fc2593d25b7f544fb5d5e0843
+    uses: penclipai/paperclip-cn/.github/workflows/pr-trusted.yml@ed39c1ab117c735cc97ffc1c527c5fcf020f5b32
     if: github.event.action != 'labeled' || github.event.label.name == 'profile-ci'

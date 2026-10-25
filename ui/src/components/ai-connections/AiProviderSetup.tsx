@@ -443,10 +443,10 @@ export function AiProviderSetup({
               }
             >
               {save.isPending
-                ? submitLabel ? "Saving…" : "Connecting…"
+                ? submitLabel ? translateInstant("connectionUi.providerSetup.saving") : translateInstant("connectionUi.providerSetup.connecting")
                 : reconnect
-                  ? "Reconnect"
-                  : submitLabel ?? "Connect"}
+                  ? translateInstant("connectionUi.providerSetup.reconnect")
+                  : submitLabel ?? translateInstant("connectionUi.providerSetup.connect")}
             </Button>
           </div>
         </form>

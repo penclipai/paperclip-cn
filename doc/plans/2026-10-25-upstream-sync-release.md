@@ -91,5 +91,34 @@ directory; it indexes authoritative remote state rather than replacing read-back
   host shell. Windows retains hook materialization/relocation assertions; actual
   shell execution stays in Linux coverage after the platform-scoped fixture fix.
 
+### Corrective validation
+
+The first merge commit is `ed39c1ab117c735cc97ffc1c527c5fcf020f5b32`.
+Its CI found two root causes: the PR caller still pinned the old trusted workflow
+after upstream added a test to the proposed callee, and a resolved test import
+was nested inside another import block. The caller now pins the exact committed
+`ed39c1ab` callee; immutable source identity is still enforced. The test imports
+`existsSync` beside `readFileSync` from `node:fs`. The build, registry/typecheck,
+server shard, and E2E aggregate failures from these causes remain in the CI log
+index; downstream repeats are not counted as independent defects.
+
+- `full-build-v1`: failed on the malformed test import; `full-build-v2` passed
+  the complete workspace build, including the Windows Rust Runner.
+- `pr-policy-pin-fix`: the identity repair passed, but 12 routing fixture cases
+  failed because the new isolated host lacked `jq`. The official pinned jq 1.8.1
+  binary was placed under this root's `tools/jq` and checked against the official
+  release's SHA-256 digest. `pr-policy-with-jq`: all 557 tests passed, with no
+  assertion or trust-boundary weakening.
+- Post-merge visible-text review found 13 further raw UI messages in Runner
+  upgrade, Inbox project-access status, and provider-submit states. These were
+  localized in their existing semantic owners. The focused follow-up passed
+  354 tests across seven files; the initial merge UI run passed 485 across 14.
+- `final-key-snapshot` / `final-key-comparison`: 16,284 keys, 75 additions from
+  the pre-merge baseline, zero removals, missing pairs, duplicate definitions,
+  suspicious Chinese fallback, or undefined static calls.
+- `desktop-unit`: 69 passed; `desktop-payload`: 23 passed; `locale-tooling`:
+  30 passed; `token-gates`: clean. Independent review of both corrective source
+  changes and the 13-message UI repair found no remaining P1/P2 findings.
+
 Full new-head CI, installed acceptance, merge, channel promotion, and stable
 publication remain incomplete until their own evidence is recorded.

@@ -9,7 +9,7 @@ import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/po
 import { shellQuote } from "@penclipai/adapter-utils/ssh";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { PgDialect } from "drizzle-orm/pg-core";
 import type { SQL } from "drizzle-orm";
 import {
@@ -59,7 +59,6 @@ import {
   type NativeExecutionInputV3,
   type NativeExecutionInput,
   type PrpEvent,
-import { existsSync } from "node:fs";
 } from "@penclipai/paperclip-runner";
 import { createHash, generateKeyPairSync, randomUUID } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
