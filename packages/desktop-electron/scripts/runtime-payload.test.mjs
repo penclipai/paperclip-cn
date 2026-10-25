@@ -189,11 +189,30 @@ test("prunes only the verified target Copilot materializer after provider assets
   await assert.rejects(lstat(selected.topLevel));
   await assert.rejects(lstat(selected.store));
   await assert.rejects(lstat(selected.alternateAlias));
+  assert.equal((await lstat(join(root, "node_modules", "@github"))).isDirectory(), true);
   assert.equal((await lstat(wrongTarget)).isDirectory(), true);
   assert.equal((await lstat(unrelated)).isDirectory(), true);
   assert.equal(await readFile(join(assets, ".paperclip-copilot-closure.json"), "utf8"), "verified closure");
   assert.equal(await readFile(join(assets, "copilot"), "utf8"), "verified executable");
   assert.equal(await readFile(join(assets, "distribution", "messages.json"), "utf8"), "verified distribution");
+});
+
+test("removes an empty physical Copilot namespace after pruning the exact target", async () => {
+  const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-payload-copilot-empty-scope-"));
+  roots.push(root);
+  const selected = await pnpmCopilotMaterializerFixture(root, "@github/copilot-darwin-arm64");
+  const assets = join(root, "server", "provider-assets", "copilot", "darwin-arm64");
+  await mkdir(assets, { recursive: true });
+  await writeFile(join(assets, ".paperclip-copilot-closure.json"), "verified closure");
+  await writeFile(join(assets, "copilot"), "verified executable");
+
+  pruneVerifiedCopilotMaterializer({ runtimeRoot: root, platform: "darwin", arch: "arm64" });
+  await assert.rejects(lstat(selected.topLevel));
+  await assert.rejects(lstat(selected.store));
+  await assert.rejects(lstat(selected.alternateAlias));
+  await assert.rejects(lstat(join(root, "node_modules", "@github")));
+  assert.equal(await readFile(join(assets, ".paperclip-copilot-closure.json"), "utf8"), "verified closure");
+  assert.equal(await readFile(join(assets, "copilot"), "utf8"), "verified executable");
 });
 
 test("does not prune Copilot materializers on unsupported Windows", async () => {

@@ -6,6 +6,7 @@ import {
   readdirSync,
   readlinkSync,
   realpathSync,
+  rmdirSync,
   rmSync,
   statSync,
   symlinkSync,
@@ -180,6 +181,31 @@ function collectCopilotMaterializerPackages(runtimeRoot, packageName) {
   return [...entries.values()];
 }
 
+function removeEmptyCopilotScope(runtimeRoot) {
+  const scope = path.join(runtimeRoot, "node_modules", "@github");
+  let stat;
+  try {
+    stat = lstatSync(scope);
+  } catch (error) {
+    if (error.code === "ENOENT") return false;
+    throw error;
+  }
+  if (!stat.isDirectory() || stat.isSymbolicLink()) {
+    throw new Error("Copilot materializer scope must be a physical directory");
+  }
+  const resolved = assertInside(runtimeRoot, scope, "Copilot materializer scope");
+  if (resolved !== scope) {
+    throw new Error("Copilot materializer scope redirects outside its staged location");
+  }
+  try {
+    rmdirSync(scope);
+    return true;
+  } catch (error) {
+    if (error.code === "ENOTEMPTY") return false;
+    throw error;
+  }
+}
+
 function runtimeState({ runtimeRoot, platform, arch, libc }) {
   const root = assertRuntimeRoot(runtimeRoot);
   assertSupportedLinuxLibc(platform, libc);
@@ -349,6 +375,7 @@ export function pruneVerifiedCopilotMaterializer({ runtimeRoot, platform = proce
       rmSync(entry.root, { recursive: true, force: true });
     }
   }
+  removeEmptyCopilotScope(root);
 
   return { supported: true, platform, arch, packageName, bytesSaved };
 }
