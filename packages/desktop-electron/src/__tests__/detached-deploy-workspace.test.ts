@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { afterEach, describe, expect, it } from "vitest";
-import { createDetachedDeployWorkspace, isQualifiedCopilotPlatform, resolveDeployWorkspaceClosure } from "../../scripts/detached-deploy-workspace.mjs";
+import { createDetachedDeployWorkspace, isQualifiedCopilotPlatform, resolveDeployWorkspaceClosure, resolveQualifiedCopilotMaterializerPackage } from "../../scripts/detached-deploy-workspace.mjs";
 
 const roots: string[] = [];
 function fixtureRoot() {
@@ -99,11 +99,15 @@ describe("detached desktop deploy workspace", () => {
   });
 
   it("admits only the Runner-qualified Copilot platform targets", () => {
+    expect(resolveQualifiedCopilotMaterializerPackage("darwin", "arm64")).toBe("@github/copilot-darwin-arm64");
+    expect(resolveQualifiedCopilotMaterializerPackage("darwin", "x64")).toBe("@github/copilot-darwin-x64");
+    expect(resolveQualifiedCopilotMaterializerPackage("linux", "x64")).toBe("@github/copilot-linux-x64");
     expect(isQualifiedCopilotPlatform("darwin", "arm64")).toBe(true);
     expect(isQualifiedCopilotPlatform("darwin", "x64")).toBe(true);
     expect(isQualifiedCopilotPlatform("linux", "x64")).toBe(true);
     expect(isQualifiedCopilotPlatform("win32", "x64")).toBe(false);
     expect(isQualifiedCopilotPlatform("linux", "arm64")).toBe(false);
+    expect(resolveQualifiedCopilotMaterializerPackage("win32", "x64")).toBeNull();
   });
 
   it("does not overwrite an existing destination", () => {

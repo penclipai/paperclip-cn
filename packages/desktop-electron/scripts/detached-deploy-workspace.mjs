@@ -8,12 +8,21 @@ const excludedDirectoryNames = new Set([
 const rootFiles = ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", ".npmrc"];
 const packageIgnoreFiles = new Set([".npmignore", ".gitignore"]);
 const copilotClosureManifest = ".paperclip-copilot-closure.json";
-// Keep this list aligned with COPILOT_CLOSURE_SHA256 in the Runner's
-// copilot-installation resolver; no other platform directory is admitted.
-const qualifiedCopilotPlatforms = new Set(["darwin-arm64", "darwin-x64", "linux-x64"]);
+// Keep this map aligned with COPILOT_DISTRIBUTIONS in the Runner's Copilot
+// materializer. No unlisted platform package is admitted or pruned.
+const qualifiedCopilotMaterializerPackages = Object.freeze({
+  "darwin-arm64": "@github/copilot-darwin-arm64",
+  "darwin-x64": "@github/copilot-darwin-x64",
+  "linux-x64": "@github/copilot-linux-x64",
+});
+const qualifiedCopilotPlatforms = new Set(Object.keys(qualifiedCopilotMaterializerPackages));
+
+export function resolveQualifiedCopilotMaterializerPackage(platform = process.platform, architecture = process.arch) {
+  return qualifiedCopilotMaterializerPackages[`${platform}-${architecture}`] ?? null;
+}
 
 export function isQualifiedCopilotPlatform(platform = process.platform, architecture = process.arch) {
-  return qualifiedCopilotPlatforms.has(`${platform}-${architecture}`);
+  return resolveQualifiedCopilotMaterializerPackage(platform, architecture) !== null;
 }
 
 function isCurrentCopilotClosureManifest(source, candidate, allowedRelativePaths, stat) {

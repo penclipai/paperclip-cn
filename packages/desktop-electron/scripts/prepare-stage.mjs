@@ -16,7 +16,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { runNodeScript, runPnpm } from "./utils.mjs";
 import { createDetachedDeployWorkspace, isQualifiedCopilotPlatform } from "./detached-deploy-workspace.mjs";
-import { optimizeRuntimePayload } from "./runtime-payload.mjs";
+import { optimizeRuntimePayload, pruneVerifiedCopilotMaterializer } from "./runtime-payload.mjs";
 import { checkCatalog } from "../../../scripts/i18n-catalog.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -563,6 +563,16 @@ pruneRuntimeNodeModules();
 // rather than accidentally resolving the detached workspace or source tree.
 if (hasQualifiedCopilotPlatform) {
   console.log("[desktop-stage] Verifying packaged Copilot runtime assets...");
+  runNodeScript(path.resolve(appRuntimeServerDir, "dist", "install-copilot-assets.mjs"), [], {
+    cwd: appRuntimeServerDir,
+  });
+
+  const copilotMaterializerPrune = pruneVerifiedCopilotMaterializer({ runtimeRoot: appRuntimeDir });
+  console.log(
+    `[desktop-stage] Removed verified Copilot materializer ${copilotMaterializerPrune.packageName}: saved ${copilotMaterializerPrune.bytesSaved} bytes.`,
+  );
+
+  console.log("[desktop-stage] Re-verifying packaged Copilot runtime assets after materializer pruning...");
   runNodeScript(path.resolve(appRuntimeServerDir, "dist", "install-copilot-assets.mjs"), [], {
     cwd: appRuntimeServerDir,
   });
