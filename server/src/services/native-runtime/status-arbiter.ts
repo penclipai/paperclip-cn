@@ -1,7 +1,7 @@
 import type { NativeEvidenceAssessment } from "./evidence-classifier.js";
 import { NATIVE_MODEL_REJECTION_MESSAGE, NATIVE_PROVIDER_CAPACITY_MAX_RETRIES, NATIVE_PROVIDER_OVERLOADED_CODE, NATIVE_PROVIDER_OVERLOADED_MESSAGE } from "./native-provider-failure.js";
 
-export const NATIVE_STATUS_ARBITER_POLICY_VERSION = "phase6-v11";
+export const NATIVE_STATUS_ARBITER_POLICY_VERSION = "phase6-v12";
 
 export type NativeAuthoritativeIssueStatus =
   | "backlog"
@@ -111,9 +111,13 @@ export function arbitrateNativeStatus(input: {
   governanceResolvedForRun?: boolean;
   externalChatResponseWaitAuthorization?:
     "authorized" | "revoked" | "not_applicable";
+  publishedExternalReview?: boolean;
   /** Server-verified accepted plan request and normal provider terminal. */
   planWaitAuthorized?: boolean;
   monitorWaitAuthorized?: boolean;
+  caseHandoffAuthorized?: boolean;
+  /** The saved timer already admitted another run and this run no longer owns checkout. */
+  monitorWaitDispatched?: boolean;
   boardResponseWaitAuthorized?: boolean;
   boardResponseWaitOrigin?: boolean;
   isConversation?: boolean;
@@ -161,6 +165,12 @@ export function arbitrateNativeStatus(input: {
     policyVersion: NATIVE_STATUS_ARBITER_POLICY_VERSION,
     statusAction: "preserve", toStatus: input.priorIssueStatus,
     reasonCode: "provider_failure_authority_superseded", unblockDescriptor: null, effects: [],
+  };
+  if (input.caseHandoffAuthorized) return {
+    policyVersion: NATIVE_STATUS_ARBITER_POLICY_VERSION,
+    statusAction: "preserve", toStatus: input.priorIssueStatus,
+    reasonCode: "case_handoff_waiting_for_release", unblockDescriptor: null,
+    effects: [{ kind: "release_checkout" }],
   };
   if (input.providerModelRejected && input.terminalState === "failed" &&
       input.nativeReviewOutcome !== "stale" && input.nativeReviewOutcome !== "resolved") {
@@ -463,10 +473,21 @@ export function arbitrateNativeStatus(input: {
     };
   }
   if (input.assessment.reportedDisposition === "yielded" && input.assessment.continuation?.kind === "monitor") {
-    if (input.monitorWaitAuthorized) {
+    if (input.monitorWaitDispatched) {
       return {
         policyVersion: NATIVE_STATUS_ARBITER_POLICY_VERSION,
         statusAction: "preserve", toStatus: input.priorIssueStatus,
+        reasonCode: "scheduled_monitor_dispatched", unblockDescriptor: null,
+        // Delivery already happened. Preserve successor ownership and never
+        // re-arm its timer or repeat the completed provider turn.
+        effects: [],
+      };
+    }
+    if (input.monitorWaitAuthorized) {
+      return {
+        policyVersion: NATIVE_STATUS_ARBITER_POLICY_VERSION,
+        statusAction: input.publishedExternalReview ? "in_review" : "preserve",
+        toStatus: input.publishedExternalReview ? "in_review" : input.priorIssueStatus,
         reasonCode: "scheduled_monitor_waiting", unblockDescriptor: null,
         // The persisted timer owns delivery, never enqueue an immediate wake.
         effects: [{ kind: "release_checkout" }],
@@ -488,8 +509,8 @@ export function arbitrateNativeStatus(input: {
   ) {
     return {
       policyVersion: NATIVE_STATUS_ARBITER_POLICY_VERSION,
-      statusAction: "in_progress",
-      toStatus: "in_progress",
+      statusAction: input.publishedExternalReview ? "in_review" : "in_progress",
+      toStatus: input.publishedExternalReview ? "in_review" : "in_progress",
       reasonCode: "external_chat_response_waiting",
       unblockDescriptor: null,
       // The active, authorized provider conversation is the durable liveness
@@ -572,6 +593,7 @@ export function arbitrateNativeStatus(input: {
   if (
     input.assessment.reportedDisposition === "yielded" &&
     input.assessment.continuation &&
+    input.assessment.continuation.kind !== "case_handoff" &&
     !unfinishedResponseWait
   ) {
     return {

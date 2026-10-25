@@ -1,4 +1,6 @@
+import { writeEnvironmentCleanup, notifyEnvironmentCleanup } from "./environment-cleanup-notifications.js";
 import { randomUUID } from "node:crypto";
+import { withoutCleanupVerification } from "./cleanup-verification-proof.js";
 import { and, desc, eq, inArray, lte } from "drizzle-orm";
 import type { Db } from "@penclipai/db";
 import {
@@ -22,6 +24,7 @@ import type {
   PluginEnvironmentCaptureTemplateResult,
   PluginEnvironmentInteractiveSetupConnectionPayload,
   PluginEnvironmentInteractiveSetupSession,
+  PluginEnvironmentLeaseObservation,
   PluginEnvironmentTemplateRefKind,
 } from "@penclipai/plugin-sdk";
 import { conflict, notFound, unprocessable } from "../errors.js";
@@ -167,7 +170,7 @@ function normalizeConnectionSummary(
 
 function normalizeProviderMetadata(metadata: Record<string, unknown> | null | undefined): Record<string, unknown> | null {
   if (!metadata) return null;
-  return redactEnvironmentCustomImageValue(metadata);
+  return redactEnvironmentCustomImageValue(withoutCleanupVerification(metadata) ?? {});
 }
 
 function metadataRecord(metadata: Record<string, unknown> | null | undefined): Record<string, unknown> {
@@ -592,7 +595,7 @@ export function environmentCustomImageService(
   ): Promise<EnvironmentCustomImageSetupSession> {
     const status = normalizePersistedStatus(providerSession.status, fallbackStatus);
     const now = new Date();
-    const row = await db
+    const row = await writeEnvironmentCleanup(db, tx => tx
       .update(environmentCustomImageSetupSessions)
       .set({
         providerLeaseId: providerSession.providerLeaseId ?? null,
@@ -605,7 +608,7 @@ export function environmentCustomImageService(
       })
       .where(eq(environmentCustomImageSetupSessions.id, session.id))
       .returning()
-      .then((rows) => rows[0] ?? null);
+      .then((rows) => rows[0] ?? null));
     if (!row) throw notFound("Environment customImage setup session not found");
     return toSession(row);
   }
@@ -617,7 +620,7 @@ export function environmentCustomImageService(
     metadata?: Record<string, unknown> | null;
   }): Promise<EnvironmentCustomImageSetupSession> {
     const now = new Date();
-    const row = await db
+    const row = await writeEnvironmentCleanup(db, tx => tx
       .update(environmentCustomImageSetupSessions)
       .set({
         status: input.status,
@@ -628,7 +631,7 @@ export function environmentCustomImageService(
       })
       .where(eq(environmentCustomImageSetupSessions.id, input.sessionId))
       .returning()
-      .then((rows) => rows[0] ?? null);
+      .then((rows) => rows[0] ?? null));
     if (!row) throw notFound("Environment customImage setup session not found");
     return toSession(row);
   }
@@ -647,7 +650,7 @@ export function environmentCustomImageService(
       return await markSessionStatus({
         sessionId: session.id,
         status,
-        metadata: cancelled.metadata,
+        metadata: mergeSetupSessionMetadata(session.metadata, cancelled.metadata),
         failureReason: status === "failed" ? "Provider failed to cancel setup session." : null,
       });
     } catch (error) {
@@ -759,6 +762,22 @@ export function environmentCustomImageService(
     }): Promise<EnvironmentCustomImageTemplate | null> => resolveActiveTemplate(db, input),
 
     getSessionById,
+
+    async inspectSetupResource(session: typeof environmentCustomImageSetupSessions.$inferSelect): Promise<PluginEnvironmentLeaseObservation | undefined> {
+      if (!session.providerLeaseId || !session.finishedAt || session.connectionSecretRef !== null ||
+          !["promoted", "cancelled", "timed_out", "failed"].includes(session.status)) return undefined;
+      const environment = await requireEnvironment(session.environmentId);
+      const provider = await resolveSetupProvider({ environment, storedProvider: session.provider,
+        storedRpcCompanyId: readSetupRpcCompanyId(session.metadata) });
+      const recordedFingerprint = readString(session.metadata?.[SOURCE_ENVIRONMENT_CONFIG_FINGERPRINT_METADATA_KEY]);
+      if (!recordedFingerprint || fingerprintEnvironmentSandboxProviderConfig(provider.runtimeConfig) !== recordedFingerprint) return undefined;
+      if (!options.pluginWorkerManager?.getWorker(provider.pluginId)?.supportedMethods?.includes("environmentInspectLease")) return undefined;
+      return await options.pluginWorkerManager.call(provider.pluginId, "environmentInspectLease", {
+        driverKey: provider.provider, companyId: provider.rpcCompanyId, environmentId: environment.id,
+        issueId: null, config: provider.driverConfig, providerLeaseId: session.providerLeaseId,
+        leaseMetadata: session.metadata ?? {},
+      }, 15_000);
+    },
 
     startSetupSession: async (input: {
       environmentId: string;
@@ -1000,6 +1019,7 @@ export function environmentCustomImageService(
                 supersededRows.map((row) => row.id),
               ));
           }
+          await notifyEnvironmentCleanup(tx);
           await tx
             .update(environmentCustomImageSetupSessions)
             .set({

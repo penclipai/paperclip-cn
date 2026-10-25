@@ -18,7 +18,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * to it. Building alone means the deployed bundle is this screen and the pieces
  * it composes, full stop. It also leaves the app's own build untouched.
  *
- *   pnpm --filter @paperclipai/ui build:preview
+ *   pnpm --filter @penclipai/ui build:preview
  */
 
 const OUT_DIR = "dist-preview";

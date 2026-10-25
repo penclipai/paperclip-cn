@@ -1,6 +1,6 @@
+import { useState, type CSSProperties } from "react";
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   BookOpen,
@@ -22,12 +22,14 @@ import { useSignOut } from "@/hooks/useSignOut";
 import { useStagingCommit } from "@/hooks/useStagingCommit";
 import { userProfilePath } from "@/lib/userProfileLinks";
 import { useSidebar } from "../context/SidebarContext";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover, PopoverTrigger } from "@/components/ui/popover";
+import { FlyoutContent, FlyoutHeader, FlyoutOptions } from "@/components/ui/flyout";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn, SIDEBAR_RAIL_HIDDEN_LABEL } from "../lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 import { SidebarServerInfo } from "./SidebarServerInfo";
+import { TruncatedText } from "./TruncatedText";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const INVITES_PATH = "/company/settings/members?tab=invites";
@@ -40,6 +42,8 @@ interface SidebarAccountMenuProps {
   onOpenChange?: (open: boolean) => void;
   /** Contextual navigation occupies a full sidebar even if the saved global nav mode is collapsed. */
   forceExpanded?: boolean;
+  /** Optional local shadow preview; the shared token remains the default. */
+  shadow?: CSSProperties["boxShadow"];
 }
 
 interface MenuActionProps {
@@ -81,7 +85,7 @@ function MenuAction({
       <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground">
         <Icon className="size-4" />
       </span>
-      <span className="min-w-0 flex-1 truncate">{label}</span>
+      <TruncatedText className="min-w-0 flex-1 truncate">{label}</TruncatedText>
     </>
   );
 
@@ -121,6 +125,7 @@ export function SidebarAccountMenu({
   open: controlledOpen,
   onOpenChange,
   forceExpanded = false,
+  shadow,
 }: SidebarAccountMenuProps) {
   useTranslation();
   const cloud = useCloudInstance();
@@ -194,17 +199,19 @@ export function SidebarAccountMenu({
                 {session?.user.image ? <AvatarImage src={session.user.image} alt={displayName} /> : null}
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
-              <span className={cn("min-w-0 flex-1 truncate", rail && SIDEBAR_RAIL_HIDDEN_LABEL)}>{displayName}</span>
+              <TruncatedText className={cn("min-w-0 flex-1 truncate", rail && SIDEBAR_RAIL_HIDDEN_LABEL)}>{displayName}</TruncatedText>
             </button>
           </PopoverTrigger>
-          <PopoverContent
+          <FlyoutContent
+            shadow={shadow}
+            aria-label="Account"
             side="top"
             align="start"
             sideOffset={10}
             className="min-h-(--profile-popover-min-height) w-(--profile-popover-width) max-w-(--sz-calc-24) overflow-hidden rounded-xl border-border bg-popover p-0 shadow-(--shadow-profile-popover)"
           >
             {/* The profile link is a stretched overlay so the staging SHA anchor can sit beside the email without nesting anchors. */}
-            <div className="relative flex h-(--profile-popover-header-height) shrink-0 items-center gap-2.5 px-3.5">
+            <FlyoutHeader data-flyout-profile data-marquee-surface className="relative flex h-(--profile-popover-header-height) shrink-0 items-center gap-2.5 px-3.5">
               <Link
                 to={profileHref}
                 aria-label={translateInstant("View profile")}
@@ -216,12 +223,12 @@ export function SidebarAccountMenu({
                 <AvatarFallback className="text-xs text-foreground">{initials}</AvatarFallback>
               </Avatar>
               <div className="pointer-events-none relative min-w-0 flex-1">
-                <h2 className="truncate text-sm font-semibold leading-(--profile-popover-label-line-height) text-foreground">
+                <TruncatedText as="h2" className="truncate text-sm font-semibold leading-(--profile-popover-label-line-height) text-foreground">
                   {displayName}
-                </h2>
-                <p className="truncate text-(length:--text-micro) leading-(--profile-popover-meta-line-height) text-muted-foreground">
+                </TruncatedText>
+                <TruncatedText as="p" className="truncate text-(length:--text-micro) leading-(--profile-popover-meta-line-height) text-muted-foreground">
                   {secondaryLabel}
-                </p>
+                </TruncatedText>
                 {stagingCommit ? (
                   <a
                     className="pointer-events-auto block truncate font-mono text-(length:--text-micro) leading-(--profile-popover-meta-line-height) text-muted-foreground hover:underline focus-visible:underline"
@@ -235,9 +242,9 @@ export function SidebarAccountMenu({
                   </a>
                 ) : null}
               </div>
-            </div>
+            </FlyoutHeader>
 
-            <div className="flex flex-1 flex-col gap-0.5 border-t border-border px-2.5 pb-2.5 pt-2">
+            <FlyoutOptions className="flex flex-1 flex-col gap-0.5 border-t border-border px-2.5 pb-2.5 pt-2">
               <MenuAction
                 label={translateInstant("Settings")}
                 icon={Settings}
@@ -275,14 +282,14 @@ export function SidebarAccountMenu({
                   <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground">
                     <LogOut className="size-4" />
                   </span>
-                  <span className="min-w-0 flex-1 truncate">
+                  <TruncatedText className="min-w-0 flex-1 truncate">
                     {signOutMutation.isPending ? "Signing out..." : "Sign out"}
-                  </span>
+                  </TruncatedText>
                 </button>
               ) : null}
               <SidebarServerInfo />
-            </div>
-          </PopoverContent>
+            </FlyoutOptions>
+          </FlyoutContent>
         </Popover>
         {!rail && !isCloud ? (
           <Tooltip>

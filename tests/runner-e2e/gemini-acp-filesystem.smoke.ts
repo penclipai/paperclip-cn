@@ -46,18 +46,20 @@ try {
       security: { auth: { selectedType: "gemini-api-key" } }, telemetry: { enabled: false },
     }), { mode: 0o600 });
     active = { calls: 0, file, tool: scenario === "read-existing" ? "read_file" : "write_file" };
+    const environment = {
+      HOME: home, PATH: process.env.PATH ?? "", GEMINI_MODEL: "gemini-3.1-flash-lite",
+      GEMINI_API_KEY: "synthetic-invalid-key", GOOGLE_GEMINI_BASE_URL: origin,
+    };
     const runtime = createAcpRuntime({
       cwd, sessionStore: createRuntimeStore({ stateDir: path.join(root, scenario, "state") }),
       agentRegistry: createAgentRegistry({ overrides: { gemini: command } }),
-      permissionMode: "approve-all", nonInteractivePermissions: "deny", inheritProcessEnv: false,
+      permissionMode: "approve-all", nonInteractivePermissions: "deny",
+      spawnEnvironment: () => environment,
       onAgentStderr: () => { /* Child diagnostics may contain untrusted material. */ },
     });
     const handle = await runtime.ensureSession({
       sessionKey: `gemini-filesystem-${scenario}`, agent: "gemini", mode: "oneshot", cwd,
-      sessionOptions: { env: {
-        HOME: home, PATH: process.env.PATH ?? "", GEMINI_MODEL: "gemini-3.1-flash-lite",
-        GEMINI_API_KEY: "synthetic-invalid-key", GOOGLE_GEMINI_BASE_URL: origin,
-      } },
+      sessionOptions: { env: environment },
     });
     try {
       let completedTools = 0; let failedTools = 0; let missingFileSignal = false;

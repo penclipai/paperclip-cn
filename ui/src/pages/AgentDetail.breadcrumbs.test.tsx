@@ -30,6 +30,7 @@ vi.mock("@/lib/router", () => ({
   Link: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   Navigate: () => null,
   useBeforeUnload: () => {},
+  useLocation: () => ({ search: "" }),
   useNavigate: () => vi.fn(),
   useParams: () => ({ agentId: "agent-1", tab: "runtime" }),
 }));

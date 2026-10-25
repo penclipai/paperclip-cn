@@ -1,0 +1,7 @@
+{
+  "experimental.grokBotRequirements": {
+    "en": "Requires Assistant connections (MCP), Paperclip Runner, and authenticated public HTTPS. Usage is not reported. Turning this off blocks Grok calls and new dispatch.",
+    "zh-CN": "需要 Assistant connections (MCP)、Paperclip Runner 和已认证的公共 HTTPS。不会报告用量。关闭后会阻止 Grok 调用和新的调度。",
+    "reviewedEnglishHash": "08dc9100bccf8322b7f75f7cb7af5bd2223b805a517b691803a991abd31d2aae"
+  }
+}

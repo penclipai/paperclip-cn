@@ -101,6 +101,8 @@ export function WhatNeedsMe() {
   // still follows a click, so keyboard actions target the row you just used.
   const [selectionFromKeyboard, setSelectionFromKeyboard] = useState(false);
   const [autoExpandDone, setAutoExpandDone] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
   // Toolbar preferences (persisted to localStorage, Inbox pattern).
   const [groupBy, setGroupBy] = useState<AttentionGroupBy>(() => loadAttentionGroupBy());
   const [sortOrder, setSortOrder] = useState<AttentionSortOrder>(() => loadAttentionSortOrder());
@@ -256,7 +258,7 @@ export function WhatNeedsMe() {
   // carries an explicit, due decide-by. Any explicit
   // group-by keeps the Inbox-style activity grouping.
   const groups = useMemo<AttentionGroup[]>(() => {
-    const filtered = filterAttentionItems(deskItems, filters);
+    const filtered = filterAttentionItems(deskItems, filters, searchQuery);
     if (groupBy === "none") {
       return buildDeskShelves(filtered, now);
     }
@@ -524,6 +526,8 @@ export function WhatNeedsMe() {
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-xl font-bold">{translateInstant("whatNeedsMe.title")}</h1>
         <DecisionsToolbar
+          query={searchQuery}
+          onQueryChange={setSearchQuery}
           visibleCount={visibleCount}
           filterOptions={filterOptions}
           filters={filters}

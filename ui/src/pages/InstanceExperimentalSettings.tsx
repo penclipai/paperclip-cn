@@ -305,6 +305,18 @@ export function InstanceExperimentalSettings() {
         />
 
         <ExperimentalToggleCard
+          title="Artifacts V1"
+          description="Show artifacts the way the artifact directions lab settled: paper stacks and tiles on the Artifacts page, compact rows in the panel's Artifacts tab, and grouped rows in the task thread."
+          footnote="Presentation only. Turning this off restores the current cards; no data changes."
+          checked={experimentalQuery.data?.enableArtifactsV1 ?? false}
+          onCheckedChange={(checked) => toggleMutation.mutate({ enableArtifactsV1: checked })}
+          disabled={toggleMutation.isPending}
+          settingKey="enableArtifactsV1"
+          managed={managedKeys.enableArtifactsV1}
+          ariaLabel="Toggle artifacts V1 experimental setting"
+        />
+
+        <ExperimentalToggleCard
           title={translateInstant("Assistant connections (MCP)")}
           description={translateInstant("Connect Codex, Claude, and other assistants to your Paperclip organization. People sign in, select an organization once, and approve access to review work, delegate tasks, and add feedback.")}
           footnote={<>{translateInstant("Requires an authenticated instance with a configured public URL. Takes effect immediately. Turning this off blocks assistant calls and event delivery; work already delegated continues.")}{experimentalQuery.data?.enablePublicMcp && <> <Link className="underline" to="/apps/assistant-connection">{translateInstant("Set up an assistant connection")}</Link></>}</>}
@@ -479,6 +491,18 @@ export function InstanceExperimentalSettings() {
         />
 
         <ExperimentalToggleCard
+          title="Grok Bot"
+          description="Connect an existing Grok Bot as an agent. Verify routine delivery and an authenticated reply before assigning work."
+          footnote={translateInstant("experimental.grokBotRequirements")}
+          checked={experimentalQuery.data?.enableGrokBot === true}
+          onCheckedChange={checked => toggleMutation.mutate({ enableGrokBot: checked })}
+          disabled={toggleMutation.isPending}
+          settingKey="enableGrokBot" managed={managedKeys.enableGrokBot}
+          ariaLabel="Toggle Grok Bot experimental setting"
+        />
+
+
+        <ExperimentalToggleCard
           title={translateInstant("Memory connectors")}
           description={translateInstant("Connect Mem0, Zep, Supermemory, Cognee, and Honcho for long-term memory and context.")}
           footnote={translateInstant("Turning this off hides setup for these connectors. Existing connections keep running.")}
@@ -488,6 +512,18 @@ export function InstanceExperimentalSettings() {
           settingKey="enableMemoryConnectors"
           managed={managedKeys.enableMemoryConnectors}
           ariaLabel={translateInstant("Toggle memory connectors experimental setting")}
+        />
+
+        <ExperimentalToggleCard
+          title="Muse — Personal agent"
+          description="Connect your personal Meta Muse. Pair it, detect its receiver, and verify an independent background reply before assigning tasks."
+          footnote="Requires Paperclip Runner and an authenticated instance with a public HTTPS URL. Turning this off blocks new work; cleanup and stop evidence remain available. Provider usage and cost are unavailable."
+          checked={experimentalQuery.data?.enableMuse === true}
+          onCheckedChange={(checked) => toggleMutation.mutate({ enableMuse: checked })}
+          disabled={toggleMutation.isPending}
+          settingKey="enableMuse"
+          managed={managedKeys.enableMuse}
+          ariaLabel="Toggle Muse experimental setting"
         />
 
         <ExperimentalToggleCard
@@ -502,9 +538,10 @@ export function InstanceExperimentalSettings() {
           ariaLabel={translateInstant("Toggle OpenAI Dot experimental setting")}
         />
 
+
         <ExperimentalToggleCard
           title="Paperclip Runner"
-          description={translateInstant("Allow new Codex agents to select the experimental Rust Paperclip Runner, including authenticated runner ingress when a sandbox requires it. Onboarding continues to use legacy adapters. Turning this off hides the choice without affecting existing native runs.")}
+          description={translateInstant("instanceExperimentalSettings.paperclipRunnerDescription")}
           checked={enableNativeRunner}
           onCheckedChange={(checked) =>
             toggleMutation.mutate({ enableNativeRunner: checked })

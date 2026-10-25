@@ -36,4 +36,7 @@ state survives reload. Source edits remain intact and ignored private files are
 not copied. The worker also verifies that persisted task context contains the
 assignment, the full and compact prompt variants, and the description revision.
 Screenshots and failure traces go to `test-results/workspace-bootstrap`.
+The successful worker also requests a real ephemeral runtime service over HTTP.
+The browser checks its persisted URL and readiness notice, then verifies that
+the listener stops after run cleanup.
 Stop test-drive with Ctrl-C. Its disposable data directory remains for inspection.

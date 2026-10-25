@@ -13,5 +13,10 @@
     "en": "work",
     "zh-CN": "工作",
     "reviewedEnglishHash": "00e13ed7af55b27622f1d6eab5bec0147e68efe28dc2b12461117afa1a5ed40e"
+  },
+  "issueCases.role.workflow": {
+    "en": "workflow",
+    "zh-CN": "工作流",
+    "reviewedEnglishHash": "da7f739f627198465eeab537a6f7a435dc4a0c332f9e4a8462293eb3f4ab7ee0"
   }
 }

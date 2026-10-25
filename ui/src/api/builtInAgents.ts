@@ -108,6 +108,7 @@ export interface BuiltInAgentState {
 }
 
 export interface BuiltInAgentProvisionInput {
+  runner?: import("@penclipai/shared").AgentRunnerChoice;
   adapterType?: string;
   adapterConfig?: Record<string, unknown>;
   budgetMonthlyCents?: number;

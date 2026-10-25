@@ -339,6 +339,11 @@
     "zh-CN": "未读",
     "reviewedEnglishHash": "1b9f384c1436f607447ff66db22dcfe569141506b7499589a9b4857580075b26"
   },
+  "inbox.interruption.projectAccess": {
+    "en": "Agent needs project access",
+    "zh-CN": "智能体需要项目访问权限",
+    "reviewedEnglishHash": "a05899c9fb8154c8c6f5f5eb987f23db8bd418e521cbff172831d51d1a08bc1d"
+  },
   "inbox.title": {
     "en": "Inbox",
     "zh-CN": "收件箱",

@@ -6,11 +6,13 @@ import {
   readdirSync,
   readlinkSync,
   realpathSync,
+  rmdirSync,
   rmSync,
   statSync,
   symlinkSync,
 } from "node:fs";
 import path from "node:path";
+import { resolveQualifiedCopilotMaterializerPackage } from "./detached-deploy-workspace.mjs";
 
 // Keep this in lock-step with paperclip-runner's qualified OpenCode resolver.
 // Updating this version or target map requires an explicit packaging review.
@@ -162,6 +164,48 @@ function collectNativePackages(runtimeRoot) {
   return [...entries.values()];
 }
 
+function collectCopilotMaterializerPackages(runtimeRoot, packageName) {
+  const entries = new Map();
+  for (const nodeModules of nodeModuleDirectories(runtimeRoot)) {
+    const entryPath = candidateAt(nodeModules, packageName);
+    if (!entryPath) continue;
+    const packageRoot = assertInside(runtimeRoot, entryPath, `Copilot materializer package ${packageName}`);
+    const manifest = readJson(path.join(packageRoot, "package.json"), `Copilot materializer package ${packageName} manifest`);
+    if (manifest.name !== packageName) {
+      throw new Error(`Copilot materializer package identity mismatch: expected ${packageName}, received ${String(manifest.name)}`);
+    }
+    const existing = entries.get(packageRoot) ?? { root: packageRoot, aliases: [] };
+    existing.aliases.push(entryPath);
+    entries.set(packageRoot, existing);
+  }
+  return [...entries.values()];
+}
+
+function removeEmptyCopilotScope(runtimeRoot) {
+  const scope = path.join(runtimeRoot, "node_modules", "@github");
+  let stat;
+  try {
+    stat = lstatSync(scope);
+  } catch (error) {
+    if (error.code === "ENOENT") return false;
+    throw error;
+  }
+  if (!stat.isDirectory() || stat.isSymbolicLink()) {
+    throw new Error("Copilot materializer scope must be a physical directory");
+  }
+  const resolved = assertInside(runtimeRoot, scope, "Copilot materializer scope");
+  if (resolved !== scope) {
+    throw new Error("Copilot materializer scope redirects outside its staged location");
+  }
+  try {
+    rmdirSync(scope);
+    return true;
+  } catch (error) {
+    if (error.code === "ENOTEMPTY") return false;
+    throw error;
+  }
+}
+
 function runtimeState({ runtimeRoot, platform, arch, libc }) {
   const root = assertRuntimeRoot(runtimeRoot);
   assertSupportedLinuxLibc(platform, libc);
@@ -304,6 +348,36 @@ export function optimizeRuntimePayload({ runtimeRoot, platform = process.platfor
   }
   inspected.bytesSaved = bytesSaved;
   return publicState(inspected);
+}
+
+/**
+ * Remove only the native Copilot npm package that was used to materialize
+ * already-verified server-owned provider assets. The caller must run the final
+ * server verifier first; this function never replaces that admission check.
+ */
+export function pruneVerifiedCopilotMaterializer({ runtimeRoot, platform = process.platform, arch = process.arch }) {
+  const packageName = resolveQualifiedCopilotMaterializerPackage(platform, arch);
+  if (!packageName) {
+    return { supported: false, platform, arch, packageName: null, bytesSaved: 0 };
+  }
+
+  const root = assertRuntimeRoot(runtimeRoot);
+  const entries = collectCopilotMaterializerPackages(root, packageName);
+  let bytesSaved = 0;
+  for (const entry of entries) {
+    bytesSaved += bytesInTree(entry.root);
+    for (const alias of entry.aliases) {
+      assertMutablePath(root, alias, `Copilot materializer package ${packageName}`);
+      rmSync(alias, { recursive: true, force: true });
+    }
+    if (existsSync(entry.root)) {
+      assertMutablePath(root, entry.root, `Copilot materializer package ${packageName}`);
+      rmSync(entry.root, { recursive: true, force: true });
+    }
+  }
+  removeEmptyCopilotScope(root);
+
+  return { supported: true, platform, arch, packageName, bytesSaved };
 }
 
 export const runtimePayloadInternals = {

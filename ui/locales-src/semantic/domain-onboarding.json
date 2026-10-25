@@ -608,5 +608,40 @@
     "en": "Webhook URL",
     "zh-CN": "Webhook URL",
     "reviewedEnglishHash": "84805a7574a82052bdd5b3b98119cfd838d04036ec4bd3d667a95698e7097ad6"
+  },
+  "onboarding.gateway.chooseModelBeforeConnect": {
+    "en": "Choose a model for this gateway connection before connecting your agent.",
+    "zh-CN": "连接智能体前，请先为此网关连接选择模型。",
+    "reviewedEnglishHash": "9b67a4a16970e15b2d7f263321ddc4e5a209b10519b7ac99d590056a9495c3f7"
+  },
+  "onboarding.gateway.chooseSavedConnectionModel": {
+    "en": "Choose a model for your saved connection",
+    "zh-CN": "为已保存的连接选择模型",
+    "reviewedEnglishHash": "63a25b37fc2bd8bfb2e94e277b5f7c5f6f19ed324d1d661c7e7c61253758b1f2"
+  },
+  "onboarding.gateway.connectionSaved": {
+    "en": "Gateway connection saved. Choose a model, then Connect to test it and finish setting up your agent.",
+    "zh-CN": "网关连接已保存。选择模型后，点击“连接”进行测试并完成智能体设置。",
+    "reviewedEnglishHash": "0c0ee7230ca53363ccb7e6e7f26afa4de7f18e67f8b5698bf6cc1cb84f9a38e3"
+  },
+  "onboarding.gateway.loadFailed": {
+    "en": "Your saved gateway connection could not be loaded. Retry to choose a model and connect your agent.",
+    "zh-CN": "无法加载已保存的网关连接。请重试，选择模型并连接智能体。",
+    "reviewedEnglishHash": "1bc4a55db6b78012ae4dcf3c71daca166431536b9a2c1cdca002f5685a6a413b"
+  },
+  "onboarding.gateway.loadingConnection": {
+    "en": "Loading your saved gateway connection…",
+    "zh-CN": "正在加载已保存的网关连接…",
+    "reviewedEnglishHash": "525dd58d4abf803a036a5d8e7cd180fe2c27e78bd1a69dc0add191d4d3ec03f8"
+  },
+  "onboarding.gateway.retryLoading": {
+    "en": "Retry loading connection",
+    "zh-CN": "重试加载连接",
+    "reviewedEnglishHash": "62876228f02a3e8956786a70636b6550d5ee8a0b976615aa5cb7672e1a5ab741"
+  },
+  "onboarding.gateway.useDifferentApiKey": {
+    "en": "Use a different API key",
+    "zh-CN": "使用其他 API 密钥",
+    "reviewedEnglishHash": "8f2653fee94e9589d275671d63b8224bbcc5d78413d9e9cf58b32ffa69c56327"
   }
 }

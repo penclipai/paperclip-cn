@@ -46,6 +46,19 @@ const EXAMPLE_PLUGIN_INSTALLS = [
   },
 ];
 
+function requireConfiguredSmokeTempDrive() {
+  const requiredDrive = process.env.PAPERCLIP_DESKTOP_SMOKE_REQUIRED_DRIVE?.trim();
+  if (process.platform !== "win32" || !requiredDrive) return;
+  const drive = requiredDrive.replace(/[\\/]+$/, "").toLowerCase();
+  if (!/^[a-z]:$/.test(drive)) {
+    throw new Error(`PAPERCLIP_DESKTOP_SMOKE_REQUIRED_DRIVE must be a Windows drive such as D:, received ${requiredDrive}.`);
+  }
+  const tempDir = path.resolve(os.tmpdir()).toLowerCase();
+  if (!tempDir.startsWith(`${drive}\\`)) {
+    throw new Error(`os.tmpdir() must be on ${requiredDrive} for this desktop acceptance run, received ${tempDir}.`);
+  }
+}
+
 function parseArgs(argv) {
   const args = {
     theme: "dark",
@@ -84,6 +97,7 @@ async function ensureDirectory(dirPath) {
 }
 
 async function createSmokeUserDataDir(theme) {
+  requireConfiguredSmokeTempDrive();
   const userDataDir = await fs.promises.mkdtemp(
     path.join(os.tmpdir(), `paperclip-desktop-acceptance-${theme}-`),
   );
@@ -161,7 +175,7 @@ function resolveDevLaunchOptions(userDataDir) {
 
   return {
     executablePath: electronBin,
-    args: [path.resolve(packageDir, "dist", "main.js")],
+    args: [`--user-data-dir=${userDataDir}`, path.resolve(packageDir, "dist", "main.js")],
     cwd: packageDir,
     env: {
       ...buildLaunchEnv(userDataDir),
@@ -1063,6 +1077,9 @@ async function run() {
     embeddedPostgresPort = null;
     embeddedPostgresPid = null;
     try {
+      await app.evaluate(({ dialog }) => {
+        dialog.showMessageBox = async () => ({ response: 1, checkboxChecked: false });
+      });
       await app.close();
       if (controlPlanePort) await waitForPortClosed(controlPlanePort, "desktop control plane");
       if (postgresPort) await waitForPortClosed(postgresPort, "embedded PostgreSQL");

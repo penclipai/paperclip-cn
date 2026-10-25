@@ -36,6 +36,7 @@ const ALL = "__all";
 const ACTION_DOMAINS: { value: string; label: string }[] = [
   { value: ALL, get label() { return translateInstant("auditFeed.allActions"); } },
   { value: "issue.", get label() { return translateInstant("sidebar.issues"); } },
+  { value: "case.", get label() { return translateInstant("Cases"); } },
   { value: "agent.", get label() { return translateInstant("Agents"); } },
   { value: "heartbeat.", get label() { return translateInstant("Runs"); } },
   { value: "approval.", get label() { return translateInstant("Approvals"); } },
@@ -50,6 +51,7 @@ const ACTION_DOMAINS: { value: string; label: string }[] = [
 const ENTITY_TYPES: { value: string; label: string }[] = [
   { value: ALL, get label() { return translateInstant("auditFeed.allEntities"); } },
   { value: "issue", get label() { return translateInstant("Task"); } },
+  { value: "case", get label() { return "Case"; } },
   { value: "agent", get label() { return translateInstant("Agent"); } },
   { value: "project", get label() { return translateInstant("Project"); } },
   { value: "goal", get label() { return translateInstant("Goal"); } },
@@ -65,6 +67,8 @@ export type AuditFeedMode = "all" | "agents";
 
 export interface AuditFeedProps {
   companyId: string;
+  /** Pin the feed to one entity from a shareable audit link. */
+  lockedEntity?: { type: string; id: string };
   /**
    * When set, the feed is pinned to a single agent (per-agent Audit tab) — the
    * agent filter is hidden and every query/export carries this agentId.
@@ -79,6 +83,14 @@ export interface AuditFeedProps {
    */
   mode?: AuditFeedMode;
   onModeChange?: (mode: AuditFeedMode) => void;
+  /** Optional controlled action prefix from a shareable audit link. */
+  actionDomain?: string;
+  onActionDomainChange?: (actionDomain: string) => void;
+  entityType?: string;
+  onEntityTypeChange?: (entityType: string) => void;
+  entityId?: string;
+  onEntityIdChange?: (entityId: string) => void;
+  onClearFilters?: () => void;
 }
 
 function toStartIso(value: string): string | undefined {
@@ -262,17 +274,44 @@ function AuditUpsell() {
 
 export function AuditFeed({
   companyId,
+  lockedEntity,
   lockedAgentId,
   hideHeader,
   mode,
   onModeChange,
+  actionDomain: controlledActionDomain,
+  onActionDomainChange,
+  entityType: controlledEntityType,
+  onEntityTypeChange,
+  entityId: controlledEntityId,
+  onEntityIdChange,
+  onClearFilters,
 }: AuditFeedProps) {
   useTranslation();
   const { pushToast } = useToastActions();
   const [agent, setAgent] = useState<string>(ALL);
   const [responsibleUser, setResponsibleUser] = useState<string>(ALL);
-  const [actionDomain, setActionDomain] = useState<string>(ALL);
-  const [entityType, setEntityType] = useState<string>(ALL);
+  const [localActionDomain, setLocalActionDomain] = useState<string>(ALL);
+  const actionDomain = controlledActionDomain ?? localActionDomain;
+  const setActionDomain = (next: string) => {
+    setLocalActionDomain(next);
+    onActionDomainChange?.(next);
+  };
+  const [localEntityType, setLocalEntityType] = useState<string>(ALL);
+  const entityType = controlledEntityType ?? localEntityType;
+  const setEntityType = (next: string) => {
+    setLocalEntityType(next);
+    onEntityTypeChange?.(next);
+  };
+  const [localEntityId, setLocalEntityId] = useState("");
+  const entityId = controlledEntityId ?? localEntityId;
+  const [entityIdDraft, setEntityIdDraft] = useState(entityId);
+  useEffect(() => setEntityIdDraft(entityId), [entityId]);
+  const setEntityId = (next: string) => {
+    setLocalEntityId(next);
+    setEntityIdDraft(next);
+    onEntityIdChange?.(next);
+  };
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [exporting, setExporting] = useState(false);
@@ -307,7 +346,8 @@ export function AuditFeed({
     agentId: lockedAgentId ?? (agent === ALL ? undefined : agent),
     responsibleUserId: responsibleUser === ALL ? undefined : responsibleUser,
     action: actionDomain === ALL ? undefined : actionDomain,
-    entityType: entityType === ALL ? undefined : entityType,
+    entityType: lockedEntity?.type ?? (entityType === ALL ? undefined : entityType),
+    entityId: lockedEntity?.id ?? (entityType === "case" ? entityId.trim() || undefined : undefined),
     from: toStartIso(dateFrom),
     to: toEndIso(dateTo),
   };
@@ -328,6 +368,7 @@ export function AuditFeed({
       responsibleUserId: filters.responsibleUserId,
       action: filters.action,
       entityType: filters.entityType,
+      entityId: filters.entityId,
       from: filters.from,
       to: filters.to,
     }),
@@ -420,10 +461,18 @@ export function AuditFeed({
   const clearFilters = () => {
     setAgent(ALL);
     setResponsibleUser(ALL);
-    setActionDomain(ALL);
-    setEntityType(ALL);
+    setLocalActionDomain(ALL);
+    setLocalEntityType(ALL);
+    setLocalEntityId("");
+    setEntityIdDraft("");
     setDateFrom("");
     setDateTo("");
+    if (onClearFilters) onClearFilters();
+    else {
+      onActionDomainChange?.(ALL);
+      onEntityTypeChange?.(ALL);
+      onEntityIdChange?.("");
+    }
   };
 
   const handleExport = async () => {
@@ -435,6 +484,7 @@ export function AuditFeed({
         responsibleUserId: filters.responsibleUserId,
         action: filters.action,
         entityType: filters.entityType,
+        entityId: filters.entityId,
         from: filters.from,
         to: filters.to,
       });
@@ -543,6 +593,24 @@ export function AuditFeed({
               ))}
             </SelectContent>
           </Select>
+          {entityType === "case" ? <Input
+            type="search"
+            aria-label="Case ID or identifier"
+            placeholder="CAS-C1"
+            value={entityIdDraft}
+            onChange={event => {
+              setEntityIdDraft(event.target.value);
+              if (!event.target.value) setEntityId("");
+            }}
+            onBlur={() => setEntityId(entityIdDraft.trim())}
+            onKeyDown={event => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                setEntityId(entityIdDraft.trim());
+              }
+            }}
+            className="w-44 font-mono"
+          /> : null}
           <Input
             type="date"
             aria-label={translateInstant("auditFeed.fromDate")}

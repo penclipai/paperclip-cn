@@ -64,6 +64,11 @@
     "zh-CN": "手动配置运行时",
     "reviewedEnglishHash": "3910e33e702fab294eac7b4642b07e29d49e343a32039b96b514cddd01a62652"
   },
+  "newAgent.connectMuse": {
+    "en": "Connect your Muse",
+    "zh-CN": "连接您的 Muse",
+    "reviewedEnglishHash": "3e78038c45002147ea6ea738734cb62997a820460f6e94113c8a5b3e16e700b9"
+  },
   "newAgent.copiedPrompt": {
     "en": "Copied prompt",
     "zh-CN": "已复制提示",
@@ -169,11 +174,6 @@
     "zh-CN": "：等待中",
     "reviewedEnglishHash": "1c9b478097648c499578c1889e039cb88132082966860f8499926520a4ed3fdb"
   },
-  "newAgent.dotConnectTitle": {
-    "en": "Connect your Dot",
-    "zh-CN": "连接你的 Dot",
-    "reviewedEnglishHash": "767ddfb33ac2cde24e1078527fc1b38f11471f3e27cf03749334928af9754e83"
-  },
   "newAgent.dotConnectedTitle": {
     "en": "Your Dot is connected",
     "zh-CN": "你的 Dot 已连接",
@@ -188,6 +188,11 @@
     "en": "Dot connection checks",
     "zh-CN": "Dot 连接检查",
     "reviewedEnglishHash": "0c8a99e80eed8f3fc03b5887cf41b76e9329baeadb3074e6a0e35f3872b1a580"
+  },
+  "newAgent.dotConnectTitle": {
+    "en": "Connect your Dot",
+    "zh-CN": "连接你的 Dot",
+    "reviewedEnglishHash": "767ddfb33ac2cde24e1078527fc1b38f11471f3e27cf03749334928af9754e83"
   },
   "newAgent.dotFinishingDescription": {
     "en": "Your Dot has connected and confirmed task updates. Paperclip is preparing it for assignments.",
@@ -314,10 +319,20 @@
     "zh-CN": "你在 ChatGPT 中的 Dot",
     "reviewedEnglishHash": "f37d30dc40d1f272f44050371d43220d1fb5b36576bfbd29f033795625627a93"
   },
+  "newAgent.externalPresetGrokBotDescription": {
+    "en": "An existing Bot in Grok",
+    "zh-CN": "Grok 中现有的机器人",
+    "reviewedEnglishHash": "9f82cc50d64f320339de88a438fec08bf879954a74c8b7d01687e9dc832144fc"
+  },
   "newAgent.externalPresetHermesDescription": {
     "en": "An existing Hermes agent",
     "zh-CN": "已有的 Hermes 智能体",
     "reviewedEnglishHash": "45e1aa6503b67d7955a1aff38801c1b454a5e42e266036728a816fa601687b13"
+  },
+  "newAgent.externalPresetMuseDescription": {
+    "en": "Your personal Muse at muse.ai",
+    "zh-CN": "您在 muse.ai 的个人 Muse",
+    "reviewedEnglishHash": "f30c007963966112bc58051fb456f455d2be77729024908b7229896dbe0f204a"
   },
   "newAgent.externalPresetOther": {
     "en": "Other",
@@ -379,10 +394,45 @@
     "zh-CN": "邀请你的 Hermes 智能体",
     "reviewedEnglishHash": "ac9065918d57199616a4055f5ea4a1212e6dd62cc246df42baa0721020377644"
   },
+  "newAgent.inviteMuse": {
+    "en": "Invite your Muse",
+    "zh-CN": "邀请您的 Muse",
+    "reviewedEnglishHash": "4af6c11b3221c5b68a69ef8859c429448947fc46046b09fedf04c0f905541ae0"
+  },
   "newAgent.invitePromptDescription": {
     "en": "Generate a one-time onboarding prompt that any compatible agent can use to request access, wait for approval, and claim its Paperclip API key.",
     "zh-CN": "生成一次性入职提示，让任何兼容智能体都可以请求访问、等待审批并领取自己的 Paperclip API key。",
     "reviewedEnglishHash": "149019202854cab141f41bb8d207bc900b798511997332331c4dbbb6199426d7"
+  },
+  "newAgent.museConnectedTitle": {
+    "en": "Muse is connected",
+    "zh-CN": "Muse 已连接",
+    "reviewedEnglishHash": "35b1e6440003337c9d50fa3c76681a8884a2d4b219823f934543b27bfc74d39e"
+  },
+  "newAgent.museDetailsDescription": {
+    "en": "Give your personal Muse a name and role in {{companyName}}.",
+    "zh-CN": "为您在 {{companyName}} 中的个人 Muse 设置名称和角色。",
+    "reviewedEnglishHash": "4d32d9fc96230e97e75a08154d7b341b007f5084e255baa08ab42f4699136573"
+  },
+  "newAgent.museInvitationRequirements": {
+    "en": "Muse requires an authenticated Paperclip instance with a public HTTPS URL and a company operator account.",
+    "zh-CN": "Muse 需要具有公开 HTTPS 地址且已认证的 Paperclip 实例，以及公司操作员账户。",
+    "reviewedEnglishHash": "5e7ef9e6d8ece585ff25920e05705a58dd81f9bd4ae970a63b490820c4def651"
+  },
+  "newAgent.musePreparingDescription": {
+    "en": "We’re checking whether this instance can prepare Muse setup.",
+    "zh-CN": "正在检查此实例是否可以准备 Muse 设置。",
+    "reviewedEnglishHash": "b752ba886515a20a528c762102690cc38a43a628fdfbf75bce304bd290f6ea12"
+  },
+  "newAgent.musePromptDescription": {
+    "en": "Paste the setup prompt into your current Muse conversation. Complete Connect Paperclip if Muse asks, then approve this Paperclip hostname. Muse keeps the connection credential in its secure vault. The hostname permission applies to future requests.",
+    "zh-CN": "将设置提示粘贴到当前 Muse 对话中。如果 Muse 提示，请完成连接 Paperclip，然后批准此 Paperclip 主机名。Muse 会在安全保险库中保存连接凭据；此主机名权限会用于后续请求。",
+    "reviewedEnglishHash": "2882d02d5341aa66d248c2d43e603f718899e62722f5c875b170abfc34e959dd"
+  },
+  "newAgent.museReadyDescription": {
+    "en": "Muse can receive assignments and work with {{companyName}}.",
+    "zh-CN": "Muse 现在可以接收任务并与 {{companyName}} 协作。",
+    "reviewedEnglishHash": "761d5c3d94b1e26676f51e2a2859aab47efc8c1056a4c5724f40261d0aafad73"
   },
   "newAgent.openCodeModelRequired": {
     "en": "OpenCode agents require a model before they can be tested.",

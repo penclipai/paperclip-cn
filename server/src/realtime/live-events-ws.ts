@@ -1,3 +1,4 @@
+import { skillAccessService } from "../services/skill-access.js";
 import { createHash } from "node:crypto";
 import type { IncomingMessage, Server as HttpServer } from "node:http";
 import { createRequire } from "node:module";
@@ -9,6 +10,8 @@ import type { DeploymentMode, LiveEvent } from "@penclipai/shared";
 import type { BetterAuthSessionResult } from "../auth/better-auth.js";
 import { logger } from "../middleware/logger.js";
 import { activityToastIdentity } from "./activity-toast-identity.js";
+import { decideApprovalEvent, isApprovalCreatedEvent } from "./approval-event-decision.js";
+import { taskToastEligible } from "./task-toast-eligibility.js";
 import { subscribeCompanyLiveEvents } from "../services/live-events.js";
 import { trackIdleWork } from "../services/task-admission.js";
 
@@ -42,8 +45,12 @@ const { WebSocket, WebSocketServer } = require("ws") as {
   WebSocketServer: new (opts: { noServer: boolean }) => WsServer;
 };
 
+const approvalToastEligible = Symbol("approvalToastEligible");
+type ProjectedLiveEvent = LiveEvent & { [approvalToastEligible]?: boolean };
+
 import { authorizationService, type AuthorizationActor } from "../services/authorization.js";
 import { canActorReadHeartbeatRun } from "../services/heartbeat-run-privacy.js";
+import { canActorReadCase } from "../services/case-access.js";
 
 interface UpgradeContext {
   actor: AuthorizationActor;
@@ -274,6 +281,33 @@ export function setupLiveEventsWebSocketServer(
 
     const access = authorizationService(db);
     async function visibleEvent(event: LiveEvent): Promise<LiveEvent | null> {
+      if (isApprovalCreatedEvent(event)) {
+        try {
+          const decision = await decideApprovalEvent(db, event, context!.actor);
+          if (!decision.visible) return null;
+          // Keep this delivery-only value outside the JSON payload. Every
+          // socket receives its own shallow copy, so another viewer cannot
+          // inherit the board-only notification decision.
+          event = {
+            ...event,
+            // The approval row is the authorization source; its payload is
+            // never part of the real-time projection.
+            payload: {
+              action: event.payload.action,
+              entityType: event.payload.entityType,
+              entityId: event.payload.entityId,
+            },
+            [approvalToastEligible]: decision.toastEligible,
+          } as ProjectedLiveEvent;
+        } catch (err) {
+          // An approval can carry task-derived content. Fail closed without
+          // logging the event payload, and allow the serialized queue to move on.
+          logger.warn({ err, companyId: context!.companyId }, "approval live event visibility check failed");
+          return null;
+        }
+      }
+      if (event.payload.entityType === "case" && (typeof event.payload.entityId !== "string"
+        || !(await canActorReadCase(db, context!.actor, { id: event.payload.entityId, companyId: event.companyId })))) return null;
       if (context!.actor.source === "local_implicit") {
         if (event.type === "activity.logged" && event.payload.entityType === "issue") {
           return { ...event, payload: { ...event.payload,
@@ -302,6 +336,13 @@ export function setupLiveEventsWebSocketServer(
         if (!issue || !(await access.decide({ actor: context!.actor, action: "issue:read",
           resource: { type: "issue", companyId: event.companyId, issueId } })).allowed) return null;
       }
+      if (["company_skill", "company_skill_source"].includes(String(payload.entityType)) && typeof payload.entityId === "string") {
+        try {
+          const skills = skillAccessService(db, context!.actor);
+          if (payload.entityType === "company_skill") await skills.assertSkill(event.companyId, payload.entityId);
+          else await skills.assertSource(event.companyId, payload.entityId);
+        } catch { return null; }
+      }
       if (payload.entityType === "project" && typeof payload.entityId === "string") {
         const [project] = await db.select({ id: projects.id }).from(projects)
           .where(and(eq(projects.id, payload.entityId), eq(projects.companyId, event.companyId))).limit(1);
@@ -311,7 +352,11 @@ export function setupLiveEventsWebSocketServer(
       const runId = typeof payload.runId === "string" ? payload.runId
         : payload.entityType === "heartbeat_run" && typeof payload.entityId === "string" ? payload.entityId : null;
       if (runId) {
-        const [run] = await db.select().from(heartbeatRuns).where(and(eq(heartbeatRuns.id, runId), eq(heartbeatRuns.companyId, event.companyId)));
+        const [run] = await db.select({
+          companyId: heartbeatRuns.companyId,
+          scopeKind: heartbeatRuns.scopeKind,
+          issueId: heartbeatRuns.issueId,
+        }).from(heartbeatRuns).where(and(eq(heartbeatRuns.id, runId), eq(heartbeatRuns.companyId, event.companyId)));
         if (!run || !(await canActorReadHeartbeatRun(db, access, context!.actor, run))) return null;
       }
       if (event.type.startsWith("heartbeat.run.")) return runId ? event : null;
@@ -320,6 +365,9 @@ export function setupLiveEventsWebSocketServer(
       // clients obtain details through viewer-filtered HTTP reads.
       if (event.type === "activity.logged") return { ...event, payload: {
         action: payload.action, entityType: payload.entityType, entityId: payload.entityId,
+        // A handoff can attach the first case to a task. Its already-authorized
+        // task identity lets an empty cases panel refresh without exposing content.
+        ...(payload.entityType === "case" && String(payload.action).startsWith("case.handoff_") && issueId ? { issueId } : {}),
         // The task read check above authorizes attribution, but not arbitrary details.
         ...(issueId ? await activityToastIdentity(db, event.companyId, payload) : {}),
       } };
@@ -338,7 +386,20 @@ export function setupLiveEventsWebSocketServer(
         // Check at delivery time, including after a grant is revoked while the
         // subscription remains open. Never cache successful privacy decisions.
         const visible = await visibleEvent(event);
-        if (visible && socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify(visible));
+        if (visible) {
+          // Relevance is independent of authorization and cache delivery. A
+          // failed relevance lookup must keep the authorized update flowing.
+          let toastEligible = (visible as ProjectedLiveEvent)[approvalToastEligible] ?? false;
+          if (!isApprovalCreatedEvent(visible)) {
+            try {
+              toastEligible = await taskToastEligible(db, visible,
+                context.actor.type === "board" ? context.actor.userId ?? null : null);
+            } catch (err) {
+              logger.warn({ err, companyId: context.companyId }, "task toast eligibility failed");
+            }
+          }
+          if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ ...visible, toastEligible }));
+        }
       }).catch(err => logger.warn({ err, companyId: context.companyId }, "live event authorization failed"))
         .finally(() => { pending -= 1; });
     });

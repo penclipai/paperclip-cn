@@ -1,0 +1,142 @@
+{
+  "desktop.tray.open": {
+    "en": "Open Paperclip CN",
+    "zh-CN": "打开 Paperclip CN",
+    "reviewedEnglishHash": "dec06272c0cf15f2318f8e5e82dfbecb79360c5bf292b5cb822a611b46182e73"
+  },
+  "desktop.tray.settings": {
+    "en": "Desktop settings",
+    "zh-CN": "桌面设置",
+    "reviewedEnglishHash": "08d8e71dab970ba78edc2b71c66b753d654bf41cd3f8bb3b53c92f88cd355ee2"
+  },
+  "desktop.tray.quit": {
+    "en": "Quit Paperclip CN",
+    "zh-CN": "退出 Paperclip CN",
+    "reviewedEnglishHash": "a88f4a5582620968727bbfde7ce62c6a1955799005ff20fa9c4535114313b2f9"
+  },
+  "desktop.tray.closeToTray": {
+    "en": "Close window to tray",
+    "zh-CN": "关闭窗口时保留到托盘",
+    "reviewedEnglishHash": "debd9438767cd3fccf275e7c5f10764afbdb19c8f21f78770ef74f92c7efb59e"
+  },
+  "desktop.tray.notifications": {
+    "en": "Important notifications",
+    "zh-CN": "重要事项通知",
+    "reviewedEnglishHash": "a6db93105b722718e8489afb0c4e450da8407506d7e31f02eba2fe528fe81707"
+  },
+  "desktop.tray.starting": {
+    "en": "Paperclip CN — Starting",
+    "zh-CN": "Paperclip CN · 正在启动",
+    "reviewedEnglishHash": "b54f2bd6aaa6ee8102bc94225397ac5565ea2f40a385a3c60c2dae0583dab4e9"
+  },
+  "desktop.tray.running": {
+    "en": "Paperclip CN — Running in background",
+    "zh-CN": "Paperclip CN · 后台运行中",
+    "reviewedEnglishHash": "b46a5eba220b2a9b517f2dd38e67a1dfe8b8eff6a79bbdb40744a0cf08fdefaa"
+  },
+  "desktop.tray.attention": {
+    "en": "Paperclip CN — Needs attention",
+    "zh-CN": "Paperclip CN · 有事项待处理",
+    "reviewedEnglishHash": "4b6013993f4cbef804c8423acb834153c625c447abc04c4aacd5b01931f7a4b5"
+  },
+  "desktop.tray.error": {
+    "en": "Paperclip CN — Service unavailable",
+    "zh-CN": "Paperclip CN · 服务不可用",
+    "reviewedEnglishHash": "7750928a9b05683f9530670923fe3f83b268ee6f4bce80e373d6a28c0f7ebd61"
+  },
+  "desktop.tray.stopping": {
+    "en": "Paperclip CN — Shutting down",
+    "zh-CN": "Paperclip CN · 正在退出",
+    "reviewedEnglishHash": "3a2b108f3cb7e5a8367ffa4892fb20b396db4ab9fcd69bbd5f58caea03c17d1f"
+  },
+  "desktop.background.title": {
+    "en": "Paperclip CN is still running",
+    "zh-CN": "Paperclip CN 将继续后台运行",
+    "reviewedEnglishHash": "69404ba95ee8f8a0305623ca20e0a5b21701106c9313af031809cbe998168bb3"
+  },
+  "desktop.background.message": {
+    "en": "Closing the window keeps the local service and tasks running. Provider usage and charges may continue. Open the tray menu to show the window or quit the app.",
+    "zh-CN": "关闭窗口后，本地服务和任务仍会运行，可能继续产生模型用量和费用。可通过托盘菜单重新打开窗口或退出应用。",
+    "reviewedEnglishHash": "ba24043ac8f1c3eae8617d74658246c70ed98162b32e81514eb6e467b5f2eb4d"
+  },
+  "desktop.background.stay": {
+    "en": "Continue in background",
+    "zh-CN": "继续后台运行",
+    "reviewedEnglishHash": "2682539a6ec8d8ad69738e0ce9864c4d4176e5667db2fa75e70df9890505cfac"
+  },
+  "desktop.background.show": {
+    "en": "Keep window open",
+    "zh-CN": "保持窗口打开",
+    "reviewedEnglishHash": "796ae0338fae342a4375bf6641577b7c74f88adf4486984c4dace028e43663f0"
+  },
+  "desktop.quit.title": {
+    "en": "Quit Paperclip CN?",
+    "zh-CN": "退出 Paperclip CN？",
+    "reviewedEnglishHash": "24c15fba6da92c30f53a5b2ae4d617c2e972ae30f35cccca2e13a3be233852e6"
+  },
+  "desktop.quit.message": {
+    "en": "Quitting closes the local service and may interrupt tasks. Some remote or native agent work may continue; check its status after reopening.",
+    "zh-CN": "退出将关闭本地服务，并可能中断任务。部分远程或原生智能体任务可能继续执行，重新打开后请核对运行状态。",
+    "reviewedEnglishHash": "8b236162fd2cd12a522d3ccf6ed33de56c2170dea1a5113fbb8ef97f454eca00"
+  },
+  "desktop.quit.runningDetail": {
+    "en": "At least {{count}} task(s) are running in the current company. Other work may also be active.",
+    "zh-CN": "当前公司至少有 {{count}} 个任务正在运行，其他任务也可能仍在执行。",
+    "reviewedEnglishHash": "3da6743f662a8c4c16489353ee9e4cb2956efb96d1a90b9c44443f3b32c35f15"
+  },
+  "desktop.quit.unknownDetail": {
+    "en": "The current run status is unavailable. Tasks may still be running in this or other companies.",
+    "zh-CN": "暂时无法确认运行状态，当前公司或其他公司仍可能有任务正在执行。",
+    "reviewedEnglishHash": "1bf9efad4e3fb2d1551c6543f12e4a6f55c987a96e04eed87f6332094fef401d"
+  },
+  "desktop.quit.keepRunning": {
+    "en": "Keep running",
+    "zh-CN": "继续运行",
+    "reviewedEnglishHash": "154949dbda2aa4ee3f87798c267b4c6f9354c5b9f5108ecfd189a5d43346742c"
+  },
+  "desktop.quit.confirm": {
+    "en": "Quit app",
+    "zh-CN": "退出应用",
+    "reviewedEnglishHash": "83e69e8a3025aacb89f5804e22dacab9b11340c097023f87b1d0ecee946b9a8d"
+  },
+  "desktop.notification.approvalTitle": {
+    "en": "Approval needed",
+    "zh-CN": "有审批待处理",
+    "reviewedEnglishHash": "9928dd82f38fb09386ed14b4251ee6ee10e4d7c45a366d3a98ef2a34fc6453a2"
+  },
+  "desktop.notification.approvalBody": {
+    "en": "An item in your current company needs approval. Open Paperclip CN to review it.",
+    "zh-CN": "当前公司有事项需要审批，请打开 Paperclip CN 查看。",
+    "reviewedEnglishHash": "11c6794dc6f1f966c03da776eb752447e0cc7afad1769ab713001805dc4a3fb4"
+  },
+  "desktop.notification.runFailedTitle": {
+    "en": "Agent run failed",
+    "zh-CN": "智能体运行失败",
+    "reviewedEnglishHash": "6435822689bf73fd38da6104ea8e31b6f9dc0901127c9371911be4db416d69f2"
+  },
+  "desktop.notification.runFailedBody": {
+    "en": "A run in your current company failed. Open Paperclip CN to review the details.",
+    "zh-CN": "当前公司有一次运行失败，请打开 Paperclip CN 查看详情。",
+    "reviewedEnglishHash": "af5e37a695187258442005059dcaff0cbebbff6fade83702429807410314dba9"
+  },
+  "desktop.notification.runTimedOutTitle": {
+    "en": "Agent run timed out",
+    "zh-CN": "智能体运行超时",
+    "reviewedEnglishHash": "380762d36a8070a28e56246f1ada2b7055cdf6bec59598ced12ef8ca83fa64c5"
+  },
+  "desktop.notification.runTimedOutBody": {
+    "en": "A run in your current company timed out. Open Paperclip CN to review the details.",
+    "zh-CN": "当前公司有一次运行超时，请打开 Paperclip CN 查看详情。",
+    "reviewedEnglishHash": "da686229962801a0989e11191499dcb12aafeddeb3e6483143d2b890b7b3b709"
+  },
+  "desktop.shutdown.title": {
+    "en": "Closing Paperclip CN",
+    "zh-CN": "正在退出 Paperclip CN",
+    "reviewedEnglishHash": "219199b4ab41289b44ec6396c5b2e41e313f7bba9a380caf0c1dd57009f9e175"
+  },
+  "desktop.shutdown.message": {
+    "en": "Saving window state and closing the local service. Please wait.",
+    "zh-CN": "正在保存窗口状态并关闭本地服务，请稍候。",
+    "reviewedEnglishHash": "845ea00294c4b53648f2a2d482ea5333c0ac557418c5b549a903829fd466e672"
+  }
+}

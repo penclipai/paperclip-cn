@@ -1,5 +1,7 @@
+import { useDesignSandbox } from "@/context/DesignSandboxContext";
+import { DesignSandboxSidebar } from "./DesignSandboxSidebar";
 import { translateInstant } from "@/i18n";
-import { useTranslation } from "react-i18next";
+import { BoardDialogs } from "./BoardDialogs";
 import { ChatSetupSidebarProvider } from "@/context/ChatSetupSidebarContext";
 import { PluginAppShellOverlays } from "./PluginAppShellOverlays";
 import {
@@ -27,10 +29,6 @@ import { AppDetailSidebar } from "./AppConnectionSidebar.production";
 import { BreadcrumbBar } from "./BreadcrumbBar.production";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { CommandPalette } from "./CommandPalette";
-import { NewIssueDialog } from "./NewIssueDialog";
-import { NewProjectDialog } from "./NewProjectDialog";
-import { NewGoalDialog } from "./NewGoalDialog";
-import { NewAgentDialog } from "./NewAgentDialog";
 import { KeyboardShortcutsCheatsheet } from "./KeyboardShortcutsCheatsheet";
 import { ToastViewport } from "./ToastViewport";
 import { MobileBottomNav } from "./MobileBottomNav";
@@ -118,7 +116,7 @@ function isSkillsStoreRoute(
 }
 
 export function Layout() {
-  useTranslation();
+  const designSandbox = useDesignSandbox();
   const {
     sidebarOpen,
     setSidebarOpen,
@@ -641,18 +639,21 @@ export function Layout() {
           ) : (
             <SidebarShell
               open={sidebarOpen}
-              collapsed={collapsed}
-              peeking={peeking}
+              collapsed={designSandbox ? false : collapsed}
+              peeking={designSandbox ? false : peeking}
               resizable
+              storageKey={designSandbox ? "paperclip.design-proposals.sandbox.sidebar-width" : undefined}
               onPanelMouseEnter={handlePanelPointerEnter}
               onPanelMouseLeave={handlePanelPointerLeave}
               onPanelFocusCapture={collapsed ? handlePanelFocus : undefined}
               onPanelBlurCapture={collapsed ? handlePanelBlur : undefined}
             >
-              <div className="flex flex-1 min-h-0">
-                <Sidebar />
-              </div>
-              <SidebarAccountMenu deploymentMode={health?.deploymentMode} />
+              {designSandbox ? <DesignSandboxSidebar /> : <>
+                <div className="flex flex-1 min-h-0">
+                  <Sidebar />
+                </div>
+                <SidebarAccountMenu deploymentMode={health?.deploymentMode} />
+              </>}
             </SidebarShell>
           )}
 
@@ -736,10 +737,7 @@ export function Layout() {
         </div>
         {isMobile && <MobileBottomNav visible={mobileNavVisible} />}
         <CommandPalette />
-        <NewIssueDialog />
-        <NewProjectDialog />
-        <NewGoalDialog />
-        <NewAgentDialog />
+        <BoardDialogs />
         <KeyboardShortcutsCheatsheet
           open={shortcutsOpen}
           onOpenChange={setShortcutsOpen}

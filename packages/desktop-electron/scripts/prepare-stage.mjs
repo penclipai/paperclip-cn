@@ -15,8 +15,8 @@ import {
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { runNodeScript, runPnpm } from "./utils.mjs";
-import { createDetachedDeployWorkspace } from "./detached-deploy-workspace.mjs";
-import { optimizeRuntimePayload } from "./runtime-payload.mjs";
+import { createDetachedDeployWorkspace, isQualifiedCopilotPlatform } from "./detached-deploy-workspace.mjs";
+import { optimizeRuntimePayload, pruneVerifiedCopilotMaterializer } from "./runtime-payload.mjs";
 import { checkCatalog } from "../../../scripts/i18n-catalog.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -494,6 +494,18 @@ for (const packageJsonPath of packageJsons) {
 
 console.log(`[desktop-stage] Patched ${patchedCount} deployed package manifests.`);
 
+// Deploy can omit package-local dotfiles, so run the deployed package's own
+// installer again after its final dependencies are in place. This verifies the
+// closure copied from the detached workspace or materializes it from the
+// deployed optional dependency; it never consults the source checkout.
+const hasQualifiedCopilotPlatform = isQualifiedCopilotPlatform();
+if (hasQualifiedCopilotPlatform) {
+  console.log("[desktop-stage] Verifying deployed Copilot runtime assets...");
+  runNodeScript(path.resolve(serverDeployDir, "scripts", "install-copilot-assets.mjs"), [], {
+    cwd: serverDeployDir,
+  });
+}
+
 console.log("[desktop-stage] Assembling packaged app-runtime...");
 rmSync(appRuntimeDir, { recursive: true, force: true });
 mkdirSync(appRuntimeServerDir, { recursive: true });
@@ -509,6 +521,12 @@ cpSync(path.resolve(serverDeployDir, "ui-dist"), path.resolve(appRuntimeServerDi
 cpSync(path.resolve(serverDeployDir, "package.json"), path.resolve(appRuntimeServerDir, "package.json"), {
   force: true,
 });
+if (hasQualifiedCopilotPlatform) {
+  cpSync(path.resolve(serverDeployDir, "provider-assets"), path.resolve(appRuntimeServerDir, "provider-assets"), {
+    recursive: true,
+    force: true,
+  });
+}
 cpSync(serverDeployNodeModulesDir, appRuntimeNodeModulesDir, {
   recursive: true,
   force: true,
@@ -540,6 +558,25 @@ for (const { sourceRoot, stagedRoot } of stagedPluginRoots) {
 }
 
 pruneRuntimeNodeModules();
+
+// Prove the final packaged server admits only its own copied provider assets,
+// rather than accidentally resolving the detached workspace or source tree.
+if (hasQualifiedCopilotPlatform) {
+  console.log("[desktop-stage] Verifying packaged Copilot runtime assets...");
+  runNodeScript(path.resolve(appRuntimeServerDir, "dist", "install-copilot-assets.mjs"), [], {
+    cwd: appRuntimeServerDir,
+  });
+
+  const copilotMaterializerPrune = pruneVerifiedCopilotMaterializer({ runtimeRoot: appRuntimeDir });
+  console.log(
+    `[desktop-stage] Removed verified Copilot materializer ${copilotMaterializerPrune.packageName}: saved ${copilotMaterializerPrune.bytesSaved} bytes.`,
+  );
+
+  console.log("[desktop-stage] Re-verifying packaged Copilot runtime assets after materializer pruning...");
+  runNodeScript(path.resolve(appRuntimeServerDir, "dist", "install-copilot-assets.mjs"), [], {
+    cwd: appRuntimeServerDir,
+  });
+}
 
 const runtimePayloadOptimization = optimizeRuntimePayload({ runtimeRoot: appRuntimeDir });
 if (runtimePayloadOptimization.supported) {

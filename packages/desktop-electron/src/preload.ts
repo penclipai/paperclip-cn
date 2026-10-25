@@ -5,7 +5,7 @@ import {
   type TitleBarOptions,
   TitlebarColor,
 } from "custom-electron-titlebar";
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron";
 import {
   DESKTOP_TITLEBAR_HEIGHT,
   getDesktopTitlebarThemeConfig,
@@ -13,6 +13,26 @@ import {
   isDesktopTheme,
   type DesktopTheme,
 } from "./runtime.js";
+
+type DesktopShellPreferences = {
+  closeToTray: boolean;
+  notificationsEnabled: boolean;
+  trayAvailable: boolean;
+  notificationsSupported: boolean;
+};
+
+type DesktopShellContext = {
+  locale: "zh-CN" | "en";
+  companyId: string | null;
+  activeRuns: number | null;
+};
+
+type DesktopShellNotification = {
+  id: string;
+  companyId: string;
+  kind: "approval" | "run_failed" | "run_timed_out";
+  targetPath: string;
+};
 
 function resolveInitialThemeArgument(): DesktopTheme | null {
   const prefix = "--paperclip-desktop-initial-theme=";
@@ -57,6 +77,30 @@ const desktopShellBridge = {
 
     await ensureTitlebar(theme);
     await persistPromise;
+  },
+  getPreferences(): Promise<DesktopShellPreferences | null> {
+    return ipcRenderer.invoke("desktop-shell:get-preferences");
+  },
+  setPreferences(
+    preferences: Partial<Pick<DesktopShellPreferences, "closeToTray" | "notificationsEnabled">>,
+  ): Promise<DesktopShellPreferences | null> {
+    return ipcRenderer.invoke("desktop-shell:set-preferences", preferences);
+  },
+  setContext(context: DesktopShellContext): Promise<boolean> {
+    return ipcRenderer.invoke("desktop-shell:set-context", context);
+  },
+  notify(notification: DesktopShellNotification): Promise<boolean> {
+    return ipcRenderer.invoke("desktop-shell:notify", notification);
+  },
+  quit(): Promise<boolean> {
+    return ipcRenderer.invoke("desktop-shell:quit");
+  },
+  onNavigate(callback: (path: string) => void): () => void {
+    const listener = (_event: IpcRendererEvent, path: unknown) => {
+      if (typeof path === "string") callback(path);
+    };
+    ipcRenderer.on("desktop-shell:navigate", listener);
+    return () => ipcRenderer.removeListener("desktop-shell:navigate", listener);
   },
   initialTheme: initialTheme ?? undefined,
   isDesktop: true,

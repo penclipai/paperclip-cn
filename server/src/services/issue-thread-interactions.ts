@@ -1,6 +1,6 @@
 import { normalizeEscapedLineBreaks } from "@penclipai/shared/validators/text";
 import { notifyDeliveryWork, DELIVERY_QUEUES } from "./delivery-work-notifications.js";
-import { activeIssueInteractionCondition, historicalQuestionCondition } from "./issue-question-context.js";
+import { historicalQuestionCondition } from "./issue-question-context.js";
 import {
   currentContinuationOrigins,
   deliveredContinuationCommentIds,
@@ -197,7 +197,7 @@ export type IssueThreadInteractionServiceOptions = {
 };
 
 type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
-type InteractionResolutionMutationOptions = {
+export type InteractionResolutionMutationOptions = {
   /** Confirmation accept/reject nested in an outer transaction must defer these
    * effects and flush them with the root database only after its commit. */
   deferConfirmationCommitEffects?: (effect: (committedDb: Db) => Promise<void>) => void;
@@ -2634,7 +2634,9 @@ export function issueThreadInteractionService(
             },
           );
         }
-        return hydrateInteraction(existing) as ConnectionIntentInteraction;
+        const interaction = hydrateInteraction(existing) as ConnectionIntentInteraction;
+        await enqueueIssueInteractionChatPublications(db, interaction);
+        return interaction;
       }
 
       let inserted = false;
@@ -2662,7 +2664,10 @@ export function issueThreadInteractionService(
         ));
         const reusable = pending.find((candidate) =>
           connectionIntentPayloadSchema.parse(candidate.payload).serviceSlug === payload.serviceSlug && connectionIntentPayloadSchema.parse(candidate.payload).purpose === payload.purpose && isDeepStrictEqual(connectionIntentPayloadSchema.parse(candidate.payload).accessRequest, payload.accessRequest));
-        if (reusable) return reusable;
+        if (reusable) {
+          await enqueueIssueInteractionChatPublications(tx as unknown as Db, hydrateInteraction(reusable));
+          return reusable;
+        }
 
         const [sourceRun] = await tx.select({ context: heartbeatRuns.contextSnapshot }).from(heartbeatRuns)
           .where(and(eq(heartbeatRuns.id, input.sourceRunId), eq(heartbeatRuns.companyId, issue.companyId)));
@@ -2723,7 +2728,7 @@ export function issueThreadInteractionService(
           await tx
             .delete(toolOauthStates)
             .where(inArray(toolOauthStates.interactionId, supersededIds));
-          await tx
+          const superseded = await tx
             .update(issueThreadInteractions)
             .set({
               status: "expired",
@@ -2735,10 +2740,15 @@ export function issueThreadInteractionService(
               resolvedAt: now(),
               updatedAt: now(),
             })
-            .where(inArray(issueThreadInteractions.id, supersededIds));
+            .where(inArray(issueThreadInteractions.id, supersededIds))
+            .returning();
+          for (const previous of superseded) {
+            await enqueueTerminalIssueInteractionChatPublications(tx as unknown as Db, hydrateInteraction(previous));
+          }
         }
         await touchIssue(tx, issue.id);
         inserted = true;
+        await enqueueIssueInteractionChatPublications(tx as unknown as Db, hydrateInteraction(row));
         await notifyDeliveryWork(tx, DELIVERY_QUEUES.connection);
         return row;
       });
@@ -2790,6 +2800,7 @@ export function issueThreadInteractionService(
         ? NonNullable<T>
         : never,
       actor: InteractionActor,
+      mutationOptions: InteractionResolutionMutationOptions = {},
     ) => {
       const result = connectionIntentResultSchema.parse(resultInput);
       const current = await getPendingInteractionForResolution({
@@ -2812,6 +2823,7 @@ export function issueThreadInteractionService(
             : "expired";
       const resolvedAt = now();
       const updated = await db.transaction(async (tx) => {
+        await mutationOptions.beforeResolveInTransaction?.(tx);
         const [row] = await tx
         .update(issueThreadInteractions)
         .set({
@@ -2835,6 +2847,8 @@ export function issueThreadInteractionService(
           await notifyDeliveryWork(tx, DELIVERY_QUEUES.connection);
           await tx.insert(connectionIntentDeliveries).values({ interactionId, companyId: issue.companyId }).onConflictDoNothing();
         }
+        await mutationOptions.afterResolveInTransaction?.(tx, hydrateInteraction(row));
+        await enqueueTerminalIssueInteractionChatPublications(tx as unknown as Db, hydrateInteraction(row));
         return row;
       });
       if (!updated) throw interactionAlreadyResolvedError();
@@ -3867,6 +3881,7 @@ export function issueThreadInteractionService(
             interactionId,
             data,
             actor,
+            mutationOptions,
           );
         case "request_confirmation": {
           await assertIssueWorkspaceFinalizedForAccept({
@@ -3924,6 +3939,7 @@ export function issueThreadInteractionService(
       interactionId: string,
       input: AcceptIssueThreadInteraction,
       actor: InteractionActor,
+      mutationOptions: InteractionResolutionMutationOptions = {},
     ) => {
       assertIssueOpenForInteractionResolution(issue);
       const current = await db
@@ -4007,6 +4023,7 @@ export function issueThreadInteractionService(
       const createdWakeTargets: IssueWakeTarget[] = [];
 
       await db.transaction(async (tx) => {
+        await mutationOptions.beforeResolveInTransaction?.(tx);
         await assertInteractionRunWriteAllowed(tx as unknown as Db, issue, actor);
         const resolvedAt = new Date();
         const [claimed] = await tx
@@ -4097,6 +4114,8 @@ export function issueThreadInteractionService(
           .returning();
 
         await touchIssue(tx, issue.id);
+        await mutationOptions.afterResolveInTransaction?.(tx, hydrateInteraction(updated));
+        await enqueueTerminalIssueInteractionChatPublications(tx as unknown as Db, hydrateInteraction(updated));
         current.status = updated.status;
         current.result = updated.result;
         current.resolvedByAgentId = updated.resolvedByAgentId;
@@ -4136,6 +4155,7 @@ export function issueThreadInteractionService(
             data,
             actor,
             current,
+            mutationOptions,
           );
         case "request_confirmation":
         case "request_checkbox_confirmation":
@@ -4158,6 +4178,7 @@ export function issueThreadInteractionService(
       interactionId: string,
       input: SubmitIssueThreadInteractionVerdicts,
       actor: InteractionActor,
+      mutationOptions: InteractionResolutionMutationOptions = {},
     ): Promise<{
       interaction: IssueThreadInteraction;
       newlyResolvedItemIds: string[];
@@ -4165,6 +4186,7 @@ export function issueThreadInteractionService(
       assertIssueOpenForInteractionResolution(issue);
       const data = submitIssueThreadInteractionVerdictsSchema.parse(input);
       const submission = await db.transaction(async (tx) => {
+        await mutationOptions.beforeResolveInTransaction?.(tx);
         await assertInteractionRunWriteAllowed(tx as unknown as Db, issue, actor);
         const current = await tx
           .select()
@@ -4268,6 +4290,8 @@ export function issueThreadInteractionService(
         }
 
         await touchIssue(tx, issue.id);
+        await mutationOptions.afterResolveInTransaction?.(tx, hydrateInteraction(updated));
+        if (complete) await enqueueTerminalIssueInteractionChatPublications(tx as unknown as Db, hydrateInteraction(updated));
         return {
           interaction: hydrateInteraction(updated),
           newlyResolvedItemIds,
@@ -4288,6 +4312,7 @@ export function issueThreadInteractionService(
       input: RejectIssueThreadInteraction,
       actor: InteractionActor,
       current: IssueThreadInteractionRow,
+      mutationOptions: InteractionResolutionMutationOptions = {},
     ) => {
       assertIssueOpenForInteractionResolution(issue);
       if (
@@ -4304,8 +4329,9 @@ export function issueThreadInteractionService(
       }
 
       const [updated] = await db.transaction(async (tx) => {
+        await mutationOptions.beforeResolveInTransaction?.(tx);
         await assertInteractionRunWriteAllowed(tx as unknown as Db, issue, actor);
-        return tx.update(issueThreadInteractions)
+        const rows = await tx.update(issueThreadInteractions)
         .set({
           status: "rejected",
           result: {
@@ -4325,6 +4351,9 @@ export function issueThreadInteractionService(
           ),
         )
         .returning();
+        if (rows[0]) await mutationOptions.afterResolveInTransaction?.(tx, hydrateInteraction(rows[0]));
+        if (rows[0]) await enqueueTerminalIssueInteractionChatPublications(tx as unknown as Db, hydrateInteraction(rows[0]));
+        return rows;
       });
 
       if (!updated) {
@@ -4597,7 +4626,8 @@ export function issueThreadInteractionService(
         }
 
         for (const row of itemVerdictRows) {
-          const [updated] = await db
+          const updated = await db.transaction(async tx => {
+            const [retired] = await tx
             .update(issueThreadInteractions)
             .set({
               status: "expired",
@@ -4614,6 +4644,9 @@ export function issueThreadInteractionService(
               ),
             )
             .returning();
+            if (retired) await enqueueTerminalIssueInteractionChatPublications(tx as unknown as Db, hydrateInteraction(retired));
+            return retired;
+          });
           if (updated) expired.push(hydrateInteraction(updated));
         }
 
@@ -4746,12 +4779,49 @@ export function issueThreadInteractionService(
     },
 
     expireConnectionIntentsForOwnershipChange: async (issue: { id: string; companyId: string }) => {
-      const expired = await db.update(issueThreadInteractions).set({
-        status: "expired", result: { version: 1, outcome: "expired", reason: "The task assignment changed" },
-        resolvedAt: now(), updatedAt: now(),
-      }).where(and(eq(issueThreadInteractions.companyId, issue.companyId), eq(issueThreadInteractions.issueId, issue.id),
-        eq(issueThreadInteractions.kind, "connection_intent"), eq(issueThreadInteractions.status, "pending"))).returning();
-      if (expired.length) await db.delete(toolOauthStates).where(inArray(toolOauthStates.interactionId, expired.map((row) => row.id)));
+      // A pending connection_intent asks for either an AI account or a tool
+      // account, and the two leave different things broken. One bulk write gave
+      // every row the AI wording, so an expired Notion request told the reader
+      // the AI account was missing. Read the pending rows first and name the
+      // subject each row actually asked for.
+      const pending = await db
+        .select({ id: issueThreadInteractions.id, payload: issueThreadInteractions.payload })
+        .from(issueThreadInteractions)
+        .where(and(
+          eq(issueThreadInteractions.companyId, issue.companyId),
+          eq(issueThreadInteractions.issueId, issue.id),
+          eq(issueThreadInteractions.kind, "connection_intent"),
+          eq(issueThreadInteractions.status, "pending"),
+        ));
+      const expired: typeof issueThreadInteractions.$inferSelect[] = [];
+      for (const row of pending) {
+        const payload = row.payload as { purpose?: string; serviceName?: string } | null;
+        const subject = payload?.purpose === "ai"
+          ? "the AI account"
+          : `the ${payload?.serviceName?.trim() || "requested"} connection`;
+        const [updated] = await db
+          .update(issueThreadInteractions)
+          .set({
+            status: "expired",
+            result: {
+              version: 1,
+              outcome: "expired",
+              reason: `The task was reassigned before the connection request was answered, so ${subject} is still not connected. Reconnect it or choose an available connection.`,
+            },
+            resolvedAt: now(),
+            updatedAt: now(),
+          })
+          .where(and(
+            eq(issueThreadInteractions.id, row.id),
+            eq(issueThreadInteractions.status, "pending"),
+          ))
+          .returning();
+        if (updated) {
+          await enqueueTerminalIssueInteractionChatPublications(db, hydrateInteraction(updated));
+          expired.push(updated);
+        }
+      }
+      if (expired.length) await db.delete(toolOauthStates).where(inArray(toolOauthStates.interactionId, expired.map((item) => item.id)));
       return expired;
     },
     expirePendingInteractionsForTerminalIssue: async (
@@ -4769,7 +4839,7 @@ export function issueThreadInteractionService(
             eq(issueThreadInteractions.status, "pending"),
             // Completed work retains ordinary historical questions for later
             // human answers. Cancellation and governed requests still expire.
-            issue.status === "done" ? activeIssueInteractionCondition() : undefined,
+            issue.status === "done" ? sql`not ${historicalQuestionCondition()}` : undefined,
           ),
         );
       if (rows.length === 0) return [];
@@ -5064,6 +5134,49 @@ export function issueThreadInteractionService(
       const answered = hydrateInteraction(updated);
       await emitInteractionResolvedTelemetry(db, answered);
       return answered;
+    },
+
+    dismissInteraction: async (
+      issue: { id: string; companyId: string },
+      interactionId: string,
+      actor: InteractionActor,
+    ) => {
+      if (!actor.userId || actor.agentId || actor.runId || actor.systemId) {
+        throw forbidden("Only a human can dismiss a request");
+      }
+      return db.transaction(async (tx) => {
+        // Use the same lock order as resolution and completion. Dismissal only
+        // changes attention state; it never resolves or executes the request.
+        const [task] = await tx.select({
+          id: issues.id,
+          companyId: issues.companyId,
+          status: issues.status,
+          executionRunId: issues.executionRunId,
+          workMode: issues.workMode,
+          assigneeAgentId: issues.assigneeAgentId,
+          assigneeUserId: issues.assigneeUserId,
+          reviewPolicy: issues.reviewPolicy,
+          createdByAgentId: issues.createdByAgentId,
+          createdByUserId: issues.createdByUserId,
+        }).from(issues)
+          .where(and(eq(issues.id, issue.id), eq(issues.companyId, issue.companyId))).for("update");
+        if (!task) throw interactionNotFoundError();
+        const [current] = await tx.select().from(issueThreadInteractions).where(and(
+          eq(issueThreadInteractions.id, interactionId), eq(issueThreadInteractions.companyId, issue.companyId),
+          eq(issueThreadInteractions.issueId, issue.id),
+        )).for("update");
+        if (!current) throw interactionNotFoundError();
+        assertInteractionResolutionAllowed(current, actor);
+        if (current.status !== "pending" || current.dismissedAt) return hydrateInteraction(current);
+        if (task.status === "in_review" && isRequestConfirmationLikeKind(current.kind)) {
+          await assertRequestConfirmationResolutionAllowedUnderLock(tx as unknown as Db, task, current, actor);
+        }
+        const now = new Date();
+        const [updated] = await tx.update(issueThreadInteractions)
+          .set({ dismissedAt: now, dismissedByUserId: actor.userId, updatedAt: now })
+          .where(eq(issueThreadInteractions.id, interactionId)).returning();
+        return hydrateInteraction(updated!);
+      });
     },
 
     skipInteraction: async (

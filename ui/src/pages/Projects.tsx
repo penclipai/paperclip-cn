@@ -22,11 +22,12 @@ import {
   useResourceMembershipMutation,
   useResourceMemberships,
 } from "../hooks/useResourceMemberships";
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ProjectsToolbar } from "@/components/ProjectsToolbar";
 import { ArrowUpDown, Check, Hexagon, Plus } from "lucide-react";
 import { Lock } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type ProjectSortField = "name" | "updated" | "created" | "targetDate";
 type ProjectSortDir = "asc" | "desc";
@@ -37,7 +38,6 @@ const PROJECT_SORT_OPTIONS: Array<{ field: ProjectSortField; labelKey: string }>
   { field: "created", labelKey: "Created" },
   { field: "targetDate", labelKey: "newProject.targetDatePlaceholder" },
 ];
-
 function compareProjectNames(left: Project, right: Project) {
   const nameDiff = left.name.localeCompare(right.name, undefined, { sensitivity: "base" });
   return nameDiff !== 0 ? nameDiff : left.id.localeCompare(right.id);
@@ -84,6 +84,7 @@ export function Projects() {
   const { selectedCompanyId } = useCompany();
   const { openNewProject } = useDialogActions();
   const { setBreadcrumbs } = useBreadcrumbs();
+  const [query, setQuery] = useState("");
   const [sortField, setSortField] = useState<ProjectSortField>("name");
   const [sortDir, setSortDir] = useState<ProjectSortDir>("asc");
 
@@ -103,8 +104,15 @@ export function Projects() {
     [allProjects],
   );
   const sortedProjects = useMemo(
-    () => sortProjects(projects, sortField, sortDir),
-    [projects, sortDir, sortField],
+    () => {
+      const words = query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+      const matching = projects.filter(project => {
+        const text = `${project.name} ${project.description ?? ""}`.toLocaleLowerCase();
+        return words.every(word => text.includes(word));
+      });
+      return sortProjects(matching, sortField, sortDir);
+    },
+    [projects, query, sortDir, sortField],
   );
   const groupedProjects = useMemo(() => {
     const groups = {
@@ -188,7 +196,9 @@ export function Projects() {
         />
       )}
 
-      {projects.length > 0 && (
+      {projects.length > 0 && sortedProjects.length === 0 && <p className="text-sm text-muted-foreground">No projects match your search.</p>}
+
+      {sortedProjects.length > 0 && (
         <div className="space-y-6">
           {([
             [translateInstant("My Projects"), groupedProjects.mine],

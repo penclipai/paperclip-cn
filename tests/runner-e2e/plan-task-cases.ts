@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX } from "../../server/src/services/bundled-paperclip-skills.js";
 import type { RunnerProfileFixture, RunnerTaskFixture } from "./types.js";
 
 export const PLAN_VARIANTS = ["current", "short", "disabled"] as const;
@@ -10,14 +11,16 @@ export const PLAN_BUDGET_CENTS = 500;
 export const PLAN_MAX_RUNS = 8;
 export const PLAN_BASE_SHA = "72ff3a9f27e581a27acb49771e8658bbb0bbaa47";
 export const PLAN_SKILLS = [
-  { key: "paperclipai/paperclip/paperclip-converting-plans-to-tasks", current: "tests/runner-e2e/fixtures/plan-task-guidance/current-conversion.md", short: "skills/paperclip-converting-plans-to-tasks/SKILL.md" },
+  { key: `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}paperclip-converting-plans-to-tasks`, current: "tests/runner-e2e/fixtures/plan-task-guidance/current-conversion.md", short: "skills/paperclip-converting-plans-to-tasks/SKILL.md" },
   { key: "paperclipai/bundled/paperclip-operations/task-planning", current: "tests/runner-e2e/fixtures/plan-task-guidance/current-planning.md", short: "packages/skills-catalog/catalog/bundled/paperclip-operations/task-planning/SKILL.md" },
 ] as const;
 export const planHash = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
 export const planDefinitionDigest = planHash([
   "plan-task-cases.ts", "plan-task-flow.ts", "plan-task-scoring.ts", "plan-task-skills.ts", "plan-task-ui.ts", "plan-task-exposure.ts",
   "fixtures/plan-task-guidance/current-conversion.md", "fixtures/plan-task-guidance/current-planning.md",
-].map(file => readFileSync(new URL(file, import.meta.url), "utf8")).join("\0"));
+].map(file => readFileSync(new URL(file, import.meta.url), "utf8"))
+  // The shared prefix can change without changing the source files above.
+  .concat(JSON.stringify(PLAN_SKILLS)).join("\0"));
 
 export function parsePlanCase(id: string): { variant: PlanVariant; caseId: PlanCase } {
   const [variant, caseId, extra] = id.split("-");

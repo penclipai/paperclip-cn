@@ -14,6 +14,11 @@ const api = async (route, method = "GET", body) => {
 };
 const run = await api(`/heartbeat-runs/${env.PAPERCLIP_RUN_ID}`);
 assert.equal(run.contextSnapshot.paperclipEnvironment.driver, "local");
+const services = run.contextSnapshot.paperclipRuntimeServices;
+assert.equal(services.length, 1);
+assert.equal(services[0].serviceName, "fixture-web");
+assert.equal(run.contextSnapshot.paperclipRuntimePrimaryUrl, services[0].url);
+assert.equal(await fetch(services[0].url).then(response => response.text()), "workspace runtime service ready");
 const issueId = run.contextSnapshot.issueId;
 const issue = await api(`/issues/${issueId}`);
 assert.equal(run.contextSnapshot.paperclipIssue.id, issue.id);

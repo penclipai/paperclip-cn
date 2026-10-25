@@ -1194,6 +1194,26 @@
     "zh-CN": "改用订阅",
     "reviewedEnglishHash": "03050a116e6e9bfad3361350b72b40d9387173e3af52dcedca7f912667c8e52a"
   },
+  "connectionUi.providerSetup.connect": {
+    "en": "Connect",
+    "zh-CN": "连接",
+    "reviewedEnglishHash": "1a2303ede07493acc7caaa7c737f3c52bcc9cf04372be19ed1b0af6b9f2c791e"
+  },
+  "connectionUi.providerSetup.connecting": {
+    "en": "Connecting…",
+    "zh-CN": "正在连接…",
+    "reviewedEnglishHash": "72021eb70e91b4d58254586a8519393a281eb830c165bf1ec42a5057d425bcaf"
+  },
+  "connectionUi.providerSetup.reconnect": {
+    "en": "Reconnect",
+    "zh-CN": "重新连接",
+    "reviewedEnglishHash": "bf8a9eab9e7e141bfb81f0ca9244a5f68f476ed0b57f03538410417298169d18"
+  },
+  "connectionUi.providerSetup.saving": {
+    "en": "Saving…",
+    "zh-CN": "正在保存…",
+    "reviewedEnglishHash": "23e39291d6135814ed7c936e278974544b0df5fbf0eb0427b6700979b7472a93"
+  },
   "connectionUi.waitingForCode": {
     "en": "Waiting for code",
     "zh-CN": "正在等待验证码",

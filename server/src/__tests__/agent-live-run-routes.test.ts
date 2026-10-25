@@ -9,10 +9,14 @@ const mockAgentService = vi.hoisted(() => ({
 }));
 
 const mockHeartbeatService = vi.hoisted(() => ({
+  list: vi.fn(async () => []),
+  buildRunOutputSilence: vi.fn(),
+
   decorateActiveRunStatus: vi.fn(),
   getRunIssueSummary: vi.fn(),
   getActiveRunIssueSummaryForAgent: vi.fn(),
   buildRunOutputSilence: vi.fn(),
+  getRunReadAccess: vi.fn(),
   getRunLogAccess: vi.fn(),
   readLog: vi.fn(),
   wakeup: vi.fn(),
@@ -291,7 +295,17 @@ async function requestApp(
 }
 
 describe("agent live run routes", () => {
-  beforeAll(preloadRouteModules, 45_000);
+  it.each([
+    ["", 200], ["?limit=10&agentId=agent-1&summary=true", 10],
+    ["?limit=99999", 1000], ["?limit=invalid", 200], ["?limit=-10", 1],
+  ])("bounds company history reads for %s", async (query, limit) => {
+    const app = await createApp({});
+    const response = await requestApp(app, baseUrl => request(baseUrl).get(`/api/companies/company-1/heartbeat-runs${query}`));
+    expect(response.status).toBe(200);
+    expect(mockHeartbeatService.list).toHaveBeenCalledWith("company-1", query.includes("agentId") ? "agent-1" : undefined,
+      limit, { summary: query.includes("summary=true") });
+    expect(mockRunSecretRedactionRegistry.redactForRuns).toHaveBeenCalled();
+  });
 
   beforeEach(() => {
     vi.resetModules();
@@ -367,6 +381,12 @@ describe("agent live run routes", () => {
       null,
     );
     mockHeartbeatService.buildRunOutputSilence.mockResolvedValue(null);
+    mockHeartbeatService.getRunReadAccess.mockResolvedValue({
+      id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      companyId: "company-1",
+      scopeKind: "company",
+      issueId: null,
+    });
     mockHeartbeatService.getRunLogAccess.mockResolvedValue({
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       companyId: "company-1",
@@ -446,6 +466,7 @@ describe("agent live run routes", () => {
           expect(response.body).toEqual({ error: "Invalid heartbeat run ID" });
         }
         expect(mockHeartbeatService.getRun).not.toHaveBeenCalled();
+        expect(mockHeartbeatService.getRunReadAccess).not.toHaveBeenCalled();
         expect(mockHeartbeatService.getRunLogAccess).not.toHaveBeenCalled();
         expect(mockHeartbeatService.readLog).not.toHaveBeenCalled();
         expect(mockProviderTraceStore.inspect).not.toHaveBeenCalled();
@@ -462,9 +483,11 @@ describe("agent live run routes", () => {
       expect(mockHeartbeatService.getRunLogAccess).toHaveBeenCalledWith(runId);
     });
 
-    it.each(["get", "log"])("keeps missing and cross-company %s lookups indistinguishable", async (kind) => {
-      const lookup = kind === "log" ? mockHeartbeatService.getRunLogAccess : mockHeartbeatService.getRun;
-      const suffix = kind === "log" ? "/log" : "";
+    it.each(["get", "log", "events"])("keeps missing and cross-company %s lookups indistinguishable", async (kind) => {
+      const lookup = kind === "events"
+        ? mockHeartbeatService.getRunReadAccess
+        : kind === "log" ? mockHeartbeatService.getRunLogAccess : mockHeartbeatService.getRun;
+      const suffix = kind === "get" ? "" : `/${kind}`;
       const app = await createApp({}, {
         type: "board", userId: "test-user", source: "session", companyIds: ["company-1"],
       });

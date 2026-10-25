@@ -65,7 +65,7 @@ const providers = [
     advanced: true,
   },
 ] as const;
-type ProviderChoice = (typeof providers)[number]["id"];
+type ProviderChoice = (typeof providers)[number]["id"] | "github";
 
 export function AiProviderSetup({
   companyId,
@@ -75,6 +75,7 @@ export function AiProviderSetup({
   initialProtocol,
   providerLabel,
   advancedOnly = false,
+  submitLabel,
   reconnect,
   onCancel,
   onComplete,
@@ -86,6 +87,7 @@ export function AiProviderSetup({
   initialProtocol?: AiProviderRouting["protocol"];
   providerLabel?: string;
   advancedOnly?: boolean;
+  submitLabel?: string;
   reconnect?: AiManagedConnectionSummary;
   onCancel: () => void;
   onComplete: (
@@ -134,7 +136,7 @@ export function AiProviderSetup({
     queryKey: ["agents", companyId, "provider-access"],
     queryFn: () => agentsApi.list(companyId),
   });
-  const label = providerLabel ?? providers.find((p) => p.id === provider)?.name ?? "provider";
+  const label = providerLabel ?? providers.find((p) => p.id === provider)?.name ?? (provider === "github" ? "GitHub Copilot" : "provider");
   const advanced = reconnect ? Boolean(reconnect.routing) : ["openrouter", "bedrock", "gateway", "local"].includes(provider ?? "");
   const nativeProvider: AiProvider =
     provider === "bedrock"
@@ -441,10 +443,10 @@ export function AiProviderSetup({
               }
             >
               {save.isPending
-                ? "Connecting…"
+                ? submitLabel ? translateInstant("connectionUi.providerSetup.saving") : translateInstant("connectionUi.providerSetup.connecting")
                 : reconnect
-                  ? "Reconnect"
-                  : "Connect"}
+                  ? translateInstant("connectionUi.providerSetup.reconnect")
+                  : submitLabel ?? translateInstant("connectionUi.providerSetup.connect")}
             </Button>
           </div>
         </form>

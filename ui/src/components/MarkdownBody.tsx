@@ -1,6 +1,7 @@
+import { MarkdownWordStreaming, rehypeStreamingWords } from "./MarkdownWordStreaming";
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
-import { isValidElement, memo, useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
+import { isValidElement, memo, useContext, useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Copy, ExternalLink, WrapText } from "lucide-react";
 import Markdown, { defaultUrlTransform, type Components, type Options } from "react-markdown";
@@ -121,6 +122,8 @@ interface MarkdownBodyProps {
   externalReferences?: MarkdownExternalReferenceMap;
   /** Optional resolver for relative image paths (e.g. within export packages) */
   resolveImageSrc?: (src: string) => string | null;
+  /** Resolve file links to app routes; null leaves the label without a link. */
+  resolveLinkHref?: (href: string) => string | null;
   /** Called when a user clicks an inline image */
   onImageClick?: (src: string) => void;
   /** Keep untrusted decision media inert: image references and diagram source only. */
@@ -790,12 +793,14 @@ function MarkdownBodyImpl({
   resolveWikiLinkHref,
   externalReferences,
   resolveImageSrc,
+  resolveLinkHref,
   onImageClick,
   mediaMode = "render",
   resolveWorkspaceFileRef,
 }: MarkdownBodyProps) {
   useTranslation();
   const { theme } = useTheme();
+  const streamWords = useContext(MarkdownWordStreaming);
   // Read company prefixes non-throwingly: MarkdownBody renders in surfaces that
   // may lack a CompanyProvider. A null context (or no companies yet) leaves
   // knownPrefixes undefined, which keeps issue auto-linking permissive.
@@ -972,6 +977,14 @@ function MarkdownBodyImpl({
         );
       }
 
+      const resolvedHref = href && resolveLinkHref ? resolveLinkHref(href) : href;
+      if (resolveLinkHref && resolvedHref !== href) {
+        return resolvedHref ? (
+          <Link to={resolvedHref} style={mergeWrapStyle(linkStyle as React.CSSProperties | undefined)}>
+            {linkChildren}
+          </Link>
+        ) : <>{linkChildren}</>;
+      }
       const isGitHubLink = isGitHubUrl(href);
       const isExternal = isExternalHttpUrl(href);
       const leadingIcon = isGitHubLink ? (
@@ -1015,7 +1028,7 @@ function MarkdownBodyImpl({
       };
     }
     return map;
-  }, [theme, linkIssueReferences, linkCaseReferences, externalReferenceLookup, resolveImageSrc, onImageClick, mediaMode]);
+  }, [theme, linkIssueReferences, linkCaseReferences, externalReferenceLookup, resolveImageSrc, resolveLinkHref, onImageClick, mediaMode]);
 
   return (
     <div
@@ -1028,6 +1041,7 @@ function MarkdownBodyImpl({
     >
       <Markdown
         remarkPlugins={remarkPlugins}
+        rehypePlugins={streamWords ? [rehypeStreamingWords] : undefined}
         components={components}
         urlTransform={safeMarkdownUrlTransform}
       >

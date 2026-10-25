@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { boundRunIssueIdSql } from "./run-task-binding.js";
 import { and, asc, desc, eq, gt, inArray, isNull, ne, sql } from "drizzle-orm";
 import type { Db } from "@penclipai/db";
 import {
@@ -48,6 +49,7 @@ import {
   profileIdsInBindingOrder,
 } from "./tool-profile-binding-precedence.js";
 import { recordToolRuntimeAuditWriteFailure } from "./tool-runtime-metrics.js";
+import { canonicalToolArguments, readSignedToolArgumentsPayload, toolRequestIdentityHash } from "./tool-content-guards.js";
 
 type ToolAccessContext = {
   companyId: string;
@@ -187,6 +189,11 @@ function sha256(value: unknown): string {
   return createHash("sha256").update(stableStringify(value)).digest("hex");
 }
 
+type ConsumedRateAdmission = { policyId: string; versionHash: string };
+function ratePolicyVersionHash(policy: typeof toolPolicies.$inferSelect): string {
+  return sha256({ ...policy, createdAt: policy.createdAt.toISOString(), updatedAt: policy.updatedAt.toISOString() });
+}
+
 function isoDateOrNull(value: unknown): string | null {
   if (!value) return null;
   if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value.toISOString();
@@ -287,8 +294,9 @@ function trustRuleIsActive(policy: typeof toolPolicies.$inferSelect, now = new D
   return true;
 }
 
-function sideEffectIdempotencyKey(ctx: ToolAccessContext, argumentsHash: string): string {
-  return `side_effect:${sha256({
+function sideEffectIdempotencyKey(ctx: ToolAccessContext, argumentsHash: string, version: 1 | 2 = 2): string {
+  return `side_effect:${version === 2 ? "v2:" : ""}${sha256({
+    ...(version === 2 ? { actorType: ctx.actorType, actorId: ctx.actorId, agentId: ctx.agentId } : {}),
     companyId: ctx.companyId,
     runId: ctx.heartbeatRunId,
     issueId: ctx.issueId,
@@ -307,7 +315,7 @@ function auditOutcome(accessDecision: ToolAccessDecision): "pending" | "success"
   return "denied";
 }
 
-function summarizeAndRedact(value: unknown): RedactionResult {
+function summarizeAndRedact(value: unknown, normalizeSensitiveKeys = true): RedactionResult {
   const redactedFields: string[] = [];
   const visit = (current: unknown, path: string): unknown => {
     if (typeof current === "string") {
@@ -322,7 +330,7 @@ function summarizeAndRedact(value: unknown): RedactionResult {
     const out: Record<string, unknown> = {};
     for (const [key, nested] of Object.entries(current)) {
       const nestedPath = path ? `${path}.${key}` : key;
-      if (SENSITIVE_KEY_RE.test(key)) {
+      if (SENSITIVE_KEY_RE.test(normalizeSensitiveKeys ? key.replace(/([a-z0-9])([A-Z])/g, "$1_$2") : key)) {
         redactedFields.push(nestedPath);
         out[key] = "[REDACTED]";
       } else {
@@ -345,6 +353,21 @@ function summarizeAndRedact(value: unknown): RedactionResult {
       redactedFields,
     },
   };
+}
+
+function completeLegacyArguments(invocation: typeof toolInvocations.$inferSelect): { arguments: unknown } | null {
+  const summary = invocation.argumentsSummary;
+  if (!summary || summary.redactedFields?.length) return null;
+  let parsed: unknown;
+  try { parsed = JSON.parse(summary.summary); } catch { return null; }
+  // Historical previews did not record array truncation separately. At the
+  // preview cap, even valid JSON cannot prove that no entries were omitted.
+  const mayBeTruncated = (value: unknown): boolean => typeof value === "string"
+    ? value.includes("...[truncated]")
+    : Array.isArray(value) ? value.length >= 50 || value.some(mayBeTruncated)
+      : isRecord(value) && Object.values(value).some(mayBeTruncated);
+  return !mayBeTruncated(parsed) && sha256(parsed) === invocation.argumentsHash
+    ? { arguments: parsed } : null;
 }
 
 function decision(
@@ -591,14 +614,14 @@ function evaluatePolicyConditions(
 }
 
 function profileEntryMatches(entry: typeof toolProfileEntries.$inferSelect, ctx: ToolAccessContext): boolean {
+  const selected = entry.selectorType === "application" ? entry.applicationId === ctx.applicationId
+    : entry.selectorType === "connection" ? entry.connectionId === ctx.connectionId
+    : entry.selectorType === "catalog_entry" ? entry.catalogEntryId === ctx.catalogEntryId
+    : entry.selectorType === "tool_name" ? entry.toolName === ctx.toolName
+    : entry.selectorType === "risk_level" ? entry.riskLevel === ctx.riskLevel : false;
+  if (!selected) return false;
   const conditions = isRecord(entry.conditions) ? entry.conditions as ToolPolicyConditions : null;
-  if (!evaluatePolicyConditions(conditions, ctx).matched) return false;
-  if (entry.selectorType === "application") return entry.applicationId === ctx.applicationId;
-  if (entry.selectorType === "connection") return entry.connectionId === ctx.connectionId;
-  if (entry.selectorType === "catalog_entry") return entry.catalogEntryId === ctx.catalogEntryId;
-  if (entry.selectorType === "tool_name") return entry.toolName === ctx.toolName;
-  if (entry.selectorType === "risk_level") return entry.riskLevel === ctx.riskLevel;
-  return false;
+  return evaluatePolicyConditions(conditions, ctx).matched;
 }
 
 function targetMatches(binding: typeof toolProfileBindings.$inferSelect, ctx: ToolAccessContext): boolean {
@@ -760,7 +783,7 @@ function scopeAllowsTool(scope: Record<string, unknown> | null, ctx: ToolAccessC
   return selectorMatches(selectors, ctx);
 }
 
-export function toolAccessPolicyService(db: Db) {
+export function toolAccessPolicyService(db: Db, options: { toolActionSigningSecret?: string } = {}) {
   async function listPolicies(companyId: string) {
     return db
       .select()
@@ -777,13 +800,14 @@ export function toolAccessPolicyService(db: Db) {
 
     return db.transaction(async (tx) => {
       const rows = await tx
-        .update(toolPolicies)
-        .set({ updatedAt: sql`${toolPolicies.updatedAt}` })
+        .select()
+        .from(toolPolicies)
         .where(and(
           eq(toolPolicies.companyId, companyId),
           ne(toolPolicies.policyType, "trust_rule"),
         ))
-        .returning();
+        .orderBy(toolPolicies.id)
+        .for("no key update");
       const byId = new Map(rows.map((row) => [row.id, row]));
       const missingIds = uniquePolicyIds.filter((id) => !byId.has(id));
       if (missingIds.length > 0) {
@@ -797,12 +821,11 @@ export function toolAccessPolicyService(db: Db) {
       }
 
       const now = new Date();
-      for (const [index, policyId] of uniquePolicyIds.entries()) {
-        await tx
-          .update(toolPolicies)
-          .set({ priority: (index + 1) * 100, updatedAt: now })
-          .where(eq(toolPolicies.id, policyId));
-      }
+      await tx.execute(sql`UPDATE tool_policies
+        SET priority = (requested.ordinality * 100)::integer, updated_at = ${now.toISOString()}
+        FROM jsonb_array_elements_text(${JSON.stringify(uniquePolicyIds)}::jsonb)
+          WITH ORDINALITY AS requested(id, ordinality)
+        WHERE tool_policies.company_id = ${companyId} AND tool_policies.id = requested.id::uuid`);
       return tx
         .select()
         .from(toolPolicies)
@@ -976,7 +999,7 @@ export function toolAccessPolicyService(db: Db) {
           .select({
             companyId: heartbeatRuns.companyId,
             agentId: heartbeatRuns.agentId,
-            issueId: runContextSnapshotString("issueId"),
+            issueId: boundRunIssueIdSql(),
             projectId: runContextSnapshotString("projectId"),
             routineId: runContextSnapshotString("routineId"),
           })
@@ -1148,7 +1171,9 @@ export function toolAccessPolicyService(db: Db) {
         upstreamToolName,
         toolName: input.request.toolName,
         riskLevel,
-        argumentsHash: redaction.summary.sha256 ?? sha256(input.request.arguments ?? {}),
+        argumentsHash: input.request.sideEffecting
+          ? toolRequestIdentityHash(input.request.arguments, options.toolActionSigningSecret)
+          : redaction.summary.sha256 ?? sha256(input.request.arguments ?? {}),
         arguments: input.request.arguments ?? {},
       },
     };
@@ -1335,6 +1360,32 @@ export function toolAccessPolicyService(db: Db) {
     });
   }
 
+  async function admittedRateLimitAdmissions(ctx: ToolAccessContext, invocationId: string): Promise<ConsumedRateAdmission[]> {
+    const [invocation] = await db.select({
+      actorType: toolInvocations.actorType, actorId: toolInvocations.actorId, agentId: toolInvocations.agentId,
+      runId: toolInvocations.runId, issueId: toolInvocations.issueId, gatewayId: toolInvocations.gatewayId,
+      applicationId: toolInvocations.applicationId, connectionId: toolInvocations.connectionId,
+      catalogEntryId: toolInvocations.catalogEntryId, toolName: toolInvocations.toolName,
+      providerType: toolInvocations.providerType, applicationKey: toolInvocations.applicationKey,
+      upstreamToolName: toolInvocations.upstreamToolName, argumentsHash: toolInvocations.argumentsHash,
+      status: toolInvocations.status, policyDecision: toolInvocations.policyDecision, approvalState: toolInvocations.approvalState,
+      policyExplanation: toolInvocations.policyExplanation,
+    }).from(toolInvocations).where(and(eq(toolInvocations.companyId, ctx.companyId), eq(toolInvocations.id, invocationId)));
+    const authorized = invocation && invocation.status === "executing"
+      && (invocation.policyDecision === "allow" || (invocation.policyDecision === "require_approval" && invocation.approvalState === "approved"))
+      && invocation.actorType === ctx.actorType && invocation.actorId === ctx.actorId && invocation.agentId === ctx.agentId
+      && invocation.runId === ctx.heartbeatRunId && invocation.issueId === ctx.issueId && invocation.gatewayId === ctx.gatewayId
+      && invocation.applicationId === ctx.applicationId && invocation.connectionId === ctx.connectionId
+      && invocation.catalogEntryId === ctx.catalogEntryId && invocation.toolName === ctx.toolName
+      && invocation.providerType === ctx.providerType && invocation.applicationKey === ctx.applicationKey
+      && invocation.upstreamToolName === ctx.upstreamToolName
+      && invocation.argumentsHash === ctx.argumentsHash;
+    const stored = authorized ? invocation.policyExplanation?.consumedRateAdmissions : null;
+    return Array.isArray(stored) ? stored.filter((item): item is ConsumedRateAdmission => isRecord(item)
+      && typeof item.policyId === "string" && CANONICAL_UUID_RE.test(item.policyId)
+      && typeof item.versionHash === "string" && /^[a-f0-9]{64}$/.test(item.versionHash)) : [];
+  }
+
   /**
    * Decides one tool access request. Pass the same `cache` to every call of a
    * batch that shares one actor and run context (for example, one tools/list
@@ -1342,14 +1393,32 @@ export function toolAccessPolicyService(db: Db) {
    */
   async function decide(
     input: ToolAccessDecisionInput,
-    options: { cache?: ToolAccessDecisionCache } = {},
+    options: { cache?: ToolAccessDecisionCache; admittedInvocationId?: string } = {},
+  ): Promise<ToolAccessDecision> {
+    const consumedRateAdmissions: ConsumedRateAdmission[] = [];
+    const result = await decideInternal(input, options, consumedRateAdmissions);
+    return consumedRateAdmissions.length ? { ...result,
+      policyExplanation: { ...result.policyExplanation, consumedRateAdmissions },
+    } : result;
+  }
+
+  async function decideInternal(
+    input: ToolAccessDecisionInput,
+    options: { cache?: ToolAccessDecisionCache; admittedInvocationId?: string },
+    consumedRateAdmissions: ConsumedRateAdmission[],
   ): Promise<ToolAccessDecision> {
     // A decision that consumes a rate limit can also record a trust-rule hit
     // from the policy row, so it always reads fresh rows.
-    const cache = input.consumeRateLimit === true ? undefined : options.cache;
+    const cache = input.consumeRateLimit === true || options.admittedInvocationId ? undefined : options.cache;
     const loaded = await loadContext(input, cache);
     if (!loaded.ok) return loaded.decision;
     const { ctx, redaction } = loaded;
+    // A final handoff rechecks current permissions for work already admitted by
+    // the gateway. Its own last consumed slot cannot reject that same work.
+    // Only durable consumption of an unchanged rule retains that slot; new or
+    // edited rules still apply. This option never approves or consumes a call.
+    const admittedRates = input.consumeRateLimit === false && options.admittedInvocationId
+      ? await admittedRateLimitAdmissions(ctx, options.admittedInvocationId) : [];
     const profileState = await effectiveProfiles(ctx, cache);
     const effectiveProfileIds = profileState.profiles.map((profile) => profile.id);
     const permittedByProfile = profileState.profiles.some((profile) => {
@@ -1421,10 +1490,13 @@ export function toolAccessPolicyService(db: Db) {
             { redactionPlan: redaction.redactionPlan, policyExplanation },
           );
         }
+        const versionHash = ratePolicyVersionHash(policy);
+        if (admittedRates.some(admission => admission.policyId === policy.id && admission.versionHash === versionHash)) continue;
         const state = await enforceRateLimit(policy, ctx, input.consumeRateLimit === true);
         if (state?.limited) {
           return decision("rate_limited", "rate_limited", "Tool access rate limit exceeded.", effectiveProfileIds, [policy.id], { rateLimitState: state, redactionPlan: redaction.redactionPlan, policyExplanation });
         }
+        if (state && input.consumeRateLimit === true) consumedRateAdmissions.push({ policyId: policy.id, versionHash });
         continue;
       }
       if (policy.policyType === "trust_rule") {
@@ -1582,15 +1654,58 @@ export function toolAccessPolicyService(db: Db) {
     const loaded = await loadContext(input);
     if (!loaded.ok) throw new Error("Cannot record invocation for invalid tool access context");
     const { ctx, redaction } = loaded;
-    const argumentsHash = redaction.summary.sha256 ?? sha256(input.request.arguments ?? {});
+    const requestIdentityHash = input.request.sideEffecting || accessDecision.decision === "require_approval"
+      ? toolRequestIdentityHash(input.request.arguments, options.toolActionSigningSecret)
+      : null;
+    const argumentsHash = input.request.sideEffecting ? requestIdentityHash! : ctx.argumentsHash;
     const idempotencyKey = input.request.idempotencyKey
-      ?? (input.request.sideEffecting ? sideEffectIdempotencyKey(ctx, argumentsHash) : null);
+      ?? (input.request.sideEffecting ? sideEffectIdempotencyKey(ctx, requestIdentityHash!) : null);
     if (idempotencyKey) {
       const [existing] = await db.select().from(toolInvocations).where(and(
         eq(toolInvocations.companyId, input.companyId),
         eq(toolInvocations.idempotencyKey, idempotencyKey),
       ));
       if (existing) return { invocation: existing, replayed: true, actionRequest: null };
+    }
+    if (input.request.sideEffecting && input.request.idempotencyKey == null) {
+      // Before complete request identities, default keys used shortened and
+      // redacted preview hashes. Check both historical key-redaction variants
+      // so upgrading cannot silently repeat a completed or uncertain write.
+      const legacyKeys = [...new Set([
+        requestIdentityHash!,
+        redaction.summary.sha256!,
+        summarizeAndRedact(input.request.arguments, false).summary.sha256!,
+      ].map(hash => sideEffectIdempotencyKey(ctx, hash, 1)))];
+      const legacyInvocations = legacyKeys.length ? await db.select().from(toolInvocations).where(and(
+        eq(toolInvocations.companyId, input.companyId),
+        inArray(toolInvocations.idempotencyKey, legacyKeys),
+      )) : [];
+      for (const legacy of legacyInvocations) {
+        if (legacy.actorType !== ctx.actorType || legacy.actorId !== ctx.actorId || legacy.agentId !== ctx.agentId) {
+          throw conflict("An earlier operation belongs to another actor. Reconcile it before retrying; use a new explicit idempotency key only for an intentional new operation.",
+            { reasonCode: "legacy_tool_idempotency_unverifiable" });
+        }
+        // An interim complete-identity row may still have the old key prefix.
+        // Its digest covers the full request when it differs from its preview.
+        if (legacy.argumentsSummary?.sha256 && legacy.argumentsHash === requestIdentityHash
+            && legacy.argumentsHash !== legacy.argumentsSummary.sha256) {
+          return { invocation: legacy, replayed: true, actionRequest: null };
+        }
+        const [actionRequest] = await db.select({ signedArguments: toolActionRequests.signedArguments })
+          .from(toolActionRequests).where(and(eq(toolActionRequests.companyId, input.companyId),
+            eq(toolActionRequests.invocationId, legacy.id))).limit(1);
+        const original = actionRequest?.signedArguments
+          ? readSignedToolArgumentsPayload({ signedArguments: actionRequest.signedArguments,
+            invocationId: legacy.id, toolName: legacy.toolName, signingSecret: options.toolActionSigningSecret })
+          : completeLegacyArguments(legacy);
+        if (!original) throw conflict(
+          "An earlier operation has incomplete saved arguments. Reconcile its result before retrying; use a new explicit idempotency key only for an intentional new operation.",
+          { reasonCode: "legacy_tool_idempotency_unverifiable", invocationId: legacy.id },
+        );
+        if (canonicalToolArguments(original.arguments) === canonicalToolArguments(input.request.arguments)) {
+          return { invocation: legacy, replayed: true, actionRequest: null };
+        }
+      }
     }
     const status = accessDecision.decision === "allow"
       ? "authorized"
@@ -1607,6 +1722,7 @@ export function toolAccessPolicyService(db: Db) {
       agentId: ctx.agentId,
       issueId: ctx.issueId,
       runId: ctx.heartbeatRunId,
+      gatewayId: ctx.gatewayId,
       applicationId: ctx.applicationId,
       connectionId: ctx.connectionId,
       catalogEntryId: ctx.catalogEntryId,
@@ -1620,6 +1736,7 @@ export function toolAccessPolicyService(db: Db) {
       argumentsHash,
       argumentsSummary: redaction.summary,
       policyDecision: accessDecision.decision,
+      policyExplanation: accessDecision.policyExplanation ?? null,
       matchedPolicyIds: accessDecision.matchedPolicyIds,
       approvalState: accessDecision.decision === "require_approval" ? "pending" : "not_required",
       status,
@@ -1634,7 +1751,7 @@ export function toolAccessPolicyService(db: Db) {
         invocationId: invocation.id,
         issueId: ctx.issueId,
         status: "pending",
-        canonicalArgumentsHash: invocation.argumentsHash ?? argumentsHash,
+        canonicalArgumentsHash: requestIdentityHash!,
         canonicalArgumentsSummary: redaction.summary,
         requestedByAgentId: ctx.actorType === "agent" ? ctx.agentId : null,
         requestedByUserId: ctx.actorType === "user" ? ctx.actorId : null,

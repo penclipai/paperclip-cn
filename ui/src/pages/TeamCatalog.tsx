@@ -1065,20 +1065,24 @@ export function useInstallTeamCatalogEntry({
   };
 }
 
-function TeamInstallerDialog({
+export function TeamInstallerDialog({
   team,
   companyId,
   agents,
   open,
   onClose,
   onInstalled,
+  onReturnFocus,
+  defaultCollisionStrategy = "rename",
 }: {
   team: CatalogTeam;
   companyId: string;
   agents: Agent[];
   open: boolean;
   onClose: () => void;
-  onInstalled: () => void;
+  onReturnFocus?: () => void;
+  defaultCollisionStrategy?: CompanyPortabilityCollisionStrategy;
+  onInstalled: (result: CatalogTeamInstallResult) => void;
 }) {
   useTranslation();
   const steps = useMemo(() => computeSteps(team), [team]);
@@ -1102,7 +1106,7 @@ function TeamInstallerDialog({
   const [allowLocalPathSources, setAllowLocalPathSources] = useState(false);
 
   // Step 4 — preview controls
-  const [collisionStrategy, setCollisionStrategy] = useState<CompanyPortabilityCollisionStrategy>("rename");
+  const [collisionStrategy, setCollisionStrategy] = useState<CompanyPortabilityCollisionStrategy>(defaultCollisionStrategy);
   const [nameOverrides, setNameOverrides] = useState<Record<string, string>>({});
   // slug -> adapterType override (the install schema accepts adapterOverrides).
   const [adapterOverrides, setAdapterOverrides] = useState<Record<string, string>>({});
@@ -1125,7 +1129,7 @@ function TeamInstallerDialog({
       setAllowExternalSources(false);
       setAllowUnpinnedOptionalSources(false);
       setAllowLocalPathSources(false);
-      setCollisionStrategy("rename");
+      setCollisionStrategy(defaultCollisionStrategy);
       setNameOverrides({});
       setAdapterOverrides({});
       setSecretValues({});
@@ -1136,7 +1140,7 @@ function TeamInstallerDialog({
       setApplyError(null);
       setInstallResult(null);
     }
-  }, [open]);
+  }, [open, defaultCollisionStrategy]);
 
   const currentStep = steps[stepIndex];
 
@@ -1212,7 +1216,7 @@ function TeamInstallerDialog({
     onSuccess: (result) => {
       setInstallResult(result);
       setPhase("done");
-      onInstalled();
+      onInstalled(result);
     },
     onError: (error) => {
       setPhase("error");
@@ -1433,7 +1437,7 @@ function TeamInstallerDialog({
   if (isMobileSheet) {
     return (
       <Sheet open={open} onOpenChange={(next) => { if (!next && dismissable) onClose(); }}>
-        <SheetContent side="bottom" className="flex h-(--sz-100dvh) flex-col gap-0 p-0">
+        <SheetContent onCloseAutoFocus={onReturnFocus ? (event) => { event.preventDefault(); onReturnFocus(); } : undefined} side="bottom" className="flex h-(--sz-100dvh) flex-col gap-0 p-0">
           <SheetHeader className="border-b border-border">
             <SheetTitle>{headerTitle}</SheetTitle>
             {headerDescription && <SheetDescription>{headerDescription}</SheetDescription>}
@@ -1447,7 +1451,7 @@ function TeamInstallerDialog({
 
   return (
     <Dialog open={open} onOpenChange={(next) => { if (!next && dismissable) onClose(); }}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent onCloseAutoFocus={onReturnFocus ? (event) => { event.preventDefault(); onReturnFocus(); } : undefined} className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>{headerTitle}</DialogTitle>
           {headerDescription && <DialogDescription>{headerDescription}</DialogDescription>}
@@ -1492,7 +1496,7 @@ export function StepTargetManager({
             <li key={slug} className="flex items-center gap-2 border-b border-border/60 px-3 py-2 text-sm last:border-b-0">
               <Crown className="h-3.5 w-3.5 text-amber-500" />
               <span className="font-medium">{titleCase(slug)}</span>
-              <Badge variant="ghost" className="ml-auto bg-amber-500/15 text-(length:--text-micro) text-amber-600 dark:text-amber-300">
+              <Badge variant="ghost" className="ml-auto bg-accent text-(length:--text-micro) text-accent-foreground">
                 → ?
               </Badge>
             </li>
@@ -1517,7 +1521,7 @@ export function StepTargetManager({
                     <div className="flex w-full items-center gap-2">
                       <Users2 className="h-3.5 w-3.5 text-muted-foreground" />
                       <span className="font-medium">{agent.name}</span>
-                      <span className="text-xs text-muted-foreground capitalize">{agent.role}</span>
+                      <span className="text-xs capitalize">{agent.role}</span>
                       {targetManagerAgentId === agent.id && <Check className="ml-auto h-4 w-4 text-emerald-500" />}
                     </div>
                   </CommandItem>

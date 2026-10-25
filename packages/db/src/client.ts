@@ -4,6 +4,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import postgres from "postgres";
 import { installDatabaseWorkSignals } from "./work-signals.js";
+import { installDatabaseResponseCapture } from "./response-capture.js";
 import * as schema from "./schema/index.js";
 
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("./migrations", import.meta.url));
@@ -280,6 +281,32 @@ export async function withDedicatedDbConnection<T>(db: Db, action: (dedicated: D
   finally { await dedicated.$client.end({ timeout: 1 }); }
 }
 
+// postgres.js pipelines a query onto a busy connection when none is idle, so
+// a short liveness write can wait behind an unrelated slow statement with no
+// client-side bound. Liveness writes (controller-lease renewal) get a small
+// private pool, created on first use and shared for the owner's lifetime.
+const livenessDbFactories = new WeakMap<object, () => Db>();
+const livenessDbs = new WeakMap<object, Db>();
+const LIVENESS_POOL_MAX_CONNECTIONS = 2;
+
+/** The private liveness pool for a `createDb` client; other clients (test
+ * doubles, transactions) are returned unchanged. */
+export function livenessDb(db: Db): Db {
+  const existing = livenessDbs.get(db);
+  if (existing) return existing;
+  const factory = livenessDbFactories.get(db);
+  if (!factory) return db;
+  const created = factory();
+  livenessDbs.set(db, created);
+  return created;
+}
+
+/** Ends the liveness pool if one was created. The ended pool stays cached, so
+ * a late renewal fails like a query on the ended primary pool. */
+export async function closeLivenessDb(db: Db, timeoutSeconds: number): Promise<void> {
+  await livenessDbs.get(db)?.$client.end({ timeout: timeoutSeconds });
+}
+
 export function createDb(url: string, options?: DatabaseClientOptions) {
   const resolved = resolveDatabaseClientOptions(options ?? databaseClientOptionsFromEnv());
   return createDbClient(url, resolved);
@@ -294,8 +321,12 @@ function createDbClient(url: string, resolved: DatabaseClientOptions, owner?: ob
   // message cannot establish that replay is safe. Leave retries to callers
   // that know the complete operation is idempotent.
   const db = installDatabaseWorkSignals(drizzlePg(sql, { schema }), owner);
+  installDatabaseResponseCapture(db, schema);
   dedicatedDbFactories.set(db, () => createDbClient(url, {
     ...resolved, maxConnections: 1, applicationName: "paperclip-workspace-finalization-lock",
+  }, db));
+  livenessDbFactories.set(db, () => createDbClient(url, {
+    ...resolved, maxConnections: LIVENESS_POOL_MAX_CONNECTIONS, applicationName: "paperclip-controller-lease",
   }, db));
   return db;
 }
@@ -488,6 +519,8 @@ const MIGRATIONS_WITH_TOP_LEVEL_STATEMENTS = new Set([
   "0313_private_task_access.sql",
   "0314_private_task_draft_assets.sql",
   "0332_little_night_nurse.sql",
+  "0345_luxuriant_carmella_unuscione.sql",
+  "0369_late_logan.sql",
 ]);
 
 async function applyPendingMigrationsManually(
@@ -618,6 +651,9 @@ async function mapHashesToMigrationFiles(migrationFiles: string[]): Promise<Map<
       const content = await readMigrationFileContent(migrationFile);
       for (const hash of migrationContentHashAliases(content)) {
         mapped.set(hash, migrationFile);
+      }
+      if (migrationFile === "0355_agent_tool_definition_hooks.sql") {
+        mapped.set("7ac76adac0220da522c78e51da20490aeb0f90512b4370a05af9f8dd0f75eda6", migrationFile);
       }
     }),
   );
@@ -765,6 +801,26 @@ function stripOuterParentheses(value: string): string {
   return normalized;
 }
 
+function normalizeArrayElementSeparators(value: string): string {
+  let normalized = "", quoted = false;
+  for (let index = 0; index < value.length; index += 1) {
+    const character = value[index]!;
+    if (quoted && character === "'" && value[index + 1] === "'") {
+      normalized += "''";
+      index += 1;
+      continue;
+    }
+    if (character === "'") quoted = !quoted;
+    if (!quoted && character === ",") {
+      normalized = normalized.trimEnd() + ",";
+      while (/\s/.test(value[index + 1] ?? "")) index += 1;
+      continue;
+    }
+    normalized += character;
+  }
+  return normalized;
+}
+
 function normalizeIndexPredicate(value: string | null): string | null {
   if (value === null) return null;
   let normalized = stripOuterParentheses(value)
@@ -778,6 +834,11 @@ function normalizeIndexPredicate(value: string | null): string | null {
     // pg_get_indexdef. Normalize both spellings before comparing predicates.
     .replace(/\b([A-Za-z_][A-Za-z0-9_]*)\s+NOT\s+IN\s+\(([^()]*)\)/gi, "$1 <> ALL ARRAY[$2]")
     .replace(/<>\s+ALL\s+\(\s*ARRAY\s*\[([^\]]*)\]\s*\)/gi, "<> ALL ARRAY[$1]")
+    // Likewise, PostgreSQL canonicalizes `IN (...)` as `= ANY (ARRAY[...])`.
+    // The two forms describe the same partial-index predicate.
+    .replace(/\b([A-Za-z_][A-Za-z0-9_]*)\s+IN\s+\(([^()]*)\)/gi, "$1 = ANY ARRAY[$2]")
+    .replace(/=\s+ANY\s+\(\s*ARRAY\s*\[([^\]]*)\]\s*\)/gi, "= ANY ARRAY[$1]")
+    .replace(/\bARRAY\s*\[([^\]]*)\]/gi, (_match, contents: string) => `ARRAY[${normalizeArrayElementSeparators(contents)}]`)
     // PostgreSQL renders the SQL LIKE operator as its internal `~~` token in
     // pg_get_indexdef. This is a direct spelling equivalence, not a broader
     // predicate rewrite.

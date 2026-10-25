@@ -105,11 +105,13 @@ export function SidePanelToggleButton({
   onToggle,
   shortcut,
   className,
+  highlightWhenOpen = true,
 }: {
   open: boolean;
   onToggle: () => void;
   shortcut?: string;
   className?: string;
+  highlightWhenOpen?: boolean;
 }) {
   const { t } = useTranslation();
   const label = t("Toggle side panel");
@@ -125,7 +127,7 @@ export function SidePanelToggleButton({
           onClick={onToggle}
           className={cn(
             "h-(--side-panel-tab-height) w-(--side-panel-tab-height)",
-            open && "bg-accent text-accent-foreground",
+            open && highlightWhenOpen && "bg-accent text-accent-foreground",
             className,
           )}
         >

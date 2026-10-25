@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
-import { cpSync, mkdirSync, rmSync } from "node:fs";
+import { cpSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
+import { collectDesktopLocales } from "./desktop-locales.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const packageDir = path.resolve(__dirname, "..");
@@ -63,6 +64,8 @@ async function run() {
 
   cpSync(path.resolve(packageDir, "src", "titlebar.theme.json"), path.resolve(distDir, "titlebar.theme.json"));
   cpSync(path.resolve(packageDir, "assets", "icon.png"), path.resolve(distDir, "icon.png"));
+  writeFileSync(path.join(distDir, "desktop-locales.json"),
+    JSON.stringify(collectDesktopLocales(path.resolve(packageDir, "../..")), null, 2) + "\n");
 }
 
 void run().catch((error) => {

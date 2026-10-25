@@ -120,6 +120,14 @@ async function completeRead(state, text, query, evidenceRef) {
 async function execute(state) {
   ensureActive(state);
   const { threadId, turnId, currentObjective, emitCeoLineage, declined } = state.context;
+  if (process.argv.includes('--task-retry-fixture')) {
+    const text = 'The saved result is confirmed. No external publication was repeated.';
+    await call(state, 'report_progress', { idempotencyKey: 'saved-result-confirmation', body: text });
+    await finish(state, text, 'fixture:preserved-result');
+    emit(state, { method: 'item/completed', params: { threadId, turnId, item: { id: `answer-${turnId}`, type: 'agentMessage', phase: 'final_answer', text } } });
+    terminal(state, 'completed');
+    return;
+  }
   if (process.argv.includes('--completion-stream-fixture')) {
     // Report completion before a deliberately slow final answer. The real
     // runner and control plane must keep listening after the tool succeeds.

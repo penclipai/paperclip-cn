@@ -45,7 +45,7 @@ afterEach(() => {
   }
 });
 
-function createLocalSandboxRunner() {
+function createLocalSandboxRunner(executeCalls: Array<{ command: string; args?: string[] }> = []) {
   return {
     execute: async (input: {
       command: string;
@@ -58,6 +58,29 @@ function createLocalSandboxRunner() {
       onSpawn?: (meta: { pid: number; startedAt: string }) => Promise<void>;
     }) => {
       await input.onSpawn?.({ pid: 1, startedAt: new Date().toISOString() });
+      executeCalls.push({ command: input.command, args: input.args });
+      if (input.command === "sh") {
+        return {
+          exitCode: 0,
+          signal: null,
+          timedOut: false,
+          stdout: "/usr/bin/claude\n",
+          stderr: "",
+          pid: 1,
+          startedAt: new Date().toISOString(),
+        };
+      }
+      if (input.args?.includes("--version")) {
+        return {
+          exitCode: 0,
+          signal: null,
+          timedOut: false,
+          stdout: "2.1.286 (Claude Code)\n",
+          stderr: "",
+          pid: 1,
+          startedAt: new Date().toISOString(),
+        };
+      }
       if (input.args?.includes("--help")) {
         return {
           exitCode: 0,
@@ -297,6 +320,7 @@ describe("claude_local environment diagnostics", () => {
       adapterType: "claude_local",
       config: {
         engine: "cli",
+        model: "claude-opus-5",
         command: "claude",
       },
       executionTarget: {
@@ -368,7 +392,6 @@ describe("claude_local environment diagnostics", () => {
     await fs.writeFile(path.join(sourceConfigDir, "CLAUDE.md"), "seed instructions", "utf8");
     await fs.writeFile(path.join(sourceConfigDir, "credentials.json"), JSON.stringify({ token: "local" }), "utf8");
     await fs.writeFile(path.join(remoteHome, ".claude", ".credentials.json"), JSON.stringify({ token: "remote" }), "utf8");
-
     process.env.CLAUDE_CONFIG_DIR = sourceConfigDir;
     process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
     process.env.PAPERCLIP_INSTANCE_ID = "test-instance";
@@ -396,6 +419,17 @@ describe("claude_local environment diagnostics", () => {
                   signal: null,
                   timedOut: false,
                   stdout: "/usr/bin/claude\n",
+                  stderr: "",
+                  pid: 1,
+                  startedAt: new Date().toISOString(),
+                };
+              }
+              if (input.args?.includes("--version")) {
+                return {
+                  exitCode: 0,
+                  signal: null,
+                  timedOut: false,
+                  stdout: "2.1.286 (Claude Code)\n",
                   stderr: "",
                   pid: 1,
                   startedAt: new Date().toISOString(),
@@ -444,6 +478,7 @@ describe("claude_local environment diagnostics", () => {
 
   it("warns and omits --effort for sandbox probes when the installed Claude CLI does not advertise it", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-claude-envtest-sandbox-effort-"));
+    const executeCalls: Array<{ command: string; args?: string[] }> = [];
 
     try {
       const result = await testEnvironment({
@@ -459,13 +494,16 @@ describe("claude_local environment diagnostics", () => {
           transport: "sandbox",
           providerKey: "daytona",
           remoteCwd: "/workspace/paperclip",
-          runner: createLocalSandboxRunner(),
+          runner: createLocalSandboxRunner(executeCalls),
         },
         environmentName: "QA Daytona",
       });
 
       expect(result.checks.some((check) => check.code === "claude_effort_flag_unsupported")).toBe(true);
       expect(result.checks.some((check) => check.code === "claude_hello_probe_passed")).toBe(true);
+      const probeArgs = executeCalls.find(call => call.args?.includes("--print"))?.args;
+      expect(probeArgs).toBeDefined();
+      expect(probeArgs).not.toContain("--effort");
     } finally {
       await fs.rm(root, { recursive: true, force: true });
     }

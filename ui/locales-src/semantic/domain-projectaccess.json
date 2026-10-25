@@ -1,0 +1,252 @@
+{
+  "projectAccess.addAccess": {
+    "en": "Add access to {{projects}}",
+    "zh-CN": "为 {{projects}} 添加访问权限",
+    "reviewedEnglishHash": "bd07d735e252ffdbfb146904f82145c2693faf2e505eb05c9fc9a56f67afb073"
+  },
+  "projectAccess.addProject": {
+    "en": "Add project",
+    "zh-CN": "添加项目",
+    "reviewedEnglishHash": "5ebd1527b617f3930afcdc30ad7ee5919a6a066a4702573f04bba5cc11ce4f1b"
+  },
+  "projectAccess.allowed": {
+    "en": "Allowed",
+    "zh-CN": "已允许",
+    "reviewedEnglishHash": "1bb201d188352e9b4633f85e4fb8a31ea93fd14dec702443fd3e2713d657fd2d"
+  },
+  "projectAccess.allowedProjects": {
+    "en": "Allowed projects",
+    "zh-CN": "允许访问的项目",
+    "reviewedEnglishHash": "230edefbecbad54bca21e8edebf2cadbec8f5931dc4fd36dd83ee02453bc9cac"
+  },
+  "projectAccess.allowedProjectsDescription": {
+    "en": "Projects whose tasks and repositories this agent may access.",
+    "zh-CN": "该智能体可访问其任务和仓库的项目。",
+    "reviewedEnglishHash": "ddc99f3636bedddbafd9ed1ac3f29369a9b65be0b8609ee5b6a7753c13c716f7"
+  },
+  "projectAccess.alreadyAllowed": {
+    "en": "Already allowed",
+    "zh-CN": "已允许访问",
+    "reviewedEnglishHash": "1761b7cb5044544009033cb3bd33fa73a122770a7de03fa2fb88b1eee3ea1101"
+  },
+  "projectAccess.aProject": {
+    "en": "a project",
+    "zh-CN": "一个项目",
+    "reviewedEnglishHash": "8d24f5bc0a858d02c625ad2ee5650d947963bc3086eeca94926f51a8295159f2"
+  },
+  "projectAccess.ariaLabel": {
+    "en": "Project access",
+    "zh-CN": "项目访问权限",
+    "reviewedEnglishHash": "379e0962ac4e007f79016c8129e08e690b4dc8888ffa7b91c08511103158cc85"
+  },
+  "projectAccess.attemptFailed": {
+    "en": "Couldn’t finish this attempt. Your message is saved.",
+    "zh-CN": "此次尝试未能完成。你的消息已保存。",
+    "reviewedEnglishHash": "c41c671a04addbe844bd56309f4e69325405467769627d6d233b6f9c208ac44c"
+  },
+  "projectAccess.blockedDescription": {
+    "en": "This task needs {{projectName}} outside the agent’s allowed projects. The agent hasn’t started. Your message is saved.",
+    "zh-CN": "此任务需要访问智能体允许项目范围之外的 {{projectName}}。智能体尚未启动。你的消息已保存。",
+    "reviewedEnglishHash": "707e056ce5d564116a71b76e8f63b345e61d52ff93e8f629515ddefb75661870"
+  },
+  "projectAccess.blockedTitle": {
+    "en": "{{agentName}} can’t access this project",
+    "zh-CN": "{{agentName}} 无法访问此项目",
+    "reviewedEnglishHash": "7b5629c8a27325f20dc7889c34d4dfaab1fffd5e1952c60f89b57295ec19d26a"
+  },
+  "projectAccess.cancel": {
+    "en": "Cancel",
+    "zh-CN": "取消",
+    "reviewedEnglishHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "projectAccess.defaultAgentName": {
+    "en": "This agent",
+    "zh-CN": "此智能体",
+    "reviewedEnglishHash": "15af7e1b3e4656019442d46bb4191d472544fc764f9392cdd05d807c99702e10"
+  },
+  "projectAccess.done": {
+    "en": "Done",
+    "zh-CN": "完成",
+    "reviewedEnglishHash": "11a6767d5674c7e45f7e00dc525762275b3a48491ad6045427d2609cc496c516"
+  },
+  "projectAccess.loadFailed": {
+    "en": "Couldn’t load project access.",
+    "zh-CN": "无法加载项目访问权限。",
+    "reviewedEnglishHash": "bc95661e6184969acf330bc4a655f305e9dd52680c98ff90f535f11c064b84a3"
+  },
+  "projectAccess.loading": {
+    "en": "Loading project access…",
+    "zh-CN": "正在加载项目访问权限…",
+    "reviewedEnglishHash": "8c4b1a4d3cf9eae97c87abde6cc7cfbaa7b12f6eca4f3acb1319c5adff749dcf"
+  },
+  "projectAccess.manage": {
+    "en": "Manage project access",
+    "zh-CN": "管理项目访问权限",
+    "reviewedEnglishHash": "e74b944805dd407012462eb4ffc48f110c840b1565deb3499d4b3356d8647b3c"
+  },
+  "projectAccess.no": {
+    "en": "No",
+    "zh-CN": "否",
+    "reviewedEnglishHash": "1ea442a134b2a184bd5d40104401f2a37fbc09ccf3f4bc9da161c6099be3691d"
+  },
+  "projectAccess.noManageDescription": {
+    "en": "A person with agent-management permission can add this project in the agent’s Permissions / Trust settings.",
+    "zh-CN": "拥有智能体管理权限的人员可在智能体的“权限 / 信任”设置中添加此项目。",
+    "reviewedEnglishHash": "63e49d38a55fa1bc3b6bd54e770c30e56b727a6848da4e206e61273ffa19e32f"
+  },
+  "projectAccess.noManageEditorDescription": {
+    "en": "A person with agent-management permission can add projects here.",
+    "zh-CN": "拥有智能体管理权限的人员可在此处添加项目。",
+    "reviewedEnglishHash": "d4e0efa0e0f0b426cd7abfa31928c3019a42fe6460178948b8276201ba366173"
+  },
+  "projectAccess.noProjectsAllowed": {
+    "en": "No projects allowed yet.",
+    "zh-CN": "尚未允许访问任何项目。",
+    "reviewedEnglishHash": "1369b8b0fee4cf0fd47af7301f3a1b6c94e7497f97aeaa0cfe9b0c5c7f103712"
+  },
+  "projectAccess.noProjectsFound": {
+    "en": "No projects found.",
+    "zh-CN": "未找到项目。",
+    "reviewedEnglishHash": "26e92309ba5b0ca92bb929346ac5a07d11befa945074be4a19dd34fda69020a0"
+  },
+  "projectAccess.outsideAllowedScope": {
+    "en": "Project outside allowed scope",
+    "zh-CN": "项目超出允许范围",
+    "reviewedEnglishHash": "45f7104b921df37b9405235eac6b97f9573af269b671c2022a40b65339c9a95b"
+  },
+  "projectAccess.pendingDescriptionPlural": {
+    "en": "{{agentName}} will be able to access work and repositories in these projects. Existing project access and low-trust restrictions stay in place.",
+    "zh-CN": "{{agentName}} 将能够访问这些项目中的工作和仓库。现有项目访问权限和低信任限制仍然有效。",
+    "reviewedEnglishHash": "470815aebc76b5d48c349d6058c3b5935f98b1789d79379db7ad11a800d2d569"
+  },
+  "projectAccess.pendingDescriptionSingle": {
+    "en": "{{agentName}} will be able to access work and repositories in this project. Existing project access and low-trust restrictions stay in place.",
+    "zh-CN": "{{agentName}} 将能够访问此项目中的工作和仓库。现有项目访问权限和低信任限制仍然有效。",
+    "reviewedEnglishHash": "e575aa7239c006c05d1c6156aaf9bb04e91f1aff3530e17dc3eb439e7c4c92f2"
+  },
+  "projectAccess.providerStarted": {
+    "en": "Provider started",
+    "zh-CN": "提供商已启动",
+    "reviewedEnglishHash": "74320f2d14fcaae2e0a10d39def8ada98837c3345bd7a6205cb433fe77c8ca2e"
+  },
+  "projectAccess.readyDescription": {
+    "en": "The agent can now access the required project. Retry to continue with your saved message.",
+    "zh-CN": "该智能体现在可以访问所需项目。重试以继续处理已保存的消息。",
+    "reviewedEnglishHash": "72cac524a0b2983722308f5d5cb0e4907d5486e13c527d34e1b5181cfe9f8a83"
+  },
+  "projectAccess.readyTitle": {
+    "en": "Project access is ready",
+    "zh-CN": "项目访问权限已就绪",
+    "reviewedEnglishHash": "f506585536bc3ce4093332b4f1e6202359426cf2e28cd573046aa2662bb21dd1"
+  },
+  "projectAccess.reason": {
+    "en": "Reason",
+    "zh-CN": "原因",
+    "reviewedEnglishHash": "f81ab834de5f84918dc040b884267c2b61cb1a52d46442de10e97f35a94d0500"
+  },
+  "projectAccess.retry": {
+    "en": "Retry",
+    "zh-CN": "重试",
+    "reviewedEnglishHash": "942087cc2d41e01304b7195558d093d10c72af8e838c7556d6a02d471ee71852"
+  },
+  "projectAccess.retryScheduled": {
+    "en": "Trying again in {{duration}}…",
+    "zh-CN": "将在 {{duration}} 后重试…",
+    "reviewedEnglishHash": "b80605c8a5fe786b32261900a1e9dcb686fda3b92d7d557237bc64126072da79"
+  },
+  "projectAccess.retryTask": {
+    "en": "Retry task",
+    "zh-CN": "重试任务",
+    "reviewedEnglishHash": "f53510edcb35d9a790d6106ac139ea3eb612328bf18ef053bf78c21cc249f983"
+  },
+  "projectAccess.returnToTask": {
+    "en": "Return to task",
+    "zh-CN": "返回任务",
+    "reviewedEnglishHash": "1bdcd5378b67413651cd0209945d0c710f7355270efdb8ba2a53c936808d31f7"
+  },
+  "projectAccess.runDetails": {
+    "en": "Run details",
+    "zh-CN": "运行详情",
+    "reviewedEnglishHash": "7bbc36905270774ef9d63abed8e46f42954fea1e901066fa2eeabcb944074aad"
+  },
+  "projectAccess.save": {
+    "en": "Save project access",
+    "zh-CN": "保存项目访问权限",
+    "reviewedEnglishHash": "6d52d1e037b5df4b8a567ff91cbb788bd2f3dae4bc524a043e30f3f42ca54ce6"
+  },
+  "projectAccess.saved": {
+    "en": "Project access saved. Return to your task to retry.",
+    "zh-CN": "项目访问权限已保存。返回任务后重试。",
+    "reviewedEnglishHash": "33e0428e0c95f5e7911229d85d33364f435ac698d2dbdd41a57e404d121b0c2c"
+  },
+  "projectAccess.saveFailed": {
+    "en": "Couldn’t save project access.",
+    "zh-CN": "无法保存项目访问权限。",
+    "reviewedEnglishHash": "a4297fa846244cf82c46cfba42f63478f2d2605d41c3cd644d8e96da019dc6ee"
+  },
+  "projectAccess.saveFailedWithSelection": {
+    "en": "Couldn’t save project access. Your selection is kept. {{error}}",
+    "zh-CN": "无法保存项目访问权限。已保留你的选择。{{error}}",
+    "reviewedEnglishHash": "8e41044434cb734c7ea3ca11bb23b7d62f8571a730599724c77380d9b698809b"
+  },
+  "projectAccess.saving": {
+    "en": "Saving access…",
+    "zh-CN": "正在保存访问权限…",
+    "reviewedEnglishHash": "49299db6a7515cb5c09a1151631ac922fce920428b8bf1d8a8fd397fdc0380b3"
+  },
+  "projectAccess.searchProjects": {
+    "en": "Search projects…",
+    "zh-CN": "搜索项目…",
+    "reviewedEnglishHash": "b0c5facf52179471c893e28468a0ea2512c511442e71c2e97a4662e0b1d3483b"
+  },
+  "projectAccess.stoppedDuring": {
+    "en": "Stopped during",
+    "zh-CN": "停止于",
+    "reviewedEnglishHash": "f60d25c54f2b52e667a375db25ee04ccc0f05899224c08e14b4d9944c168bc1e"
+  },
+  "projectAccess.takingLonger": {
+    "en": "Taking longer than usual…",
+    "zh-CN": "耗时比平常更久…",
+    "reviewedEnglishHash": "4d04a2955163880fa137be8d453caafd0a956ac273d551d006dfe385de7bc79f"
+  },
+  "projectAccess.taskStatus": {
+    "en": "Task status",
+    "zh-CN": "任务状态",
+    "reviewedEnglishHash": "3fd71308f760678b2449ce64c7c33a3ea120425a11592870481754669953255d"
+  },
+  "projectAccess.toAdd": {
+    "en": "To add",
+    "zh-CN": "待添加",
+    "reviewedEnglishHash": "0546c1c662bcddb60a24b3373ecbe8d5a23c0846e580feef705e4fdb0d0811ad"
+  },
+  "projectAccess.tryAgain": {
+    "en": "Try again",
+    "zh-CN": "重试",
+    "reviewedEnglishHash": "d8b8392e2c542950ca64867168e4ef87d4ad606882d5898f826b51c6d553988f"
+  },
+  "projectAccess.trySavingAgain": {
+    "en": "Try saving again",
+    "zh-CN": "再次尝试保存",
+    "reviewedEnglishHash": "b04cf46c3abbf8dad75c6fad6c162445d0b694387cb30a11b9b9dfe44703a81d"
+  },
+  "projectAccess.unavailableProject": {
+    "en": "Unavailable project",
+    "zh-CN": "不可用的项目",
+    "reviewedEnglishHash": "3045d20a18866a6818b567a97e7dcad18b00266b0bcf6e7b281ce2b130572a00"
+  },
+  "projectAccess.undoAdding": {
+    "en": "Undo adding {{projectName}}",
+    "zh-CN": "撤销添加 {{projectName}}",
+    "reviewedEnglishHash": "ecc733112fb25d2468f45a9d03ff63f142bd96e92ebf8bd8825cf9b1e312f450"
+  },
+  "projectAccess.view": {
+    "en": "View agent access",
+    "zh-CN": "查看智能体访问权限",
+    "reviewedEnglishHash": "8b46dc862ae45e75815655d43f327278e5cca8c10e3a9e6385c39f080b5a8886"
+  },
+  "projectAccess.workspaceSetup": {
+    "en": "Workspace setup",
+    "zh-CN": "工作区设置",
+    "reviewedEnglishHash": "80cbc79c1ad42e31915809c08a914e3b2d89fbc81f38b29473b8fb1dde937b88"
+  }
+}

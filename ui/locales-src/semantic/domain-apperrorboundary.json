@@ -9,6 +9,11 @@
     "zh-CN": "重新加载页面",
     "reviewedEnglishHash": "437d0d63bfbd97326878414b17d443b5cf971bb426262793732682a828c0a442"
   },
+  "appErrorBoundary.reloading": {
+    "en": "Reloading Paperclip…",
+    "zh-CN": "正在重新加载 Paperclip CN…",
+    "reviewedEnglishHash": "64246e580339cd5e13d7473e5c48961ad5ce08737b1470ad49265cabc39dc56c"
+  },
   "appErrorBoundary.title": {
     "en": "Paperclip hit an error",
     "zh-CN": "Paperclip CN 遇到错误",

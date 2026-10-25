@@ -15,13 +15,19 @@ function bashPath(value) {
   const match = /^([A-Za-z]):[\\/](.*)$/.exec(value);
   if (!match) return value.replaceAll("\\", "/");
   const [, drive, rest] = match;
-  const root = process.env.MSYSTEM ? `/${drive.toLowerCase()}` : `/mnt/${drive.toLowerCase()}`;
+  // The fixture invokes Git for Windows' Bash explicitly, whose drive mounts
+  // use /d rather than the WSL-specific /mnt/d form.
+  const root = `/${drive.toLowerCase()}`;
   return `${root}/${rest.replaceAll("\\", "/")}`;
 }
 
 function bashQuote(value) {
   return `'${value.replaceAll("'", "'\\\"'\\\"'")}'`;
 }
+
+const bash = process.platform === "win32"
+  ? path.join(process.env.ProgramFiles ?? "C:\\Program Files", "Git", "bin", "bash.exe")
+  : "bash";
 
 test("canary promotion waits for the standard manifest and keeps its serialized channel", () => {
   assert.match(job, /needs: \[merge-and-push\]/);
@@ -67,7 +73,7 @@ export COMMIT_PRESENT='${commitPresent}'
 export IMAGE_PRESENT='${imagePresent}'
 ${script}`;
       writeFileSync(fixtureScriptPath, fixtureScript.replaceAll("\r\n", "\n"));
-      const result = spawnSync("bash", [bashPath(fixtureScriptPath)], { encoding: "utf8", env: process.env });
+      const result = spawnSync(bash, [bashPath(fixtureScriptPath)], { encoding: "utf8", env: process.env });
       assert.equal(result.status, 0, result.stderr);
       const calls = readFileSync(log, "utf8").trim().split("\n").map(line => JSON.parse(line));
       assert.ok(

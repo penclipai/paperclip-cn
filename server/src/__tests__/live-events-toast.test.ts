@@ -1,18 +1,32 @@
 import { createServer } from "node:http";
 import { once } from "node:events";
-import { getTableName, type SQL } from "drizzle-orm";
+import { getTableName, sql, type SQL } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
 import { activityToastIdentity } from "../realtime/activity-toast-identity.js";
 import { WebSocket } from "ws";
 import { describe, expect, it, vi } from "vitest";
 import { setupLiveEventsWebSocketServer } from "../realtime/live-events-ws.js";
 import { publishLiveEvent } from "../services/live-events.js";
+import { taskToastEligible } from "../realtime/task-toast-eligibility.js";
+
+vi.mock("../realtime/task-toast-eligibility.js", () => ({ taskToastEligible: vi.fn(async () => false) }));
 
 vi.mock("../services/authorization.js", () => ({
   authorizationService: () => ({ decide: async ({ resource }: { resource: { issueId: string } }) => ({ allowed: resource.issueId !== "hidden" }) }),
+  approvalReadSqlCondition: async () => sql`true`,
 }));
 vi.mock("../services/heartbeat-run-privacy.js", () => ({ canActorReadHeartbeatRun: async () => false }));
-function database(onPredicate: (kind: "where" | "join", condition: SQL) => void = () => {}) {
+vi.mock("../services/case-access.js", () => ({
+  canActorReadCase: async (_db: unknown, _actor: unknown, record: { id: string }) => record.id !== "hidden-case",
+}));
+function database(
+  onPredicate: (kind: "where" | "join", condition: SQL) => void = () => {},
+  rows: {
+    approvals?: Array<{ id: string; status: string }>;
+    memberships?: Array<Record<string, unknown>> | (() => Array<Record<string, unknown>>);
+    approvalLookupFails?: boolean;
+  } = {},
+) {
   return { select: (fields: Record<string, unknown>) => {
     let table = "";
     const query = {
@@ -21,7 +35,12 @@ function database(onPredicate: (kind: "where" | "join", condition: SQL) => void 
       where: (condition: SQL) => { onPredicate("where", condition); return query; },
       limit: async () => {
         if (table === "issues") return [{ id: "task" }];
-        if (table === "company_memberships") return fields.name ? [{ name: "Alex Example", image: "/alex.png" }] : [{ id: "membership" }];
+        if (table === "company_memberships") return fields.name ? [{ name: "Alex Example", image: "/alex.png" }]
+          : typeof rows.memberships === "function" ? rows.memberships() : rows.memberships ?? [{ id: "membership" }];
+        if (table === "approvals") {
+          if (rows.approvalLookupFails) throw new Error("approval lookup unavailable");
+          return rows.approvals ?? [];
+        }
         if (table === "agents") return [{ name: "Coder", appearance: { schemaVersion: 1, characterVersion: "cap-v1", paletteId: "bubblegum-sky" } }];
         return [];
       },
@@ -30,6 +49,205 @@ function database(onPredicate: (kind: "where" | "join", condition: SQL) => void 
   } };
 }
 describe("authenticated activity notifications", () => {
+  it("preserves only an authorized handoff task identity for empty case-panel refresh", async () => {
+    const server = createServer();
+    setupLiveEventsWebSocketServer(server, database() as never, { deploymentMode: "authenticated",
+      resolveCloudActor: async () => ({ userId: "viewer", companyIds: ["company"] }) });
+    server.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const socket = new WebSocket(`ws://127.0.0.1:${(server.address() as { port: number }).port}/api/companies/company/events/ws`);
+    try {
+      await once(socket, "open");
+      const messages: Array<{ payload: Record<string, unknown> }> = [];
+      socket.on("message", data => messages.push(JSON.parse(data.toString())));
+      const activity = (entityId: string, issueId: string, action = "case.handoff_applied") => publishLiveEvent({
+        companyId: "company", type: "activity.logged", payload: {
+          action, entityType: "case", entityId, issueId,
+          details: { instructions: "private handoff instructions", phase: "verification" },
+        },
+      });
+      activity("hidden-case", "visible");
+      activity("visible-case", "hidden");
+      const first = once(socket, "message");
+      activity("visible-case", "visible");
+      await first;
+      expect(messages).toHaveLength(1);
+      expect(messages[0].payload).toEqual({ action: "case.handoff_applied", entityType: "case", entityId: "visible-case", issueId: "visible", actorType: null, actorId: null });
+      const second = once(socket, "message");
+      activity("visible-case", "visible", "case.updated");
+      await second;
+      expect(messages[1].payload).toEqual({ action: "case.updated", entityType: "case", entityId: "visible-case", actorType: null, actorId: null });
+    } finally {
+      socket.terminate();
+      await new Promise<void>(resolve => server.close(() => resolve()));
+    }
+  });
+
+  it("uses the persisted local-board user identity for local task eligibility", async () => {
+    vi.mocked(taskToastEligible).mockImplementation(async (_db, _event, userId) => userId === "local-board");
+    const server = createServer();
+    setupLiveEventsWebSocketServer(server, database() as never, { deploymentMode: "local_trusted" });
+    server.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const socket = new WebSocket(`ws://127.0.0.1:${(server.address() as { port: number }).port}/api/companies/company/events/ws`);
+    try {
+      await once(socket, "open");
+      const delivery = once(socket, "message");
+      publishLiveEvent({ companyId: "company", type: "activity.logged", payload: {
+        action: "issue.updated", entityType: "issue", entityId: "visible", actorType: "agent", actorId: "agent",
+      } });
+      const [data] = await delivery;
+      expect(JSON.parse(data.toString()).toastEligible).toBe(true);
+      expect(taskToastEligible).toHaveBeenLastCalledWith(expect.anything(), expect.anything(), "local-board");
+    } finally {
+      socket.terminate();
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+      vi.mocked(taskToastEligible).mockReset().mockResolvedValue(false);
+    }
+  });
+
+  it("marks a readable pending approval for a local board notification without leaking its payload", async () => {
+    vi.mocked(taskToastEligible).mockClear();
+    const server = createServer();
+    setupLiveEventsWebSocketServer(server, database(() => {}, {
+      approvals: [{ id: "approval-pending", status: "pending" }],
+    }) as never, { deploymentMode: "local_trusted" });
+    server.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const socket = new WebSocket(`ws://127.0.0.1:${(server.address() as { port: number }).port}/api/companies/company/events/ws`);
+    try {
+      await once(socket, "open");
+      const delivery = once(socket, "message");
+      publishLiveEvent({ companyId: "company", type: "activity.logged", payload: {
+        action: "approval.created", entityType: "approval", entityId: "approval-pending",
+        details: { issueId: "private-task", secret: "must-not-reach-client" },
+      } });
+      const [data] = await delivery;
+      expect(JSON.parse(data.toString())).toMatchObject({
+        toastEligible: true,
+        payload: { action: "approval.created", entityType: "approval", entityId: "approval-pending" },
+      });
+      expect(JSON.parse(data.toString()).payload).not.toHaveProperty("details");
+      expect(taskToastEligible).not.toHaveBeenCalled();
+    } finally {
+      socket.terminate();
+      await new Promise<void>(resolve => server.close(() => resolve()));
+    }
+  });
+
+  it("keeps a readable resolved approval synchronized without prompting the board", async () => {
+    const server = createServer();
+    setupLiveEventsWebSocketServer(server, database(() => {}, {
+      approvals: [{ id: "approval-resolved", status: "approved" }],
+    }) as never, { deploymentMode: "local_trusted" });
+    server.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const socket = new WebSocket(`ws://127.0.0.1:${(server.address() as { port: number }).port}/api/companies/company/events/ws`);
+    try {
+      await once(socket, "open");
+      const delivery = once(socket, "message");
+      publishLiveEvent({ companyId: "company", type: "activity.logged", payload: {
+        action: "approval.created", entityType: "approval", entityId: "approval-resolved",
+      } });
+      const [data] = await delivery;
+      expect(JSON.parse(data.toString())).toMatchObject({
+        toastEligible: false,
+        payload: { action: "approval.created", entityType: "approval", entityId: "approval-resolved" },
+      });
+    } finally {
+      socket.terminate();
+      await new Promise<void>(resolve => server.close(() => resolve()));
+    }
+  });
+
+  it("drops an approval after the socket's membership is revoked", async () => {
+    let memberActive = true;
+    const server = createServer();
+    setupLiveEventsWebSocketServer(server, database(() => {}, {
+      approvals: [{ id: "approval-pending", status: "pending" }],
+      memberships: () => memberActive ? [{ id: "membership" }] : [],
+    }) as never, {
+      deploymentMode: "authenticated",
+      resolveCloudActor: async () => ({ userId: "viewer", companyIds: ["company"] }),
+    });
+    server.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const socket = new WebSocket(`ws://127.0.0.1:${(server.address() as { port: number }).port}/api/companies/company/events/ws`);
+    const messages: unknown[] = [];
+    socket.on("message", data => messages.push(JSON.parse(data.toString())));
+    try {
+      await once(socket, "open");
+      memberActive = false;
+      publishLiveEvent({ companyId: "company", type: "activity.logged", payload: {
+        action: "approval.created", entityType: "approval", entityId: "approval-pending",
+      } });
+      await new Promise(resolve => setTimeout(resolve, 30));
+      expect(messages).toEqual([]);
+    } finally {
+      socket.terminate();
+      await new Promise<void>(resolve => server.close(() => resolve()));
+    }
+  });
+
+  it("drops an approval lookup failure and continues the socket delivery queue", async () => {
+    const server = createServer();
+    setupLiveEventsWebSocketServer(server, database(() => {}, { approvalLookupFails: true }) as never, { deploymentMode: "local_trusted" });
+    server.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const socket = new WebSocket(`ws://127.0.0.1:${(server.address() as { port: number }).port}/api/companies/company/events/ws`);
+    try {
+      await once(socket, "open");
+      publishLiveEvent({ companyId: "company", type: "activity.logged", payload: {
+        action: "approval.created", entityType: "approval", entityId: "approval-missing",
+      } });
+      const delivery = once(socket, "message");
+      publishLiveEvent({ companyId: "company", type: "activity.logged", payload: {
+        action: "issue.updated", entityType: "issue", entityId: "visible",
+      } });
+      const [data] = await delivery;
+      expect(JSON.parse(data.toString()).payload).toMatchObject({ action: "issue.updated", entityId: "visible" });
+    } finally {
+      socket.terminate();
+      await new Promise<void>(resolve => server.close(() => resolve()));
+    }
+  });
+
+  it("projects eligibility per viewer and keeps authorized updates on lookup failure", async () => {
+    vi.mocked(taskToastEligible).mockImplementation(async (_db, event, userId) => {
+      if (event.payload.entityId === "lookup-failure") throw new Error("Relevance unavailable");
+      return userId === "alice";
+    });
+    const server = createServer();
+    setupLiveEventsWebSocketServer(server, database() as never, {
+      deploymentMode: "authenticated",
+      resolveCloudActor: async (req) => ({ userId: String(req.headers["x-test-viewer"]), companyIds: ["company"] }),
+    });
+    server.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const url = `ws://127.0.0.1:${(server.address() as { port: number }).port}/api/companies/company/events/ws`;
+    const alice = new WebSocket(url, { headers: { "x-test-viewer": "alice" } });
+    const bob = new WebSocket(url, { headers: { "x-test-viewer": "bob" } });
+    try {
+      await Promise.all([once(alice, "open"), once(bob, "open")]);
+      for (const entityId of ["visible", "lookup-failure"]) {
+        const deliveries = Promise.all([once(alice, "message"), once(bob, "message")]);
+        const original = publishLiveEvent({ companyId: "company", type: "activity.logged", payload: {
+          action: "issue.comment_added", entityType: "issue", entityId, actorType: "agent", actorId: "agent",
+        } });
+        const [a, b] = (await deliveries).map(([data]) => JSON.parse(data.toString()));
+        expect(a.toastEligible).toBe(entityId === "visible");
+        expect(b.toastEligible).toBe(false);
+        expect(a.payload.entityId).toBe(entityId);
+        expect(b.payload.entityId).toBe(entityId);
+        expect(original).not.toHaveProperty("toastEligible");
+      }
+    } finally {
+      alice.terminate(); bob.terminate();
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+      vi.mocked(taskToastEligible).mockReset().mockResolvedValue(false);
+    }
+  });
+
   it("keeps actor identity after authorization and excludes hidden tasks and private details", async () => {
     const server = createServer();
     setupLiveEventsWebSocketServer(server, database() as never, { deploymentMode: "authenticated",

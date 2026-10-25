@@ -10,6 +10,7 @@ import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useCompany } from "../context/CompanyContext";
 import { queryKeys } from "../lib/queryKeys";
 import { InboxAgentPolicyControl } from "@/components/InboxAgentPolicyControl";
+import { DesktopSettings } from "@/components/DesktopSettings";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -123,15 +124,19 @@ export function ProfileSettings() {
   });
 
   if (sessionQuery.isLoading) {
-    return <div className="text-sm text-muted-foreground">{translateInstant("Loading profile...")}</div>;
+    return <>
+      <div className="text-sm text-muted-foreground">{translateInstant("Loading profile...")}</div>
+      <DesktopSettings />
+    </>;
   }
 
   if (sessionQuery.error || !sessionQuery.data) {
-    return (
+    return <>
       <div className="text-sm text-destructive">
         {sessionQuery.error instanceof Error ? sessionQuery.error.message : translateInstant("Failed to load profile.")}
       </div>
-    );
+      <DesktopSettings />
+    </>;
   }
 
   const currentName = name.trim() || sessionQuery.data.user.name || translateInstant("Board");
@@ -270,6 +275,7 @@ export function ProfileSettings() {
         </form>
 
         <InboxAgentPolicyControl companyId={selectedCompanyId} />
+        <DesktopSettings />
       </section>
     </div>
   );

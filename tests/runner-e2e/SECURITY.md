@@ -1,5 +1,26 @@
 # Runner E2E security for a public repository
 
+[Cloud Product journey bundles](PRODUCT-JOURNEYS.md) are always private and
+rejected by public history publication. Authentication uses an isolated browser
+context without saved storage state or auth tracing. Only closed error codes
+and normalized operations receipts cross the private target-provider boundary.
+The private Cloud repository owns operator credentials, conditional S3 leases,
+ownership manifests, cleanup recovery, and environment-protected CI dispatch.
+
+Cloud onboarding retains only the independently checked synthetic
+`connection-proof.json` download (at most 4 KiB) and its closed oracle receipt
+inside private normalized results. The receipt contains generated numeric inputs,
+their expected four-field result, exact base64 download bytes, checksums, size,
+and attachment/run IDs. Extra fields and arbitrary agent output are rejected.
+It contains no credentials, browser state, request headers, or provider text.
+
+The optional `onboardingConnect` diagnostic is also a closed, versioned receipt.
+It retains only a known checkpoint, response states, HTTP statuses, known adapter
+names, and allowlisted outcome/check/server codes (at most 32 checks per response).
+Unknown codes become `unrecognized`; raw bodies, messages, URLs, headers, and
+browser errors are excluded. Reports validate the receipt before rendering its
+explicit fields, and historical results may omit it.
+
 ## Attended connection authentication
 
 See [PROVIDER-CONNECTIONS.md](PROVIDER-CONNECTIONS.md) for the explicit-only
@@ -31,6 +52,14 @@ prompts, evidence packager, and publisher as security-sensitive production
 changes.
 
 ## GitHub authorization
+
+The Everyday remote Codex restart oracle reads only the existing public run,
+event, environment-lease, workspace-operation and recovery APIs. It does not
+execute commands in a provider sandbox or signal a provider process. Its new
+evidence projects closed receipt metadata and hashes the provider sandbox ID
+and full native event content. Provider text, tool arguments and command output
+do not enter these snapshots. Existing image admission, credentials, billing,
+retention and cleanup rules continue to apply.
 
 Set `RUNNER_E2E_ALLOWED_ACTOR_IDS` to a non-empty JSON array of numeric GitHub
 user IDs. Keep the list equal to the owners of `.github/**` in
@@ -125,6 +154,16 @@ force for every suite.
 The Paperclip server process also receives none; the browser posts each value
 once to the encrypted company secret API and agents/environments retain only
 secret references.
+
+The explicit managed first-task cell observes the wizard's two owned setup
+responses only to correlate their exact lease IDs with same-company environment
+records. Raw probe/setup responses, account references, opaque provider lease
+identities and setup screenshots remain private. Public first-task evidence
+continues through the existing projection. Missing or foreign lease identities
+cannot acquire attribution or a zero-cost estimate; incomplete setup coverage
+stays unavailable even if later task-run billing succeeds. Platform qualification
+uses the existing permission-gated environment probe, without granting new
+permissions or accepting fixture-authored qualification metadata.
 
 The context-integrity catalog lists six pending Kimi/Grok cells for discovery:
 two cases each across `legacy-kimi-cli`, `legacy-kimi-acp`, and `legacy-grok`.
@@ -323,7 +362,12 @@ one fixed bounded child; it cannot select commands, arguments, or paths. The exa
 native client command is supplied by the fixture, while production notices retain
 only its SHA-256. The fixture keeps private process identities local, closes its
 owned socket/child in cleanup, and never signals API-reported PIDs. Directory
-watch loss makes the denial oracle incomplete; it must not become a no-effect pass.
+watch loss makes the denial oracle incomplete; it must not become a no-effect pass. A run-only Stop without provider dispatch qualifies the denial's
+completed-provider branch only when its exact canonical completion was actually
+read and retained before Stop. A blocked unfinished task additionally requires
+pre-Stop retained missing-result evidence and the exact company/issue/run recovery
+binding. Neither exception qualifies definitely-active cancellation, permits
+extra runs or mutations, or manufactures a receipt for a historical failure.
 
 Pi Daytona controls bind process identity to the independent Linux observer's
 PID, start ticks and boot ID within the exact admitted run/lease/sandbox. The
@@ -342,3 +386,127 @@ descriptor launches with synthetic owned processes and no provider credentials;
 it does not qualify paid Pi behavior or change previous failed grades.
 
 The private resource-admission marker and raw cleanup results control recovery-state retention independently of evidence packaging. A worker crash after admission keeps the owner-only recovery database; a confirmed pre-allocation bootstrap failure does not. Neither the marker nor the database enters published evidence.
+
+## Task workspace fixture source
+
+The explicit task-workspaces cells fetch the existing public octocat/Hello-World
+repository through normal anonymous repository preparation. They do not clone the
+Paperclip checkout, copy its Git credentials, create remote repositories or push.
+The agent's synthetic commit remains in the disposable task workspace. Independent
+Git reads validate that workspace's canonical path is inside the isolated instance
+before examining history. The existing credential redactor, private evidence
+packager and task-only screenshot allowlist remain authoritative. Each cell has a
+single attempt, three requested turns and company/agent budget hard stops.
+
+The explicit local case-handoff subscription cells accept `CODEX_AUTH_JSON`
+only as a private subscription fixture input. The launcher redaction set includes its individual
+JSON token values; the server process environment excludes the raw input.
+Fixture setup validates a subscription-shaped payload and writes only a new
+mode-0600 `auth.json` inside the isolated company's mode-0700 production Codex
+home. It rejects redirected roots, API-key payloads and existing login files.
+Teardown removes refreshed company login state along with the disposable
+instance. Login bytes, account identity, provider sessions and raw native event
+payloads are not workflow evidence. The separate API-key receipt cell accepts
+`OPENAI_API_KEY` through the ordinary encrypted company-secret fixture and binds
+only secret references to both provider key aliases. It neither stages nor
+inherits an operator subscription login. The raw key is excluded from child
+server environments and public attempt evidence by the existing credential
+boundary; do not print it or store it in tracked configuration. The original
+arithmetic cell remains subscription-only.
+
+Case screenshots use the exact case ID/identifier returned by that fixture's
+public kickoff, in addition to its ordinary task route. Other cases, setup,
+settings and external hosts remain outside the public screenshot allowlist.
+
+Receipt smoke uses a fresh isolated company with 100-cent company/agent budgets,
+90-second work-run timeouts, low reasoning effort and daily task-run caps of
+one/two/one for triage/builder/verifier. Its work contract is exactly four task
+runs and one five-minute attempt. Production lifecycle hello probes occur
+outside heartbeat counts and budget accounting; up to three initial probes are
+expected, and their detailed tokens and cost are unavailable. The flow serializes
+readiness, waits at most 45 seconds per agent, fails immediately on lifecycle
+error and pauses agents on failure to prevent routine 60-second setup retries.
+A timeout does not immediately cancel an in-flight probe. The cell has no absolute
+provider inference cap, and its work-run usage report excludes setup probes;
+unknown setup usage is not free. The original arithmetic cell keeps its existing settings.
+Role routing prompts are appended through the ordinary instruction API after
+capturing the production-default bundle. Receipt/review bodies are synthetic
+fixture data. Only allowlisted document values, attributed revisions, configured
+limits, case/task state and correlated receipt checks enter workflow evidence.
+Two passive seed cases support browser list assertions; screenshots remain on
+the exact primary case/task routes and document dialogs preserve that case URL.
+The public screenshot allowlist is unchanged.
+
+## Eval feedback capture
+
+`snapshots/agent-feedback.json` retains company-wide complaint/suggestion bodies
+and attributed invocation outcomes in the access-controlled Actions artifact.
+It passes the existing credential scanner and is excluded from public history
+like other snapshots. Normalized results and campaign attempt receipts contain
+only numeric counts, closed collection statuses, and SHA-256 fingerprints for
+review grouping. Public reports never copy feedback bodies, previews, tool
+arguments, or free-form collection errors. Collecting feedback performs no new
+model call and does not forward it to an external service.
+
+Feedback capture retains at most 1,000 full entries and 8 MiB of serialized
+entries/invocations per attempt. Event inspection stops at 10,000 events or
+16 MiB of serialized event data. Limits produce partial collection and a closed
+`evidence_limit_reached` diagnostic; omitted evidence is never reported as absent.
+Checkpoints are considered every ten details, at page boundaries, and at stage
+completion; geometric data growth bounds repeated writes. Reads stop before the
+overall deadline, reserving up to five seconds (20% of shorter windows) to persist
+the collected prefix. Persistence shares the overall collection deadline and
+receives an abort signal. The fixture writes an abortable temporary
+snapshot before replacing the last complete checkpoint, so a stalled write does
+not overwrite earlier evidence with a partially written JSON file.
+Review counts and fingerprints advance only after a checkpoint succeeds. A later
+write failure or expired deadline retains the last saved bodies and marks coverage
+incomplete.
+
+Braintrust export requires an explicit eval project UUID. Native capture includes
+prompts, responses, and tool content only after that opt-in configures the isolated
+company's observability destination. The ingestion credential crosses the public API via
+Node fetch, outside Playwright tracing, and is included in launcher evidence
+redaction. Orchestration spans contain identifiers, phase timing, outcome, and
+feedback counts; they never contain provider credentials or feedback bodies.
+
+With a bounded operations manifest, the ingestion credential is an expiring
+per-attempt relay token. The organization-wide Braintrust key stays in the
+controller. Only authenticated POSTs to the relay's trace/log ingest paths are
+allowed, with a fixed HTTPS upstream and redirects disabled. Header and payload
+`braintrust.parent` values must reference the selected project. Duplicate protobuf
+singular/oneof fields are refused, and JSON is canonicalized to remove duplicate
+key ambiguity. The token cannot call model, read, delete, or other API endpoints;
+it can still write records within the selected project until its finite request,
+byte or time allowance is exhausted. It is not an attempt-level row permission.
+
+The worker environment removes upstream provider/Braintrust credentials before
+inserting the model and OTLP relay tokens. Ambient relay URLs are discarded, and
+the fixture server receives the selected endpoint through company settings.
+Both tokens participate in evidence redaction. Private OTLP receipts retain
+metadata only, and persistence errors stop further admission. The relay closes
+with the model gateway before controller finalization. The controller's direct
+finalization export and tracing without an operations manifest retain the
+existing direct credential path. Remote relay publication is not enabled here.
+
+The bounded operations manifest is credential-free and private. Its parent-owned
+loopback gateway uses an ephemeral per-attempt token. Upstream credentials stay
+in the launcher, are included in secret scans, and are removed from the child
+provider environment. Only the selected Responses or Messages endpoint is
+forwarded to a fixed provider or Braintrust HTTPS origin; request headers do not
+select arbitrary destinations. Gateway response caching and fallback are refused.
+Request journal and usage receipts contain no prompt/response bodies or keys.
+The manifest, journal, and receipts are not public report projections.
+
+## Configured repository and conversion proof
+
+The repository proof flow seeds only the exact `workspace` child of its resolved
+fixture-owned temporary directory. It initializes that disposable Git checkout
+with a fresh random reference. It never modifies a contributor checkout. Provider
+credentials remain encrypted fixture secret references. Retention evidence keeps
+a digest of allowlisted configuration fields rather than raw environment values.
+The public API performs legacy conversion; no database mutation or private
+Runner hook performs it. Only synthetic source bytes and proof JSON enter the
+existing private attempt evidence and registered-artifact verification pipeline.
+A failed attempt remains retained. These development checks are not staging or
+Slack qualification, and they do not publish trusted archives or credentials.

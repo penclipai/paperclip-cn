@@ -1,0 +1,17 @@
+{
+  "desktopSettings.approvalAction": { "en": "Review approval", "zh-CN": "查看审批", "reviewedEnglishHash": "3e5b6519eab1dfeab2c92ec08689b4ac71c52783da99754b7171962f267d70d1" },
+  "desktopSettings.approvalBody": { "en": "A request is waiting for your decision.", "zh-CN": "有一项请求正等待你的决定。", "reviewedEnglishHash": "5656aa4c4299058c2d89cb9727af1c9a138ee74036560d503555aec31ac34683" },
+  "desktopSettings.approvalTitle": { "en": "Approval needs review", "zh-CN": "有审批等待处理", "reviewedEnglishHash": "e41e560251caa2e4fc48d01dbbae29233c3b3c15944efb2b3c82b80584511efa" },
+  "desktopSettings.closeToTray": { "en": "Close to tray", "zh-CN": "关闭窗口时最小化到托盘", "reviewedEnglishHash": "c7ba65e589b0f13eb622fc371a1d9d1e8fb3f99825cbed0cf36b3f346aa5a85a" },
+  "desktopSettings.closeToTrayHint": { "en": "Keep Paperclip running in the background when its window closes. Use the tray menu to quit.", "zh-CN": "关闭窗口后让 Paperclip 在后台继续运行；请从托盘菜单退出。", "reviewedEnglishHash": "2a6a86e47cbd80464d560cd09b923ce16c5a2337598f4a0105697cf6e408d83e" },
+  "desktopSettings.description": { "en": "Choose how the installed desktop app behaves in the background.", "zh-CN": "设置已安装桌面应用在后台的运行方式。", "reviewedEnglishHash": "188aa6377fe70454843221714663fc4e966e9e3090c7420cd59220b06f1d2242" },
+  "desktopSettings.notifications": { "en": "Important notifications", "zh-CN": "重要通知", "reviewedEnglishHash": "a6db93105b722718e8489afb0c4e450da8407506d7e31f02eba2fe528fe81707" },
+  "desktopSettings.notificationsHint": { "en": "Ask the system to show notifications for approval requests and failed or timed-out runs while the app is in the background.", "zh-CN": "应用在后台时，请求系统为审批请求、失败或超时的运行显示通知。", "reviewedEnglishHash": "7b68aa6263c4a0929466bb4f1aca682a1caa639e517d7bbc0868062e7919692c" },
+  "desktopSettings.notificationsUnavailable": { "en": "Native notifications are unavailable on this device.", "zh-CN": "此设备无法使用系统通知。", "reviewedEnglishHash": "c4dd430a89b8f71bd8ba323269d4093c0d997f6f8515c6a30919e347597f1265" },
+  "desktopSettings.quit": { "en": "Quit Paperclip", "zh-CN": "退出 Paperclip", "reviewedEnglishHash": "e84de0b8a7a49e86e0ca55d57c3ba284bd99edcd11bcc293d7cd0868d9d55396" },
+  "desktopSettings.quitHint": { "en": "Stop the local Paperclip service and close the app. Running work may continue remotely.", "zh-CN": "停止本地 Paperclip 服务并关闭应用。正在运行的工作可能仍会在远端继续。", "reviewedEnglishHash": "1495eea8f3de41630da814e0fe8b9bce05b529dc2ecf17c1222f5aeddc320e91" },
+  "desktopSettings.saveFailed": { "en": "Could not save desktop preference.", "zh-CN": "无法保存桌面应用偏好设置。", "reviewedEnglishHash": "4a2a9929a9831c42e313fbca73e1a4e60f514419e84ab06194dfc7faead810bc" },
+  "desktopSettings.title": { "en": "Desktop app", "zh-CN": "桌面应用", "reviewedEnglishHash": "7102842054a4a55bb11a84e9ca549c31daf4d932f05ed075ca8ca569ef09f0ab" },
+  "desktopSettings.trayUnavailable": { "en": "The system tray is unavailable on this device.", "zh-CN": "此设备无法使用系统托盘。", "reviewedEnglishHash": "79b3d3595a5ac9a67a5996c879c6ed47703c6d8188d9683fd5584a68e7438039" },
+  "desktopSettings.unavailable": { "en": "Desktop preferences are unavailable.", "zh-CN": "桌面应用偏好设置不可用。", "reviewedEnglishHash": "246317f5a940915b1e85c093fd85c555bb3d0882b02e958c54dac6124b1346ff" }
+}

@@ -16,7 +16,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { afterEach, test } from "node:test";
 import { readFileSync } from "node:fs";
-import { inspectRuntimePayload, optimizeRuntimePayload, runtimePayloadInternals } from "./runtime-payload.mjs";
+import { inspectRuntimePayload, optimizeRuntimePayload, pruneVerifiedCopilotMaterializer, runtimePayloadInternals } from "./runtime-payload.mjs";
 
 const VERSION = "1.18.34";
 const roots = [];
@@ -107,6 +107,26 @@ async function pnpmFixture() {
   };
 }
 
+async function writeCopilotMaterializer(root, name) {
+  const packageRoot = join(root, "node_modules", name);
+  await mkdir(packageRoot, { recursive: true });
+  await writeFile(join(packageRoot, "package.json"), JSON.stringify({ name, version: "1.0.88" }));
+  await writeFile(join(packageRoot, "copilot"), "materializer input");
+  return packageRoot;
+}
+
+async function pnpmCopilotMaterializerFixture(root, name) {
+  const topLevel = await writeCopilotMaterializer(root, name);
+  const store = join(root, "node_modules", ".pnpm", `${name.replace("/", "+")}@1.0.88`, "node_modules", name);
+  await mkdir(dirname(store), { recursive: true });
+  await rename(topLevel, store);
+  await symlink(store, topLevel, "dir");
+  const alternateAlias = join(root, "node_modules", ".pnpm", `${name.replace("/", "+")}@1.0.88_peer@fixture`, "node_modules", name);
+  await mkdir(dirname(alternateAlias), { recursive: true });
+  await symlink(store, alternateAlias, "dir");
+  return { topLevel, store, alternateAlias };
+}
+
 test("optimizes the selected OpenCode package for all supported Unix targets", async () => {
   for (const [platform, arch] of [["linux", "x64"], ["darwin", "x64"], ["darwin", "arm64"]]) {
     const setup = await fixture({ platform, arch });
@@ -143,6 +163,71 @@ test("preserves Windows and reports it as unsupported", async () => {
     unexpectedPackages: [],
     bytesSaved: 0,
   });
+});
+
+test("prunes only the verified target Copilot materializer after provider assets are retained", async () => {
+  const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-payload-copilot-"));
+  roots.push(root);
+  const selected = await pnpmCopilotMaterializerFixture(root, "@github/copilot-darwin-arm64");
+  const wrongTarget = await writeCopilotMaterializer(root, "@github/copilot-darwin-x64");
+  const unrelated = await writeCopilotMaterializer(root, "@github/not-copilot");
+  const assets = join(root, "server", "provider-assets", "copilot", "darwin-arm64");
+  await mkdir(join(assets, "distribution"), { recursive: true });
+  await writeFile(join(assets, ".paperclip-copilot-closure.json"), "verified closure");
+  await writeFile(join(assets, "copilot"), "verified executable");
+  await writeFile(join(assets, "distribution", "messages.json"), "verified distribution");
+
+  const result = pruneVerifiedCopilotMaterializer({ runtimeRoot: root, platform: "darwin", arch: "arm64" });
+  assert.deepEqual(result, {
+    supported: true,
+    platform: "darwin",
+    arch: "arm64",
+    packageName: "@github/copilot-darwin-arm64",
+    bytesSaved: result.bytesSaved,
+  });
+  assert.ok(result.bytesSaved > 0);
+  await assert.rejects(lstat(selected.topLevel));
+  await assert.rejects(lstat(selected.store));
+  await assert.rejects(lstat(selected.alternateAlias));
+  assert.equal((await lstat(join(root, "node_modules", "@github"))).isDirectory(), true);
+  assert.equal((await lstat(wrongTarget)).isDirectory(), true);
+  assert.equal((await lstat(unrelated)).isDirectory(), true);
+  assert.equal(await readFile(join(assets, ".paperclip-copilot-closure.json"), "utf8"), "verified closure");
+  assert.equal(await readFile(join(assets, "copilot"), "utf8"), "verified executable");
+  assert.equal(await readFile(join(assets, "distribution", "messages.json"), "utf8"), "verified distribution");
+});
+
+test("removes an empty physical Copilot namespace after pruning the exact target", async () => {
+  const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-payload-copilot-empty-scope-"));
+  roots.push(root);
+  const selected = await pnpmCopilotMaterializerFixture(root, "@github/copilot-darwin-arm64");
+  const assets = join(root, "server", "provider-assets", "copilot", "darwin-arm64");
+  await mkdir(assets, { recursive: true });
+  await writeFile(join(assets, ".paperclip-copilot-closure.json"), "verified closure");
+  await writeFile(join(assets, "copilot"), "verified executable");
+
+  pruneVerifiedCopilotMaterializer({ runtimeRoot: root, platform: "darwin", arch: "arm64" });
+  await assert.rejects(lstat(selected.topLevel));
+  await assert.rejects(lstat(selected.store));
+  await assert.rejects(lstat(selected.alternateAlias));
+  await assert.rejects(lstat(join(root, "node_modules", "@github")));
+  assert.equal(await readFile(join(assets, ".paperclip-copilot-closure.json"), "utf8"), "verified closure");
+  assert.equal(await readFile(join(assets, "copilot"), "utf8"), "verified executable");
+});
+
+test("does not prune Copilot materializers on unsupported Windows", async () => {
+  const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-payload-copilot-win-"));
+  roots.push(root);
+  const materializer = await writeCopilotMaterializer(root, "@github/copilot-darwin-arm64");
+  const result = pruneVerifiedCopilotMaterializer({ runtimeRoot: root, platform: "win32", arch: "x64" });
+  assert.deepEqual(result, {
+    supported: false,
+    platform: "win32",
+    arch: "x64",
+    packageName: null,
+    bytesSaved: 0,
+  });
+  assert.equal((await lstat(materializer)).isDirectory(), true);
 });
 
 test("refuses musl and unknown Linux libc before mutating staged payloads", async () => {

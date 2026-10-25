@@ -18,7 +18,7 @@ pnpm --filter @penclipai/paperclip-runner exec vitest run \
   src/mock-core/live-console-demo-server.test.ts
 ```
 
-Expected result: both files pass. The tests cover requests, goals, lineage,
+Expected result: the Codex driver suites and Live console server suite pass. The tests cover requests, goals, lineage,
 steering, interrupt races, reconnect, replay, and redaction.
 
 ## Step 2: Start the server

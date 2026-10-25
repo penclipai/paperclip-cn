@@ -1,6 +1,6 @@
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { AgentPermissions, TrustPreset } from "@penclipai/shared";
 import { Lock, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -61,6 +61,7 @@ export function TrustPresetSection({
   issueCandidates = [],
   candidatesLoading,
   allowSingleIssue = true,
+  projectAccessEditor,
 }: {
   permissions: Partial<AgentPermissions> | null | undefined;
   onChange: (permissions: Partial<AgentPermissions>) => void;
@@ -70,6 +71,7 @@ export function TrustPresetSection({
   issueCandidates?: LowTrustBoundaryCandidate[];
   candidatesLoading?: boolean;
   allowSingleIssue?: boolean;
+  projectAccessEditor?: ReactNode;
 }) {
   useTranslation();
   const [policyOpen, setPolicyOpen] = useState(false);
@@ -151,7 +153,7 @@ export function TrustPresetSection({
                     : "This agent is set to low-trust review, but no project, root issue, or issue scope is set in the core policy. Add a scope before this agent can run without denial."}
                 </p>
               </div>
-              {boundaryEditable ? (
+              {projectAccessEditor && (boundary?.projectIds?.length ?? 0) > 0 ? null : boundaryEditable ? (
                 <div className="rounded-md border border-border/70 bg-background/70 p-3 text-foreground space-y-3">
                   <div className="grid gap-3 sm:grid-cols-(--gtc-12)">
                     <Field label={translateInstant("trustPreset.boundaryType")}>
@@ -211,7 +213,7 @@ export function TrustPresetSection({
                     {translateInstant("This policy has")}{" "}{summarizeLowTrustBoundaryTarget(boundary).toLowerCase()} {translateInstant("and cannot be edited by the CE single-boundary editor.")}</p>
                 </div>
               )}
-              <p className="text-xs text-muted-foreground">
+              {!projectAccessEditor && <p className="text-xs text-muted-foreground">
                 {translateInstant("trustPreset.eePrompt")}{" "}
                 <a
                   className="underline underline-offset-2 hover:text-foreground"
@@ -219,8 +221,9 @@ export function TrustPresetSection({
                   target="_blank"
                   rel="noreferrer"
                 >
-                  {translateInstant("trustPreset.getPaperclipEe")}</a>
-              </p>
+                  {translateInstant("trustPreset.getPaperclipEe")}
+                </a>
+              </p>}
               <CollapsibleSection
                 title={translateInstant("trustPreset.viewPolicy")}
                 open={policyOpen}
@@ -247,6 +250,8 @@ export function TrustPresetSection({
             </div>
           </div>
         ) : null}
+
+        {lowTrust && projectAccessEditor}
 
         {managedPermissions.authorizationPolicy?.reviewPreset ? null : (
           <p className="text-xs text-muted-foreground">

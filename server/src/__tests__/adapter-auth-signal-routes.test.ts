@@ -113,6 +113,8 @@ vi.mock("@penclipai/adapter-codex-local/server", async (importOriginal) => {
 });
 
 let currentActor: Record<string, unknown>;
+let agentRoutes: typeof import("../routes/agents.js").agentRoutes;
+let errorHandler: typeof import("../middleware/index.js").errorHandler;
 
 async function preloadRouteModules() {
   await vi.importActual<typeof import("../routes/agents.js")>(
@@ -135,12 +137,7 @@ function boardActor(userId: string, companyIds: string[] = [COMPANY_1, OTHER_COM
 }
 
 async function createApp() {
-  const { agentRoutes } = await vi.importActual<
-    typeof import("../routes/agents.js")
-  >("../routes/agents.js");
-  const { errorHandler } = await vi.importActual<
-    typeof import("../middleware/index.js")
-  >("../middleware/index.js");
+
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
@@ -156,9 +153,8 @@ const authSignalPath = (companyId: string, type: string, environmentId?: string)
   `/api/companies/${companyId}/adapters/${type}/auth-signal${environmentId ? `?environmentId=${environmentId}` : ""}`;
 
 describe("adapter auth-signal route", () => {
-  beforeAll(preloadRouteModules, 45_000);
+  beforeEach(async () => {
 
-  beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
     currentActor = boardActor(OWNER_A);
@@ -190,6 +186,12 @@ describe("adapter auth-signal route", () => {
       effectiveHome: "/tmp/codex-home",
       sharedSourceHome: "/tmp/codex-shared-home",
     });
+    const [routes, middleware] = await Promise.all([
+      vi.importActual<typeof import("../routes/agents.js")>("../routes/agents.js"),
+      vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js"),
+    ]);
+    agentRoutes = routes.agentRoutes;
+    errorHandler = middleware.errorHandler;
   });
 
   afterEach(() => {

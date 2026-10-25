@@ -4,6 +4,7 @@ import request from "supertest";
 import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { activityLog, agents, companies, companyMemberships, createDb, heartbeatRuns, issues, principalPermissionGrants } from "@penclipai/db";
+
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -634,8 +635,9 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
     });
 
     const app = createApp(companyId);
-    const now = Date.now();
-    const dateNow = vi.spyOn(Date, "now").mockReturnValue(now);
+    // Filling the cache can take longer than its five-second expiry on CI.
+    // Keep entries alive so this test measures capacity eviction alone.
+    const clock = vi.spyOn(Date, "now").mockReturnValue(Date.now());
     try {
       for (let index = 0; index < ISSUE_LIST_SERVER_CACHE_MAX_ENTRIES + 5; index += 1) {
         const res = await request(app)
@@ -646,7 +648,8 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
 
       expect(__getIssueListResponseCacheSizeForTests()).toBe(ISSUE_LIST_SERVER_CACHE_MAX_ENTRIES);
     } finally {
-      dateNow.mockRestore();
+      clock.mockRestore();
+
     }
   });
 
@@ -788,6 +791,62 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
     expect(res.body).toMatchObject({
       error: "assigneeAgentId must be a UUID or 'null'",
     });
+  });
+
+  it.each([
+    "projectId",
+    "parentId",
+    "parentIssueId",
+    "workspaceId",
+    "executionWorkspaceId",
+    "descendantOf",
+    "labelId",
+    "participantAgentId",
+  ])("returns 422 instead of a DB error for malformed %s filters", async (param) => {
+    const companyId = randomUUID();
+    await db.insert(companies).values({
+      id: companyId,
+      name: "Paperclip",
+      issuePrefix: uniqueIssuePrefix(),
+      requireBoardApprovalForNewAgents: false,
+    });
+    await seedCloudTenantMember(companyId);
+
+    const app = createApp(companyId);
+    const res = await request(app)
+      .get(`/api/companies/${companyId}/issues`)
+      .query({ status: "todo", [param]: "d", limit: "20" });
+
+    expect(res.status, JSON.stringify(res.body)).toBe(422);
+    expect(res.body).toMatchObject({ error: `${param} must be a UUID` });
+  });
+
+  it.each([
+    "projectId",
+    "parentId",
+    "parentIssueId",
+    "workspaceId",
+    "executionWorkspaceId",
+    "descendantOf",
+    "labelId",
+    "participantAgentId",
+  ])("returns 422 from issues/count for malformed %s filters", async (param) => {
+    const companyId = randomUUID();
+    await db.insert(companies).values({
+      id: companyId,
+      name: "Paperclip",
+      issuePrefix: uniqueIssuePrefix(),
+      requireBoardApprovalForNewAgents: false,
+    });
+    await seedCloudTenantMember(companyId);
+
+    const app = createApp(companyId);
+    const res = await request(app)
+      .get(`/api/companies/${companyId}/issues/count`)
+      .query({ attention: "blocked", [param]: "d" });
+
+    expect(res.status, JSON.stringify(res.body)).toBe(422);
+    expect(res.body).toMatchObject({ error: `${param} must be a UUID` });
   });
 
   it("returns opt-in live descendant counts for offscreen live descendants only", async () => {

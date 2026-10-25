@@ -989,6 +989,46 @@
     "zh-CN": "/absolute/path/to/workspace",
     "reviewedEnglishHash": "f8bdc2305f39d599cc8f63295a706d4b983d20d448928c2e41f6006af74c80df"
   },
+  "agentConfig.runnerUpgrade.action": {
+    "en": "Upgrade runner",
+    "zh-CN": "升级运行器",
+    "reviewedEnglishHash": "242bc76013bd702707106a08ea736b72d68f04167dd1e958852f19a1bc9d6079"
+  },
+  "agentConfig.runnerUpgrade.description": {
+    "en": "Keep {{runner}}, your model, account, and compatible settings. New sessions start fresh; past runs stay available.",
+    "zh-CN": "保留 {{runner}}、模型、账户和兼容设置。新会话将重新开始，历史运行记录仍可查看。",
+    "reviewedEnglishHash": "cbb6febbbd48eebabc5c93f0fce427476832a9856936460110505a40c3e12e5e"
+  },
+  "agentConfig.runnerUpgrade.saveComputerChange": {
+    "en": "Save your computer change before upgrading the runner.",
+    "zh-CN": "请先保存计算机设置的更改，再升级运行器。",
+    "reviewedEnglishHash": "dc0cb98fa4341e8465f073cfa5b8294bd0bad04007fb5f92bbd71b97aa3661d9"
+  },
+  "agentConfig.runnerUpgrade.success": {
+    "en": "Upgraded to Paperclip Runner.",
+    "zh-CN": "已升级到 Paperclip Runner。",
+    "reviewedEnglishHash": "6d95803e33d7c501af830302471c8405bc6cf131a1b35c31d99bb261215104e5"
+  },
+  "agentConfig.runnerUpgrade.title": {
+    "en": "Upgrade to Paperclip Runner",
+    "zh-CN": "升级到 Paperclip Runner",
+    "reviewedEnglishHash": "ffd95e5b0b42ef67449c8bbb4b8a9a7a221e680f99837218b6423700aab2fe8f"
+  },
+  "agentConfig.runnerUpgrade.unsavedChangesIncluded": {
+    "en": "Your unsaved changes will be included.",
+    "zh-CN": "未保存的更改将一并应用。",
+    "reviewedEnglishHash": "d1f6ae5eca6f0febdf4d0af9a5d116df244c2d294d8c02c764bc14b4a27d2ddf"
+  },
+  "agentConfig.runnerUpgrade.upgrading": {
+    "en": "Upgrading…",
+    "zh-CN": "正在升级…",
+    "reviewedEnglishHash": "085f9cab21395ce61dd3ad41c4f26ae16b0c4c5bc26acf1942ac2e85c3099d1b"
+  },
+  "agentConfig.runnerUpgrade.verifyComputer": {
+    "en": "The upgrade will verify your computer first. This can take a few minutes.",
+    "zh-CN": "升级前会先验证你的计算机，这可能需要几分钟。",
+    "reviewedEnglishHash": "779f7e61cb5190866c02e246773ab9baa408d7b2f69de5062d72a5a7611e81ee"
+  },
   "agentConfig.xhigh": {
     "en": "X-High",
     "zh-CN": "超高",

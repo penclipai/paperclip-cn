@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
@@ -6,6 +6,9 @@ export default defineConfig({
     // when Vitest fans out every project at once. A small global cap keeps
     // `pnpm test:run` stable without changing individual suite semantics.
     maxWorkers: process.platform === "win32" ? 4 : undefined,
+    ...(process.env.PAPERCLIP_CI_PROFILE === "true"
+      ? { reporters: [...configDefaults.reporters, "./scripts/ci-profile/vitest-reporter.mjs"] }
+      : {}),
     projects: [
       "packages/shared",
       "packages/skills-catalog",
@@ -17,7 +20,6 @@ export default defineConfig({
       "packages/adapters/cursor-local",
       "packages/adapters/gemini-local",
       "packages/adapters/grok-local",
-      "packages/adapters/hermes",
       "packages/adapters/kimi-local",
       "packages/adapters/openclaw-gateway",
       "packages/adapters/opencode-local",
