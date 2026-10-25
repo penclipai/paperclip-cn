@@ -107,31 +107,41 @@ function captureDirectChildren(dataDir: string, phase: "pre" | "post", parentPid
   }
 }
 
-function nativeRunner(dataDir: string): (input: WindowsNativePostgresStopInput) => Promise<WindowsNativePostgresStopResult> {
-  return async (input) => {
-    captureDirectChildren(dataDir, "pre", input.childPid);
-    try {
-      const result = await runWindowsNativePostgresStop(input);
-      writeFileSync(join(dataDir, "native-result.safe.json"), JSON.stringify({
-        closureComplete: result.closureComplete,
-        forkChildrenObserved: result.forkChildrenObserved,
-        forkChildrenTerminated: result.forkChildrenTerminated,
-        pgCtlExitCode: result.pgCtlExitCode,
-        pgCtlManagedExitCode: result.pgCtlManagedExitCode,
-        pgCtlSucceeded: result.pgCtlSucceeded,
-        rootExited: result.rootExited,
-        rootExitCode: result.rootExitCode,
-        rootIdentityVerified: result.rootIdentityVerified,
-        unknownChildren: result.unknownChildren,
-        errorCode: result.errorCode ?? null,
-      }));
-      return result;
-    } catch {
-      writeFileSync(join(dataDir, "native-result.safe.json"), JSON.stringify({ runnerError: "native_runner_failed" }));
-      throw new Error("native fixture runner failed");
-    } finally {
-      captureDirectChildren(dataDir, "post", input.childPid);
-    }
+function nativeRunner(dataDir: string): {
+  run: (input: WindowsNativePostgresStopInput) => Promise<WindowsNativePostgresStopResult>;
+  settled: () => Promise<void>;
+} {
+  let runner: Promise<WindowsNativePostgresStopResult> | undefined;
+  return {
+    run: (input) => {
+      runner = (async () => {
+        captureDirectChildren(dataDir, "pre", input.childPid);
+        try {
+          const result = await runWindowsNativePostgresStop(input);
+          writeFileSync(join(dataDir, "native-result.safe.json"), JSON.stringify({
+            closureComplete: result.closureComplete,
+            forkChildrenObserved: result.forkChildrenObserved,
+            forkChildrenTerminated: result.forkChildrenTerminated,
+            pgCtlExitCode: result.pgCtlExitCode,
+            pgCtlManagedExitCode: result.pgCtlManagedExitCode,
+            pgCtlSucceeded: result.pgCtlSucceeded,
+            rootExited: result.rootExited,
+            rootExitCode: result.rootExitCode,
+            rootIdentityVerified: result.rootIdentityVerified,
+            unknownChildren: result.unknownChildren,
+            errorCode: result.errorCode ?? null,
+          }));
+          return result;
+        } catch {
+          writeFileSync(join(dataDir, "native-result.safe.json"), JSON.stringify({ runnerError: "native_runner_failed" }));
+          throw new Error("native fixture runner failed");
+        } finally {
+          captureDirectChildren(dataDir, "post", input.childPid);
+        }
+      })();
+      return runner;
+    },
+    settled: async () => { await runner?.then(() => undefined, () => undefined); },
   };
 }
 
@@ -145,19 +155,39 @@ async function closeHeldRoot(child: ChildProcess): Promise<boolean> {
   });
 }
 
+function writeFixtureCleanupDiagnostic(dataDir: string, output: string): void {
+  try {
+    const parsed: unknown = JSON.parse(output);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return;
+    const source = parsed as Record<string, unknown>;
+    const diagnostic: Record<string, string | boolean> = {};
+    for (const key of ["state", "expectedCreationFiletime", "observedCreationFiletime", "expectedImageBaseName", "observedImageBaseName"]) {
+      if (typeof source[key] === "string") diagnostic[key] = source[key];
+    }
+    if (typeof source.imageMatchesExpected === "boolean") diagnostic.imageMatchesExpected = source.imageMatchesExpected;
+    if (Object.keys(diagnostic).length > 0) writeFileSync(join(dataDir, "fixture-cleanup-identity.safe.json"), JSON.stringify(diagnostic));
+  } catch {
+    // The native cleanup error is intentionally retained without serializing its
+    // command, stderr, or other potentially sensitive process details.
+  }
+}
+
 function terminateVerifiedFixtureChild(dataDir: string): boolean {
   const identityPath = join(dataDir, "fixture-child.json");
   if (!existsSync(identityPath)) return true;
   const [pid, image, created] = readFileSync(identityPath, "utf8").split("|");
   const payload = Buffer.from(JSON.stringify({ pid: Number(pid), image, created }), "utf8").toString("base64");
-  const script = String.raw`$x=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${payload}'))|ConvertFrom-Json;$n=@'
+  const script = String.raw`$x=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${payload}'))|ConvertFrom-Json;function WriteFixtureCleanupStatus($state,$observedCreation,$imageMatches,$observedImage){[Console]::Out.Write(([PSCustomObject]@{state=$state;expectedCreationFiletime=[string]$x.created;observedCreationFiletime=$observedCreation;imageMatchesExpected=$imageMatches;expectedImageBaseName=[IO.Path]::GetFileName([string]$x.image);observedImageBaseName=$observedImage}|ConvertTo-Json -Compress))};$n=@'
 using System;using System.Runtime.InteropServices;using System.Text;
 public static class FixtureCleanup { [DllImport("kernel32.dll",SetLastError=true)]public static extern IntPtr OpenProcess(uint a,bool i,uint p);[DllImport("kernel32.dll")]public static extern bool CloseHandle(IntPtr h);[DllImport("kernel32.dll",SetLastError=true)]public static extern bool GetProcessTimes(IntPtr h,out long c,out long e,out long k,out long u);[DllImport("kernel32.dll",CharSet=CharSet.Unicode,SetLastError=true)]public static extern bool QueryFullProcessImageName(IntPtr h,uint f,StringBuilder n,ref uint s);[DllImport("kernel32.dll",SetLastError=true)]public static extern bool TerminateProcess(IntPtr h,uint c);[DllImport("kernel32.dll",SetLastError=true)]public static extern uint WaitForSingleObject(IntPtr h,uint m); }
-'@;Add-Type -TypeDefinition $n;$h=[FixtureCleanup]::OpenProcess(0x101001,$false,[uint32]$x.pid);if($h -eq [IntPtr]::Zero){if([Runtime.InteropServices.Marshal]::GetLastWin32Error() -eq 87){exit 0};throw 'fixture_open_failed'};try{$w=[FixtureCleanup]::WaitForSingleObject($h,0);if($w -eq 0){exit 0};if($w -ne 258){throw 'fixture_wait_unavailable'};[long]$c=0;[long]$e=0;[long]$k=0;[long]$u=0;$s=32768;$name=New-Object Text.StringBuilder $s;if(-not [FixtureCleanup]::GetProcessTimes($h,[ref]$c,[ref]$e,[ref]$k,[ref]$u) -or -not [FixtureCleanup]::QueryFullProcessImageName($h,0,$name,[ref]$s)){throw 'fixture_identity_unavailable'};if($c -ne [Int64]::Parse([string]$x.created) -or -not [string]::Equals($name.ToString(),[string]$x.image,[StringComparison]::OrdinalIgnoreCase)){throw 'fixture_identity_changed'};if(-not [FixtureCleanup]::TerminateProcess($h,1) -or [FixtureCleanup]::WaitForSingleObject($h,5000) -ne 0){throw 'fixture_terminate_failed'}}finally{[void][FixtureCleanup]::CloseHandle($h)}`;
+'@;Add-Type -TypeDefinition $n;$h=[FixtureCleanup]::OpenProcess(0x101001,$false,[uint32]$x.pid);if($h -eq [IntPtr]::Zero){if([Runtime.InteropServices.Marshal]::GetLastWin32Error() -eq 87){WriteFixtureCleanupStatus 'missing' $null $null $null;exit 0};WriteFixtureCleanupStatus 'open_failed' $null $null $null;throw 'fixture_open_failed'};try{$w=[FixtureCleanup]::WaitForSingleObject($h,0);if($w -eq 0){WriteFixtureCleanupStatus 'closed' $null $null $null;exit 0};if($w -ne 258){WriteFixtureCleanupStatus 'wait_unavailable' $null $null $null;throw 'fixture_wait_unavailable'};[long]$c=0;[long]$e=0;[long]$k=0;[long]$u=0;$s=32768;$name=New-Object Text.StringBuilder $s;if(-not [FixtureCleanup]::GetProcessTimes($h,[ref]$c,[ref]$e,[ref]$k,[ref]$u) -or -not [FixtureCleanup]::QueryFullProcessImageName($h,0,$name,[ref]$s)){WriteFixtureCleanupStatus 'identity_unavailable' $null $null $null;throw 'fixture_identity_unavailable'};$imageMatches=[string]::Equals($name.ToString(),[string]$x.image,[StringComparison]::OrdinalIgnoreCase);if($c -ne [Int64]::Parse([string]$x.created) -or -not $imageMatches){WriteFixtureCleanupStatus 'identity_changed' ([string]$c) $imageMatches ([IO.Path]::GetFileName($name.ToString()));throw 'fixture_identity_changed'};if(-not [FixtureCleanup]::TerminateProcess($h,1) -or [FixtureCleanup]::WaitForSingleObject($h,5000) -ne 0){WriteFixtureCleanupStatus 'terminate_failed' ([string]$c) $imageMatches ([IO.Path]::GetFileName($name.ToString()));throw 'fixture_terminate_failed'};WriteFixtureCleanupStatus 'terminated' ([string]$c) $imageMatches ([IO.Path]::GetFileName($name.ToString()))}finally{[void][FixtureCleanup]::CloseHandle($h)}`;
   try {
-    execFileSync(systemPowerShell, ["-NoLogo", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-EncodedCommand", encodePowerShell(script)], { windowsHide: true, timeout: 10_000 });
+    const stdout = execFileSync(systemPowerShell, ["-NoLogo", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-EncodedCommand", encodePowerShell(script)], { windowsHide: true, timeout: 10_000, encoding: "utf8" });
+    writeFixtureCleanupDiagnostic(dataDir, stdout);
     return true;
-  } catch {
+  } catch (error) {
+    const stdout = typeof error === "object" && error !== null && "stdout" in error && typeof error.stdout === "string" ? error.stdout : "";
+    writeFixtureCleanupDiagnostic(dataDir, stdout);
     return false;
   }
 }
@@ -190,7 +220,7 @@ describe.skipIf(process.platform !== "win32")("stopOwnedEmbeddedPostgresOnWindow
   it("terminates only the verified suspended --forkchild=fixture after pg_ctl receives the data directory as one argv item", async () => {
     const { child, dataDir } = await launch("owned");
     const instance = { process: child, stop: async () => undefined };
-    await stopOwnedEmbeddedPostgresOnWindows({ instance, dataDir, pgCtlPath: pgCtl, runWindowsNativeStop: nativeRunner(dataDir) });
+    await stopOwnedEmbeddedPostgresOnWindows({ instance, dataDir, pgCtlPath: pgCtl, runWindowsNativeStop: nativeRunner(dataDir).run });
     expect(instance.process).toBeUndefined();
     const nativeResult = JSON.parse(readFileSync(join(dataDir, "native-result.safe.json"), "utf8"));
     expect(nativeResult).toMatchObject({ forkChildrenObserved: 1, forkChildrenTerminated: 1, unknownChildren: 0 });
@@ -204,7 +234,7 @@ describe.skipIf(process.platform !== "win32")("stopOwnedEmbeddedPostgresOnWindow
   it("rejects a direct foreign-image child while detaching the normally exited root and preserving that foreign fixture", async () => {
     const { child, dataDir } = await launch("foreign", true);
     const instance = { process: child, stop: async () => undefined };
-    await expect(stopOwnedEmbeddedPostgresOnWindows({ instance, dataDir, pgCtlPath: pgCtl, runWindowsNativeStop: nativeRunner(dataDir) })).rejects.toThrow("did not prove owned process closure");
+    await expect(stopOwnedEmbeddedPostgresOnWindows({ instance, dataDir, pgCtlPath: pgCtl, runWindowsNativeStop: nativeRunner(dataDir).run })).rejects.toThrow("did not prove owned process closure");
     const nativeResult = JSON.parse(readFileSync(join(dataDir, "native-result.safe.json"), "utf8"));
     expect(nativeResult).toMatchObject({ rootIdentityVerified: true, pgCtlSucceeded: true, rootExited: true, rootExitCode: 0, closureComplete: false, unknownChildren: 1 });
     assertVerifiedFixtureChildState(dataDir, "running");
@@ -214,7 +244,12 @@ describe.skipIf(process.platform !== "win32")("stopOwnedEmbeddedPostgresOnWindow
   it("does not clear the owned Node child when the shared native deadline elapses", async () => {
     const { child, dataDir } = await launch("deadline");
     const instance = { process: child, stop: async () => undefined };
-    await expect(stopOwnedEmbeddedPostgresOnWindows({ instance, dataDir, pgCtlPath: pgCtl, timeoutMs: 1, runWindowsNativeStop: nativeRunner(dataDir) })).rejects.toThrow();
+    const runner = nativeRunner(dataDir);
+    try {
+      await expect(stopOwnedEmbeddedPostgresOnWindows({ instance, dataDir, pgCtlPath: pgCtl, timeoutMs: 1, runWindowsNativeStop: runner.run })).rejects.toThrow();
+    } finally {
+      await runner.settled();
+    }
     expect(instance.process).toBe(child);
   }, 30_000);
 });

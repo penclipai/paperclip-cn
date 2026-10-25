@@ -4,6 +4,18 @@ const expectedVersion = process.env.PAPERCLIPAI_VERSION!;
 const companyName = `Canary Smoke ${Date.now()}`;
 const agentName = "Canary Smoke Lead";
 
+type SetupAgent = {
+  id: string;
+  name: string;
+  status: string;
+  pauseReason: string | null;
+  lifecycleState: string;
+  lifecycleHolds: string[];
+  metadata: {
+    setupAdapterPending?: boolean;
+  } | null;
+};
+
 async function getJson<T>(request: APIRequestContext, url: string): Promise<T> {
   const response = await request.get(url);
   expect(response.ok()).toBe(true);
@@ -83,15 +95,23 @@ test("the exact published canary installs and reaches Connect a model", async ({
   await page.getByRole("button", { name: "Next", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Connect a model" })).toBeVisible();
 
-  // Stop before Connect: a public-repository gate must not require a Claude or
-  // Codex credential, and reaching this screen has not hired an agent or made
-  // a first task.
-  expect(
-    await getJson<Array<{ id: string }>>(
-      page.request,
-      `/api/companies/${company!.id}/agents`,
-    ),
-  ).toEqual([]);
+  // Choosing a name persists one durable setup record. It is not runnable:
+  // its setup lifecycle hold keeps it paused until a model is connected, so
+  // this public-repository gate remains provider-free.
+  const setupAgents = await getJson<SetupAgent[]>(
+    page.request,
+    `/api/companies/${company!.id}/agents`,
+  );
+  expect(setupAgents).toHaveLength(1);
+  const [setupAgent] = setupAgents;
+  expect(setupAgent).toMatchObject({
+    name: agentName,
+    status: "paused",
+    pauseReason: "setup",
+    lifecycleState: "paused",
+    metadata: { setupAdapterPending: true },
+  });
+  expect(setupAgent.lifecycleHolds).toContain("setup");
   expect(
     await getJson<Array<{ id: string }>>(
       page.request,
