@@ -150,7 +150,7 @@ RUN pnpm --filter @penclipai/plugin-sdk build
 ENV NODE_OPTIONS=--max-old-space-size=4096
 RUN pnpm --filter @penclipai/server build
 RUN test -f server/dist/index.js || (echo "ERROR: server build output missing" && exit 1)
-RUN pnpm --filter @paperclipai/server build:runtime \
+RUN pnpm --filter @penclipai/server build:runtime \
   && test -f server/dist-runtime/index.mjs || (echo "ERROR: server runtime bundle missing" && exit 1)
 RUN rm -rf packages/paperclip-runner/runner/target
 

@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { accessSync, constants, readFileSync } from "node:fs";
+import { accessSync, constants, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 // Pins the diagnostics wiring of the Docker leg of the release smoke.
 //
@@ -13,18 +14,42 @@ import test from "node:test";
 // produced, and the harness ran the container with `--rm` so stopping it
 // deleted the logs anyway. These assertions keep both halves fixed.
 
-const repoRoot = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
+const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const scriptPath = join(repoRoot, "scripts", "docker-onboard-smoke.sh");
 const script = readFileSync(scriptPath, "utf8");
 const workflow = readFileSync(
   join(repoRoot, ".github", "workflows", "release-smoke.yml"),
   "utf8",
 );
+const dockerfile = readFileSync(join(repoRoot, "Dockerfile"), "utf8");
+const serverManifest = JSON.parse(
+  readFileSync(join(repoRoot, "server", "package.json"), "utf8"),
+);
 const dockerJob = workflow.split(/^  smoke:$/m)[1] ?? "";
+const bashCommand = process.platform === "win32"
+  ? join(process.env.ProgramFiles ?? "C:\\Program Files", "Git", "bin", "bash.exe")
+  : "bash";
 
-test("smoke script is executable and parses", () => {
+function toGitBashPath(value) {
+  const normalized = value.replaceAll("\\", "/");
+  const driveMatch = normalized.match(/^([A-Za-z]):\/(.*)$/);
+  return driveMatch ? `/${driveMatch[1].toLowerCase()}/${driveMatch[2]}` : normalized;
+}
+
+test("smoke script is executable and parses", {
+  skip: process.platform === "win32" && !existsSync(bashCommand),
+}, () => {
   accessSync(scriptPath, constants.X_OK);
-  execFileSync("bash", ["-n", scriptPath]);
+  execFileSync(bashCommand, ["-n", toGitBashPath(scriptPath)]);
+});
+
+test("runtime bundle filters the actual server workspace", () => {
+  assert.equal(typeof serverManifest.scripts?.["build:runtime"], "string");
+  const runtimeFilter = dockerfile.match(
+    /^RUN pnpm --filter (\S+) build:runtime \\/m,
+  )?.[1];
+  assert.ok(runtimeFilter, "Dockerfile must run the server runtime bundle");
+  assert.equal(runtimeFilter, serverManifest.name);
 });
 
 test("container name can be fixed by the caller", () => {
