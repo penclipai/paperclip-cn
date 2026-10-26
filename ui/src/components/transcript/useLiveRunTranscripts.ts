@@ -14,6 +14,7 @@ import {
   mergeRunLogChunks,
   parsePersistedLogContent,
   readChunkSeq,
+  resolveRunLogReadOffset,
   type ChunkRetentionBudget,
 } from "../../lib/run-log-chunks";
 
@@ -327,13 +328,7 @@ export function useLiveRunTranscripts({
         });
         appendChunks(run.id, parsePersistedLogContent(run.id, result.content, pendingLogRowsByRunRef.current));
 
-        if (result.nextOffset !== undefined) {
-          logOffsetByRunRef.current.set(run.id, result.nextOffset);
-          return;
-        }
-        if (result.content.length > 0) {
-          logOffsetByRunRef.current.set(run.id, offset + result.content.length);
-        }
+        logOffsetByRunRef.current.set(run.id, resolveRunLogReadOffset(offset, result));
       } catch (error) {
         if (cancelled) return;
         if (error instanceof ApiError && error.status === 404) {

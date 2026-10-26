@@ -23,6 +23,27 @@ describe("openCode models", () => {
     await expect(listOpenCodeModels()).resolves.toEqual([]);
   });
 
+  it("forwards an explicit stderr encoding to the local model probe", async () => {
+    const spy = vi.spyOn(serverUtils, "runChildProcess").mockResolvedValue({
+      exitCode: 0,
+      signal: null,
+      timedOut: false,
+      stdout: "openai/gpt-5\n",
+      stderr: "",
+      pid: 1,
+      startedAt: new Date().toISOString(),
+    });
+    await expect(discoverOpenCodeModels({ stderrEncoding: "gbk" })).resolves.toEqual([
+      { id: "openai/gpt-5", label: "openai/gpt-5" },
+    ]);
+    expect(spy).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(String),
+      expect.any(Array),
+      expect.objectContaining({ stderrEncoding: "gbk" }),
+    );
+  });
+
   it("rejects when model is missing", async () => {
     await expect(
       ensureOpenCodeModelConfiguredAndAvailable({ model: "" }),

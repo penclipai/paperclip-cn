@@ -297,6 +297,11 @@ export interface AdapterExecutionTargetProcessOptions {
   onProcessStopped?: () => void;
   terminalResultCleanup?: TerminalResultCleanupOptions;
   /**
+   * Known stderr encoding for a local Windows command. Remote targets and
+   * stdout retain their protocol-defined UTF-8 handling.
+   */
+  stderrEncoding?: string;
+  /**
    * Sandbox-only: factory from the Paperclip bridge handle that streams the
    * CLI's stdout/stderr during the run. When provided, the batched provider
    * onLog is suppressed and incremental chunks flow through `onLog` instead.
@@ -870,6 +875,9 @@ export async function runAdapterExecutionTargetProcess(
   args: string[],
   options: AdapterExecutionTargetProcessOptions,
 ): Promise<RunProcessResult> {
+  if (options.stderrEncoding && (process.platform !== "win32" || target?.kind === "remote")) {
+    throw new Error("stderrEncoding is supported only for local Windows commands.");
+  }
   if (target?.kind === "remote" && target.transport === "sandbox") {
     const runner = requireSandboxRunner(target);
     const env = sanitizeRemoteExecutionEnv(options.env);
@@ -935,6 +943,9 @@ export async function runAdapterExecutionTargetProcess(
     onLog: options.onLog,
     onSpawn: options.onSpawn,
     terminalResultCleanup: options.terminalResultCleanup,
+    ...(process.platform === "win32" && (!target || target.kind === "local") && options.stderrEncoding
+      ? { stderrEncoding: options.stderrEncoding }
+      : {}),
     localProcessSandbox: target?.kind === "local" || !target ? options.localProcessSandbox : null,
     remoteExecution: adapterExecutionTargetToRemoteSpec(target),
   });

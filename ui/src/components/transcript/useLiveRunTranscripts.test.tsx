@@ -130,6 +130,30 @@ describe("useLiveRunTranscripts", () => {
     }
   });
 
+  it("continues a live UTF-8 log from its byte cursor after an EOF read", async () => {
+    vi.useFakeTimers();
+    const first = JSON.stringify({ ts: "a", stream: "stdout", chunk: "中文😀", seq: 1 }) + "\n";
+    const second = JSON.stringify({ ts: "b", stream: "stdout", chunk: "后续", seq: 2 }) + "\n";
+    const firstBytes = new TextEncoder().encode(first).byteLength;
+    logMock
+      .mockResolvedValueOnce({ runId: "run-1", store: "memory", logRef: "log-1", content: first } as never)
+      .mockResolvedValueOnce({ runId: "run-1", store: "memory", logRef: "log-1", content: second, endOffset: firstBytes + new TextEncoder().encode(second).byteLength } as never);
+    const runs = [{ id: "run-1", status: "running", adapterType: "codex_local" }];
+    function Harness() {
+      useLiveRunTranscripts({ companyId: "company-1", runs, enableRealtimeUpdates: false, logPollIntervalMs: 1 });
+      return null;
+    }
+    const root = createRoot(document.createElement("div"));
+    try {
+      await act(async () => root.render(<Harness />));
+      expect(logMock).toHaveBeenLastCalledWith("run-1", 0, 256_000, expect.anything());
+      await act(async () => vi.advanceTimersByTimeAsync(1));
+      expect(logMock).toHaveBeenLastCalledWith("run-1", firstBytes, 256_000, expect.anything());
+    } finally {
+      await act(async () => root.unmount());
+    }
+  });
+
   it("waits for a connecting socket to open before closing it during cleanup", async () => {
     function Harness() {
       useLiveRunTranscripts({

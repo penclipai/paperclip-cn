@@ -13,6 +13,25 @@ import type { RunLogChunk } from "../adapters";
 export type IncomingRunLogChunk = RunLogChunk & { dedupeKey: string };
 
 /**
+ * Persisted run-log cursors are byte offsets. New servers return `endOffset`
+ * even at the currently available EOF, while older servers return only a
+ * `nextOffset` when more data is immediately available. Keep the fallback in
+ * this shared boundary so every poller uses UTF-8 bytes rather than JS UTF-16
+ * code units.
+ */
+export function resolveRunLogReadOffset(
+  previousOffset: number,
+  result: { content: string; endOffset?: number; nextOffset?: number },
+): number {
+  for (const candidate of [result.endOffset, result.nextOffset]) {
+    if (typeof candidate === "number" && Number.isFinite(candidate) && candidate >= previousOffset) {
+      return candidate;
+    }
+  }
+  return previousOffset + new TextEncoder().encode(result.content).byteLength;
+}
+
+/**
  * Per-consumer merge state. `seenChunkKeys` is shared across every run tracked
  * by a single consumer (bounded + cleared past a cap); `trimmedSeqFloorByRun`
  * records, per run, the highest sequenced chunk that has been trimmed out of the

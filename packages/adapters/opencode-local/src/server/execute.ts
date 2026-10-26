@@ -68,6 +68,93 @@ import { resolveOpenCodeSkillsHome } from "./skills.js";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
+const OPENCODE_INSTALL_STUB_MARKER = "opencode-ai's postinstall script was not run";
+const OPENCODE_INSTALL_STUB_READ_BYTES = 2048;
+
+export class OpenCodeInstallIncompleteError extends Error {
+  readonly code = "opencode_install_incomplete";
+
+  constructor() {
+    super(
+      "OpenCode installation is incomplete: opencode-ai did not install its Windows runtime. Reinstall opencode-ai with lifecycle scripts enabled.",
+    );
+    this.name = "OpenCodeInstallIncompleteError";
+  }
+}
+
+function isOfficialOpenCodeBinaryPath(candidate: string): boolean {
+  return candidate
+    .replaceAll("\\", "/")
+    .toLowerCase()
+    .endsWith("/node_modules/opencode-ai/bin/opencode.exe");
+}
+
+async function readOpenCodeInstallPrefix(filePath: string): Promise<string | null> {
+  let handle: fs.FileHandle | null = null;
+  try {
+    handle = await fs.open(filePath, "r");
+    const bytes = Buffer.alloc(OPENCODE_INSTALL_STUB_READ_BYTES);
+    const { bytesRead } = await handle.read(bytes, 0, bytes.length, 0);
+    return bytes.subarray(0, bytesRead).toString("utf8");
+  } catch {
+    return null;
+  } finally {
+    await handle?.close();
+  }
+}
+
+async function openCodeInstallStubCandidate(resolvedCommand: string): Promise<string | null> {
+  if (!path.isAbsolute(resolvedCommand)) return null;
+  if (isOfficialOpenCodeBinaryPath(resolvedCommand)) return resolvedCommand;
+
+  // npm's Windows shim lives beside its node_modules directory. We do not parse
+  // or execute arbitrary shell syntax. Its bounded text must contain the exact
+  // package-owned executable invocation emitted by npm before we inspect it.
+  if (path.basename(resolvedCommand).toLowerCase() !== "opencode.cmd") return null;
+  const shim = await readOpenCodeInstallPrefix(resolvedCommand);
+  if (!shim || !/(?:^|\n)\s*"%dp0%\\node_modules\\opencode-ai\\bin\\opencode\.exe"\s+%\*\s*(?:\n|$)/i.test(shim)) {
+    return null;
+  }
+  return path.join(path.dirname(resolvedCommand), "node_modules", "opencode-ai", "bin", "opencode.exe");
+}
+
+export async function ensureOpenCodeWindowsInstallComplete(input: {
+  resolvedCommand: string;
+  platform?: NodeJS.Platform;
+}): Promise<void> {
+  if ((input.platform ?? process.platform) !== "win32") return;
+  const candidate = await openCodeInstallStubCandidate(input.resolvedCommand);
+  if (!candidate) return;
+  const prefix = await readOpenCodeInstallPrefix(candidate);
+  // Read failures or a concurrent npm update retain existing command-resolution
+  // behavior. Only the official placeholder marker is a preflight failure.
+  if (!prefix?.includes(OPENCODE_INSTALL_STUB_MARKER)) return;
+  throw new OpenCodeInstallIncompleteError();
+}
+
+export function readOpenCodeStderrEncoding(input: {
+  config: Record<string, unknown>;
+  platform?: NodeJS.Platform;
+  executionTargetIsRemote: boolean;
+}): string | undefined {
+  const value = input.config.stderrEncoding;
+  if (value == null || value === "") return undefined;
+  if (typeof value !== "string") {
+    throw new Error("OpenCode stderrEncoding must be a string when configured.");
+  }
+  const encoding = value.trim();
+  if (!encoding) return undefined;
+  if (input.executionTargetIsRemote || (input.platform ?? process.platform) !== "win32") {
+    throw new Error("OpenCode stderrEncoding is supported only for local Windows commands.");
+  }
+  try {
+    new TextDecoder(encoding);
+  } catch {
+    throw new Error(`Unsupported OpenCode stderrEncoding: "${encoding}".`);
+  }
+  return encoding;
+}
+
 function firstNonEmptyLine(text: string): string {
   return (
     text
@@ -232,6 +319,10 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     legacyRemoteExecution: ctx.executionTransport?.remoteExecution,
   });
   const executionTargetIsRemote = adapterExecutionTargetIsRemote(executionTarget);
+  const stderrEncoding = readOpenCodeStderrEncoding({
+    config,
+    executionTargetIsRemote,
+  });
 
   const promptTemplate = asString(
     config.promptTemplate,
@@ -364,6 +455,25 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       timeoutSec,
     });
     const resolvedCommand = await resolveAdapterExecutionTargetCommandForLogs(command, executionTarget, cwd, runtimeEnv);
+    if (!executionTargetIsRemote) {
+      try {
+        await ensureOpenCodeWindowsInstallComplete({ resolvedCommand });
+      } catch (error) {
+        if (error instanceof OpenCodeInstallIncompleteError) {
+          return {
+            exitCode: 1,
+            signal: null,
+            timedOut: false,
+            errorCode: error.code,
+            errorMessage: error.message,
+            resultJson: {
+              executionRecovery: { kind: "bootstrap", providerWorkStarted: false },
+            },
+          };
+        }
+        throw error;
+      }
+    }
     let loggedEnv = buildInvocationEnvForLogs(preparedRuntimeConfig.env, {
       runtimeEnv,
       includeRuntimeKeys: ["HOME"],
@@ -375,6 +485,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         command,
         cwd,
         env: runtimeEnv,
+        ...(stderrEncoding ? { stderrEncoding } : {}),
       });
     }
 
@@ -688,6 +799,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         onLog: accountingLog,
         runLogTail: paperclipBridge?.runLogTail,
         settleRunDisposition: paperclipBridge?.settleRunDisposition,
+        ...(stderrEncoding ? { stderrEncoding } : {}),
       });
       // Parse any unterminated final record before deciding whether its usage
       // is complete. A clean exit alone cannot turn absent counters into zero.

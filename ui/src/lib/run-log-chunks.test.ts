@@ -7,6 +7,7 @@ import {
   mergeRunLogChunks,
   parsePersistedLogContent,
   readChunkSeq,
+  resolveRunLogReadOffset,
   TRIMMED_OUTPUT_MARKER_TEXT,
   type ChunkMergeRefs,
   type IncomingRunLogChunk,
@@ -27,6 +28,15 @@ describe("readChunkSeq", () => {
     expect(readChunkSeq("3")).toBeUndefined();
     expect(readChunkSeq(Number.NaN)).toBeUndefined();
     expect(readChunkSeq(undefined)).toBeUndefined();
+  });
+});
+
+describe("resolveRunLogReadOffset", () => {
+  it("uses the server byte cursor and keeps older-server fallback UTF-8-safe", () => {
+    const content = "中文😀";
+    expect(resolveRunLogReadOffset(4, { content, endOffset: 15, nextOffset: 10 })).toBe(15);
+    expect(resolveRunLogReadOffset(4, { content, nextOffset: 10 })).toBe(10);
+    expect(resolveRunLogReadOffset(4, { content })).toBe(4 + new TextEncoder().encode(content).byteLength);
   });
 });
 

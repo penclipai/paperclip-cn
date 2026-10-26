@@ -67,6 +67,25 @@ afterEach(async () => {
 
 const begin = { companyId: "co1", agentId: "ag1", runId: "run1" };
 
+async function readAllPages(
+  store: ReturnType<typeof createDurableRunLogStore>,
+  handle: Awaited<ReturnType<ReturnType<typeof createDurableRunLogStore>["begin"]>>,
+  limitBytes: number,
+) {
+  let offset = 0;
+  let content = "";
+  for (let page = 0; page < 32; page++) {
+    const result = await store.read(handle, { offset, limitBytes });
+    content += result.content;
+    expect(result.endOffset).toBeGreaterThanOrEqual(offset);
+    if (result.nextOffset == null) return content;
+    expect(result.nextOffset).toBeGreaterThan(offset);
+    expect(result.nextOffset).toBe(result.endOffset);
+    offset = result.nextOffset;
+  }
+  throw new Error("run-log reader did not reach EOF");
+}
+
 describe("createDurableRunLogStore", () => {
   it("keeps store id 'local_file' so downstream coupling (feedback, casts) is unchanged", async () => {
     const { provider } = createMemoryProvider();
@@ -335,6 +354,110 @@ describe("createDurableRunLogStore", () => {
     expect(tail.nextOffset).toBeUndefined();
   });
 
+  it.each(["local", "s3"])("keeps UTF-8 code points intact across %s byte pages", async (storage) => {
+    const { provider } = createMemoryProvider();
+    const store = createDurableRunLogStore({
+      basePath: baseDir,
+      ...(storage === "s3" ? { s3: { provider, keyPrefix: "p" } } : {}),
+    });
+    const handle = await store.begin(begin);
+    const content = `${JSON.stringify({ chunk: "ASCII中文😀" })}\n${JSON.stringify({ chunk: "tail" })}\n`;
+    await fs.writeFile(path.join(baseDir, handle.logRef), content, "utf8");
+    if (storage === "s3") {
+      await store.finalize(handle);
+      await fs.rm(baseDir, { recursive: true, force: true });
+    }
+
+    const paged = await readAllPages(store, handle, 2);
+    expect(paged).toBe(content);
+    expect(paged.trim().split("\n").map((line) => JSON.parse(line).chunk)).toEqual(["ASCII中文😀", "tail"]);
+  });
+
+  it.each(["local", "s3"])("skips an arbitrary offset inside a UTF-8 character without corrupting later %s content", async (storage) => {
+    const { provider } = createMemoryProvider();
+    const store = createDurableRunLogStore({
+      basePath: baseDir,
+      ...(storage === "s3" ? { s3: { provider, keyPrefix: "p" } } : {}),
+    });
+    const handle = await store.begin(begin);
+    await fs.writeFile(path.join(baseDir, handle.logRef), "中文😀", "utf8");
+    if (storage === "s3") {
+      await store.finalize(handle);
+      await fs.rm(baseDir, { recursive: true, force: true });
+    }
+
+    const first = await store.read(handle, { offset: 1, limitBytes: 2 });
+    expect(first).toEqual({ content: "", endOffset: 3, nextOffset: 3 });
+    expect(await store.read(handle, { offset: first.nextOffset, limitBytes: 2 }))
+      .toEqual({ content: "文", endOffset: 6, nextOffset: 6 });
+    expect(await store.read(handle, { offset: 6, limitBytes: 2 }))
+      .toEqual({ content: "😀", endOffset: 10, nextOffset: undefined });
+  });
+
+  it("does not emit a replacement character while an incrementally written local UTF-8 tail is incomplete", async () => {
+    const store = createDurableRunLogStore({ basePath: baseDir });
+    const handle = await store.begin(begin);
+    const file = path.join(baseDir, handle.logRef);
+    const character = Buffer.from("中", "utf8");
+    await fs.writeFile(file, character.subarray(0, 2));
+
+    expect(await store.read(handle, { offset: 0, limitBytes: 4 })).toEqual({ content: "", endOffset: 0, nextOffset: undefined });
+
+    await fs.appendFile(file, character.subarray(2));
+    expect(await store.read(handle, { offset: 0, limitBytes: 4 })).toEqual({ content: "中", endOffset: 3, nextOffset: undefined });
+  });
+
+  it("uses endOffset to resume a live reader after Chinese and emoji content reaches EOF", async () => {
+    const store = createDurableRunLogStore({ basePath: baseDir });
+    const handle = await store.begin(begin);
+    const file = path.join(baseDir, handle.logRef);
+    await fs.writeFile(file, "中文😀", "utf8");
+
+    const first = await store.read(handle, { offset: 0, limitBytes: 4 });
+    expect(first).toEqual({ content: "中文", endOffset: 6, nextOffset: 6 });
+    const atEof = await store.read(handle, { offset: first.endOffset, limitBytes: 4 });
+    expect(atEof).toEqual({ content: "😀", endOffset: 10, nextOffset: undefined });
+
+    await fs.appendFile(file, "后", "utf8");
+    expect(await store.read(handle, { offset: atEof.endOffset, limitBytes: 4 }))
+      .toEqual({ content: "后", endOffset: 13, nextOffset: undefined });
+  });
+
+  it.each(["local", "s3"])("keeps tiny byte limits bounded and advances through malformed bytes for %s", async (storage) => {
+    const { provider } = createMemoryProvider();
+    const store = createDurableRunLogStore({
+      basePath: baseDir,
+      ...(storage === "s3" ? { s3: { provider, keyPrefix: "p" } } : {}),
+    });
+    const handle = await store.begin(begin);
+    await fs.writeFile(path.join(baseDir, handle.logRef), Buffer.from([0xff, 0x80, ...Buffer.from("中", "utf8"), 0x61]));
+    if (storage === "s3") {
+      await store.finalize(handle);
+      await fs.rm(baseDir, { recursive: true, force: true });
+    }
+
+    const malformed = await store.read(handle, { offset: 0, limitBytes: 1 });
+    expect(malformed).toEqual({ content: "�", endOffset: 1, nextOffset: 1 });
+    const secondMalformed = await store.read(handle, { offset: malformed.endOffset, limitBytes: 1 });
+    expect(secondMalformed).toEqual({ content: "�", endOffset: 2, nextOffset: 2 });
+    const chinese = await store.read(handle, { offset: secondMalformed.endOffset, limitBytes: 1 });
+    expect(chinese).toEqual({ content: "中", endOffset: 5, nextOffset: 5 });
+    expect(chinese.endOffset! - secondMalformed.endOffset!).toBeLessThanOrEqual(4);
+    expect(await store.read(handle, { offset: chinese.endOffset, limitBytes: 1 }))
+      .toEqual({ content: "a", endOffset: 6, nextOffset: undefined });
+  });
+
+  it("does not mistake a malformed UTF-8 lead followed by ASCII for an incomplete tail", async () => {
+    const store = createDurableRunLogStore({ basePath: baseDir });
+    const handle = await store.begin(begin);
+    await fs.writeFile(path.join(baseDir, handle.logRef), Buffer.from([0xe4, 0x41]));
+
+    expect(await store.read(handle, { offset: 0, limitBytes: 1 }))
+      .toEqual({ content: "�", endOffset: 1, nextOffset: 1 });
+    expect(await store.read(handle, { offset: 1, limitBytes: 1 }))
+      .toEqual({ content: "A", endOffset: 2, nextOffset: undefined });
+  });
+
   it("S3 fallback returns an empty read (no InvalidRange) when the reader is fully caught up", async () => {
     // Regression test for PAPERCLIP-BACKEND-9: a poller that had consumed the
     // whole log kept polling at offset === total after the pod rolled; the S3
@@ -350,10 +473,12 @@ describe("createDurableRunLogStore", () => {
     await fs.rm(baseDir, { recursive: true, force: true }); // force S3 path
     const caughtUp = await store.read(handle, { offset: total, limitBytes: 100 });
     expect(caughtUp.content).toBe("");
+    expect(caughtUp.endOffset).toBe(total);
     expect(caughtUp.nextOffset).toBeUndefined();
     // Past-EOF offsets clamp to the same empty read.
     const pastEof = await store.read(handle, { offset: total + 50, limitBytes: 100 });
     expect(pastEof.content).toBe("");
+    expect(pastEof.endOffset).toBe(total);
     expect(pastEof.nextOffset).toBeUndefined();
   });
 
@@ -365,6 +490,7 @@ describe("createDurableRunLogStore", () => {
     const total = Buffer.byteLength(full.content, "utf8");
     const caughtUp = await store.read(handle, { offset: total, limitBytes: 100 });
     expect(caughtUp.content).toBe("");
+    expect(caughtUp.endOffset).toBe(total);
     expect(caughtUp.nextOffset).toBeUndefined();
   });
 
@@ -374,9 +500,9 @@ describe("createDurableRunLogStore", () => {
     await fs.writeFile(path.join(baseDir, handle.logRef), "0123456789");
     const statSpy = vi.spyOn(fs, "stat").mockRejectedValue(new Error("Metadata unavailable"));
     try {
-      expect(await store.read(handle, { offset: 2, limitBytes: 4 })).toEqual({ content: "2345", nextOffset: 6 });
-      expect(await store.read(handle, { offset: 6, limitBytes: 4 })).toEqual({ content: "6789", nextOffset: undefined });
-      expect(await store.read(handle, { offset: 20, limitBytes: 4 })).toEqual({ content: "", nextOffset: undefined });
+      expect(await store.read(handle, { offset: 2, limitBytes: 4 })).toEqual({ content: "2345", endOffset: 6, nextOffset: 6 });
+      expect(await store.read(handle, { offset: 6, limitBytes: 4 })).toEqual({ content: "6789", endOffset: 10, nextOffset: undefined });
+      expect(await store.read(handle, { offset: 20, limitBytes: 4 })).toEqual({ content: "", endOffset: 20, nextOffset: undefined });
     } finally {
       statSpy.mockRestore();
     }
