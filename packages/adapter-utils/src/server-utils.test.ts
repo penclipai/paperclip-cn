@@ -676,6 +676,80 @@ describe("runChildProcess", () => {
     }
   });
 
+  it("preserves split UTF-8 output and waits for log delivery", async () => {
+    const observed: Array<{ stream: "stdout" | "stderr"; chunk: string }> = [];
+    let logFinished = false;
+    const result = await runChildProcess(
+      randomUUID(),
+      process.execPath,
+      [
+        "-e",
+        [
+          "process.stdout.write(Buffer.from([0xe4,0xb8]));",
+          "process.stderr.write(Buffer.from([0xe9,0x94]));",
+          "setTimeout(() => {",
+          "process.stdout.write(Buffer.from([0xad,0xf0,0x9f,0x9a,0x80]));",
+          "process.stderr.write(Buffer.from([0x99,0xe8,0xaf,0xaf,0xf0,0x9f,0x9a,0xa8]));",
+          "}, 40);",
+        ].join(""),
+      ],
+      {
+        cwd: process.cwd(),
+        env: {},
+        timeoutSec: 5,
+        graceSec: 1,
+        onLog: async (stream, chunk) => {
+          await new Promise((resolve) => setTimeout(resolve, 10));
+          observed.push({ stream, chunk });
+          logFinished = true;
+        },
+      },
+    );
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toBe("中🚀");
+    expect(result.stderr).toBe("错误🚨");
+    expect(observed.filter(({ stream }) => stream === "stdout").map(({ chunk }) => chunk).join("")).toBe("中🚀");
+    expect(observed.filter(({ stream }) => stream === "stderr").map(({ chunk }) => chunk).join("")).toBe("错误🚨");
+    expect(logFinished).toBe(true);
+  });
+
+  it.skipIf(process.platform !== "win32")("uses an explicit local Windows stderr encoding without changing stdout", async () => {
+    const result = await runChildProcess(
+      randomUUID(),
+      process.execPath,
+      [
+        "-e",
+        "process.stdout.write('UTF-8 中');process.stderr.write(Buffer.from([0xd6,0xd0,0xce,0xc4,0xb4,0xed,0xce,0xf3]));",
+      ],
+      {
+        cwd: process.cwd(),
+        env: {},
+        timeoutSec: 5,
+        graceSec: 1,
+        stderrEncoding: "gbk",
+        onLog: async () => {},
+      },
+    );
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toBe("UTF-8 中");
+    expect(result.stderr).toBe("中文错误");
+  });
+
+  it("rejects an unsupported stderr encoding before spawning a command", async () => {
+    await expect(
+      runChildProcess(randomUUID(), "this-command-must-not-run", [], {
+        cwd: process.cwd(),
+        env: {},
+        timeoutSec: 5,
+        graceSec: 1,
+        stderrEncoding: "not-a-real-encoding",
+        onLog: async () => {},
+      }),
+    ).rejects.toThrow('Unsupported stderr encoding: "not-a-real-encoding".');
+  });
+
   it("does not arm a timeout when timeoutSec is 0", async () => {
     const result = await runChildProcess(
       randomUUID(),

@@ -4,6 +4,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { constants as fsConstants, promises as fs, type Dirent } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { StringDecoder } from "node:string_decoder";
 import { CONNECTION_INTENT_AGENT_GUIDANCE } from "@penclipai/shared";
 import { sanitizeRemoteExecutionEnv } from "./remote-execution-env.js";
 import {
@@ -4809,6 +4810,8 @@ export async function runChildProcess(
     }) => Promise<void>;
     terminalResultCleanup?: TerminalResultCleanupOptions;
     stdin?: string;
+    /** Known stderr encoding for a local Windows command. stdout remains UTF-8. */
+    stderrEncoding?: string;
     remoteExecution?: RemoteExecutionSpec | null;
     localProcessSandbox?: LocalProcessSandboxOptions | null;
   },
@@ -4817,6 +4820,19 @@ export async function runChildProcess(
     opts.onLogError ??
     ((err, id, msg) => console.warn({ err, runId: id }, msg));
   return new Promise<RunProcessResult>((resolve, reject) => {
+    if (opts.stderrEncoding && (process.platform !== "win32" || opts.remoteExecution)) {
+      reject(new Error("stderrEncoding is supported only for local Windows commands."));
+      return;
+    }
+    let stderrTextDecoder: TextDecoder | null = null;
+    if (opts.stderrEncoding) {
+      try {
+        stderrTextDecoder = new TextDecoder(opts.stderrEncoding);
+      } catch {
+        reject(new Error(`Unsupported stderr encoding: "${opts.stderrEncoding}".`));
+        return;
+      }
+    }
     const rawMerged: NodeJS.ProcessEnv = {
       ...sanitizeInheritedPaperclipEnv(process.env),
       ...opts.env,
@@ -4883,6 +4899,8 @@ export async function runChildProcess(
         let timedOut = false;
         let stdout = "";
         let stderr = "";
+        const stdoutDecoder = new StringDecoder("utf8");
+        const stderrDecoder = stderrTextDecoder ? null : new StringDecoder("utf8");
         let logChain: Promise<void> = Promise.resolve();
         let terminalResultSeen = false;
         let terminalCleanupStarted = false;
@@ -4973,40 +4991,48 @@ export async function runChildProcess(
               }, opts.timeoutSec * 1000)
             : null;
 
+        const enqueueOutput = (
+          stream: "stdout" | "stderr",
+          text: string,
+          readable?: NodeJS.ReadableStream,
+        ) => {
+          if (!text) {
+            if (readable) resumeReadable(readable);
+            return;
+          }
+          if (stream === "stdout") stdout = appendWithCap(stdout, text);
+          else stderr = appendWithCap(stderr, text);
+          maybeArmTerminalResultCleanup();
+          logChain = logChain
+            .then(() => opts.onLog(stream, text))
+            .catch((err) =>
+              onLogError(err, runId, `failed to append ${stream} log chunk`),
+            )
+            .finally(() => {
+              maybeArmTerminalResultCleanup();
+              if (readable) resumeReadable(readable);
+            });
+        };
+
         child.stdout?.on("data", (chunk: unknown) => {
           const readable = child.stdout;
           if (!readable) return;
           readable.pause();
-          const text = String(chunk);
-          stdout = appendWithCap(stdout, text);
-          maybeArmTerminalResultCleanup();
-          logChain = logChain
-            .then(() => opts.onLog("stdout", text))
-            .catch((err) =>
-              onLogError(err, runId, "failed to append stdout log chunk"),
-            )
-            .finally(() => {
-              maybeArmTerminalResultCleanup();
-              resumeReadable(readable);
-            });
+          enqueueOutput("stdout", stdoutDecoder.write(Buffer.from(chunk as Uint8Array)), readable);
         });
 
         child.stderr?.on("data", (chunk: unknown) => {
           const readable = child.stderr;
           if (!readable) return;
           readable.pause();
-          const text = String(chunk);
-          stderr = appendWithCap(stderr, text);
-          maybeArmTerminalResultCleanup();
-          logChain = logChain
-            .then(() => opts.onLog("stderr", text))
-            .catch((err) =>
-              onLogError(err, runId, "failed to append stderr log chunk"),
-            )
-            .finally(() => {
-              maybeArmTerminalResultCleanup();
-              resumeReadable(readable);
-            });
+          const bytes = Buffer.from(chunk as Uint8Array);
+          enqueueOutput(
+            "stderr",
+            stderrTextDecoder
+              ? stderrTextDecoder.decode(bytes, { stream: true })
+              : stderrDecoder!.write(bytes),
+            readable,
+          );
         });
 
         const stdin = child.stdin;
@@ -5042,6 +5068,8 @@ export async function runChildProcess(
             if (timeout) clearTimeout(timeout);
             clearTerminalCleanupTimers();
             runningProcesses.delete(runId);
+            enqueueOutput("stdout", stdoutDecoder.end());
+            enqueueOutput("stderr", stderrTextDecoder ? stderrTextDecoder.decode() : stderrDecoder!.end());
             void logChain.finally(() => {
               void Promise.resolve()
                 .then(() => target.cleanup?.())

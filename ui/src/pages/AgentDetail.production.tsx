@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useSelectedHeartbeatRun } from "../hooks/useSelectedHeartbeatRun";
 import { AgentCharacter } from "../components/AgentCharacter";
 import { characterStateForAgent } from "@penclipai/shared";
-import { mergeRunLogChunks, readChunkSeq } from "../lib/run-log-chunks";
+import { mergeRunLogChunks, readChunkSeq, resolveRunLogReadOffset } from "../lib/run-log-chunks";
 import { getPageVisibility, usePageVisibility } from "../lib/page-visibility";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useParams, useNavigate, useLocation, Link, Navigate, useBeforeUnload, type NavigateFunction } from "@/lib/router";
@@ -3914,7 +3914,7 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
         const result = await heartbeatsApi.log(run.id, offset, RUN_LOG_PAGE_BYTES);
         if (cancelled) return;
         appendLogContent(result.content, result.nextOffset === undefined);
-        const next = result.nextOffset ?? offset + result.content.length;
+        const next = resolveRunLogReadOffset(offset, result);
         setLogOffset(next);
         setHasMoreLog(!shouldPollShellLog && result.nextOffset !== undefined);
       } catch (err) {
@@ -3943,7 +3943,7 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
     try {
       const result = await heartbeatsApi.log(run.id, logOffset, RUN_LOG_PAGE_BYTES);
       appendLogContent(result.content, result.nextOffset === undefined);
-      const next = result.nextOffset ?? logOffset + result.content.length;
+      const next = resolveRunLogReadOffset(logOffset, result);
       setLogOffset(next);
       setHasMoreLog(result.nextOffset !== undefined);
     } catch (err) {
@@ -3994,11 +3994,7 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
         if (result.content) {
           appendLogContent(result.content, result.nextOffset === undefined);
         }
-        if (result.nextOffset !== undefined) {
-          setLogOffset(result.nextOffset);
-        } else if (result.content.length > 0) {
-          setLogOffset((prev) => prev + result.content.length);
-        }
+        setLogOffset((previous) => resolveRunLogReadOffset(previous, result));
       } catch (err) {
         if (isRunLogUnavailable(err)) return;
         // ignore polling errors

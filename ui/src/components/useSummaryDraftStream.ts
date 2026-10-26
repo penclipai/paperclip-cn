@@ -11,6 +11,7 @@ import {
   mergeRunLogChunks,
   parsePersistedLogContent,
   readChunkSeq,
+  resolveRunLogReadOffset,
   type ChunkMergeRefs,
   type IncomingRunLogChunk,
 } from "@/lib/run-log-chunks";
@@ -153,11 +154,7 @@ export function useSummaryDraftStream(
         const result = await heartbeatsApi.log(runId, logOffsetRef.current, LOG_READ_LIMIT_BYTES);
         if (cancelled) return;
         appendChunks(parsePersistedLogContent(runId, result.content, pendingLogRowsRef.current));
-        if (result.nextOffset !== undefined) {
-          logOffsetRef.current = result.nextOffset;
-        } else if (result.content.length > 0) {
-          logOffsetRef.current += result.content.length;
-        }
+        logOffsetRef.current = resolveRunLogReadOffset(logOffsetRef.current, result);
       } catch {
         // Ignore transient/404 reads (log not yet flushed, run just started).
       } finally {

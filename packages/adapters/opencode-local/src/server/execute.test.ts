@@ -8,7 +8,13 @@ vi.mock("@penclipai/adapter-utils/execution-target", async (importOriginal) => {
   return { ...actual, runAdapterExecutionTargetProcess: vi.fn() };
 });
 
-import { ensureRemoteOpenCodeModelConfiguredAndAvailable, execute } from "./execute.js";
+import {
+  ensureOpenCodeWindowsInstallComplete,
+  ensureRemoteOpenCodeModelConfiguredAndAvailable,
+  execute,
+  OpenCodeInstallIncompleteError,
+  readOpenCodeStderrEncoding,
+} from "./execute.js";
 import { runAdapterExecutionTargetProcess } from "@penclipai/adapter-utils/execution-target";
 import { createPromptContextFixture } from "@penclipai/adapter-utils/test-fixtures/prompt-context";
 
@@ -33,6 +39,97 @@ function probeResult(overrides: Record<string, unknown>) {
     ...overrides,
   } as never;
 }
+
+describe("OpenCode Windows installation preflight", () => {
+  let root: string;
+
+  beforeEach(async () => {
+    root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-opencode-install-"));
+  });
+
+  afterEach(async () => {
+    await fs.rm(root, { recursive: true, force: true });
+  });
+
+  async function writePackageBinary(content: string): Promise<string> {
+    const binary = path.join(root, "node_modules", "opencode-ai", "bin", "opencode.exe");
+    await fs.mkdir(path.dirname(binary), { recursive: true });
+    await fs.writeFile(binary, content, "utf8");
+    return binary;
+  }
+
+  it("rejects the official postinstall placeholder before the Windows model probe", async () => {
+    const binary = await writePackageBinary("Error: opencode-ai's postinstall script was not run.\n");
+    await expect(ensureOpenCodeWindowsInstallComplete({ resolvedCommand: binary, platform: "win32" }))
+      .rejects.toBeInstanceOf(OpenCodeInstallIncompleteError);
+    await expect(ensureOpenCodeWindowsInstallComplete({ resolvedCommand: binary, platform: "win32" }))
+      .rejects.toMatchObject({ code: "opencode_install_incomplete" });
+  });
+
+  it("stops execute before it can start the model probe or provider process", async () => {
+    const binary = await writePackageBinary("Error: opencode-ai's postinstall script was not run.\n");
+    runProcessMock.mockReset();
+    await expect(execute({
+      runId: "opencode-install-stub",
+      agent: { id: "agent-1", companyId: "company-1", name: "OpenCode", adapterType: "opencode_local", adapterConfig: {} },
+      runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
+      config: { command: binary, cwd: root },
+      context: {},
+      onLog: async () => {},
+    })).resolves.toMatchObject({
+      exitCode: 1,
+      errorCode: "opencode_install_incomplete",
+      errorMessage: expect.stringContaining("Reinstall opencode-ai"),
+      resultJson: { executionRecovery: { kind: "bootstrap", providerWorkStarted: false } },
+    });
+    expect(runProcessMock).not.toHaveBeenCalled();
+  });
+
+  it("finds the package binary from the conventional npm cmd shim without parsing it", async () => {
+    await writePackageBinary("Error: opencode-ai's postinstall script was not run.\n");
+    const shim = path.join(root, "opencode.cmd");
+    await fs.writeFile(shim, [
+      "@ECHO off",
+      "GOTO start",
+      ":start",
+      "SET dp0=%~dp0",
+      '"%dp0%\\node_modules\\opencode-ai\\bin\\opencode.exe"   %*',
+    ].join("\r\n"), "utf8");
+    await expect(ensureOpenCodeWindowsInstallComplete({ resolvedCommand: shim, platform: "win32" }))
+      .rejects.toMatchObject({ code: "opencode_install_incomplete" });
+  });
+
+  it("does not inspect a same-named custom cmd file beside an OpenCode stub", async () => {
+    await writePackageBinary("Error: opencode-ai's postinstall script was not run.\n");
+    const shim = path.join(root, "opencode.cmd");
+    await fs.writeFile(shim, "@echo off\r\necho custom command\r\n", "utf8");
+    await expect(ensureOpenCodeWindowsInstallComplete({ resolvedCommand: shim, platform: "win32" })).resolves.toBeUndefined();
+  });
+
+  it("does not reject a custom command, a non-stub package binary, or a remote platform", async () => {
+    const binary = await writePackageBinary("MZ-not-a-real-fixture");
+    const custom = path.join(root, "custom-opencode.exe");
+    await fs.writeFile(custom, "opencode-ai's postinstall script was not run", "utf8");
+    await expect(ensureOpenCodeWindowsInstallComplete({ resolvedCommand: binary, platform: "win32" })).resolves.toBeUndefined();
+    await expect(ensureOpenCodeWindowsInstallComplete({ resolvedCommand: custom, platform: "win32" })).resolves.toBeUndefined();
+    await expect(ensureOpenCodeWindowsInstallComplete({ resolvedCommand: binary, platform: "linux" })).resolves.toBeUndefined();
+  });
+});
+
+describe("OpenCode stderr encoding", () => {
+  it("allows a known encoding only for local Windows commands", () => {
+    expect(readOpenCodeStderrEncoding({ config: { stderrEncoding: "gbk" }, platform: "win32", executionTargetIsRemote: false })).toBe("gbk");
+    expect(readOpenCodeStderrEncoding({ config: {}, platform: "win32", executionTargetIsRemote: false })).toBeUndefined();
+    expect(() => readOpenCodeStderrEncoding({ config: { stderrEncoding: 936 }, platform: "win32", executionTargetIsRemote: false }))
+      .toThrow("must be a string");
+    expect(() => readOpenCodeStderrEncoding({ config: { stderrEncoding: "not-a-real-encoding" }, platform: "win32", executionTargetIsRemote: false }))
+      .toThrow("Unsupported OpenCode stderrEncoding");
+    expect(() => readOpenCodeStderrEncoding({ config: { stderrEncoding: "gbk" }, platform: "linux", executionTargetIsRemote: false }))
+      .toThrow("only for local Windows");
+    expect(() => readOpenCodeStderrEncoding({ config: { stderrEncoding: "gbk" }, platform: "win32", executionTargetIsRemote: true }))
+      .toThrow("only for local Windows");
+  });
+});
 
 describe("OpenCode local skill injection", () => {
   let configHome: string;
@@ -61,7 +158,7 @@ describe("OpenCode local skill injection", () => {
       agent: { id: "agent-1", companyId: "company-1", name: "OpenCode", adapterType: "opencode_local", adapterConfig: {} },
       runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
       config: {
-        command: commandPath, cwd: configHome, model: "openai/gpt-5", env: { OPENCODE_ALLOW_ALL_MODELS: "1" },
+        command: commandPath, cwd: configHome, model: "openai/gpt-5", env: { OPENCODE_ALLOW_ALL_MODELS: "1" }, stderrEncoding: "gbk",
         ...(custom ? { promptTemplate: "Custom agent instruction." } : {}),
       },
       context: {
@@ -80,6 +177,7 @@ describe("OpenCode local skill injection", () => {
     expect(prompt).toContain(custom ? "Custom agent instruction." : "You are agent agent-1");
     expect(prompt).not.toContain("Execution contract:");
     expect(prompt).not.toContain("Create child issues");
+    expect(runProcessMock.mock.calls.at(-1)?.[4]).toMatchObject({ stderrEncoding: "gbk" });
   });
 
   it("delivers assignment context on an ordinary task turn and rebuilds it after resume fallback", async () => {

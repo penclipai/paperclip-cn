@@ -52,7 +52,7 @@ describe("run-log read cancellation", () => {
       await expect(read).rejects.toMatchObject({ name: "AbortError" });
       await vi.waitFor(() => expect(closed).toBe(true));
       recover = true;
-      expect(await store.read(handle)).toEqual({ content: "data", nextOffset: undefined });
+      expect(await store.read(handle)).toEqual({ content: "data", endOffset: 4, nextOffset: undefined });
     } finally {
       controller.abort();
       server.closeAllConnections();

@@ -219,6 +219,40 @@ describe("runAdapterExecutionTargetProcess", () => {
     expect(stopped).toHaveBeenCalledTimes(1);
   });
 
+  it("rejects stderrEncoding before a sandbox process starts", async () => {
+    const execute = vi.fn();
+
+    await expect(
+      runAdapterExecutionTargetProcess("run-stderr-encoding-sandbox", {
+        kind: "remote", transport: "sandbox", remoteCwd: "/workspace", runner: { execute },
+      }, "opencode", ["run"], {
+        cwd: "/local", env: {}, timeoutSec: 5, graceSec: 1,
+        stderrEncoding: "gbk", onLog: async () => {},
+      }),
+    ).rejects.toThrow("stderrEncoding is supported only for local Windows commands.");
+
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it("rejects stderrEncoding before a local process starts outside Windows", async () => {
+    const descriptor = Object.getOwnPropertyDescriptor(process, "platform");
+    if (!descriptor) throw new Error("Node process.platform descriptor is unavailable");
+    const runChildProcessSpy = vi.spyOn(serverUtils, "runChildProcess");
+    Object.defineProperty(process, "platform", { ...descriptor, value: "linux" });
+    try {
+      await expect(
+        runAdapterExecutionTargetProcess("run-stderr-encoding-non-win", null, "must-not-run", [], {
+          cwd: "/local", env: {}, timeoutSec: 5, graceSec: 1,
+          stderrEncoding: "gbk", onLog: async () => {},
+        }),
+      ).rejects.toThrow("stderrEncoding is supported only for local Windows commands.");
+    } finally {
+      Object.defineProperty(process, "platform", descriptor);
+    }
+
+    expect(runChildProcessSpy).not.toHaveBeenCalled();
+  });
+
   it("sanitizes inherited host env before SSH process execution", async () => {
     vi.stubEnv("PATH", "/host/bin:/usr/bin");
     vi.stubEnv("HOME", "/Users/local");

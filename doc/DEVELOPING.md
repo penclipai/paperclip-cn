@@ -993,6 +993,32 @@ the local libc remains unknown and automatic GNU/Linux runner selection stays
 disabled. Qualified Linux targets still require GNU libc 2.39 or newer. Existing
 saved execution choices remain unchanged.
 
+### Legacy CLI output encoding on Windows
+
+Local CLI stdout and stderr use independent UTF-8 stream decoders. A character
+split across process output chunks is retained until its remaining bytes arrive.
+Decoder tails are delivered to the run log before process completion. Existing
+stored replacement characters are retained; this does not rewrite run history.
+
+For a legacy `opencode_local` command on Windows whose stderr has a known
+non-UTF-8 encoding, set `adapterConfig.stderrEncoding` to a supported
+`TextDecoder` label, such as `"gbk"` for a confirmed CP936 producer. This explicit
+setting applies only to local Windows stderr. Stdout keeps its UTF-8 JSONL
+protocol. Unsupported labels and remote or non-Windows use fail before execution.
+The default remains UTF-8. Console language and `chcp` do not reliably identify
+the encoding of redirected output, so Paperclip does not guess a code page.
+
+The legacy adapter rejects the official `opencode-ai` postinstall placeholder
+before model probing. If this reports an incomplete installation, reinstall the
+CLI with its matching platform dependency and the package's installation script
+approved through the package manager. Check `opencode --version` before retrying
+a task. Paperclip does not repair or replace a user-managed CLI automatically.
+
+Persisted run-log pages carry an `endOffset` byte cursor, including at the
+currently available EOF. `nextOffset` still indicates that another page is
+available. Consumers resume from the byte cursor rather than JavaScript string
+length, so later appended Chinese or emoji records do not replay earlier bytes.
+
 ### OpenCode native runtime
 
 Paperclip Runner resolves the pinned OpenCode platform package installed with

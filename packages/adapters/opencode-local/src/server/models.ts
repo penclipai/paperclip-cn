@@ -141,6 +141,7 @@ export async function discoverOpenCodeModels(
     cwd?: unknown;
     env?: unknown;
     refresh?: boolean;
+    stderrEncoding?: string;
   } = {},
 ): Promise<AdapterModel[]> {
   const command = resolveOpenCodeCommand(input.command);
@@ -182,6 +183,7 @@ export async function discoverOpenCodeModels(
         timeoutSec: MODELS_DISCOVERY_TIMEOUT_MS / 1000,
         graceSec: 3,
         onLog: async () => {},
+        ...(input.stderrEncoding ? { stderrEncoding: input.stderrEncoding } : {}),
       },
     );
 
@@ -214,6 +216,7 @@ export async function discoverOpenCodeModelsCached(
     command?: unknown;
     cwd?: unknown;
     env?: unknown;
+    stderrEncoding?: string;
   } = {},
 ): Promise<AdapterModel[]> {
   const command = resolveOpenCodeCommand(input.command);
@@ -225,7 +228,7 @@ export async function discoverOpenCodeModelsCached(
   const cached = discoveryCache.get(key);
   if (cached && cached.expiresAt > now) return cached.models;
 
-  const models = await discoverOpenCodeModels({ command, cwd, env });
+  const models = await discoverOpenCodeModels({ command, cwd, env, stderrEncoding: input.stderrEncoding });
   discoveryCache.set(key, { expiresAt: now + MODELS_CACHE_TTL_MS, models });
   return models;
 }
@@ -234,6 +237,7 @@ async function refreshOpenCodeModelsCached(input: {
   command?: unknown;
   cwd?: unknown;
   env?: unknown;
+  stderrEncoding?: string;
 }): Promise<AdapterModel[]> {
   const command = resolveOpenCodeCommand(input.command);
   const cwd = asString(input.cwd, process.cwd());
@@ -247,8 +251,9 @@ async function refreshOpenCodeModelsCached(input: {
     cwd,
     env,
     refresh: true,
+    stderrEncoding: input.stderrEncoding,
   });
-  const models = await discoverOpenCodeModels({ command, cwd, env });
+  const models = await discoverOpenCodeModels({ command, cwd, env, stderrEncoding: input.stderrEncoding });
   if (models.length > 0) {
     discoveryCache.set(discoveryCacheKey(command, cwd, env), {
       expiresAt: Date.now() + MODELS_CACHE_TTL_MS,
@@ -269,6 +274,7 @@ export async function ensureOpenCodeModelConfiguredAndAvailable(input: {
   command?: unknown;
   cwd?: unknown;
   env?: unknown;
+  stderrEncoding?: string;
 }): Promise<AdapterModel[]> {
   const model = requireOpenCodeModelId(input.model);
 
@@ -292,6 +298,7 @@ export async function ensureOpenCodeModelConfiguredAndAvailable(input: {
       command: input.command,
       cwd: input.cwd,
       env: input.env,
+      stderrEncoding: input.stderrEncoding,
     });
   } catch (err) {
     // The availability probe is a best-effort pre-flight guard, not a gate. If
@@ -328,6 +335,7 @@ export async function ensureOpenCodeModelConfiguredAndAvailable(input: {
         command: input.command,
         cwd: input.cwd,
         env: input.env,
+        stderrEncoding: input.stderrEncoding,
       });
       if (refreshedModels.some((entry) => entry.id === model)) {
         return refreshedModels;

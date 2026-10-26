@@ -149,6 +149,8 @@ export const heartbeatsApi = {
       store: string;
       logRef: string;
       content: string;
+      /** Absolute UTF-8 byte cursor consumed by this read, including at EOF. */
+      endOffset?: number;
       nextOffset?: number;
     }>(
       `/heartbeat-runs/${runId}/log?offset=${encodeURIComponent(String(offset))}&limitBytes=${encodeURIComponent(String(limitBytes))}`,

@@ -25,6 +25,10 @@ export interface RunLogReadOptions {
 export interface RunLogReadResult {
   content: string;
   nextOffset?: number;
+  // Absolute byte position immediately after the content consumed by this
+  // response. It remains present at EOF so live readers can resume from the
+  // correct byte boundary after a subsequent append.
+  endOffset?: number;
 }
 
 export interface RunLogFinalizeSummary {
@@ -75,6 +79,98 @@ function resolveWithin(basePath: string, relativePath: string) {
 function normalizeKeyPrefix(prefix: string | undefined): string {
   if (!prefix) return "";
   return prefix.trim().replace(/^\/+/, "").replace(/\/+$/, "");
+}
+
+function isUtf8ContinuationByte(byte: number | undefined): boolean {
+  return byte != null && byte >= 0x80 && byte <= 0xbf;
+}
+
+function expectedUtf8CodePointLength(first: number | undefined): number {
+  if (first == null) return 0;
+  if (first <= 0x7f) return 1;
+  if (first >= 0xc2 && first <= 0xdf) return 2;
+  if (first >= 0xe0 && first <= 0xef) return 3;
+  if (first >= 0xf0 && first <= 0xf4) return 4;
+  return 0;
+}
+
+function utf8CodePointLength(bytes: Buffer, offset: number): number {
+  const first = bytes[offset];
+  if (first == null) return 0;
+  if (first <= 0x7f) return 1;
+  if (first >= 0xc2 && first <= 0xdf && isUtf8ContinuationByte(bytes[offset + 1])) return 2;
+  if (first >= 0xe0 && first <= 0xef
+    && isUtf8ContinuationByte(bytes[offset + 1])
+    && isUtf8ContinuationByte(bytes[offset + 2])
+    && !(first === 0xe0 && bytes[offset + 1]! < 0xa0)
+    && !(first === 0xed && bytes[offset + 1]! > 0x9f)) return 3;
+  if (first >= 0xf0 && first <= 0xf4
+    && isUtf8ContinuationByte(bytes[offset + 1])
+    && isUtf8ContinuationByte(bytes[offset + 2])
+    && isUtf8ContinuationByte(bytes[offset + 3])
+    && !(first === 0xf0 && bytes[offset + 1]! < 0x90)
+    && !(first === 0xf4 && bytes[offset + 1]! > 0x8f)) return 4;
+  return 0;
+}
+
+function isIncompleteUtf8Sequence(bytes: Buffer, offset: number): boolean {
+  const expectedLength = expectedUtf8CodePointLength(bytes[offset]);
+  const available = bytes.length - offset;
+  if (expectedLength <= 1 || available >= expectedLength) return false;
+  const second = bytes[offset + 1];
+  if (available > 1 && (!isUtf8ContinuationByte(second)
+    || (bytes[offset] === 0xe0 && second! < 0xa0)
+    || (bytes[offset] === 0xed && second! > 0x9f)
+    || (bytes[offset] === 0xf0 && second! < 0x90)
+    || (bytes[offset] === 0xf4 && second! > 0x8f))) return false;
+  for (let index = offset + 2; index < bytes.length; index++) {
+    if (!isUtf8ContinuationByte(bytes[index])) return false;
+  }
+  return true;
+}
+
+function remainingContinuationBytes(bytes: Buffer, offset: number): number {
+  if (!isUtf8ContinuationByte(bytes[offset])) return 0;
+  let leading = offset - 1;
+  while (leading >= 0 && isUtf8ContinuationByte(bytes[leading])) leading--;
+  const length = utf8CodePointLength(bytes, leading);
+  return length > 0 && leading + length > offset ? leading + length - offset : 0;
+}
+
+type DecodedUtf8Page = {
+  content: string;
+  nextOffset?: number;
+  endOffset: number;
+};
+
+function decodeUtf8Page(bytes: Buffer, requestStart: number, limitBytes: number): DecodedUtf8Page {
+  const skipped = remainingContinuationBytes(bytes, requestStart);
+  let end = requestStart + skipped;
+  // The requested limit is relative to the original byte offset. A code point
+  // that starts before it may contribute at most three extra UTF-8 bytes.
+  const limit = requestStart + limitBytes;
+  const contentStart = end;
+
+  while (end < limit) {
+    if (end >= bytes.length) break;
+    const length = utf8CodePointLength(bytes, end);
+    if (length > 0) {
+      if (end + length > bytes.length) break;
+      end += length;
+      continue;
+    }
+    if (isIncompleteUtf8Sequence(bytes, end)) break;
+    // Stored logs are UTF-8, but a damaged byte must still advance. Keeping the
+    // replacement visible avoids a permanently stalled reader or silent loss.
+    end++;
+  }
+
+  const hasMoreCompleteData = end < bytes.length && !isIncompleteUtf8Sequence(bytes, end);
+  return {
+    content: bytes.subarray(contentStart, end).toString("utf8"),
+    endOffset: end,
+    ...(hasMoreCompleteData ? { nextOffset: end } : {}),
+  };
 }
 
 export interface DurableRunLogStoreOptions {
@@ -233,11 +329,17 @@ export function createDurableRunLogStore(options: DurableRunLogStoreOptions): Ru
   ): Promise<RunLogReadResult | null> {
     signal?.throwIfAborted();
     const start = Math.max(0, offset);
-    // Read one extra byte to discover whether another page exists. A single
-    // abortable stream avoids an uncancellable stat before opening the file.
+    // Include up to three preceding bytes to distinguish an arbitrary offset
+    // inside a valid code point from a damaged continuation byte. A response
+    // can complete one code point with at most three bytes beyond its requested
+    // byte limit; six internal look-ahead bytes then prove whether another
+    // complete code point remains without changing the response byte bound.
+    // A single abortable stream avoids an uncancellable stat before opening the
+    // file.
+    const readStart = Math.max(0, start - 3);
     const chunks: Buffer[] = [];
     try {
-      const stream = createReadStream(filePath, { start, end: start + limitBytes, signal });
+      const stream = createReadStream(filePath, { start: readStart, end: start + limitBytes + 6, signal });
       for await (const chunk of stream) {
         chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
       }
@@ -249,9 +351,12 @@ export function createDurableRunLogStore(options: DurableRunLogStoreOptions): Ru
     }
     signal?.throwIfAborted();
     const bytes = Buffer.concat(chunks);
-    const content = bytes.subarray(0, limitBytes).toString("utf8");
-    const nextOffset = bytes.length > limitBytes ? start + limitBytes : undefined;
-    return { content, nextOffset };
+    const page = decodeUtf8Page(bytes, start - readStart, limitBytes);
+    return {
+      ...page,
+      endOffset: readStart + page.endOffset,
+      ...(page.nextOffset != null ? { nextOffset: readStart + page.nextOffset } : {}),
+    };
   }
 
   async function readS3Range(
@@ -272,10 +377,11 @@ export function createDurableRunLogStore(options: DurableRunLogStoreOptions): Ru
     // EOF with 416 InvalidRange, so a caught-up reader (offset === total)
     // must short-circuit to an empty read instead of clamping end up to
     // start and requesting `bytes=total-total`.
-    const end = Math.min(start + limitBytes - 1, total - 1);
-    if (total === 0 || start > end) return { content: "", nextOffset: start < total ? start : undefined };
+    const readStart = Math.max(0, start - 3);
+    const end = Math.min(start + limitBytes + 6, total - 1);
+    if (total === 0 || start > end) return { content: "", endOffset: start, nextOffset: start < total ? start : undefined };
 
-    const result = await s3.provider.getObject({ objectKey: key, range: { start, end }, signal });
+    const result = await s3.provider.getObject({ objectKey: key, range: { start: readStart, end }, signal });
     // Destroy a body that stalls after headers arrive, including a body
     // returned just after the caller cancelled the request.
     if (signal) addAbortSignal(signal, result.stream);
@@ -284,9 +390,12 @@ export function createDurableRunLogStore(options: DurableRunLogStoreOptions): Ru
       chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
     }
     signal?.throwIfAborted();
-    const content = Buffer.concat(chunks).toString("utf8");
-    const nextOffset = end + 1 < total ? end + 1 : undefined;
-    return { content, nextOffset };
+    const page = decodeUtf8Page(Buffer.concat(chunks), start - readStart, limitBytes);
+    return {
+      ...page,
+      endOffset: readStart + page.endOffset,
+      ...(page.nextOffset != null ? { nextOffset: readStart + page.nextOffset } : {}),
+    };
   }
 
   async function sha256File(filePath: string): Promise<string> {
