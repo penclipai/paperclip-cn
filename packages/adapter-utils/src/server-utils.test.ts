@@ -738,16 +738,23 @@ describe("runChildProcess", () => {
   });
 
   it("rejects an unsupported stderr encoding before spawning a command", async () => {
-    await expect(
-      runChildProcess(randomUUID(), "this-command-must-not-run", [], {
-        cwd: process.cwd(),
-        env: {},
-        timeoutSec: 5,
-        graceSec: 1,
-        stderrEncoding: "not-a-real-encoding",
-        onLog: async () => {},
-      }),
-    ).rejects.toThrow('Unsupported stderr encoding: "not-a-real-encoding".');
+    const descriptor = Object.getOwnPropertyDescriptor(process, "platform");
+    if (!descriptor) throw new Error("Node process.platform descriptor is unavailable");
+    Object.defineProperty(process, "platform", { ...descriptor, value: "win32" });
+    try {
+      await expect(
+        runChildProcess(randomUUID(), "this-command-must-not-run", [], {
+          cwd: process.cwd(),
+          env: {},
+          timeoutSec: 5,
+          graceSec: 1,
+          stderrEncoding: "not-a-real-encoding",
+          onLog: async () => {},
+        }),
+      ).rejects.toThrow('Unsupported stderr encoding: "not-a-real-encoding".');
+    } finally {
+      Object.defineProperty(process, "platform", descriptor);
+    }
   });
 
   it("does not arm a timeout when timeoutSec is 0", async () => {
