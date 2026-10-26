@@ -17,8 +17,20 @@ import {
 } from "./execute.js";
 import { runAdapterExecutionTargetProcess } from "@penclipai/adapter-utils/execution-target";
 import { createPromptContextFixture } from "@penclipai/adapter-utils/test-fixtures/prompt-context";
+import * as serverUtils from "@penclipai/adapter-utils/server-utils";
 
 const runProcessMock = vi.mocked(runAdapterExecutionTargetProcess);
+
+async function withProcessPlatform<T>(platform: NodeJS.Platform, action: () => Promise<T>): Promise<T> {
+  const descriptor = Object.getOwnPropertyDescriptor(process, "platform");
+  if (!descriptor) throw new Error("process.platform descriptor is unavailable");
+  Object.defineProperty(process, "platform", { ...descriptor, value: platform });
+  try {
+    return await action();
+  } finally {
+    Object.defineProperty(process, "platform", descriptor);
+  }
+}
 
 async function createSkillDir(root: string, name: string): Promise<string> {
   const skillDir = path.join(root, name);
@@ -69,14 +81,15 @@ describe("OpenCode Windows installation preflight", () => {
   it("stops execute before it can start the model probe or provider process", async () => {
     const binary = await writePackageBinary("Error: opencode-ai's postinstall script was not run.\n");
     runProcessMock.mockReset();
-    await expect(execute({
+    const result = await withProcessPlatform("win32", () => execute({
       runId: "opencode-install-stub",
       agent: { id: "agent-1", companyId: "company-1", name: "OpenCode", adapterType: "opencode_local", adapterConfig: {} },
       runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
       config: { command: binary, cwd: root },
       context: {},
       onLog: async () => {},
-    })).resolves.toMatchObject({
+    }));
+    expect(result).toMatchObject({
       exitCode: 1,
       errorCode: "opencode_install_incomplete",
       errorMessage: expect.stringContaining("Reinstall opencode-ai"),
@@ -129,6 +142,41 @@ describe("OpenCode stderr encoding", () => {
     expect(() => readOpenCodeStderrEncoding({ config: { stderrEncoding: "gbk" }, platform: "win32", executionTargetIsRemote: true }))
       .toThrow("only for local Windows");
   });
+
+  it("forwards an explicit Windows stderr encoding to both probe and execution without changing stdout", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-opencode-gbk-"));
+    const commandPath = path.join(root, "fake-opencode");
+    await fs.writeFile(commandPath, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+    const probeSpy = vi.spyOn(serverUtils, "runChildProcess").mockResolvedValue(probeResult({
+      stdout: "openai/gpt-5\n",
+    }));
+    runProcessMock.mockReset();
+    runProcessMock.mockResolvedValue(probeResult({
+      stdout: JSON.stringify({ type: "text", sessionID: "gbk-session", part: { text: "Reply" } }),
+    }));
+
+    try {
+      const result = await withProcessPlatform("win32", () => execute({
+        runId: "opencode-gbk",
+        agent: { id: "agent-1", companyId: "company-1", name: "OpenCode", adapterType: "opencode_local", adapterConfig: {} },
+        runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
+        config: { command: commandPath, cwd: root, model: "openai/gpt-5", stderrEncoding: "gbk" },
+        context: {},
+        onLog: async () => {},
+      }));
+
+      expect(result.exitCode).toBe(0);
+      const probeOptions = probeSpy.mock.calls.at(-1)?.[3];
+      expect(probeOptions).toMatchObject({ stderrEncoding: "gbk" });
+      expect(probeOptions).not.toHaveProperty("stdoutEncoding");
+      const executionOptions = runProcessMock.mock.calls.at(-1)?.[4];
+      expect(executionOptions).toMatchObject({ stderrEncoding: "gbk" });
+      expect(executionOptions).not.toHaveProperty("stdoutEncoding");
+    } finally {
+      probeSpy.mockRestore();
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("OpenCode local skill injection", () => {
@@ -158,7 +206,7 @@ describe("OpenCode local skill injection", () => {
       agent: { id: "agent-1", companyId: "company-1", name: "OpenCode", adapterType: "opencode_local", adapterConfig: {} },
       runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
       config: {
-        command: commandPath, cwd: configHome, model: "openai/gpt-5", env: { OPENCODE_ALLOW_ALL_MODELS: "1" }, stderrEncoding: "gbk",
+        command: commandPath, cwd: configHome, model: "openai/gpt-5", env: { OPENCODE_ALLOW_ALL_MODELS: "1" },
         ...(custom ? { promptTemplate: "Custom agent instruction." } : {}),
       },
       context: {
@@ -177,7 +225,6 @@ describe("OpenCode local skill injection", () => {
     expect(prompt).toContain(custom ? "Custom agent instruction." : "You are agent agent-1");
     expect(prompt).not.toContain("Execution contract:");
     expect(prompt).not.toContain("Create child issues");
-    expect(runProcessMock.mock.calls.at(-1)?.[4]).toMatchObject({ stderrEncoding: "gbk" });
   });
 
   it("delivers assignment context on an ordinary task turn and rebuilds it after resume fallback", async () => {
