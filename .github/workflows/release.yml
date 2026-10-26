@@ -1633,7 +1633,7 @@ jobs:
   # produced by the successful npm release so packaged builds and the GitHub
   # Release describe the same source revision.
   desktop_stable:
-    if: github.event_name == 'workflow_dispatch' && inputs.channel == 'stable' && !inputs.dry_run
+    if: ${{ !cancelled() && needs.publish_stable.result == 'success' && github.event_name == 'workflow_dispatch' && inputs.channel == 'stable' && !inputs.dry_run }}
     needs: publish_stable
     permissions:
       contents: write
@@ -1646,7 +1646,7 @@ jobs:
       github_release_tag: ${{ needs.publish_stable.outputs.stable_tag }}
 
   smoke_stable:
-    if: github.event_name == 'workflow_dispatch' && inputs.channel == 'stable' && !inputs.dry_run
+    if: ${{ !cancelled() && needs.publish_stable.result == 'success' && github.event_name == 'workflow_dispatch' && inputs.channel == 'stable' && !inputs.dry_run }}
     needs: publish_stable
     uses: ./.github/workflows/release-smoke.yml
     with:
@@ -1659,7 +1659,7 @@ jobs:
   # draft job above.
   canonicalize_stable_notes:
     needs: [preflight_stable, publish_stable]
-    if: ${{ needs.preflight_stable.outputs.notes_mode == 'master_beta' && needs.publish_stable.result == 'success' }}
+    if: ${{ !cancelled() && needs.preflight_stable.outputs.notes_mode == 'master_beta' && needs.publish_stable.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
