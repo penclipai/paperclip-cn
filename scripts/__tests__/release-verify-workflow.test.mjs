@@ -336,6 +336,26 @@ test("post-publish beta smoke survives the skipped candidate-verification ancest
   );
 });
 
+test("post-publish stable follow-ups survive skipped inactive lane ancestors", () => {
+  const releaseWorkflow = readWorkflow("release.yml");
+
+  // publish_stable can succeed while the inactive beta/nightly ancestors are
+  // skipped. These three follow-ups must opt out of GitHub's implicit
+  // success() traversal and depend explicitly on their real stable inputs.
+  assert.match(
+    releaseWorkflow,
+    /desktop_stable:\n\s+if: \$\{\{ !cancelled\(\) && needs\.publish_stable\.result == 'success' && github\.event_name == 'workflow_dispatch' && inputs\.channel == 'stable' && !inputs\.dry_run \}\}/,
+  );
+  assert.match(
+    releaseWorkflow,
+    /smoke_stable:\n\s+if: \$\{\{ !cancelled\(\) && needs\.publish_stable\.result == 'success' && github\.event_name == 'workflow_dispatch' && inputs\.channel == 'stable' && !inputs\.dry_run \}\}/,
+  );
+  assert.match(
+    releaseWorkflow,
+    /canonicalize_stable_notes:\n\s+needs: \[preflight_stable, publish_stable\]\n\s+if: \$\{\{ !cancelled\(\) && needs\.preflight_stable\.outputs\.notes_mode == 'master_beta' && needs\.publish_stable\.result == 'success' \}\}/,
+  );
+});
+
 test("published canaries are gated by the exact-version onboarding browser smoke", () => {
   const releaseWorkflow = readWorkflow("release.yml");
 
