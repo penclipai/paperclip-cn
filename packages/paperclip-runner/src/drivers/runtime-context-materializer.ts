@@ -569,12 +569,18 @@ export async function prepareIsolatedCodexHome(input: {
     join(input.codexHome, "skills"),
   );
 
+  await writeIsolatedCodexConfig(input, providerConfig);
+  await writeIsolatedCodexAuth(input, providerConfig);
+}
+
+async function writeIsolatedCodexConfig(input: CodexAuthInput & { nativeMcp?: NativeMcpLaunchBinding | null }, providerConfig: string): Promise<void> {
   const configPath = join(input.codexHome, "config.toml");
   await mkdir(input.codexHome, { recursive: true, mode: 0o700 });
   await chmod(input.codexHome, 0o700);
   const temporaryConfig = join(input.codexHome, `.config-${randomUUID()}.tmp`);
   try {
     await writeFile(temporaryConfig, [
+      'cli_auth_credentials_store = "file"',
       providerConfig,
       codexObservabilityToml(input.observability?.otelConfig),
       // Codex shell snapshots serialize the provider process environment. The
@@ -600,7 +606,24 @@ export async function prepareIsolatedCodexHome(input: {
     await chmod(configPath, 0o600);
     await secureWindowsPrivatePaths([{ path: configPath, kind: "file" }]);
   } finally { await rm(temporaryConfig, { force: true }); }
+}
 
+type CodexAuthInput = {
+  codexHome: string;
+  sourceCodexHome?: string | null;
+  apiKey?: string | null;
+  observability?: import("./agent-observability.js").ProviderObservabilityLaunch;
+};
+
+export async function prepareIsolatedCodexRecoveryHome(input: CodexAuthInput & { nativeMcp?: NativeMcpLaunchBinding | null }): Promise<void> {
+  const providerConfig = await managedCodexProviderConfig(input.sourceCodexHome);
+  await writeIsolatedCodexConfig(input, providerConfig);
+  await writeIsolatedCodexAuth(input, providerConfig);
+}
+
+async function writeIsolatedCodexAuth(input: CodexAuthInput, providerConfig: string): Promise<void> {
+  const apiKey = input.apiKey?.trim();
+  await mkdir(input.codexHome, { recursive: true, mode: 0o700 });
   const targetAuth = join(input.codexHome, "auth.json");
   await rm(targetAuth, { force: true });
   if (providerConfig) return;

@@ -44,6 +44,16 @@ function arbitrate(
 }
 
 describe("native status authority", () => {
+  it("cannot complete an explicitly required quality review from claims or file evidence", () => {
+    expect(arbitrate({ completionClaimPolicyAccepted: true, requiredQualityReviewSatisfied: false }))
+      .toMatchObject({ toStatus: "in_progress", reasonCode: "required_quality_review_incomplete" });
+    expect(arbitrate({ completionClaimPolicyAccepted: false, requiredQualityReviewSatisfied: false }))
+      .toMatchObject({ toStatus: "in_progress", reasonCode: "required_quality_review_incomplete" });
+    expect(arbitrate({ requiredQualityReviewSatisfied: true })).toMatchObject({ toStatus: "done" });
+    expect(arbitrate()).toMatchObject({ toStatus: "done" });
+    expect(arbitrate({ requiredQualityReviewSatisfied: false, governanceGate: { kind: "interaction", id: "quality" } }))
+      .toMatchObject({ toStatus: "in_review", reasonCode: "governed_gate_pending" });
+  });
   it("waits on a published external review without creating human attention", () => {
     const wait = assessment({ reportedDisposition: "yielded",
       continuation: { kind: "response_wake", summary: "Wait for the PR update", idempotencyKey: "pr-wait" } });
@@ -65,6 +75,18 @@ describe("native status authority", () => {
       statusAction: "preserve", toStatus: "in_progress", reasonCode: "case_handoff_waiting_for_release",
       effects: [{ kind: "release_checkout" }],
     });
+  });
+
+  it("preserves the task status after a context compaction run", () => {
+    for (const priorIssueStatus of ["in_progress", "in_review", "blocked", "todo"] as const) {
+      expect(arbitrate({
+        contextCompactionRun: true,
+        priorIssueStatus,
+        assessment: assessment({ reportedDisposition: "yielded", objectiveSatisfied: false, allCriteriaSatisfied: false }),
+      })).toMatchObject({
+        statusAction: "preserve", toStatus: priorIssueStatus, reasonCode: "context_compaction_status_preserved", effects: [],
+      });
+    }
   });
 
   it("keeps workspace repair ahead of an accepted case handoff", () => {
@@ -560,7 +582,7 @@ describe("native status authority", () => {
       expect.objectContaining({
         statusAction: "blocked",
         toStatus: "blocked",
-        policyVersion: "phase6-v12",
+        policyVersion: "phase6-v13",
         reasonCode: "current_track_blocker_waiting",
         unblockDescriptor: {
           owner: "board",

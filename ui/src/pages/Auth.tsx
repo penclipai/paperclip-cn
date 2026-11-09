@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "@/lib/router";
 import { authApi } from "../api/auth";
 import { healthApi } from "../api/health";
+import { describeError } from "../api/errors";
 import { CloudSignIn } from "@/components/CloudSignIn";
 import { clearCloudSignInAttempt } from "@/lib/cloud-sign-in";
 import { tenantSignInReturnPath } from "@/lib/cloudLinks";
@@ -15,6 +16,7 @@ import { AsciiArtAnimation } from "@/components/AsciiArtAnimation";
 import { PaperclipLoading } from "@/components/AnimatedPaperclipIcon";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { PaperclipLockup } from "../components/PaperclipLockup";
+import { QueryErrorState, useQueryView } from "../components/QueryView";
 
 type AuthMode = "sign_in" | "sign_up";
 
@@ -31,19 +33,32 @@ export function AuthPage() {
   const errorId = "auth-error";
 
   const nextPath = useMemo(
-    () => tenantSignInReturnPath(searchParams.get("next") || getRememberedInvitePath() || "/"),
+    () =>
+      tenantSignInReturnPath(
+        searchParams.get("next") || getRememberedInvitePath() || "/",
+      ),
     [searchParams],
   );
   const healthQuery = useQuery({
     queryKey: queryKeys.health,
     queryFn: () => healthApi.get(),
-    retry: false,
   });
-  const { data: session, isLoading: isSessionLoading, error: sessionError } = useQuery({
+  const sessionQuery = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
-    retry: false,
   });
+  const {
+    data: session,
+    isLoading: isSessionLoading,
+    error: sessionError,
+  } = sessionQuery;
+  // One boot-time answer for the sign-in page: an outage stays on the loading
+  // screen,and a no-data failure gets readable copy with Retry instead of a
+  // raw error line so a transient blip cannot be mistaken for self-hosted mode.
+
+  const bootError = healthQuery.error ?? sessionError;
+
+  const bootRefetching = healthQuery.isFetching || sessionQuery.isFetching;
 
   useEffect(() => {
     if (session) {
@@ -76,14 +91,15 @@ export function AuthPage() {
       navigate(nextPath, { replace: true });
     },
     onError: (err) => {
-      setError(err instanceof Error ? err.message : "Authentication failed");
+      setError(describeError(err).body);
     },
   });
 
   const canSubmit =
     email.trim().length > 0 &&
     password.trim().length > 0 &&
-    (mode === "sign_in" || (name.trim().length > 0 && password.trim().length >= 8));
+    (mode === "sign_in" ||
+      (name.trim().length > 0 && password.trim().length >= 8));
 
   if (healthQuery.isLoading || isSessionLoading || session) {
     return (
@@ -92,10 +108,21 @@ export function AuthPage() {
       </div>
     );
   }
-
   // A health/session failure must not be mistaken for a self-hosted instance.
-  if (healthQuery.error || sessionError) {
-    return <p role="alert" className="p-6 text-sm text-destructive">{translateInstant("Unable to check sign-in. Refresh and try again.")}</p>;
+  if (bootError) {
+    return (
+      <QueryErrorState
+        size="panel"
+        className="p-6"
+        error={bootError}
+        action="check sign-in"
+        onRetry={() => {
+          void healthQuery.refetch();
+          void sessionQuery.refetch();
+        }}
+        retrying={bootRefetching}
+      />
+    );
   }
 
   if (healthQuery.data?.cloud) {
@@ -115,7 +142,9 @@ export function AuthPage() {
           </div>
 
           <h1 className="text-xl font-semibold">
-            {mode === "sign_in" ? "Sign in to Paperclip" : "Create your Paperclip account"}
+            {mode === "sign_in"
+              ? "Sign in to Paperclip"
+              : "Create your Paperclip account"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "sign_in"
@@ -126,7 +155,11 @@ export function AuthPage() {
           <form
             className="mt-6 space-y-4"
             method="post"
-            action={mode === "sign_up" ? "/api/auth/sign-up/email" : "/api/auth/sign-in/email"}
+            action={
+              mode === "sign_up"
+                ? "/api/auth/sign-up/email"
+                : "/api/auth/sign-in/email"
+            }
             onSubmit={(event) => {
               event.preventDefault();
               if (mutation.isPending) return;
@@ -139,7 +172,12 @@ export function AuthPage() {
           >
             {mode === "sign_up" && (
               <div>
-                <label htmlFor="name" className="text-xs text-muted-foreground mb-1 block">{translateInstant("Name")}</label>
+                <label
+                  htmlFor="name"
+                  className="text-xs text-muted-foreground mb-1 block"
+                >
+                  {translateInstant("Name")}
+                </label>
                 <input
                   id="name"
                   name="name"
@@ -156,7 +194,12 @@ export function AuthPage() {
               </div>
             )}
             <div>
-              <label htmlFor="email" className="text-xs text-muted-foreground mb-1 block">{translateInstant("Email")}</label>
+              <label
+                htmlFor="email"
+                className="text-xs text-muted-foreground mb-1 block"
+              >
+                {translateInstant("Email")}
+              </label>
               <input
                 id="email"
                 name="email"
@@ -173,7 +216,12 @@ export function AuthPage() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="text-xs text-muted-foreground mb-1 block">{translateInstant("Password")}</label>
+              <label
+                htmlFor="password"
+                className="text-xs text-muted-foreground mb-1 block"
+              >
+                {translateInstant("Password")}
+              </label>
               <input
                 id="password"
                 name="password"
@@ -181,7 +229,9 @@ export function AuthPage() {
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                autoComplete={mode === "sign_in" ? "current-password" : "new-password"}
+                autoComplete={
+                  mode === "sign_in" ? "current-password" : "new-password"
+                }
                 required
                 aria-required="true"
                 aria-invalid={error ? true : undefined}
@@ -208,7 +258,9 @@ export function AuthPage() {
           </form>
 
           <div className="mt-5 text-sm text-muted-foreground">
-            {mode === "sign_in" ? translateInstant("auth.needAccount") : translateInstant("auth.haveAccount")}{" "}
+            {mode === "sign_in"
+              ? translateInstant("auth.needAccount")
+              : translateInstant("auth.haveAccount")}{" "}
             <button
               type="button"
               className="font-medium text-foreground underline underline-offset-2"
@@ -217,7 +269,9 @@ export function AuthPage() {
                 setMode(mode === "sign_in" ? "sign_up" : "sign_in");
               }}
             >
-              {mode === "sign_in" ? translateInstant("auth.createOne") : translateInstant("auth.signInLink")}
+              {mode === "sign_in"
+                ? translateInstant("auth.createOne")
+                : translateInstant("auth.signInLink")}
             </button>
           </div>
         </div>

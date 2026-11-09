@@ -17,6 +17,7 @@ import { cloudPortfolioManageUrl } from "../lib/cloudLinks";
 import { navigateTopLevel } from "@/lib/browserNavigation";
 import { companiesApi } from "../api/companies";
 import { assetsApi } from "../api/assets";
+import { describeError } from "@/api/errors";
 import { queryKeys } from "../lib/queryKeys";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal } from "lucide-react";
@@ -291,7 +292,7 @@ export function CompanySettings() {
                       </Button>
                     </div>
                   )}
-                  {(logoUploadMutation.isError || logoUploadError) && (
+                  {(logoUploadMutation.error || logoUploadError) && (
                     <span className="text-xs text-destructive">
                       {logoUploadError ??
                         (logoUploadMutation.error instanceof Error
@@ -299,9 +300,9 @@ export function CompanySettings() {
                           : translateInstant("Logo upload failed"))}
                     </span>
                   )}
-                  {clearLogoMutation.isError && (
+                  {clearLogoMutation.error && (
                     <span className="text-xs text-destructive">
-                      {clearLogoMutation.error.message}
+                      {describeError(clearLogoMutation.error).body}
                     </span>
                   )}
                   {logoUploadMutation.isPending && (
@@ -327,7 +328,7 @@ export function CompanySettings() {
           {generalMutation.isSuccess && (
             <span className="text-xs text-muted-foreground">{translateInstant("Saved")}</span>
           )}
-          {generalMutation.isError && (
+          {generalMutation.error && (
             <span className="text-xs text-destructive">
               {generalMutation.error instanceof Error
                   ? generalMutation.error.message
@@ -357,13 +358,7 @@ export function CompanySettings() {
         governance={governance}
         onChange={handleGovernanceChange}
         isPending={governanceMutation.isPending}
-        errorMessage={
-          governanceMutation.isError
-            ? governanceMutation.error instanceof Error
-              ? governanceMutation.error.message
-              : "Failed to save interaction governance"
-            : null
-        }
+        errorMessage={governanceMutation.error ? describeError(governanceMutation.error).body : null}
       />
 
       <AgentObservabilitySettingsSection companyId={selectedCompanyId!} />
@@ -400,7 +395,7 @@ export function CompanySettings() {
                 ? translateInstant("Already archived")
                 : translateInstant("companySettings.archiveOrganization")}
             </Button>
-            {archiveMutation.isError && (
+            {archiveMutation.error && (
               <span className="text-xs text-destructive">
                 {archiveMutation.error instanceof Error
                   ? archiveMutation.error.message

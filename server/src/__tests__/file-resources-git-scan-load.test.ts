@@ -45,6 +45,7 @@ function availableList(input: { mode?: "all" | "recent" | "changed" | null } = {
       mode: input.mode ?? "changed",
       q: null,
       limit: 25,
+      offset: 0,
     },
     items: [],
     scannedCount: 0,
@@ -135,6 +136,7 @@ describe("workspace Git scan route load regression", () => {
     });
     const roots = [path.join(tempRoot, "repository-a"), path.join(tempRoot, "repository-b")];
     const service: WorkspaceFileResourceService = {
+      resolveIssueId: vi.fn(async (issueId: string) => issueId),
       getIssue: vi.fn(async () => ({ companyId })),
       list: vi.fn(async (issueId, input, opts) => {
         admittedRequests += 1;
@@ -240,6 +242,7 @@ describe("workspace Git scan route load regression", () => {
     [WORKSPACE_GIT_SCAN_ERROR_CODES.timeout, 504],
   ] as const)("returns stable retryable %s responses", async (code, status) => {
     const service: WorkspaceFileResourceService = {
+      resolveIssueId: vi.fn(async (issueId: string) => issueId),
       getIssue: vi.fn(async () => ({ companyId })),
       list: vi.fn(async () => {
         throw new WorkspaceGitScanError(code, "Changed files temporarily unavailable");
@@ -275,6 +278,7 @@ describe("workspace Git scan route load regression", () => {
       }),
     });
     const service: WorkspaceFileResourceService = {
+      resolveIssueId: vi.fn(async (issueId: string) => issueId),
       getIssue: vi.fn(async () => ({ companyId })),
       list: vi.fn(async (_issueId, input, opts) => {
         await scheduler.run({

@@ -306,7 +306,7 @@
   },
   "issueThreadInteraction.moreHidden": {
     "en": "+{{count}} more",
-    "zh-CN": "+{{count}} 个更多",
+    "zh-CN": "另有 {{count}} 项",
     "reviewedEnglishHash": "48380badf7a45c74d3fac6b89d19d777585cb9052d135d1ec482b932bc99e98a"
   },
   "issueThreadInteraction.noAnswerRecorded": {
@@ -936,7 +936,7 @@
   },
   "issueThreadInteraction.toolAction.declinedBody": {
     "en": "The action did not run. {{requestedBy}} was resumed with your reason and told not to retry the same call.",
-    "zh-CN": "操作未运行。已使用你的原因恢复 {{requestedBy}}，并告知其不要重试同一调用。",
+    "zh-CN": "操作未执行。已将你的原因告知 {{requestedBy}} 并恢复其运行，同时要求它不要重试同一调用。",
     "reviewedEnglishHash": "1bc9af0069525f412b581e77cafe29b66e6928d3764b0b275e6c3e764dfd7914"
   },
   "issueThreadInteraction.toolAction.declinedTitle": {
@@ -986,7 +986,7 @@
   },
   "issueThreadInteraction.toolAction.failedBody": {
     "en": "You approved it and it ran, but the connector returned an error. {{requestedBy}} was resumed with this error.",
-    "zh-CN": "你已批准并运行此操作，但连接器返回了错误。已使用此错误恢复 {{requestedBy}}。",
+    "zh-CN": "你已批准该操作，且它已执行，但连接器返回了错误。已将此错误告知 {{requestedBy}} 并恢复其运行。",
     "reviewedEnglishHash": "3544f5ce954270bc12cc9f235fd32033251839a293d91a4b31ce786b785b2441"
   },
   "issueThreadInteraction.toolAction.failedTitle": {
@@ -1016,7 +1016,7 @@
   },
   "issueThreadInteraction.toolAction.runningBody": {
     "en": "The action is executing server-side with the exact arguments you approved.",
-    "zh-CN": "操作正在服务端使用你批准的确切参数执行。",
+    "zh-CN": "服务端正严格按你批准的参数执行操作。",
     "reviewedEnglishHash": "aa584f2888d4aea4e53153b94dee1144006833a13787705d39606978aac5c1f7"
   },
   "issueThreadInteraction.toolAction.runningTitle": {

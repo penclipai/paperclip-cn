@@ -28,7 +28,7 @@ export function SkillPackagePreview({ companyId, repository, commitSha, skill, i
   const preview = useQuery({
     queryKey: [...queryKeys.skillSources.preview(companyId, repository.repositoryUrl, repository.connectionId ?? null, commitSha, skill.path, filePath), repository.packageMode ?? 'skills'],
     queryFn: () => skillSourcesApi.preview(companyId, { ...repository, commitSha: commitSha!, skillPath: skill.path, filePath: repository.packageMode === 'repository' ? repositoryFilePath : filePath }),
-    enabled: Boolean(commitSha && file), retry: false, staleTime: 5 * 60_000, refetchOnWindowFocus: false,
+    enabled: Boolean(commitSha && file), staleTime: 5 * 60_000, refetchOnWindowFocus: false,
   });
   const githubPath = repositoryPackage ? filePath : filePath === 'SKILL.md' ? skill.path : [root, filePath].filter(Boolean).join('/');
   const githubUrl = commitSha ? `${repository.repositoryUrl}/blob/${commitSha}/${githubPath.split('/').map(encodeURIComponent).join('/')}` : repository.repositoryUrl;

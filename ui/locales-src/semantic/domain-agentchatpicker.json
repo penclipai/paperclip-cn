@@ -64,6 +64,16 @@
     "zh-CN": "与智能体聊天",
     "reviewedEnglishHash": "73adffe32a9a861c33919042e8df2ce97eb776123d17472a3bf8f4916f214eff"
   },
+  "agentChatPicker.unreadFrom_one": {
+    "en": "{{count}} unread message from {{agentName}}",
+    "zh-CN": "来自 {{agentName}} 的 {{count}} 条未读消息",
+    "reviewedEnglishHash": "1571d1280f9c1154c99e1e5713823dbe2941b1aa47e59535cff0a75eac030bfe"
+  },
+  "agentChatPicker.unreadFrom_other": {
+    "en": "{{count}} unread messages from {{agentName}}",
+    "zh-CN": "来自 {{agentName}} 的 {{count}} 条未读消息",
+    "reviewedEnglishHash": "9a7d8e25f4637aa926f760ee32b9c5e5432b1243787ce4b5b259cef8631b19b0"
+  },
   "agentChatPicker.tryAnother": {
     "en": "Try another name or role.",
     "zh-CN": "请尝试其他名称或角色。",

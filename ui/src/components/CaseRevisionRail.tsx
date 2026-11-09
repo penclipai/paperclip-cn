@@ -8,6 +8,7 @@ import { casesApi, type CaseDocumentRevision, type CaseDocumentRevisions } from 
 import { issuesApi } from "@/api/issues";
 import { queryKeys } from "@/lib/queryKeys";
 import { buildLineDiff, type DiffRow } from "@/lib/line-diff";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -107,7 +108,7 @@ function CaseDocumentDiffModal({
           </DialogHeader>
           <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:gap-4">
             <div className="flex min-w-0 items-center gap-2">
-              <span className="shrink-0 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-caps) text-red-400">Old</span>
+              <span className="shrink-0 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-caps) text-red-400">{t("caseComponents.revisions.old", { defaultValue: "Old" })}</span>
               <Select value={effectiveLeftId ?? ""} onValueChange={setLeftRevisionId}>
                 <SelectTrigger aria-label="Old revision" className="min-w-0 w-full border-border/60 data-[size=default]:h-11 md:w-60 md:text-xs md:data-[size=default]:h-9">
                   <SelectValue className="min-w-0 truncate" placeholder="Select revision" />
@@ -122,7 +123,7 @@ function CaseDocumentDiffModal({
               </Select>
             </div>
             <div className="flex min-w-0 items-center gap-2">
-              <span className="shrink-0 rounded-full border border-green-500/30 bg-green-500/10 px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-caps) text-green-400">New</span>
+              <span className="shrink-0 rounded-full border border-green-500/30 bg-green-500/10 px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-caps) text-green-400">{t("caseComponents.revisions.new", { defaultValue: "New" })}</span>
               <Select value={effectiveRightId ?? ""} onValueChange={setRightRevisionId}>
                 <SelectTrigger aria-label="New revision" className="min-w-0 w-full border-border/60 data-[size=default]:h-11 md:w-60 md:text-xs md:data-[size=default]:h-9">
                   <SelectValue className="min-w-0 truncate" placeholder="Select revision" />
@@ -206,6 +207,7 @@ export function CaseRevisionRail({
     queryKey: taskId ? queryKeys.issues.documentRevisions(taskId, documentKey) : queryKeys.cases.revisions(caseIdentifier, documentKey),
     queryFn: () => taskId ? issuesApi.listDocumentRevisions(taskId, documentKey) : casesApi.listRevisions(caseIdentifier, documentKey),
   });
+  const revisionsView = useQueryView(revisionsQuery);
   const response = revisionsQuery.data;
   const revisions: CaseDocumentRevision[] = Array.isArray(response) ? response.map(revision => ({
     ...revision, title: revision.title ?? documentKey, createdAt: new Date(revision.createdAt).toISOString(),
@@ -223,18 +225,24 @@ export function CaseRevisionRail({
     }
   }, [revisions, selectedId]);
 
-  if (revisionsQuery.isLoading) {
+  if (revisionsQuery.isLoading || revisionsView.kind === "reconnecting") {
     return (
       <p className="py-6 text-center text-sm text-muted-foreground">
         {t("caseComponents.revisions.loading", { defaultValue: "Loading revisions…" })}
       </p>
     );
   }
-  if (revisionsQuery.isError) {
+  if (revisionsView.kind === "error") {
     return (
-      <p className="py-6 text-center text-sm text-muted-foreground">
-        {t("caseComponents.revisions.loadError", { defaultValue: "Could not load revisions." })}
-      </p>
+      <div className="flex justify-center py-6">
+        <QueryErrorState
+          size="inline"
+          error={revisionsQuery.error}
+          action="load revisions"
+          onRetry={revisionsView.retry}
+          retrying={revisionsView.isFetching}
+        />
+      </div>
     );
   }
   if (revisions.length === 0) {

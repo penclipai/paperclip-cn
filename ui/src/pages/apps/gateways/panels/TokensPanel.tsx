@@ -30,6 +30,7 @@ import {
   tokenStatus,
   type TokenStatus,
 } from "../gateway-helpers";
+import { describeError } from "@/api/errors";
 
 const DEFAULT_ACTIONS: ToolMcpGatewayTokenAction[] = ["tools/list", "tools/call"];
 const TOKEN_PAGE_SIZE = 10;

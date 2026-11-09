@@ -19,6 +19,7 @@ import {
   routineDetailHref,
 } from "./RoutineContextualSidebar";
 import { useRoutineDetail } from "./routine-sections/context";
+import { RoutineResponsibleUser } from "./RoutineResponsibleUser";
 
 export type RoutineScheduleSummary = {
   label: string;

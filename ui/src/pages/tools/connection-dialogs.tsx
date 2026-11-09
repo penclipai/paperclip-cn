@@ -11,7 +11,7 @@ import type {
 import { queryKeys } from "@/lib/queryKeys";
 import { toolsApi, type CreateToolConnectionInput } from "@/api/tools";
 import { secretsApi } from "@/api/secrets";
-import { ApiError } from "@/api/client";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,12 +34,12 @@ import { useToast } from "@/context/ToastContext";
 import { redactUrlSecrets } from "@/lib/redact-url-secrets";
 import {
   LoadingState,
-  ErrorState,
   HealthBadge,
   RiskBadge,
   CapabilityBadges,
   QuarantineBadge,
 } from "./shared";
+import { describeError } from "@/api/errors";
 
 export const TRANSPORT_LABEL: Record<string, string> = {
   mcp_remote: "remote http",
@@ -89,6 +89,7 @@ export function CatalogDialog({
     queryKey: queryKeys.tools.catalog(connection.id),
     queryFn: () => toolsApi.listCatalog(connection.id),
   });
+  const catalogView = useQueryView(catalog);
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-2xl">
@@ -97,10 +98,15 @@ export function CatalogDialog({
             {t("tools.connections.catalogPrefix")} {connection.name}
           </DialogTitle>
         </DialogHeader>
-        {catalog.isLoading ? (
+        {catalog.isLoading || catalogView.kind === "reconnecting" ? (
           <LoadingState />
-        ) : catalog.error ? (
-          <ErrorState error={catalog.error} onRetry={() => catalog.refetch()} />
+        ) : catalogView.kind === "error" ? (
+          <QueryErrorState
+            error={catalog.error}
+            action="load the tool catalog"
+            onRetry={catalogView.retry}
+            retrying={catalogView.isFetching}
+          />
         ) : (catalog.data?.catalog ?? []).length === 0 ? (
           <p className="py-6 text-sm text-muted-foreground">
             {t("tools.connections.catalog.empty")}
@@ -265,8 +271,8 @@ export function AddConnectionDialog({
     },
     onError: (err) =>
       pushToast({
-        title: translateInstant("tools.connections.toast.createFailed"),
-        body: err instanceof ApiError ? err.message : String(err),
+        title: translateInstant("tools.connections.toast.createFailed", { defaultValue: "Could not create connection" }),
+        body: describeError(err).body,
         tone: "error",
       }),
   });
@@ -279,8 +285,8 @@ export function AddConnectionDialog({
     },
     onError: (err) =>
       pushToast({
-        title: translateInstant("tools.connections.toast.probeFailed"),
-        body: err instanceof ApiError ? err.message : String(err),
+        title: translateInstant("tools.connections.toast.probeFailed", { defaultValue: "Probe failed" }),
+        body: describeError(err).body,
         tone: "error",
       }),
   });
@@ -295,13 +301,16 @@ export function AddConnectionDialog({
       qc.invalidateQueries({
         queryKey: queryKeys.tools.applications(companyId),
       });
-      pushToast({ title: translateInstant("tools.connections.toast.activated"), tone: "success" });
+      pushToast({
+        title: translateInstant("tools.connections.toast.activated"),
+        tone: "success",
+      });
       onClose();
     },
     onError: (err) =>
       pushToast({
-        title: translateInstant("tools.connections.toast.activationFailed"),
-        body: err instanceof ApiError ? err.message : String(err),
+        title: translateInstant("tools.connections.toast.activationFailed", { defaultValue: "Activation failed" }),
+        body: describeError(err).body,
         tone: "error",
       }),
   });
@@ -429,7 +438,9 @@ export function AddConnectionDialog({
                   <span className="font-medium text-foreground">
                     {applicationName.trim()}
                   </span>{" "}
-                  {" "}{t("tools.connections.createdAs")} {inferredType}{translateInstant(".")}</div>
+                  {t("tools.connections.createdAs")} {inferredType}
+                  {translateInstant(".")}
+                </div>
               ) : null}
 
               <div className="space-y-1.5">
@@ -598,7 +609,7 @@ export function AddConnectionDialog({
                     <p className="text-xs text-muted-foreground">
                       {t("tools.connections.secretRefPrefix")}
                       <span className="font-mono"> vault://</span>{" "}
-                      {" "}{t("tools.connections.secretRefSuffix")}
+                      {t("tools.connections.secretRefSuffix")}
                     </p>
                   </>
                 ) : null}
@@ -614,9 +625,10 @@ export function AddConnectionDialog({
                   label={t("tools.connections.add.probingConnection")}
                 />
               </div>
-            ) : probe.isError ? (
-              <ErrorState
+            ) : probe.error ? (
+              <QueryErrorState
                 error={probe.error}
+                action="probe the connection"
                 onRetry={() => draft && probe.mutate(draft.id)}
               />
             ) : probeResult ? (
@@ -687,7 +699,9 @@ export function AddConnectionDialog({
                 {t("tools.common.back")}
               </Button>
               <Button disabled={!canCreate} onClick={() => create.mutate()}>
-                {create.isPending ? translateInstant("tools.connections.add.creatingDraft") : translateInstant("tools.connections.add.createAndProbe")}
+                {create.isPending
+                  ? translateInstant("tools.connections.add.creatingDraft")
+                  : translateInstant("tools.connections.add.createAndProbe")}
               </Button>
             </>
           ) : (
@@ -698,13 +712,17 @@ export function AddConnectionDialog({
                 onClick={() => draft && probe.mutate(draft.id)}
               >
                 <Stethoscope className="mr-1 h-3.5 w-3.5" />
-                {probe.isPending ? translateInstant("tools.connections.add.probing") : translateInstant("tools.connections.add.reprobe")}
+                {probe.isPending
+                  ? translateInstant("tools.connections.add.probing")
+                  : translateInstant("tools.connections.add.reprobe")}
               </Button>
               <Button
                 disabled={activate.isPending || probe.isPending}
                 onClick={() => draft && activate.mutate(draft.id)}
               >
-                {activate.isPending ? translateInstant("tools.connections.add.activating") : translateInstant("Activate")}
+                {activate.isPending
+                  ? translateInstant("tools.connections.add.activating")
+                  : translateInstant("Activate")}
               </Button>
             </>
           )}

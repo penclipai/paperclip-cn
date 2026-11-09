@@ -2,10 +2,12 @@ import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import fsSync from "node:fs";
 import fs from "node:fs/promises";
+import net from "node:net";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { promisify } from "node:util";
 import { resolvePaperclipInstanceRoot } from "../home-paths.js";
+import { processExists } from "./controller-process-identity.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -265,24 +267,16 @@ export async function findLocalServiceRegistryRecordByRuntimeServiceId(input: {
   return candidate;
 }
 
+/** EPERM means the process exists under another user, so it is alive. */
 export function isPidAlive(pid: number) {
   if (!Number.isInteger(pid) || pid <= 0) return false;
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch {
-    return false;
-  }
+  return processExists(pid);
 }
 
 export function isProcessGroupAlive(processGroupId: number | null | undefined) {
   if (process.platform === "win32") return false;
   if (typeof processGroupId !== "number" || !Number.isInteger(processGroupId) || processGroupId <= 0) return false;
-  try {
-    process.kill(-processGroupId, 0);
-  } catch {
-    return false;
-  }
+  if (!processExists(-processGroupId)) return false;
 
   if (process.platform === "linux") {
     const liveMember = readLinuxProcessGroupActivity(processGroupId);
@@ -599,6 +593,34 @@ async function forceKillWindowsProcessTree(pid: number) {
   });
 }
 
+/**
+ * `netstat` normally identifies every Windows listener. Some virtualized
+ * Windows environments do not expose a process-local listener in that table,
+ * though the listener remains reachable from the process that is stopping the
+ * service. A successful loopback connection is still proof that the port is
+ * occupied; it never authorizes terminating that owner.
+ */
+async function isLocalServicePortReachable(port: number) {
+  return await new Promise<boolean>((resolve) => {
+    const socket = net.createConnection({ host: "127.0.0.1", port });
+    let settled = false;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+
+    const finish = (reachable: boolean) => {
+      if (settled) return;
+      settled = true;
+      if (timeout) clearTimeout(timeout);
+      socket.destroy();
+      resolve(reachable);
+    };
+
+    socket.once("connect", () => finish(true));
+    socket.once("error", () => finish(false));
+    timeout = setTimeout(() => finish(false), 250);
+    timeout.unref();
+  });
+}
+
 export async function terminateLocalService(
   record: Pick<LocalServiceRegistryRecord, "pid" | "processGroupId"> &
     Partial<Pick<LocalServiceRegistryRecord, "port">>,
@@ -621,7 +643,12 @@ export async function terminateLocalService(
         ? { throwOnError: true, timeoutMs: Math.max(1, remainingMs ?? 1) }
         : undefined,
     );
-    if (!portOwnerPid) return true;
+    if (!portOwnerPid) {
+      // Do not treat an unobserved Windows listener as absent. This preserves
+      // the no-unrelated-owner invariant even where netstat cannot map a
+      // process-local listener to a PID.
+      return !isWindows || !(await isLocalServicePortReachable(record.port));
+    }
     // Once the recorded root has exited, Windows must show no listener for
     // the recorded port. A replacement listener is not evidence that it is
     // safe to delete the service state, and it is never terminated here.
@@ -698,11 +725,25 @@ export async function readLocalServicePortOwner(
         const columns = line.trim().split(/\s+/);
         if (columns.length < 5 || columns[0]?.toUpperCase() !== "TCP") continue;
         const localAddress = columns[1] ?? "";
+        const remoteAddress = columns[2] ?? "";
         const separatorIndex = localAddress.lastIndexOf(":");
         const localPort = Number.parseInt(localAddress.slice(separatorIndex + 1), 10);
         const state = columns.at(-2)?.toUpperCase();
         const pid = Number.parseInt(columns.at(-1) ?? "", 10);
-        if (localPort === port && state === "LISTENING" && Number.isInteger(pid) && pid > 0) {
+        // `netstat` localizes its connection-state label on some Windows
+        // installations. A TCP listener is still unambiguously represented by
+        // the wildcard remote endpoint, so retain the state check where it is
+        // available but do not turn an observed listener into "absent" just
+        // because its localized label is not the English `LISTENING` string.
+        const hasListenerRemoteEndpoint = remoteAddress === "0.0.0.0:0"
+          || remoteAddress === "[::]:0"
+          || remoteAddress === "*:*";
+        if (
+          localPort === port
+          && (state === "LISTENING" || hasListenerRemoteEndpoint)
+          && Number.isInteger(pid)
+          && pid > 0
+        ) {
           return pid;
         }
       }

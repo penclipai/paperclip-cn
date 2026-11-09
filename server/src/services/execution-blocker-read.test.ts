@@ -3,7 +3,7 @@ import { agents, companies, createDb, heartbeatRuns, issueRecoveryActions, issue
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "../__tests__/helpers/embedded-postgres.js";
-import { getExecutionBlocker } from "./execution-blocker.js";
+import { EXECUTION_BLOCKER_PERSON_RETRY_ACTION, getExecutionBlocker } from "./execution-blocker.js";
 
 const support = await getEmbeddedPostgresTestSupport();
 describe.skipIf(!support.supported)("execution blocker PostgreSQL read projection", () => {
@@ -75,6 +75,15 @@ describe.skipIf(!support.supported)("execution blocker PostgreSQL read projectio
     expect(await getExecutionBlocker(db, randomUUID(), f.issueId)).toBeNull();
   });
 
+  it("names Retry as the person's control, so an agent reading the blocker does not re-run the work", async () => {
+    const f = await fixture();
+    const blocker = await getExecutionBlocker(db, f.companyId, f.issueId);
+    expect(blocker).toMatchObject({ canRetry: true });
+    expect(blocker!.nextAction).toBe(`Inspect the source run. ${EXECUTION_BLOCKER_PERSON_RETRY_ACTION}`);
+    expect(EXECUTION_BLOCKER_PERSON_RETRY_ACTION).toMatch(/^A person can use Retry on this task/);
+    expect(EXECUTION_BLOCKER_PERSON_RETRY_ACTION).toContain("Agents cannot retry it for them.");
+  });
+
   it("retains the claimed adapter and startup receipts for a cancelled pre-provider run", async () => {
     const f = await fixture({ status: "cancelled", startedAt: null, errorCode: "operator_interrupted",
       resultJson: { startupCancellation: { beforeNativeSelection: true }, startupPreparationSettledAt: "2020-01-01T00:01:00Z" } });
@@ -100,13 +109,48 @@ describe.skipIf(!support.supported)("execution blocker PostgreSQL read projectio
     });
     const input = { schema: "paperclip.native-execution-input.v6",
       binding: { runId: f.run.id, companyId: f.companyId, agentId: f.agentId, issueId: f.issueId },
-      provider: { kind: "grok_bot" }, workspace: { access: "none", ...(hasCwd ? { cwd: null } : {}) } };
+      provider: { kind: "grok_bot" }, workspace: { access: "none", ...(hasCwd ? { cwd: null } : {}) },
+      task: { description: randomBytes(128 * 1024).toString("base64") },
+      runtimeContext: { instructions: randomBytes(128 * 1024).toString("base64") } };
     await db.update(heartbeatRuns).set({ nativeIssueId: f.issueId,
       runnerProfileJson: { ...f.run.runnerProfileJson, nativeExecutionInput: input } }).where(eq(heartbeatRuns.id, f.run.id));
     expect(await compare(f)).toMatchObject({ workspaceRepairRequired: !hasCwd, canRetry: false });
     const [stored] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, f.run.id));
     expect(stored.runnerProfileJson?.nativeExecutionInput).toEqual(input);
   });
+
+  it.each(["run", "company", "agent", "issue", "provider", "schema", "access", "workspace", "binding", "missing_binding",
+    "null_input", "array_input", "scalar_input", "number_input"])(
+    "does not relax native workspace recovery for invalid input (%s)", async kind => {
+      const f = await fixture({ runtimeMode: "native", driverKind: "grok_bot_mcp" }, {
+        workspaceRestoreFailure: "restore_unsafe_archive",
+        workspaceRestoreRecovery: { schema: "paperclip.workspace-restore-recovery.v1", leaseIds: [] },
+      });
+      const input: Record<string, unknown> = {
+        schema: "paperclip.native-execution-input.v6",
+        binding: { runId: f.run.id, companyId: f.companyId, agentId: f.agentId, issueId: f.issueId },
+        provider: { kind: "grok_bot" }, workspace: { access: "none", cwd: null },
+        task: { description: randomBytes(128 * 1024).toString("base64") },
+      };
+      const binding = input.binding as Record<string, unknown>;
+      if (kind === "run") binding.runId = randomUUID();
+      if (kind === "company") binding.companyId = randomUUID();
+      if (kind === "agent") binding.agentId = randomUUID();
+      if (kind === "issue") binding.issueId = randomUUID();
+      if (kind === "provider") input.provider = { kind: "codex" };
+      if (kind === "schema") input.schema = "unsupported";
+      if (kind === "access") input.workspace = { cwd: null };
+      if (kind === "workspace") input.workspace = "none";
+      if (kind === "binding") input.binding = [];
+      if (kind === "missing_binding") delete input.binding;
+      const selectedInput = kind === "null_input" ? null : kind === "array_input" ? []
+        : kind === "scalar_input" ? "input" : kind === "number_input" ? 42 : input;
+      await db.update(heartbeatRuns).set({ nativeIssueId: f.issueId,
+        runnerProfileJson: { ...f.run.runnerProfileJson, nativeExecutionInput: selectedInput } }).where(eq(heartbeatRuns.id, f.run.id));
+      expect(await compare(f)).toMatchObject({ workspaceRepairRequired: true, canRetry: false });
+      expect((await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, f.run.id)))[0].runnerProfileJson?.nativeExecutionInput).toEqual(selectedInput);
+    },
+  );
 
   it.each([null, [], "scalar", 42, { issueId: 42, taskId: false }].map(context => ({ context })))("preserves decisions for malformed context $context", async ({ context }) => {
     const f = await fixture({ contextSnapshot: context as Record<string, unknown> | null });

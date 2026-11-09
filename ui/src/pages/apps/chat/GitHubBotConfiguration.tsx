@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { useEffect, useId, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import {
   GITHUB_REVIEW_EVENTS,
   type GitHubChatConfiguration,
@@ -49,6 +50,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { describeError } from "@/api/errors";
 
 export const githubSelectClass =
   "w-full rounded-md border border-input bg-background px-3 py-2 text-sm";
@@ -180,42 +182,84 @@ function GitHubPassingScore({
   const text = controlledText ?? localText;
   const setText = onTextChange ?? setLocalText;
   const number = Number(text);
-  const valid = value === null || (text.trim() !== "" && Number.isInteger(number) && number >= 1 && number <= 5);
+  const valid =
+    value === null ||
+    (text.trim() !== "" &&
+      Number.isInteger(number) &&
+      number >= 1 &&
+      number <= 5);
   useEffect(() => setLocalText(String(value ?? 5)), [value]);
-  useEffect(() => { onValidityChange?.(valid); }, [valid, onValidityChange]);
+  useEffect(() => {
+    onValidityChange?.(valid);
+  }, [valid, onValidityChange]);
   return (
     <div className="space-y-3 py-3">
       <Label htmlFor={id}>{translateInstant("Passing score")}</Label>
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
-          <Input id={id} type="number" min={1} max={5} step={1} required
-            className="w-20" value={text} disabled={value === null}
-            aria-invalid={!valid} aria-describedby={`${id}-help${valid ? "" : ` ${id}-error`}`}
+          <Input
+            id={id}
+            type="number"
+            min={1}
+            max={5}
+            step={1}
+            required
+            className="w-20"
+            value={text}
+            disabled={value === null}
+            aria-invalid={!valid}
+            aria-describedby={`${id}-help${valid ? "" : ` ${id}-error`}`}
             onChange={(event) => {
               const next = event.target.value;
               setText(next);
               const score = Number(next);
-              if (next.trim() && Number.isInteger(score) && score >= 1 && score <= 5)
+              if (
+                next.trim() &&
+                Number.isInteger(score) &&
+                score >= 1 &&
+                score <= 5
+              )
                 onChange(score as 1 | 2 | 3 | 4 | 5);
-            }} />
-          <span className="text-sm text-muted-foreground">{translateInstant("out of 5")}</span>
+            }}
+          />
+          <span className="text-sm text-muted-foreground">
+            {translateInstant("out of 5")}
+          </span>
         </div>
         <Label className="flex items-center gap-2 text-sm font-normal">
-          <Checkbox aria-label={translateInstant("Report only")} checked={value === null}
-            onCheckedChange={(checked) => { setText("5"); onChange(checked === true ? null : 5); }} />
-          {translateInstant("Report only")}</Label>
+          <Checkbox
+            aria-label={translateInstant("Report only")}
+            checked={value === null}
+            onCheckedChange={(checked) => {
+              setText("5");
+              onChange(checked === true ? null : 5);
+            }}
+          />
+          {translateInstant("Report only")}
+        </Label>
       </div>
-      {!valid && <p id={`${id}-error`} role="alert" className="text-xs text-destructive">{translateInstant("Enter a whole number from 1 to 5.")}</p>}
+      {!valid && (
+        <p id={`${id}-error`} role="alert" className="text-xs text-destructive">
+          {translateInstant("Enter a whole number from 1 to 5.")}
+        </p>
+      )}
       <p id={`${id}-help`} className="text-xs text-muted-foreground">
         {value === null
           ? "Publishes a neutral check without a score requirement. GitHub can accept neutral checks for merging."
           : "Paperclip passes the check when a complete review of the latest commit meets this score. Lower scores fail. This does not approve the PR."}
       </p>
       <p className="text-xs text-muted-foreground">
-        {translateInstant("To block merging, require the")}{" "}<strong>Paperclip Review</strong>{" "}{translateInstant("check from this App in your GitHub branch rules.")}{" "}
-        <a className="underline hover:text-foreground"
+        {translateInstant("To block merging, require the")}{" "}
+        <strong>Paperclip Review</strong>{" "}
+        {translateInstant("check from this App in your GitHub branch rules.")}{" "}
+        <a
+          className="underline hover:text-foreground"
           href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/creating-rulesets-for-a-repository"
-          target="_blank" rel="noreferrer">{translateInstant("Configure on GitHub")}</a>
+          target="_blank"
+          rel="noreferrer"
+        >
+          {translateInstant("Configure on GitHub")}
+        </a>
       </p>
     </div>
   );
@@ -286,7 +330,8 @@ export function GitHubPolicyEditor({
           id={`${id}-github-instructions-heading`}
           className="text-base font-semibold"
         >
-          {translateInstant("Instructions")}</h2>
+          {translateInstant("Instructions")}
+        </h2>
         <MarkdownEditor
           readOnly={readOnly}
           ariaLabel="Agent instructions"
@@ -296,11 +341,17 @@ export function GitHubPolicyEditor({
           onChange={(value) => set("instructions", value)}
         />
         <p className="text-xs text-muted-foreground">
-          {translateInstant("Included in every GitHub task. Type / to select a skill for the agent to use.")}</p>
-        <GitHubSettingsDisclosure title={translateInstant("Event-specific instructions")}>
+          {translateInstant(
+            "Included in every GitHub task. Type / to select a skill for the agent to use.",
+          )}
+        </p>
+        <GitHubSettingsDisclosure
+          title={translateInstant("Event-specific instructions")}
+        >
           <div className="grid gap-3 pt-3">
             <Label htmlFor={`${id}-github-prompt-event`} className="sr-only">
-              {translateInstant("Event")}</Label>
+              {translateInstant("Event")}
+            </Label>
             <select
               id={`${id}-github-prompt-event`}
               className={githubSelectClass}
@@ -312,7 +363,9 @@ export function GitHubPolicyEditor({
                   {eventLabels[event]}
                 </option>
               ))}
-              <option value="issue_opened">{translateInstant("New issue")}</option>
+              <option value="issue_opened">
+                {translateInstant("New issue")}
+              </option>
             </select>
             <MarkdownEditor
               key={prompt}
@@ -334,7 +387,10 @@ export function GitHubPolicyEditor({
               }
             />
             <p className="text-xs text-muted-foreground">
-              {translateInstant("Added to the main instructions for this event. Type / to select a skill for the agent to use.")}</p>
+              {translateInstant(
+                "Added to the main instructions for this event. Type / to select a skill for the agent to use.",
+              )}
+            </p>
           </div>
         </GitHubSettingsDisclosure>
       </section>
@@ -346,26 +402,39 @@ export function GitHubPolicyEditor({
           id={`${id}-github-triggers-heading`}
           className="text-base font-semibold"
         >
-          {translateInstant("When to run")}</h2>
+          {translateInstant("When to run")}
+        </h2>
         <div className="flex items-start gap-3 py-2">
           <AtSign className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
           <div className="space-y-1">
-            <p className="text-sm font-medium">{translateInstant("When mentioned")}</p>
+            <p className="text-sm font-medium">
+              {translateInstant("When mentioned")}
+            </p>
             <p className="text-xs text-muted-foreground">
-              {translateInstant("Authorized people can always @mention this bot.")}{" "}
+              {translateInstant(
+                "Authorized people can always @mention this bot.",
+              )}{" "}
               {accessHref && (
                 <Link className="underline underline-offset-4" to={accessHref}>
-                  {translateInstant("Manage people in Access")}</Link>
+                  {translateInstant("Manage people in Access")}
+                </Link>
               )}
             </p>
           </div>
         </div>
         <GitHubToggle
           label={translateInstant("Run automatically")}
-          description={translateInstant("Start work without a mention when an allowed person creates an issue or updates a pull request.")}
+          description={translateInstant(
+            "Start work without a mention when an allowed person creates an issue or updates a pull request.",
+          )}
           checked={policy.invocation !== "mentions_only"}
           onChange={(enabled) =>
-            set("invocation", enabled ? (rememberedAutomaticMode ?? automaticMode.current) : "mentions_only")
+            set(
+              "invocation",
+              enabled
+                ? (rememberedAutomaticMode ?? automaticMode.current)
+                : "mentions_only",
+            )
           }
         />
         {policy.invocation !== "mentions_only" && (
@@ -400,11 +469,17 @@ export function GitHubPolicyEditor({
                     set("issueOpened", enabled === true)
                   }
                 />
-                {translateInstant("New issues")}</Label>
+                {translateInstant("New issues")}
+              </Label>
             </div>
             <p className="text-xs text-muted-foreground">
-              {translateInstant("Runs for authorized authors in Access. Use the author filters below to limit whose issues and PRs start work.")}</p>
-            <GitHubSettingsDisclosure title={translateInstant("Automatic review filters")}>
+              {translateInstant(
+                "Runs for authorized authors in Access. Use the author filters below to limit whose issues and PRs start work.",
+              )}
+            </p>
+            <GitHubSettingsDisclosure
+              title={translateInstant("Automatic review filters")}
+            >
               <div>
                 <GitHubToggle
                   label={translateInstant("Include draft PRs")}
@@ -413,7 +488,9 @@ export function GitHubPolicyEditor({
                 />
                 <GitHubToggle
                   label={translateInstant("Include bot authors")}
-                  description={translateInstant("The account also needs a sponsor and external-contributor automatic runs enabled in Access.")}
+                  description={translateInstant(
+                    "The account also needs a sponsor and external-contributor automatic runs enabled in Access.",
+                  )}
                   checked={policy.reviewBotAuthors}
                   onChange={(value) => set("reviewBotAuthors", value)}
                 />
@@ -461,7 +538,10 @@ export function GitHubPolicyEditor({
                 </div>
               </GitHubSettingsDisclosure>
               <p className="text-xs text-muted-foreground">
-                {translateInstant("Reviews requested by @mention bypass these scheduling filters. Repository access and ignored files still apply.")}</p>
+                {translateInstant(
+                  "Reviews requested by @mention bypass these scheduling filters. Repository access and ignored files still apply.",
+                )}
+              </p>
             </GitHubSettingsDisclosure>
           </div>
         )}
@@ -474,7 +554,8 @@ export function GitHubPolicyEditor({
           id={`${id}-github-results-heading`}
           className="text-base font-semibold"
         >
-          {translateInstant("Review results")}</h2>
+          {translateInstant("Review results")}
+        </h2>
         <div className="grid gap-x-8 sm:grid-cols-2">
           <GitHubToggle
             label={translateInstant("Post a review summary")}
@@ -487,8 +568,13 @@ export function GitHubPolicyEditor({
             onChange={(value) => set("publishInline", value)}
           />
         </div>
-        <GitHubPassingScore value={policy.ratingThreshold} text={scoreText} onTextChange={onScoreTextChange}
-          onChange={(value) => set("ratingThreshold", value)} onValidityChange={onValidityChange} />
+        <GitHubPassingScore
+          value={policy.ratingThreshold}
+          text={scoreText}
+          onTextChange={onScoreTextChange}
+          onChange={(value) => set("ratingThreshold", value)}
+          onValidityChange={onValidityChange}
+        />
       </section>
       <div className="divide-y divide-border">
         <GitHubSettingsDisclosure title={translateInstant("Ignored files")}>
@@ -498,11 +584,14 @@ export function GitHubPolicyEditor({
             "Excluded from all reviews, including @mentions. One pattern per line; supports * and **.",
           )}
         </GitHubSettingsDisclosure>
-        <GitHubSettingsDisclosure title={translateInstant("Inline comment options")}>
+        <GitHubSettingsDisclosure
+          title={translateInstant("Inline comment options")}
+        >
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor={`${id}-github-categories`}>
-                {translateInstant("Finding categories")}</Label>
+                {translateInstant("Finding categories")}
+              </Label>
               <GitHubListInput
                 id={`${id}-github-categories`}
                 values={policy.findingCategories}
@@ -512,7 +601,8 @@ export function GitHubPolicyEditor({
             </div>
             <div className="space-y-2">
               <Label htmlFor={`${id}-github-severity`}>
-                {translateInstant("Minimum inline severity")}</Label>
+                {translateInstant("Minimum inline severity")}
+              </Label>
               <select
                 id={`${id}-github-severity`}
                 className={githubSelectClass}
@@ -530,13 +620,21 @@ export function GitHubPolicyEditor({
                 <option value="error">{translateInstant("Error")}</option>
               </select>
               <p className="text-xs text-muted-foreground">
-                {translateInstant("Hidden findings still count in the assessment.")}</p>
+                {translateInstant(
+                  "Hidden findings still count in the assessment.",
+                )}
+              </p>
             </div>
           </div>
         </GitHubSettingsDisclosure>
-        <GitHubSettingsDisclosure title={translateInstant("Approvals and change requests")}>
+        <GitHubSettingsDisclosure
+          title={translateInstant("Approvals and change requests")}
+        >
           <p className="text-xs text-muted-foreground">
-            {translateInstant("Optional formal decisions on GitHub. Scores, comments, and checks still work when these are off.")}</p>
+            {translateInstant(
+              "Optional formal decisions on GitHub. Scores, comments, and checks still work when these are off.",
+            )}
+          </p>
           <div>
             <GitHubToggle
               label={translateInstant("Allow approvals")}
@@ -569,7 +667,9 @@ export function GitHubAccessEditor({
   onChange: (configuration: GitHubChatConfiguration) => void;
 }) {
   useTranslation();
-  const company = useOptionalCompany()?.companies.find((item) => item.id === companyId);
+  const company = useOptionalCompany()?.companies.find(
+    (item) => item.id === companyId,
+  );
   const accountLink = useRef<HTMLAnchorElement>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   const [dialog, setDialog] = useState<"member" | "guest" | null>(null);
@@ -581,6 +681,9 @@ export function GitHubAccessEditor({
     queryKey: ["github-linked-members", endpointId],
     queryFn: () => chatEndpointsApi.listPrincipals(endpointId),
   });
+  const membersView = useQueryView(members);
+  const linksView = useQueryView(links);
+  const linksLoaded = linksView.kind === "ready" || linksView.kind === "stale";
   const [login, setLogin] = useState("");
   const [sponsor, setSponsor] = useState(configuration.responsibleUserId);
   const [candidate, setCandidate] = useState<{
@@ -621,12 +724,14 @@ export function GitHubAccessEditor({
             (person) => person.githubUserId === link.githubUserId,
           ),
       )
-      .map((link): GitHubAllowedPerson => ({
-        kind: "member",
-        userId: link.paperclipUserId!,
-        githubUserId: link.githubUserId!,
-        login: link.githubLogin ?? link.externalLabel,
-      })),
+      .map(
+        (link): GitHubAllowedPerson => ({
+          kind: "member",
+          userId: link.paperclipUserId!,
+          githubUserId: link.githubUserId!,
+          login: link.githubLogin ?? link.externalLabel,
+        }),
+      ),
   ];
   const updatePerson = (person: GitHubAllowedPerson) =>
     onChange({
@@ -653,9 +758,7 @@ export function GitHubAccessEditor({
       await chatEndpointsApi.revokeLink(endpointId, principalId);
       await links.refetch();
     } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Could not unlink this account.",
-      );
+      setError(describeError(e).body);
     } finally {
       setBusy(false);
     }
@@ -674,7 +777,10 @@ export function GitHubAccessEditor({
           person.kind === "guest" ||
           configuration.memberAccess === "all_linked" ||
           explicit;
-        const removable = explicit && (person.kind === "guest" || configuration.memberAccess === "selected");
+        const removable =
+          explicit &&
+          (person.kind === "guest" ||
+            configuration.memberAccess === "selected");
         return (
           <div
             key={person.githubUserId}
@@ -689,12 +795,15 @@ export function GitHubAccessEditor({
               </p>
               {!linked && (
                 <p className="mt-1 text-xs text-destructive">
-                  {translateInstant("GitHub account needs linking.")}</p>
+                  {translateInstant("GitHub account needs linking.")}
+                </p>
               )}
             </div>
             <div className="flex items-center gap-5">
               <div className="flex flex-col items-center gap-2">
-                <span className="text-xs text-muted-foreground">{translateInstant("Mentions")}</span>
+                <span className="text-xs text-muted-foreground">
+                  {translateInstant("Mentions")}
+                </span>
                 {person.kind === "guest" ||
                 configuration.memberAccess === "all_linked" ? (
                   <span
@@ -717,30 +826,34 @@ export function GitHubAccessEditor({
                   />
                 )}
               </div>
-              {(identity || removable) && <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    aria-label={`Manage @${person.login}`}
-                  >
-                    <MoreHorizontal className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {removable && (
-                    <DropdownMenuItem onClick={() => removePerson(person)}>
-                      {translateInstant("Remove access")}</DropdownMenuItem>
-                  )}
-                  {identity && (
-                    <DropdownMenuItem
-                      disabled={busy}
-                      onClick={() => void unlink(identity.principalId)}
+              {(identity || removable) && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      aria-label={`Manage @${person.login}`}
                     >
-                      {translateInstant("Unlink GitHub account")}</DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>}
+                      <MoreHorizontal className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {removable && (
+                      <DropdownMenuItem onClick={() => removePerson(person)}>
+                        {translateInstant("Remove access")}
+                      </DropdownMenuItem>
+                    )}
+                    {identity && (
+                      <DropdownMenuItem
+                        disabled={busy}
+                        onClick={() => void unlink(identity.principalId)}
+                      >
+                        {translateInstant("Unlink GitHub account")}
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           </div>
         );
@@ -750,13 +863,23 @@ export function GitHubAccessEditor({
   return (
     <section className="space-y-6" aria-label={translateInstant("People")}>
       <div className="space-y-1">
-        <h2 className="text-base font-semibold">{translateInstant("People")}</h2>
+        <h2 className="text-base font-semibold">
+          {translateInstant("People")}
+        </h2>
         <p className="text-sm text-muted-foreground">
-          {translateInstant("Choose who can mention this bot and whose activity can start work automatically.")}</p>
+          {translateInstant(
+            "Choose who can mention this bot and whose activity can start work automatically.",
+          )}
+        </p>
       </div>
-      <section className="space-y-2" aria-label={translateInstant("Company members")}>
+      <section
+        className="space-y-2"
+        aria-label={translateInstant("Company members")}
+      >
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-sm font-semibold">{translateInstant("Company members")}</h3>
+          <h3 className="text-sm font-semibold">
+            {translateInstant("Company members")}
+          </h3>
           <Button
             variant="outline"
             size="sm"
@@ -767,7 +890,8 @@ export function GitHubAccessEditor({
             }}
           >
             <Plus className="size-4" />
-            {translateInstant("Link a member")}</Button>
+            {translateInstant("Link a member")}
+          </Button>
         </div>
         <GitHubToggle
           label={translateInstant("Allow mentions from all linked members")}
@@ -785,24 +909,32 @@ export function GitHubAccessEditor({
           }
         />
         {peopleRows(memberRows)}
-        {links.isPending && (
+        {(links.isPending || linksView.kind === "reconnecting") && (
           <p role="status" className="py-4 text-sm text-muted-foreground">
-            {translateInstant("Loading linked accounts…")}</p>
+            {translateInstant("Loading linked accounts…")}
+          </p>
         )}
-        {!links.isPending && !links.isError && memberRows.length === 0 && (
+        {linksLoaded && memberRows.length === 0 && (
           <p className="py-4 text-sm text-muted-foreground">
-            {translateInstant("No members linked yet. Link an account to get started.")}</p>
+            {translateInstant(
+              "No members linked yet. Link an account to get started.",
+            )}
+          </p>
         )}
         <p className="text-xs text-muted-foreground">
           {automatic ? (
             <>
-              {translateInstant("Automatic runs use the events and author filters in")}{" "}
+              {translateInstant(
+                "Automatic runs use the events and author filters in",
+              )}{" "}
               <Link
                 className="underline underline-offset-4"
                 to={`/apps/chat/${endpointId}/settings`}
               >
-                {translateInstant("Settings")}</Link>
-              {translateInstant(".")}</>
+                {translateInstant("Settings")}
+              </Link>
+              {translateInstant(".")}
+            </>
           ) : (
             <>
               {translateInstant("Automatic runs are off in")}{" "}
@@ -810,8 +942,10 @@ export function GitHubAccessEditor({
                 className="underline underline-offset-4"
                 to={`/apps/chat/${endpointId}/settings`}
               >
-                {translateInstant("Settings")}</Link>
-              {translateInstant(". Authorized @mentions still work.")}</>
+                {translateInstant("Settings")}
+              </Link>
+              {translateInstant(". Authorized @mentions still work.")}
+            </>
           )}
         </p>
       </section>
@@ -820,7 +954,9 @@ export function GitHubAccessEditor({
         aria-label={translateInstant("External contributors")}
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-sm font-semibold">{translateInstant("External contributors")}</h3>
+          <h3 className="text-sm font-semibold">
+            {translateInstant("External contributors")}
+          </h3>
           <Button
             variant="outline"
             size="sm"
@@ -830,14 +966,20 @@ export function GitHubAccessEditor({
             }}
           >
             <Plus className="size-4" />
-            {translateInstant("Add external contributor")}</Button>
+            {translateInstant("Add external contributor")}
+          </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          {translateInstant("Allow specific GitHub users with a member as their sponsor. They receive restricted access, without company membership or the sponsor’s personal credentials.")}</p>
+          {translateInstant(
+            "Allow specific GitHub users with a member as their sponsor. They receive restricted access, without company membership or the sponsor’s personal credentials.",
+          )}
+        </p>
         {peopleRows(guests)}
         {guests.length > 0 && (
           <GitHubToggle
-            label={translateInstant("Allow automatic runs for external contributors")}
+            label={translateInstant(
+              "Allow automatic runs for external contributors",
+            )}
             description={
               automatic
                 ? "Authorized contributors can trigger the events and author filters configured in Settings."
@@ -857,15 +999,20 @@ export function GitHubAccessEditor({
           />
         )}
       </section>
-      <GitHubSettingsDisclosure title={translateInstant("Automatic task responsibility")}>
+      <GitHubSettingsDisclosure
+        title={translateInstant("Automatic task responsibility")}
+      >
         <div className="space-y-2">
           {activeMembers.length === 1 && responsible ? (
             <p className="text-sm">
-              {translateInstant("Responsible member:")}{" "}{memberName(configuration.responsibleUserId)}
+              {translateInstant("Responsible member:")}{" "}
+              {memberName(configuration.responsibleUserId)}
             </p>
           ) : (
             <>
-              <Label htmlFor="github-responsible">{translateInstant("Responsible member")}</Label>
+              <Label htmlFor="github-responsible">
+                {translateInstant("Responsible member")}
+              </Label>
               <select
                 id="github-responsible"
                 className={githubSelectClass}
@@ -879,7 +1026,8 @@ export function GitHubAccessEditor({
               >
                 {!responsible && (
                   <option value={configuration.responsibleUserId}>
-                    {configuration.responsibleUserId || translateInstant("Select a member")}
+                    {configuration.responsibleUserId ||
+                      translateInstant("Select a member")}
                   </option>
                 )}
                 {activeMembers.map((member) => (
@@ -893,7 +1041,10 @@ export function GitHubAccessEditor({
             </>
           )}
           <p className="text-xs text-muted-foreground">
-            {translateInstant("The member accountable for automatically created Paperclip tasks. GitHub authors remain recorded separately. This grants no access to the member’s personal credentials.")}</p>
+            {translateInstant(
+              "The member accountable for automatically created Paperclip tasks. GitHub authors remain recorded separately. This grants no access to the member’s personal credentials.",
+            )}
+          </p>
         </div>
       </GitHubSettingsDisclosure>
       {error && (
@@ -901,20 +1052,16 @@ export function GitHubAccessEditor({
           {error}
         </p>
       )}
-      {(members.error || links.error) && (
-        <div className="flex flex-wrap items-center gap-2">
-          <p role="alert" className="text-sm text-destructive">
-            {translateInstant("Could not load members or linked accounts.")}</p>
-          <Button
-            variant="link"
-            size="sm"
-            onClick={() => {
-              void members.refetch();
-              void links.refetch();
-            }}
-          >
-            {translateInstant("Try again")}</Button>
-        </div>
+      {(membersView.kind === "error" || linksView.kind === "error") && (
+        <QueryErrorState
+          error={membersView.kind === "error" ? members.error : links.error}
+          action="load members and linked accounts"
+          onRetry={() => {
+            membersView.retry();
+            linksView.retry();
+          }}
+          retrying={members.isFetching || links.isFetching}
+        />
       )}
       <Dialog
         open={dialog !== null}
@@ -952,14 +1099,17 @@ export function GitHubAccessEditor({
                 }}
               >
                 <Copy className="size-4" />
-                {linkCopied ? translateInstant("Copied") : "Copy invitation link"}
+                {linkCopied
+                  ? translateInstant("Copied")
+                  : "Copy invitation link"}
               </Button>
               <Link
                 ref={accountLink}
                 to={`/apps/chat/connect?provider=github&resume=${endpointId}&stage=identity`}
                 className="text-sm underline underline-offset-4"
               >
-                {translateInstant("Link your account")}</Link>
+                {translateInstant("Link your account")}
+              </Link>
               {error && (
                 <p role="alert" className="text-sm text-destructive">
                   {error}
@@ -969,7 +1119,9 @@ export function GitHubAccessEditor({
           ) : (
             <>
               <div className="space-y-2">
-                <Label htmlFor="github-guest-login">{translateInstant("GitHub username")}</Label>
+                <Label htmlFor="github-guest-login">
+                  {translateInstant("GitHub username")}
+                </Label>
                 <div className="flex gap-2">
                   <Input
                     id="github-guest-login"
@@ -994,9 +1146,7 @@ export function GitHubAccessEditor({
                           await githubChatApi.lookup(endpointId, login),
                         );
                       } catch (e) {
-                        setLookupError(
-                          e instanceof Error ? e.message : "Lookup failed",
-                        );
+                        setLookupError(describeError(e).body);
                       } finally {
                         setBusy(false);
                       }
@@ -1007,7 +1157,9 @@ export function GitHubAccessEditor({
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="github-guest-sponsor">{translateInstant("Sponsor")}</Label>
+                <Label htmlFor="github-guest-sponsor">
+                  {translateInstant("Sponsor")}
+                </Label>
                 <select
                   id="github-guest-sponsor"
                   className={githubSelectClass}
@@ -1016,7 +1168,11 @@ export function GitHubAccessEditor({
                 >
                   {!activeMembers.some(
                     (member) => member.principalId === sponsor,
-                  ) && <option value={sponsor}>{translateInstant("Select a member")}</option>}
+                  ) && (
+                    <option value={sponsor}>
+                      {translateInstant("Select a member")}
+                    </option>
+                  )}
                   {activeMembers.map((member) => (
                     <option key={member.principalId} value={member.principalId}>
                       {member.user?.name ?? member.principalId}
@@ -1043,7 +1199,8 @@ export function GitHubAccessEditor({
               )}
               <DialogFooter className="flex-row justify-between sm:justify-between">
                 <Button variant="ghost" onClick={() => setDialog(null)}>
-                  {translateInstant("Cancel")}</Button>
+                  {translateInstant("Cancel")}
+                </Button>
                 <Button
                   disabled={
                     !candidate ||
@@ -1071,7 +1228,8 @@ export function GitHubAccessEditor({
                     }
                   }}
                 >
-                  {translateInstant("Add contributor")}</Button>
+                  {translateInstant("Add contributor")}
+                </Button>
               </DialogFooter>
             </>
           )}

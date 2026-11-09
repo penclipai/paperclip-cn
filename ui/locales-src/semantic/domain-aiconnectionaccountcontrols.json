@@ -1,0 +1,22 @@
+{
+  "aiConnectionAccountControls.defaultForProvider": {
+    "en": "Default for {{providerName}}",
+    "zh-CN": "{{providerName}} 的默认账户",
+    "reviewedEnglishHash": "d4f2f9647b3244a73ea86f08247d407738666fb5b523b53eb63b0c16cb9dfd7b"
+  },
+  "aiConnectionAccountControls.defaultUnavailable": {
+    "en": "Default unavailable",
+    "zh-CN": "默认账户不可用",
+    "reviewedEnglishHash": "f7828b0e1dce517fa4c118528402af040a8c855cf2777a0ef98d32903c477263"
+  },
+  "aiConnectionAccountControls.yourProviderDefault": {
+    "en": "Your {{providerName}} default",
+    "zh-CN": "你的 {{providerName}} 默认账户",
+    "reviewedEnglishHash": "54078f5d9b2477f8794d8f00400a567a2d80e20a60fd38b5992ec7dcb83c5548"
+  },
+  "aiConnectionAccountControls.setProviderDefault": {
+    "en": "Set as default for {{providerName}}",
+    "zh-CN": "设为 {{providerName}} 默认账户",
+    "reviewedEnglishHash": "47bb874c89e27e40c0ceb3cc36e49ca236ae6f55bc35d48f1300e6291ed44fac"
+  }
+}

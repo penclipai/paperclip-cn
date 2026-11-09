@@ -7,6 +7,7 @@ import type {
 import { AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { QueryErrorState } from "@/components/QueryView";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ApiError } from "@/api/client";
 import { useTranslation } from "react-i18next";

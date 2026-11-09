@@ -1,0 +1,23 @@
+{
+  "runLogViewer.adapterResultJson": { "en": "adapter result JSON", "zh-CN": "适配器结果 JSON", "reviewedEnglishHash": "4774d3f79fc946b538ad41aa4116ff2602aafef71f98a4f3a9f712693214fa7a" },
+  "runLogViewer.errorLabel": { "en": "Error:", "zh-CN": "错误：", "reviewedEnglishHash": "617062906764f3b8912525512fc2f3747ddcc1623b932718d6e4910baee5a8a4" },
+  "runLogViewer.eventsCount": { "en": "Events ({{count}})", "zh-CN": "事件（{{count}}）", "reviewedEnglishHash": "0a5886a7d9c308b602447ee56bfc6e53e05e3a6665fac5bd7aee47d61406ab99" },
+  "runLogViewer.eventsLoadFailed": { "en": "Could not load events. Try again.", "zh-CN": "无法加载事件，请重试。", "reviewedEnglishHash": "68bddb5882c08ade2cf826e331ce439531976a1f83397f6046d5deef073eaf78" },
+  "runLogViewer.failureDetails": { "en": "Failure details", "zh-CN": "失败详情", "reviewedEnglishHash": "6317e0c6b663177f594ccedae9c6d45fcf474072fca8c9f4215cbc806313a9be" },
+  "runLogViewer.jumpToLive": { "en": "Jump to live", "zh-CN": "跳转到实时位置", "reviewedEnglishHash": "ce39c3a6bdb971c25cd078b1fd319af581eead81e5d42e3b84cac7013a620433" },
+  "runLogViewer.live": { "en": "Live", "zh-CN": "实时", "reviewedEnglishHash": "b64ac05f17e64d037db81a98f51e2688216e292ae9748f979f04dfbac49fd7fc" },
+  "runLogViewer.loadMoreEvents": { "en": "Load more events", "zh-CN": "加载更多事件", "reviewedEnglishHash": "96f2482de86661bfd197e292d9e69274731f20be23bb3fc30fc3d94aa19f8563" },
+  "runLogViewer.loadMoreLog": { "en": "Load more log", "zh-CN": "加载更多日志", "reviewedEnglishHash": "43baac37f546e5be54e1f272096b5a85557522784041da7378b135e435317a22" },
+  "runLogViewer.loadingRunLogs": { "en": "Loading run logs...", "zh-CN": "正在加载运行日志...", "reviewedEnglishHash": "b719a3040d392dee09317cab7f1458fa69d211ac601880cf9c3d309431f065fa" },
+  "runLogViewer.logBytesTotal": { "en": " of {{total}} KB", "zh-CN": "，共 {{total}} KB", "reviewedEnglishHash": "5348401e7ca75cecb6910e977aecba97efa25133722111ef1078f8cced67a88d" },
+  "runLogViewer.noLogEvents": { "en": "No log events.", "zh-CN": "暂无日志事件。", "reviewedEnglishHash": "d1e81320705024e97d9de7cb4f81429793cff209ac035d813e0552baaefc1961" },
+  "runLogViewer.noPersistedTranscript": { "en": "No persisted transcript for this run.", "zh-CN": "此运行没有已保存的转录记录。", "reviewedEnglishHash": "e8b062b8f52b09bad13ad938e5283d23db499b4d10bcdc00b198638a05824f84" },
+  "runLogViewer.retryEvents": { "en": "Retry events", "zh-CN": "重试加载事件", "reviewedEnglishHash": "7dcf1911ce3ecd0cd6c0dcd67bf1adec5c4fa136090a85d7abec9003d38eb1f4" },
+  "runLogViewer.showingLogBytes": { "en": "Showing the first {{shown}} KB{{total}}", "zh-CN": "正在显示前 {{shown}} KB{{total}}", "reviewedEnglishHash": "1158b7b5a8692821a263eb3ca8cfa5a6f136526b229c3ae7c848cb0474eb08d1" },
+  "runLogViewer.stderrExcerpt": { "en": "stderr excerpt", "zh-CN": "标准错误摘录", "reviewedEnglishHash": "957d1931021ead09effe5daa44b1937610a93f7cd8076ea3a133c3effb0f7ab3" },
+  "runLogViewer.stdoutExcerpt": { "en": "stdout excerpt", "zh-CN": "标准输出摘录", "reviewedEnglishHash": "66ced6705bcef5e64fcd9e6e693119c6da5f8f1abdb9c371cb75999176a96dc4" },
+  "runLogViewer.transcriptCount": { "en": "Transcript ({{count}})", "zh-CN": "运行记录（{{count}}）", "reviewedEnglishHash": "cd4ebdbaef54c7548de904cac4c5c07dc00d66cc689e8fcedf0a0edd7d1fd616" },
+  "runLogViewer.transcriptMode.nice": { "en": "Nice", "zh-CN": "整理", "reviewedEnglishHash": "fdc96ffbf256523aec8846ae56321053c7ab751c99eb766e6bb4a7d362a4f060" },
+  "runLogViewer.transcriptMode.raw": { "en": "Raw", "zh-CN": "原始", "reviewedEnglishHash": "848123d14f84faa22d3dc567c6dec9dd70151f208eff68a1206ed28010ea2df4" },
+  "runLogViewer.waitingForTranscript": { "en": "Waiting for transcript...", "zh-CN": "正在等待转录记录...", "reviewedEnglishHash": "8f7d4ad6562d888ca4ac59b2dbfcd59a69bb57c33d24ffac673cdb3082380362" }
+}

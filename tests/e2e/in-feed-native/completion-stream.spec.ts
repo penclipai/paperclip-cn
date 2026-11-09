@@ -72,7 +72,7 @@ test('a completion tool does not cut off a delayed final answer', async ({ page 
     const fixtureEntry = resolve(root, 'tests/e2e/fixtures/in-feed-codex.mjs');
     const fixtureLoader = resolve(root, 'tests/e2e/fixtures/in-feed-codex-loader.mjs');
     const shutdownHelper = resolve(root, 'tests/e2e/fixtures/native-test-drive-shutdown.mjs');
-    const env = { ...process.env, STREAM_FIXTURE_KEY: 'not-a-real-model-key', NODE_ENV: 'test',
+    const env: NodeJS.ProcessEnv = { ...process.env, STREAM_FIXTURE_KEY: 'not-a-real-model-key', NODE_ENV: 'test',
       IN_FEED_CODEX_ENTRY: fixtureEntry,
       IN_FEED_CODEX_MODE: 'completion',
       NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ''} --import=${pathToFileURL(fixtureLoader).href} --import=${pathToFileURL(shutdownHelper).href}` };

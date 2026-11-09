@@ -1,12 +1,14 @@
+import { useEffect, useMemo, useRef, useState } from "react";
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
-import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Inbox, LoaderCircle, Save } from "lucide-react";
 import type { InboxAgentPolicy, InboxAgentPolicyMode } from "@penclipai/shared";
 import { agentsApi } from "@/api/agents";
+import { describeError } from "@/api/errors";
 import { inboxAgentPolicyApi } from "@/api/inbox-agent-policy";
 import { queryKeys } from "@/lib/queryKeys";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { isAgentTaskTarget } from "@/lib/company-members";
 import { AgentMultiSelect } from "@/components/AgentMultiSelect";
 import { Button } from "@/components/ui/button";
@@ -57,6 +59,7 @@ export function InboxAgentPolicyControl({ companyId }: { companyId: string | nul
     queryFn: () => inboxAgentPolicyApi.getMine(companyId!),
     enabled: !!companyId,
   });
+  const policyView = useQueryView(policyQuery);
   const policy = policyQuery.data;
 
   const agentsQuery = useQuery({
@@ -112,15 +115,20 @@ export function InboxAgentPolicyControl({ companyId }: { companyId: string | nul
     draft && policy && policyKey(draft.mode, draft.allowedAgentIds) !== policyKey(policy.mode, policy.allowedAgentIds),
   );
 
-  if (policyQuery.error) {
+  // A saved policy stays on screen through a failed refetch; only a real
+  // failure, or an outage before the first load, replaces the control.
+  if (policyView.kind === "error") {
     return (
-      <div className="text-sm text-destructive">
-        {policyQuery.error instanceof Error ? policyQuery.error.message : "Failed to load inbox agent policy."}
-      </div>
+      <QueryErrorState
+        error={policyView.error}
+        action="load the inbox agent policy"
+        onRetry={policyView.retry}
+        retrying={policyView.isFetching}
+      />
     );
   }
 
-  if (policyQuery.isLoading || !draft) {
+  if (policyQuery.isLoading || policyView.kind === "reconnecting" || !draft) {
     return <div className="text-sm text-muted-foreground">{translateInstant("Loading inbox agent policy…")}</div>;
   }
 
@@ -132,7 +140,9 @@ export function InboxAgentPolicyControl({ companyId }: { companyId: string | nul
           <h2 className="text-base font-semibold">{translateInstant("inboxAgentPolicy.title")}</h2>
         </div>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          {translateInstant("Choose whether the agents you manage may archive tasks out of your inbox on your behalf. You can undo any archive, and every agent archive is attributed in the task&apos;s properties.")}</p>
+          Choose whether the agents you manage may archive tasks out of your inbox on your behalf. You can
+          undo any archive, and every agent archive is attributed in the task&apos;s properties.
+        </p>
       </div>
 
       <RadioCardGroup
@@ -145,7 +155,7 @@ export function InboxAgentPolicyControl({ companyId }: { companyId: string | nul
 
       {draft.mode === "allowlist" ? (
         <div className="max-w-2xl space-y-2">
-          <div className="text-sm font-medium">{translateInstant("inboxAgentPolicy.allowedAgents")}</div>
+          <div className="text-sm font-medium">{translateInstant("inboxAgentPolicy.allowedAgents", { defaultValue: "Agents allowed to tidy my inbox" })}</div>
           <AgentMultiSelect
             agents={agentOptions}
             selectedAgentIds={selectedAgentIds}
@@ -161,20 +171,20 @@ export function InboxAgentPolicyControl({ companyId }: { companyId: string | nul
             }
             triggerFullWidth={false}
             showSelectionPreview={false}
-            emptyMessage={translateInstant("You don’t manage any agents yet.")}
+            emptyMessage="You don’t manage any agents yet."
           />
         </div>
       ) : null}
 
       {updateMutation.error ? (
-        <div className="max-w-2xl rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-          {updateMutation.error instanceof Error ? updateMutation.error.message : "Failed to save inbox agent policy."}
+        <div role="alert" className="max-w-2xl rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+          {describeError(updateMutation.error, { action: "save the inbox agent policy" }).body}
         </div>
       ) : null}
 
       <div className="flex max-w-2xl items-center justify-end gap-3">
         {updateMutation.isSuccess && !isDirty ? (
-          <span className="text-xs text-muted-foreground" role="status">{translateInstant("Saved")}</span>
+          <span className="text-xs text-muted-foreground" role="status">{translateInstant("Saved", { defaultValue: "Saved" })}</span>
         ) : null}
         <Button
           type="button"

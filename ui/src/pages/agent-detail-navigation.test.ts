@@ -1,14 +1,22 @@
 import { describe, expect, it } from "vitest";
+import { translateInstant } from "@/i18n";
 import {
   AGENT_DETAIL_NAVIGATION,
   agentDetailHref,
+  agentDetailViewLabel,
   agentLegacyAuditSection,
+  isAgentAuditView,
   agentScopedAuditHref,
   parseAgentDetailView,
 } from "./agent-detail-navigation";
 
 describe("agent detail navigation", () => {
   it("exposes the complete local information architecture", () => {
+    expect(AGENT_DETAIL_NAVIGATION.map((section) => section.labelKey)).toEqual([
+      "entityType.agent",
+      "agentDetail.runtime",
+      "agentDetail.governance",
+    ]);
     expect(AGENT_DETAIL_NAVIGATION.flatMap((section) => section.items.map((item) => item.value))).toEqual([
       "overview",
       "instructions",
@@ -21,12 +29,35 @@ describe("agent detail navigation", () => {
       "api-keys",
       "revisions",
     ]);
+    expect(agentDetailViewLabel("instructions")).toBe(translateInstant("agentDetail.instructions"));
+  });
+
+  it("keeps views that left the nav reachable by URL", () => {
+    expect(parseAgentDetailView("skills")).toBe("skills");
+    expect(parseAgentDetailView("tools")).toBe("tools");
+    expect(parseAgentDetailView("channels")).toBe("channels");
+    expect(parseAgentDetailView("api-keys")).toBe("api-keys");
+    expect(parseAgentDetailView("revisions")).toBe("revisions");
+    expect(agentDetailViewLabel("revisions")).toBe(translateInstant("caseComponents.revisions.title"));
+  });
+
+  it("serves Identity at /identity and the audit pages inside the agent", () => {
+    expect(parseAgentDetailView("identity")).toBe("instructions");
+    expect(agentDetailHref("codie", "instructions")).toBe("/agents/codie/identity");
+    expect(parseAgentDetailView("runs")).toBe("runs");
+    expect(parseAgentDetailView("budget")).toBe("budgets");
+    expect(isAgentAuditView("costs")).toBe(true);
+    expect(isAgentAuditView("runtime")).toBe(false);
+    expect(agentDetailHref("codie", "activity")).toBe("/agents/codie/activity");
   });
 
   it("canonicalizes legacy local paths", () => {
+    expect(parseAgentDetailView("advanced")).toBe("advanced");
+    expect(agentDetailHref("codie", "advanced")).toBe("/agents/codie/advanced");
     expect(parseAgentDetailView("dashboard")).toBe("overview");
     expect(parseAgentDetailView("configuration")).toBe("runtime");
     expect(parseAgentDetailView("prompts")).toBe("instructions");
+    expect(agentDetailHref("codie", "instructions")).toBe("/agents/codie/identity");
     expect(agentDetailHref("codexcoder", "permissions")).toBe("/agents/codexcoder/permissions");
   });
 

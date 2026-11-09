@@ -3,8 +3,9 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
-  BadgeDollarSign,
-  BookOpenText,
+  FileCode2,
+  Fingerprint,
+  Gauge,
   History,
   KeyRound,
   Library,
@@ -26,29 +27,26 @@ import { contextualSidebarStyles } from "./contextual-sidebar-styles";
 import {
   AGENT_DETAIL_NAVIGATION,
   agentDetailHref,
-  agentScopedAuditHref,
   type AgentLocalDetailView,
 } from "@/pages/agent-detail-navigation";
 
 const localIcons = {
   overview: Sparkles,
-  instructions: BookOpenText,
+  instructions: Fingerprint,
   skills: Library,
   runtime: Settings2,
-  secrets: ShieldCheck,
+  secrets: KeyRound,
   tools: Wrench,
   channels: MessageSquare,
   permissions: ShieldCheck,
   "api-keys": KeyRound,
   revisions: History,
+  advanced: FileCode2,
+  activity: Activity,
+  runs: PlayCircle,
+  costs: ReceiptText,
+  budgets: Gauge,
 } satisfies Record<AgentLocalDetailView, typeof Sparkles>;
-
-const auditItems = [
-  { section: "activity", labelKey: "Activity", icon: Activity },
-  { section: "runs", labelKey: "Runs", icon: PlayCircle },
-  { section: "costs", labelKey: "Costs", icon: ReceiptText },
-  { section: "budgets", labelKey: "Budgets", icon: BadgeDollarSign },
-] as const;
 
 export function AgentContextualSidebar({
   agentRef,
@@ -87,59 +85,32 @@ export function AgentContextualSidebar({
         className={contextualSidebarStyles.nav}
       >
         {AGENT_DETAIL_NAVIGATION.map((section) => (
-          <div
-            key={section.labelKey}
-            data-slot="contextual-sidebar-section"
-            className={contextualSidebarStyles.section}
-          >
-            <p
-              data-slot="contextual-sidebar-section-label"
-              className={contextualSidebarStyles.sectionLabel}
-            >
-              {translateInstant(section.labelKey)}
-            </p>
-            <div data-slot="contextual-sidebar-group" className={contextualSidebarStyles.group}>
-              {section.items
-                .map((item) => {
-                  const href = agentDetailHref(agentRef, item.value);
-                  return (
-                    <SidebarNavItem
-                      key={item.value}
-                      to={href}
-                      label={labels?.[item.value] ?? translateInstant(item.labelKey)}
-                      icon={localIcons[item.value]}
-                    />
-                  );
-                })}
+          <div key={section.labelKey} className="contents">
+            {section.labelKey === "Audit" && pluginTabs.length > 0 ? (
+              <div data-slot="contextual-sidebar-section" className={contextualSidebarStyles.section}>
+                <p className={contextualSidebarStyles.sectionLabel}>Apps</p>
+                <div className={contextualSidebarStyles.group}>
+                  {pluginTabs.map(slot => <SidebarNavItem key={`${slot.pluginKey}:${slot.id}`} to={`/agents/${encodeURIComponent(agentRef)}/${encodeURIComponent(`plugin:${slot.pluginKey}:${slot.id}`)}`} label={slot.displayName} icon={Wrench} />)}
+                </div>
+              </div>
+            ) : null}
+            <div data-slot="contextual-sidebar-section" className={contextualSidebarStyles.section}>
+              <p data-slot="contextual-sidebar-section-label" className={contextualSidebarStyles.sectionLabel}>
+                {translateInstant(section.labelKey)}
+              </p>
+              <div data-slot="contextual-sidebar-group" className={contextualSidebarStyles.group}>
+                {section.items.map((item) => (
+                  <SidebarNavItem
+                    key={item.value}
+                    to={agentDetailHref(agentRef, item.value)}
+                    label={labels?.[item.value] ?? translateInstant(item.labelKey)}
+                    icon={localIcons[item.value]}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         ))}
-
-        {pluginTabs.length > 0 && <div data-slot="contextual-sidebar-section" className={contextualSidebarStyles.section}>
-          <p className={contextualSidebarStyles.sectionLabel}>Apps</p>
-          <div className={contextualSidebarStyles.group}>
-            {pluginTabs.map(slot => <SidebarNavItem key={`${slot.pluginKey}:${slot.id}`} to={`/agents/${encodeURIComponent(agentRef)}/${encodeURIComponent(`plugin:${slot.pluginKey}:${slot.id}`)}`} label={slot.displayName} icon={Wrench} />)}
-          </div>
-        </div>}
-        <div data-slot="contextual-sidebar-section" className={contextualSidebarStyles.section}>
-          <p
-            data-slot="contextual-sidebar-section-label"
-            className={contextualSidebarStyles.sectionLabel}
-          >
-            {translateInstant("auditFeed.title")}</p>
-          <div data-slot="contextual-sidebar-group" className={contextualSidebarStyles.group}>
-            {resolvedId ? auditItems.map((item) => (
-              <SidebarNavItem
-                key={item.section}
-                to={agentScopedAuditHref(resolvedId, item.section)}
-                label={translateInstant(item.labelKey)}
-                icon={item.icon}
-              />
-            )) : (
-              <p className="px-2 py-1.5 text-xs text-muted-foreground">{translateInstant("Loading audit links…")}</p>
-            )}
-          </div>
-        </div>
       </nav>
     </ContextualSidebarFrame>
   );

@@ -41,6 +41,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
+import { describeError } from "../api/errors";
 import {
   Dialog,
   DialogContent,
@@ -1017,7 +1019,7 @@ export function useInstallTeamCatalogEntry({
       setPreviewError(null);
     },
     onError: (error) => {
-      setPreviewError(error instanceof Error ? error.message : "Failed to load install preview.");
+      setPreviewError(describeError(error, { action: "load the install preview" }).body);
     },
   });
 
@@ -1035,7 +1037,7 @@ export function useInstallTeamCatalogEntry({
     },
     onError: (error) => {
       setPhase("error");
-      setApplyError(error instanceof Error ? error.message : "Install failed.");
+      setApplyError(describeError(error, { action: "install the team" }).body);
     },
   });
 
@@ -1203,7 +1205,7 @@ export function TeamInstallerDialog({
       setPreviewError(null);
     },
     onError: (error) => {
-      setPreviewError(error instanceof Error ? error.message : "Failed to load install preview.");
+      setPreviewError(describeError(error, { action: "load the install preview" }).body);
     },
   });
 
@@ -1220,7 +1222,7 @@ export function TeamInstallerDialog({
     },
     onError: (error) => {
       setPhase("error");
-      setApplyError(error instanceof Error ? error.message : "Install failed.");
+      setApplyError(describeError(error, { action: "install the team" }).body);
     },
   });
 
@@ -2293,6 +2295,7 @@ export function TeamCatalog() {
     queryFn: () => teamCatalogApi.catalogList(kindFilter === "all" ? {} : { kind: kindFilter }),
     enabled: Boolean(selectedCompanyId),
   });
+  const catalogView = useQueryView(catalogQuery);
 
   const teams = catalogQuery.data ?? [];
 
@@ -2481,13 +2484,13 @@ export function TeamCatalog() {
             !isDesktop && selectedTeam && "hidden",
           )}
         >
-          {catalogQuery.isLoading ? (
+          {catalogView.kind === "loading" || catalogView.kind === "reconnecting" ? (
             <div className="space-y-2 p-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <Skeleton key={i} className="h-12 w-full" />
               ))}
             </div>
-          ) : catalogQuery.isError ? (
+          ) : catalogView.kind === "error" ? (
             <div className="p-4">
               <div role="alert" className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2.5 text-sm text-rose-700 dark:text-rose-300">
                 {translateInstant("teamCatalog.loadFailed")}</div>

@@ -7,6 +7,7 @@ import type {
   ToolConnection,
 } from "@penclipai/shared";
 import { browserUseApi } from "@/api/browser-use";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,8 +29,9 @@ function CredentialSettings({
   const profiles = useQuery({
     queryKey: ["browser-use-cloud-profiles", grantId],
     queryFn: () => browserUseApi.profiles(companyId, grantId),
-    retry: false,
   });
+  const savedView = useQueryView(saved);
+  const profilesView = useQueryView(profiles);
   const [allowed, setAllowed] = useState<string[]>([]);
   const [limit, setLimit] = useState("");
   useEffect(() => {
@@ -111,7 +113,15 @@ function CredentialSettings({
           </p>
         )}
       </fieldset>
-      {saved.isError || save.isError ? (
+      {savedView.kind === "error" ? (
+        <QueryErrorState
+          error={saved.error}
+          action="load browser settings"
+          onRetry={savedView.retry}
+          retrying={savedView.isFetching}
+        />
+      ) : null}
+      {save.error ? (
         <p role="alert" className="text-sm text-destructive">
           {translateInstant("Could not save or load browser settings. Check your credential access and try again.")}</p>
       ) : null}

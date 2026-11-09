@@ -61,7 +61,7 @@
   },
   "agentDetail.apiKeysDescription": {
     "en": "API keys allow this agent to authenticate calls to the Paperclip server.",
-    "zh-CN": "API 密钥允许此智能体认证调用 Paperclip 服务器。",
+    "zh-CN": "API 密钥用于验证该智能体调用 Paperclip 服务器时的身份。",
     "reviewedEnglishHash": "aaab6905c91b2072b31ab6422011e72c6c184e1fa71c9ccd944bf089585de218"
   },
   "agentDetail.approveAgent": {
@@ -651,7 +651,7 @@
   },
   "agentDetail.noPersistedTranscript": {
     "en": "No persisted transcript for this run.",
-    "zh-CN": "此运行没有持久化转录。",
+    "zh-CN": "未保存此次运行的对话记录。",
     "reviewedEnglishHash": "e8b062b8f52b09bad13ad938e5283d23db499b4d10bcdc00b198638a05824f84"
   },
   "agentDetail.noRecentIssues": {

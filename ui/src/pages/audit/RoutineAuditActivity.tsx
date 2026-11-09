@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Activity } from "lucide-react";
 import { routinesApi } from "@/api/routines";
 import { EmptyState } from "@/components/EmptyState";
+import { useQueryView } from "@/components/QueryView";
 import { RoutineActivityRow } from "@/components/RoutineActivityRow";
 import { Button } from "@/components/ui/button";
 import { queryKeys } from "@/lib/queryKeys";
@@ -29,15 +30,18 @@ export function RoutineAuditActivity({
       });
     },
   });
+  const activityView = useQueryView(activity);
 
-  if (activity.isLoading) {
+  // A loaded feed stays on screen through a failed refetch; an outage before
+  // the first load reads as loading, and only a real failure shows copy.
+  if (activityView.kind === "loading" || activityView.kind === "reconnecting") {
     return (
       <div className="border-y border-border py-14 text-center text-sm text-muted-foreground">
         {translateInstant("Loading routine activity…")}</div>
     );
   }
 
-  if (activity.error) {
+  if (activityView.kind === "error") {
     return (
       <div className="flex flex-col items-center gap-3 border-y border-border py-14 text-center">
         <p className="text-sm text-muted-foreground">
@@ -49,7 +53,7 @@ export function RoutineAuditActivity({
     );
   }
 
-  const events = activity.data ?? [];
+  const events = activityView.data ?? [];
   if (events.length === 0) {
     return <EmptyState icon={Activity} message={translateInstant("No routine activity yet.")} />;
   }

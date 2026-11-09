@@ -6,10 +6,15 @@ import { Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FoldCurtain } from "@/components/FoldCurtain";
 import { InlineEditor } from "@/components/InlineEditor";
-import { MarkdownBody, type MarkdownExternalReferenceMap } from "@/components/MarkdownBody";
+import {
+  MarkdownBody,
+  type MarkdownExternalReferenceMap,
+} from "@/components/MarkdownBody";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { MentionOption } from "@/components/MarkdownEditor";
 import { formatTaskChatTimestamp } from "./task-chat-adapter";
+import { useCoordinatorPresentation } from "../coordinator/CoordinatorPresentation";
+import { CoordinatorRelativeTime } from "../coordinator/CoordinatorRelativeTime";
 
 /**
  * Host binding for the description-as-first-bubble (PAP-375): the LIVE issue
@@ -60,8 +65,10 @@ function initialsForName(name: string) {
  * an empty description renders a muted ghost row that opens the editor — never
  * an empty bubble.
  */
-export function TaskChatDescriptionBubble({ brief }: TaskChatDescriptionBubbleProps) {
-  useTranslation();
+export function TaskChatDescriptionBubble({
+  brief,
+}: TaskChatDescriptionBubbleProps) {
+  const coordinator = useCoordinatorPresentation();
   const [editing, setEditing] = useState(false);
   const isHuman = brief.author === "human";
   const hasDescription = brief.description.trim().length > 0;
@@ -102,11 +109,17 @@ export function TaskChatDescriptionBubble({ brief }: TaskChatDescriptionBubblePr
         data-testid="task-chat-description-ghost"
       >
         <Pencil className="h-3.5 w-3.5 shrink-0" aria-hidden />
-        {translateInstant("Add a description...")}</button>
+        {translateInstant("Add a description...")}
+      </button>
     );
   }
 
-  const timestamp = formatTaskChatTimestamp(brief.createdAt);
+  const timestamp =
+    coordinator && brief.createdAt ? (
+      <CoordinatorRelativeTime value={brief.createdAt} />
+    ) : (
+      formatTaskChatTimestamp(brief.createdAt)
+    );
   return (
     <div
       className={cn(
@@ -119,7 +132,9 @@ export function TaskChatDescriptionBubble({ brief }: TaskChatDescriptionBubblePr
       {!isHuman && brief.authorName ? (
         <span className="flex items-center gap-2 px-1">
           <AgentAvatar agent={brief.agent} name={brief.authorName} size={24} />
-          <span className="text-sm font-semibold text-foreground">{brief.authorName}</span>
+          <span className="text-sm font-semibold text-foreground">
+            {brief.authorName}
+          </span>
         </span>
       ) : null}
       <div
@@ -140,7 +155,11 @@ export function TaskChatDescriptionBubble({ brief }: TaskChatDescriptionBubblePr
             collapsedHeight={FOLD_COLLAPSED_HEIGHT_PX}
             // The curtain's fade is a mask (background-agnostic); only the
             // toggle's muted colors need a lift on the solid blue bubble.
-            toggleClassName={isHuman ? "text-white/80 hover:text-white hover:bg-white/10" : undefined}
+            toggleClassName={
+              isHuman
+                ? "text-white/80 hover:text-white hover:bg-white/10"
+                : undefined
+            }
           >
             <MarkdownBody
               // On the solid --liveness-blue human bubble, keep prose body text
@@ -167,7 +186,9 @@ export function TaskChatDescriptionBubble({ brief }: TaskChatDescriptionBubblePr
         ) : null}
       </div>
       {timestamp ? (
-        <span className="px-1 text-(length:--text-micro) text-muted-foreground">{timestamp}</span>
+        <span className="px-1 text-(length:--text-micro) text-muted-foreground">
+          {timestamp}
+        </span>
       ) : null}
     </div>
   );

@@ -28,7 +28,7 @@ import type {
   CompanySkillTrustLevel,
   CompanySkillUpdateRequest,
   CompanySkillUpdateStatus,
-  CompanySkillVersion,
+  CompanySkillVersionSummary,
 } from "@penclipai/shared";
 import { companySkillsApi } from "../api/companySkills";
 import { foldersApi } from "../api/folders";
@@ -43,6 +43,7 @@ import { EmptyState } from "../components/EmptyState";
 import { MarkdownBody } from "../components/MarkdownBody";
 import { MarkdownEditor } from "../components/MarkdownEditor";
 import { PageSkeleton } from "../components/PageSkeleton";
+import { QueryErrorState, useQueryView, type QueryViewSource } from "@/components/QueryView";
 import { CopyText } from "../components/CopyText";
 import { Identity } from "../components/Identity";
 import { AgentMultiSelect } from "../components/AgentMultiSelect";
@@ -180,6 +181,7 @@ import {
 } from "lucide-react";
 import { GithubIcon } from "../components/icons/github-icon";
 import type { FolderListItem, FolderListResult } from "@penclipai/shared";
+import { describeError } from "@/api/errors";
 
 type SkillTreeNode = {
   name: string;
@@ -1064,6 +1066,8 @@ export function DiscoveryGrid({
   onOpenCard,
   loading,
   error,
+  onRetry,
+  retrying = false,
   totalCount,
   onCreate,
   onImport,
@@ -1111,7 +1115,10 @@ export function DiscoveryGrid({
   cards: DiscoveryCard[];
   onOpenCard: (card: DiscoveryCard) => void;
   loading: boolean;
-  error: string | null;
+  /** The query error when the skill list could not load; null while data (even stale) is available. */
+  error: unknown;
+  onRetry?: () => void;
+  retrying?: boolean;
   totalCount: number;
   onCreate: () => void;
   onImport: () => void;
@@ -1334,10 +1341,12 @@ export function DiscoveryGrid({
               />
             </div>
           ) : null}
-          {loading ? (
+          {error ? (
+            <div className="py-6">
+              <QueryErrorState error={error} action="load skills" onRetry={onRetry} retrying={retrying} />
+            </div>
+          ) : loading ? (
             <PageSkeleton variant="list" />
-          ) : error ? (
-            <div className="py-6 text-sm text-destructive">{error}</div>
           ) : sourceFilteredCards.length === 0 ? (
             <div className="py-12">
               <EmptyState
@@ -1802,14 +1811,14 @@ function CatalogDetailPane({
   packageVersion: string | null;
   installedSkill: CompanySkillListItem | null;
   installedSkillId: string | null;
-  fileQuery: { data: CatalogSkillFileDetail | undefined; isLoading: boolean; error: unknown };
+  fileQuery: QueryViewSource<CatalogSkillFileDetail> & { isLoading: boolean };
   selectedPath: string;
   onInstall: () => void;
   onUpdate: () => void;
   onOpenInstalled: (skillId: string) => void;
   loadingPrimaryAction: boolean;
 }) {
-  useTranslation();
+  const fileView = useQueryView(fileQuery);
   if (!skill) {
     return <EmptyState icon={Boxes} message={translateInstant("companySkills.selectCatalogSkill")} />;
   }
@@ -1929,10 +1938,10 @@ function CatalogDetailPane({
       </div>
 
       <div className="min-h-(--sz-400px) px-5 py-5">
-        {fileQuery.isLoading ? (
+        {fileQuery.isLoading || fileView.kind === "reconnecting" ? (
           <PageSkeleton variant="detail" />
-        ) : fileQuery.error ? (
-          <div className="text-sm text-destructive">{fileQuery.error instanceof Error ? fileQuery.error.message : "Failed to load file"}</div>
+        ) : fileView.kind === "error" ? (
+          <QueryErrorState error={fileQuery.error} action="load the file" onRetry={fileView.retry} retrying={fileView.isFetching} />
         ) : !fileQuery.data ? (
           <div className="text-sm text-muted-foreground">{translateInstant("companySkills.selectFileToInspect")}</div>
         ) : fileQuery.data.markdown ? (
@@ -2194,7 +2203,7 @@ function AttachAgentsPopover({
 }: {
   agents: AttachAgentOption[];
   attachedAgentIds: string[];
-  versions: CompanySkillVersion[];
+  versions: CompanySkillVersionSummary[];
   selectedVersionId: string | null;
   pending: boolean;
   onSubmit: (nextIds: string[], versionId: string | null) => void;
@@ -2487,12 +2496,12 @@ function currentVersionSelection(detail: CompanySkillDetail | null | undefined) 
   return selected ?? null;
 }
 
-function versionLabel(version: CompanySkillVersion | null | undefined) {
+function versionLabel(version: CompanySkillVersionSummary | null | undefined) {
   if (!version) return "Latest";
   return `v${version.revisionNumber}${version.label ? ` · ${version.label}` : ""}`;
 }
 
-export function getSkillVersionDiffSelection(versions: CompanySkillVersion[], targetVersionId?: string | null) {
+export function getSkillVersionDiffSelection(versions: CompanySkillVersionSummary[], targetVersionId?: string | null) {
   const sorted = [...versions].sort((a, b) => b.revisionNumber - a.revisionNumber);
   const right = targetVersionId
     ? sorted.find((version) => version.id === targetVersionId) ?? null
@@ -2517,7 +2526,7 @@ function SkillVersionDiffDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  versions: CompanySkillVersion[];
+  versions: CompanySkillVersionSummary[];
   leftVersionId: string | null;
   rightVersionId: string | null;
   onLeftVersionChange: (id: string | null) => void;
@@ -2525,8 +2534,20 @@ function SkillVersionDiffDialog({
 }) {
   useTranslation();
   const sorted = [...versions].sort((a, b) => b.revisionNumber - a.revisionNumber);
-  const left = sorted.find((version) => version.id === leftVersionId) ?? null;
-  const right = sorted.find((version) => version.id === rightVersionId) ?? null;
+  const selectedLeft = sorted.find((version) => version.id === leftVersionId);
+  const selectedRight = sorted.find((version) => version.id === rightVersionId);
+  const leftQuery = useQuery({
+    queryKey: [...queryKeys.companySkills.versions(selectedLeft?.companyId ?? "", selectedLeft?.companySkillId ?? ""), leftVersionId],
+    queryFn: () => companySkillsApi.version(selectedLeft!.companyId, selectedLeft!.companySkillId, selectedLeft!.id),
+    enabled: open && Boolean(selectedLeft),
+  });
+  const rightQuery = useQuery({
+    queryKey: [...queryKeys.companySkills.versions(selectedRight?.companyId ?? "", selectedRight?.companySkillId ?? ""), rightVersionId],
+    queryFn: () => companySkillsApi.version(selectedRight!.companyId, selectedRight!.companySkillId, selectedRight!.id),
+    enabled: open && Boolean(selectedRight),
+  });
+  const left = leftQuery.data ?? null;
+  const right = rightQuery.data ?? null;
   const allPaths = useMemo(() => {
     const paths = new Set<string>();
     for (const file of left?.fileInventory ?? []) paths.add(file.path);
@@ -2567,7 +2588,9 @@ function SkillVersionDiffDialog({
       <DialogContent className="flex max-h-(--sz-85vh) w-full !max-w-(--pct-90) flex-col overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <DialogHeader className="shrink-0">
-            <DialogTitle>{translateInstant("Diff · skill files")}</DialogTitle>
+            <DialogTitle>{translateInstant("Diff · skill files", { defaultValue: "Diff · skill files" })}</DialogTitle>
+            {(leftQuery.error || rightQuery.error) && <p role="alert" className="text-sm text-destructive">{(leftQuery.error ?? rightQuery.error)?.message}</p>}
+            {(leftQuery.isLoading || rightQuery.isLoading) && <p className="text-sm text-muted-foreground">Loading selected versions…</p>}
           </DialogHeader>
           <div className="flex flex-wrap items-center gap-3 text-xs">
             <label className="flex items-center gap-2">
@@ -2820,7 +2843,7 @@ export function SkillDetailPage({
   setDraft: (value: string) => void;
   onSave: () => void;
   savePending: boolean;
-  versions: CompanySkillVersion[];
+  versions: CompanySkillVersionSummary[];
   versionsLoading: boolean;
   attachAgents: AttachAgentOption[];
   onSubmitAttach: (ids: string[], versionId: string | null) => void;
@@ -2881,7 +2904,7 @@ export function SkillDetailPage({
 
   // Track unsaved edits so we can float a save bar and warn before the page is
   // unloaded with a dirty draft (PAP-10907 J).
-  const savedFileContent = file?.content ?? "";
+  const savedFileContent = file?.markdown ? splitFrontmatter(file.content).body : file?.content ?? "";
   const isDirty = editMode && Boolean(file?.editable) && draft !== savedFileContent;
   useEffect(() => {
     if (!isDirty) return;
@@ -2984,8 +3007,8 @@ export function SkillDetailPage({
               {skill.editable && file?.editable ? (
                 editMode ? (
                   <>
-                    <Button variant="ghost" size="sm" onClick={() => setEditMode(false)} disabled={savePending}>{translateInstant("Cancel")}</Button>
-                    <Button size="sm" onClick={onSave} disabled={savePending}>
+                    <Button variant="ghost" size="sm" onClick={() => setEditMode(false)} disabled={savePending}>{translateInstant("Cancel", { defaultValue: "Cancel" })}</Button>
+                    <Button size="sm" onClick={onSave} disabled={savePending || !isDirty}>
                       <Save className="mr-1.5 h-3.5 w-3.5" />
                       {savePending ? translateInstant("Saving...") : translateInstant("Save")}
                     </Button>
@@ -3646,7 +3669,7 @@ function SkillPane({
   onSave: () => void;
   savePending: boolean;
   attachAgents: AttachAgentOption[];
-  versions: CompanySkillVersion[];
+  versions: CompanySkillVersionSummary[];
   onSubmitAttach: (ids: string[], versionId: string | null) => void;
   attachPending: boolean;
 }) {
@@ -3933,7 +3956,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     pushToast({
       tone: "error",
       title,
-      body: error instanceof Error && error.message ? error.message : fallbackBody,
+      body: error instanceof Error ? describeError(error).body : fallbackBody,
     });
   };
   const [skillFilter, setSkillFilter] = useState("");
@@ -4139,6 +4162,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     enabled: Boolean(selectedCompanyId && ((isDiscovery && effectiveDiscoveryTab === "installed") || routeSkillToken)),
   });
 
+  const skillsView = useQueryView(skillsQuery);
   const installedSkills = skillsQuery.data ?? [];
   const routeResolution = useMemo(
     () => resolveSkillRouteToken(routeSkillToken, installedSkills),
@@ -4154,6 +4178,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     queryFn: () => companySkillsApi.detail(selectedCompanyId!, selectedSkillId!),
     enabled: Boolean(selectedCompanyId && selectedSkillId),
   });
+  const detailView = useQueryView(detailQuery);
 
   const fileQuery = useQuery({
     queryKey: queryKeys.companySkills.file(selectedCompanyId ?? "", selectedSkillId ?? "", selectedPath),
@@ -4378,7 +4403,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
       });
     },
     onError: (error) => {
-      const message = error instanceof Error ? error.message : "Failed to create skill.";
+      const message = describeError(error).body;
       setCreateError(message);
       reportSkillError(error, "Skill creation failed", "Failed to create skill.", "Creating a skill");
     },
@@ -4408,8 +4433,8 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: translateInstant("Save failed"),
-        body: error instanceof Error ? error.message : "Failed to save skill file.",
+        title: translateInstant("Save failed", { defaultValue: "Save failed" }),
+        body: describeError(error).body,
       });
     },
   });
@@ -4431,8 +4456,8 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: translateInstant("companySkills.starFailed"),
-        body: error instanceof Error ? error.message : "Failed to update star.",
+        title: translateInstant("companySkills.starFailed", { defaultValue: "Star failed" }),
+        body: describeError(error).body,
       });
     },
   });
@@ -4458,8 +4483,8 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: translateInstant("companySkills.skillSettingsUpdateFailed"),
-        body: error instanceof Error ? error.message : "Failed to update skill settings.",
+        title: translateInstant("companySkills.skillSettingsUpdateFailed", { defaultValue: "Skill settings update failed" }),
+        body: describeError(error).body,
       });
     },
   });
@@ -4491,6 +4516,8 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     enabled: Boolean(selectedCompanyId),
     staleTime: 60_000,
   });
+  const catalogListView = useQueryView(catalogListQuery);
+  const discoveryFailure = [skillsView, catalogListView].find((view) => view.kind === "error");
 
   const catalogDetailQuery = useQuery({
     queryKey: queryKeys.companySkills.catalogDetail(selectedCatalogRef ?? ""),
@@ -4498,6 +4525,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     enabled: Boolean(selectedCompanyId && selectedCatalogRef),
     staleTime: 60_000,
   });
+  const catalogDetailView = useQueryView(catalogDetailQuery);
 
   const catalogFileQuery = useQuery({
     queryKey: queryKeys.companySkills.catalogFile(selectedCatalogRef ?? "", catalogSelectedPath),
@@ -4658,7 +4686,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
       }
     },
     onError: (error) => {
-      const message = error instanceof Error ? error.message : "Failed to install catalog skill.";
+      const message = describeError(error).body;
       setInstallDialogState((current) => ({ ...current, error: message }));
       // Also surface explicit-policy / platform denials in the persistent banner
       // so the reason stays visible after the dialog closes.
@@ -4687,8 +4715,8 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
         } catch (moveError) {
           pushToast({
             tone: "error",
-            title: translateInstant("folders.createdMoveFailed"),
-            body: moveError instanceof Error ? moveError.message : "Failed to move the selected skills.",
+            title: translateInstant("folders.createdMoveFailed", { defaultValue: "Folder created, move failed" }),
+            body: describeError(moveError).body,
           });
           return;
         }
@@ -4700,8 +4728,8 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: translateInstant("folders.saveFailed"),
-        body: error instanceof Error ? error.message : "Failed to save folder.",
+        title: translateInstant("folders.saveFailed", { defaultValue: "Folder save failed" }),
+        body: describeError(error).body,
       });
     },
   });
@@ -4716,8 +4744,8 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: translateInstant("folders.saveFailed"),
-        body: error instanceof Error ? error.message : "Failed to update folder.",
+        title: translateInstant("folders.saveFailed", { defaultValue: "Folder save failed" }),
+        body: describeError(error).body,
       });
     },
   });
@@ -4736,8 +4764,8 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: translateInstant("folders.moveFailed"),
-        body: error instanceof Error ? error.message : "Failed to move folder.",
+        title: translateInstant("folders.moveFailed", { defaultValue: "Folder move failed" }),
+        body: describeError(error).body,
       });
     },
   });
@@ -4755,8 +4783,8 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: translateInstant("folders.deleteFailed"),
-        body: error instanceof Error ? error.message : "Failed to delete folder.",
+        title: translateInstant("folders.deleteFailed", { defaultValue: "Folder delete failed" }),
+        body: describeError(error).body,
       });
     },
   });
@@ -4772,8 +4800,8 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: translateInstant("folders.itemMoveFailed"),
-        body: error instanceof Error ? error.message : "Failed to move skill.",
+        title: translateInstant("folders.itemMoveFailed", { defaultValue: "Move failed" }),
+        body: describeError(error).body,
       });
     },
   });
@@ -4793,8 +4821,8 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     } catch (moveError) {
       pushToast({
         tone: "error",
-        title: translateInstant("Failed to move skills"),
-        body: moveError instanceof Error ? moveError.message : "Failed to move the selected skills.",
+        title: translateInstant("Failed to move skills", { defaultValue: "Failed to move skills" }),
+        body: describeError(moveError).body,
       });
     }
   }
@@ -4809,8 +4837,8 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: translateInstant("folders.openMySkillsFailed"),
-        body: error instanceof Error ? error.message : "Failed to create your personal folder.",
+        title: translateInstant("folders.openMySkillsFailed", { defaultValue: "Couldn't open My Skills" }),
+        body: describeError(error).body,
       });
     },
   });
@@ -4868,8 +4896,8 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     } catch (error) {
       pushToast({
         tone: "error",
-        title: translateInstant("folders.createFailed"),
-        body: error instanceof Error ? error.message : "Failed to create folder.",
+        title: translateInstant("folders.createFailed", { defaultValue: "Folder create failed" }),
+        body: describeError(error).body,
       });
       return null;
     }
@@ -4901,8 +4929,8 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     } catch (moveError) {
       pushToast({
         tone: "error",
-        title: translateInstant("folders.itemMoveFailed"),
-        body: moveError instanceof Error ? moveError.message : "Failed to move.",
+        title: translateInstant("folders.itemMoveFailed", { defaultValue: "Move failed" }),
+        body: describeError(moveError).body,
       });
     }
   }
@@ -4971,7 +4999,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
       }
       pushToast({ tone: "success", title: translateInstant("companySkills.agentsUpdated"), body: `${nextAgentIds.length} agent(s) attached.` });
     } catch (error) {
-      pushToast({ tone: "error", title: translateInstant("Update failed"), body: error instanceof Error ? error.message : "Failed to update agent skills." });
+      pushToast({ tone: "error", title: translateInstant("Update failed", { defaultValue: "Update failed" }), body: describeError(error).body });
     }
   }
 
@@ -5388,8 +5416,10 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
           onSortChange={setDiscoverySort}
           cards={visibleDiscoveryCards}
           onOpenCard={openDiscoveryCard}
-          loading={skillsQuery.isLoading || catalogListQuery.isLoading}
-          error={skillsQuery.error?.message ?? catalogListQuery.error?.message ?? null}
+          loading={skillsQuery.isLoading || catalogListQuery.isLoading || skillsView.kind === "reconnecting" || catalogListView.kind === "reconnecting"}
+          error={discoveryFailure?.error}
+          onRetry={discoveryFailure?.retry}
+          retrying={discoveryFailure?.isFetching}
           totalCount={discoveryTabCards.length}
           onCreate={() => void openNewSkill()}
           onImport={() => setImportDialogOpen(true)}
@@ -5469,7 +5499,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
           folderDisplayPath={activeSkillFolderDisplayPath}
           catalogSource={catalogSourceForDetail}
           routeSkills={installedSkills}
-          loading={skillsQuery.isLoading || detailQuery.isLoading}
+          loading={skillsQuery.isLoading || detailQuery.isLoading || skillsView.kind === "reconnecting" || detailView.kind === "reconnecting"}
           activeTab={detailTab}
           onTabChange={setDetailTab}
           selectedPath={selectedPath}
@@ -5536,7 +5566,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
               <ChevronLeft className="h-4 w-4" />
               {translateInstant("companySkills.backToStore")}</Link>
           </div>
-          {catalogListQuery.isLoading || catalogDetailQuery.isLoading ? (
+          {catalogListQuery.isLoading || catalogDetailQuery.isLoading || catalogListView.kind === "reconnecting" || catalogDetailView.kind === "reconnecting" ? (
             <PageSkeleton variant="detail" />
           ) : !selectedCatalogSkill ? (
             <EmptyState icon={Boxes} message={translateInstant("companySkills.catalogSkillNotFound")} />
@@ -5581,7 +5611,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
         </div>
       ) : (
         <div className="min-h-(--sz-calc-30)">
-          {skillsQuery.isLoading ? (
+          {skillsQuery.isLoading || skillsView.kind === "reconnecting" ? (
             <PageSkeleton variant="detail" />
           ) : (
             <EmptyState icon={Boxes} message={translateInstant("companySkills.skillNotFound")} />

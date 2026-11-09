@@ -2,6 +2,8 @@ import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { HeartbeatRun } from "@penclipai/shared";
+import { isNativeWorkspaceExportRepairCause } from "@penclipai/shared";
+import { RunWorkspaceSourceInspection } from "./RunWorkspaceSourceInspection";
 import { useNavigate } from "@/lib/router";
 import { issuesApi } from "../api/issues";
 import { executionWorkspacesApi } from "../api/execution-workspaces";
@@ -72,7 +74,6 @@ export function RunWorkspaceRecoverySurface({ run }: { run: HeartbeatRun }) {
     queryKey: queryKeys.access.currentBoardAccess,
     queryFn: () => accessApi.getCurrentBoardAccess(),
     enabled: Boolean(isWorkspaceValidationFailure && issueId),
-    retry: false,
   });
 
   const recoveryAction = issue?.activeRecoveryAction ?? null;

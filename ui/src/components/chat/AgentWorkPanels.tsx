@@ -9,6 +9,7 @@ import { issuesApi } from "@/api/issues";
 import { projectsApi } from "@/api/projects";
 import { IssueFiltersPopover } from "@/components/IssueFiltersPopover";
 import { StatusIcon } from "@/components/StatusIcon";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -22,6 +23,7 @@ import {
 import { queryKeys } from "@/lib/queryKeys";
 import { Link } from "@/lib/router";
 import { cn, formatDate, relativeTime } from "@/lib/utils";
+import { taskStatusIconProps } from "@/lib/task-status-presentation";
 
 /**
  * The agent-scoped side panels shown beside an agent chat: every task the
@@ -87,8 +89,7 @@ export function AgentTaskCard({ task }: { task: Issue }) {
     >
       <div className="flex min-w-0 items-start gap-2">
         <StatusIcon
-          status={task.status}
-          blockerAttention={task.blockerAttention}
+          {...taskStatusIconProps(task)}
           className="mt-0.5 shrink-0"
         />
         <span className="min-w-0 flex-1 line-clamp-2 text-sm font-medium text-foreground">
@@ -131,6 +132,7 @@ export function AgentTasksPanel({
       limit: AGENT_TASK_LIMIT,
     }),
   });
+  const tasksView = useQueryView(tasksQuery);
   const projectsQuery = useQuery({
     queryKey: queryKeys.projects.list(companyId),
     queryFn: () => projectsApi.list(companyId),
@@ -210,10 +212,17 @@ export function AgentTasksPanel({
         </Popover>
       </div>
 
-      {tasksQuery.isPending ? (
-        <PanelMessage>{translateInstant("Loading tasks…")}</PanelMessage>
-      ) : tasksQuery.isError ? (
-        <PanelMessage tone="error">{translateInstant("Could not load this agent's tasks.")}</PanelMessage>
+      {tasksView.kind === "loading" || tasksView.kind === "reconnecting" ? (
+        <PanelMessage>{translateInstant("Loading tasks…", { defaultValue: "Loading tasks…" })}</PanelMessage>
+      ) : tasksView.kind === "error" ? (
+        <div className="py-4">
+          <QueryErrorState
+            error={tasksQuery.error}
+            action="load this agent's tasks"
+            onRetry={tasksView.retry}
+            retrying={tasksView.isFetching}
+          />
+        </div>
       ) : total === 0 ? (
         <PanelMessage>{translateInstant("This agent hasn't worked on any tasks yet.")}</PanelMessage>
       ) : visible.length === 0 ? (
@@ -297,10 +306,25 @@ export function AgentArtifactsPanel({ companyId, agentId }: { companyId: string;
     queryFn: () => listAgentArtifacts(companyId, agentId),
   });
 
-  if (artifactsQuery.isPending) return <PanelMessage>{translateInstant("Loading artifacts…")}</PanelMessage>;
-  if (artifactsQuery.isError) return <PanelMessage tone="error">{translateInstant("Could not load this agent's artifacts.")}</PanelMessage>;
-  const { artifacts, truncated } = artifactsQuery.data;
-  if (artifacts.length === 0) return <PanelMessage>{translateInstant("This agent hasn't produced any artifacts yet.")}</PanelMessage>;
+  const artifactsView = useQueryView(artifactsQuery);
+
+  if (artifactsView.kind === "loading" || artifactsView.kind === "reconnecting") return <PanelMessage>{translateInstant("Loading artifacts…", { defaultValue: "Loading artifacts…" })}</PanelMessage>;
+  if (artifactsView.kind === "error") {
+    return (
+      <div className="py-4">
+        <QueryErrorState
+          error={artifactsQuery.error}
+          action="load this agent's artifacts"
+          onRetry={artifactsView.retry}
+          retrying={artifactsView.isFetching}
+        />
+      </div>
+    );
+  }
+  const loaded = artifactsQuery.data;
+  if (!loaded) return null;
+  const { artifacts, truncated } = loaded;
+  if (artifacts.length === 0) return <PanelMessage>{translateInstant("This agent hasn't produced any artifacts yet.", { defaultValue: "This agent hasn't produced any artifacts yet." })}</PanelMessage>;
   return (
     <section className="flex flex-col gap-2" aria-label={translateInstant("Agent artifacts")}>
       {artifacts.map((artifact) => <AgentArtifactCard key={artifact.id} artifact={artifact} />)}

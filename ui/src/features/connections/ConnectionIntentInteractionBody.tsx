@@ -15,6 +15,8 @@ import { AgentMailIntentSetup } from "./AgentMailIntentSetup";
 import { connectionIntentsApi } from "@/api/connection-intents";
 import { aiConnectionsApi } from "@/api/ai-connections";
 import { agentsApi } from "@/api/agents";
+import { describeError } from "@/api/errors";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { AiConnectionCredentialStep } from "@/components/ai-connections/AiConnectionCredentialStep";
 import { AiProviderSetup } from "@/components/ai-connections/AiProviderSetup";
 import { defaultAiConnectionName } from "@/components/ai-connections/model";
@@ -37,7 +39,10 @@ import {
 
 class AgentAiConnectionChangedError extends Error {}
 
+import { DecisionCardFooter } from "@/components/DecisionCardFooter";
+
 export interface ConnectionIntentInteractionBodyProps {
+  footerSlot?: ReactNode;
   interaction: ConnectionIntentInteraction;
   currentUserId?: string | null;
   addresseeLabel: string;
@@ -46,6 +51,7 @@ export interface ConnectionIntentInteractionBodyProps {
 }
 
 export function ConnectionIntentInteractionBody({
+  footerSlot,
   interaction,
   currentUserId,
   addresseeLabel,
@@ -69,6 +75,7 @@ export function ConnectionIntentInteractionBody({
   );
   const isPending = interaction.status === "pending";
   const isAi = interaction.payload.purpose === "ai";
+  const isChatHandoff = Boolean(interaction.payload.savedSetup);
   const provider = isAi ? aiProviderSchema.safeParse(interaction.payload.serviceSlug).data : undefined;
   const serviceName = provider ? AI_CONNECTION_CAPABILITIES[provider].name : interaction.payload.serviceName;
   const isEmail = interaction.payload.purpose === "channel" && interaction.payload.serviceSlug === "agentmail";
@@ -126,6 +133,10 @@ export function ConnectionIntentInteractionBody({
     enabled: isAddressee && isPending,
     refetchInterval: isPending && (open || interaction.payload.phase === "authorizing") ? 2_000 : false,
   });
+  const setupView = useQueryView(setupQuery);
+  // Loaded options stay usable through a transient refetch failure (`stale`);
+  // only a real failure, or nothing loaded yet, shows the setup placeholder.
+  const setupUnavailable = setupQuery.isLoading || setupView.kind === "reconnecting" || setupView.kind === "error";
 
   useEffect(() => {
     const current = setupQuery.data?.interaction;
@@ -232,7 +243,11 @@ export function ConnectionIntentInteractionBody({
     upstreamServiceName: interaction.payload.upstreamService?.name,
     serviceSlug: interaction.payload.serviceSlug.startsWith("connection:") ? undefined : interaction.payload.serviceSlug,
     configuredConnection: interaction.payload.serviceSlug.startsWith("connection:") ? setupQuery.data.existingConnections[0] : undefined,
-    requestedAgentId: setupQuery.data.requestedAgentId,
+    // Tool setup uses the same audience defaults and controls as Apps.
+    // Runtime authentication and inboxes still belong to the requesting agent.
+    requestedAgentId: interaction.payload.purpose ? setupQuery.data.requestedAgentId : undefined,
+    requiredAgentId: interaction.payload.purpose ? undefined : setupQuery.data.requestedAgentId,
+    setupAccess: setupQuery.data.interaction?.payload.setupAccess,
     aiConnection: setupQuery.data.aiConnection,
     interactionId: interaction.id,
     existingConnections: setupQuery.data.existingConnections,
@@ -315,6 +330,7 @@ export function ConnectionIntentInteractionBody({
             {status.body ? <p className="mt-1 text-sm text-muted-foreground">{status.body}</p> : null}
           </div>
         </div>
+        <DecisionCardFooter leading={footerSlot} className="mt-4" />
       </div>
     );
   }
@@ -341,6 +357,7 @@ export function ConnectionIntentInteractionBody({
             </p> : null}
           </div>
         </div>
+        <DecisionCardFooter leading={footerSlot} className="mt-4" />
       </div>
     );
   }
@@ -369,14 +386,14 @@ export function ConnectionIntentInteractionBody({
             <span className="shrink-0 text-muted-foreground">{tool.permission === "allowed" ? translateInstant("Allowed") : translateInstant("Ask first")}</span>
           </li>)}
         </ul>
-        {setupQuery.isError || completeMutation.isError || declineMutation.isError ? <p role="alert" className="text-sm text-destructive">{(completeMutation.error ?? declineMutation.error ?? setupQuery.error)?.message ?? translateInstant("Couldn’t update this access request.")}</p> : null}
-        {setupQuery.data?.canGrantAccess === false ? <p role="status" className="text-sm text-muted-foreground">{translateInstant("Connection manager required.")}</p> : null}
-        <div className="flex items-center justify-between gap-2">
-          <Button size="sm" variant="ghost" disabled={busy} onClick={() => declineMutation.mutate()}>{translateInstant("builtInAgents.configure.notNow")}</Button>
+        <DecisionCardFooter leading={footerSlot}>
+          <div className={footerSlot ? "flex flex-wrap items-center justify-end gap-2" : "flex items-center justify-between gap-2"}>
+          <Button size="sm" variant="ghost" disabled={busy} onClick={() => declineMutation.mutate()}>{translateInstant("builtInAgents.configure.notNow", { defaultValue: "Not now" })}</Button>
           <Button size="sm" disabled={busy || !setupQuery.data?.canGrantAccess} onClick={() => completeMutation.mutate(accessRequest.connectionId)}>
             {completeMutation.isPending ? translateInstant("Granting access…") : translateInstant("Grant access")}
           </Button>
-        </div>
+          </div>
+        </DecisionCardFooter>
       </div>
     </div>;
   }
@@ -386,25 +403,18 @@ export function ConnectionIntentInteractionBody({
   const readyForAdoption = setupQuery.data?.aiConnectionRequiresAdoption
     ? adoptionConnectionId ?? (selectedReady ? repair.connection.id : null)
     : null;
-  const setupContent = setupQuery.isLoading ? (
+  const setupContent = setupQuery.isLoading || setupView.kind === "reconnecting" ? (
                 <div className="flex min-h-48 items-center justify-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" /> {translateInstant("connectionUi.intent.loadingOptions", { defaultValue: "Loading connection options…" })}
                 </div>
-              ) : setupQuery.isError ? (
-                <div className="py-8 text-center">
-                  <p className="font-medium text-foreground">
-                    {translateInstant("connectionUi.intent.loadSetupFailed", { defaultValue: "Couldn’t load connection setup" })}
-                  </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {setupQuery.error instanceof Error
-                      ? setupQuery.error.message
-                      : translateInstant("connectionUi.intent.tryAgainSentence", { defaultValue: "Try again." })}
-                  </p>
-                  <Button
-                    className="mt-4"
-                    variant="outline"
-                    onClick={() => setupQuery.refetch()}
-                  >{translateInstant("Try again")}</Button>
+               ) : setupView.kind === "error" ? (
+                <div className="py-6">
+                  <QueryErrorState
+                    error={setupQuery.error}
+                    action="load connection setup"
+                    onRetry={setupView.retry}
+                    retrying={setupView.isFetching}
+                  />
                 </div>
               ) : setupProps ? (
                 renderSetup ? renderSetup(setupProps) : <ConnectionSetupFlow {...setupProps} />
@@ -412,7 +422,7 @@ export function ConnectionIntentInteractionBody({
   const aiConnection = setupQuery.data?.aiConnection;
   const needsOwnAiConnection = isAi && (!repair || setupQuery.data?.aiConnectionRequiresAdoption) && aiConnection?.mode === "responsible_user";
   const aiProviderName = aiConnection ? AI_CONNECTION_CAPABILITIES[aiConnection.provider].name : serviceName;
-  const inlineContent = setupQuery.isLoading || setupQuery.isError ? setupContent
+  const inlineContent = setupUnavailable ? setupContent
     : readyForAdoption ? <div className="space-y-3">
         <p className="text-sm">
           {translateInstant("connectionUi.intent.useConnectionForAgent", {
@@ -519,9 +529,10 @@ export function ConnectionIntentInteractionBody({
                 : needsOwnAiConnection
                 ? translateInstant("connectionUi.intent.ownAiConnectionDescription", { agent: interaction.payload.requestingAgentName, defaultValue: "{{agent}} needs your own AI connection. Connect here and the task will resume automatically." })
                 : interaction.payload.purpose === "ai"
-                ? translateInstant("connectionUi.intent.taskAiConnectionDescription", { defaultValue: "This task can’t run until the agent has a valid AI connection. Connect here and the task will resume automatically." })
-                : isEmail ? translateInstant("connectionUi.intent.agentMailDescription", { defaultValue: "Connect AgentMail to create an email address for this agent." })
-                : translateInstant("connectionUi.intent.identityConnectionDescription", { defaultValue: "Connect your identity or reuse an eligible connection. Access is added only for this agent." })}
+                ? "This task can’t run until the agent has a valid AI connection. Connect here and the task will resume automatically."
+                : isChatHandoff ? "Complete the human sign-in step in the saved setup. Your task continues when the connection is ready."
+                : isEmail ? "Connect AgentMail to create an email address for this agent."
+                : "New connections default to all agents; you can choose fewer during setup. Reusing an account adds access for this agent."}
             </p>
           </div>
         </div>
@@ -533,9 +544,12 @@ export function ConnectionIntentInteractionBody({
           </p>
         ) : null}
 
-        {isEmail ? setupQuery.isLoading || setupQuery.isError ? <>
+        {isChatHandoff ? <div className="mt-4 flex items-center justify-between gap-2">
+          <Button type="button" variant="ghost" disabled={declineMutation.isPending} onClick={() => declineMutation.mutate()}>{translateInstant("builtInAgents.configure.notNow", { defaultValue: "Not now" })}</Button>
+          {setupQuery.data?.chatSetup ? <Button asChild><a href={setupQuery.data.chatSetup.path} target="_blank" rel="noopener noreferrer">Continue authentication</a></Button> : setupContent}
+        </div> : isEmail ? setupUnavailable ? <>
           {setupContent}
-          <Button type="button" variant="ghost" disabled={declineMutation.isPending} onClick={() => declineMutation.mutate()}>{translateInstant("builtInAgents.configure.notNow")}</Button>
+          <Button type="button" variant="ghost" disabled={declineMutation.isPending} onClick={() => declineMutation.mutate()}>{translateInstant("builtInAgents.configure.notNow", { defaultValue: "Not now" })}</Button>
         </> : <AgentMailIntentSetup
           companyId={interaction.companyId}
           agentId={interaction.payload.requestingAgentId}
@@ -545,65 +559,74 @@ export function ConnectionIntentInteractionBody({
           onComplete={async connectionId => { await completeMutation.mutateAsync(connectionId); }}
           onDecline={() => declineMutation.mutate()}
           declining={declineMutation.isPending}
-        /> : <div className="mt-4 flex flex-wrap justify-end gap-2">
-          {!isAi && <Button
-            type="button"
-            variant="ghost"
-            disabled={declineMutation.isPending || completeMutation.isPending || authorizing}
-            onClick={() => declineMutation.mutate()}
-          >{translateInstant("builtInAgents.configure.notNow")}</Button>}
-          {isAi ? <Button type="button" disabled={completeMutation.isPending || adoptMutation.isPending || selectAiAccountMutation.isPending} onClick={() => open ? closeSetup() : setOpen(true)}>
-            <Plug className="h-4 w-4" />{open
-              ? translateInstant("connectionUi.intent.closeSetup", { defaultValue: "Close setup" })
-              : readyForAdoption ? translateInstant("Continue setup")
-                : needsOwnAiConnection ? translateInstant("connectionUi.connectApp", { appName: aiProviderName, defaultValue: "Connect {{appName}}" })
-                  : translateInstant("connectionUi.intent.fixConnection", { defaultValue: "Fix connection" })}
-          </Button> : <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button type="button">
-                {authorizing ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Plug className="h-4 w-4" />
-                )}
-                {authorizing
-                  ? translateInstant("Continue setup")
-                  : needsRetry
-                    ? translateInstant("Try again")
-                    : setupQuery.data?.existingConnections.length ? translateInstant("connectionUi.intent.connectOrUseExisting", { defaultValue: "Connect / Use existing" }) : translateInstant("Connect")}
-              </Button>
-            </DialogTrigger>
-            <DialogContent
-              className="max-h-(--sz-85vh) overflow-y-auto sm:max-w-3xl"
-              showCloseButton={false}
-              onCloseAutoFocus={(event) => {
-                event.preventDefault();
-                focusTargetRef.current?.focus();
-              }}
+        /> : <DecisionCardFooter leading={footerSlot} className="mt-4">
+          <div className={footerSlot ? "flex flex-wrap items-center justify-end gap-2" : "mt-4 flex flex-wrap justify-end gap-2"}>
+            {!isAi && <Button
+              type="button"
+              variant="ghost"
+              disabled={declineMutation.isPending || completeMutation.isPending || authorizing}
+              onClick={() => declineMutation.mutate()}
             >
-              <DialogHeader className="sr-only">
-                <DialogTitle>{translateInstant("Connect")}{" "}{interaction.payload.serviceName}
-                </DialogTitle>
-                <DialogDescription>
-                  {translateInstant("connectionUi.intent.setupDialogDescription", { defaultValue: "Complete connection setup without leaving this task." })}
-                </DialogDescription>
-              </DialogHeader>
-              {setupContent}
-            </DialogContent>
-          </Dialog>}
-        </div>}
+              {translateInstant("builtInAgents.configure.notNow", { defaultValue: "Not now" })}
+            </Button>}
+            {isAi ? <Button type="button" disabled={completeMutation.isPending || adoptMutation.isPending || selectAiAccountMutation.isPending} onClick={() => open ? closeSetup() : setOpen(true)}>
+              <Plug className="h-4 w-4" />{open ? "Close setup" : readyForAdoption ? "Continue setup" : needsOwnAiConnection ? `Connect ${aiProviderName}` : "Fix connection"}
+            </Button> : <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button type="button">
+                  {authorizing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plug className="h-4 w-4" />
+                  )}
+                  {authorizing
+                    ? "Continue setup"
+                    : needsRetry
+                      ? "Try again"
+                      : setupQuery.data?.existingConnections.length ? "Connect / Use existing" : "Connect"}
+                </Button>
+              </DialogTrigger>
+              <DialogContent
+                className="max-h-(--sz-85vh) overflow-y-auto sm:max-w-3xl"
+                showCloseButton={false}
+                onCloseAutoFocus={(event) => {
+                  event.preventDefault();
+                  focusTargetRef.current?.focus();
+                }}
+              >
+                <DialogHeader className="sr-only">
+                  <DialogTitle>
+                    {translateInstant("Connect", { defaultValue: "Connect" })} {interaction.payload.serviceName}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {translateInstant("connectionUi.intent.setupDialogDescription", { defaultValue: "Complete connection setup without leaving this task." })}
+                  </DialogDescription>
+                </DialogHeader>
+                {setupContent}
+              </DialogContent>
+            </Dialog>}
+          </div>
+        </DecisionCardFooter>}
+        {isEmail ? <DecisionCardFooter leading={footerSlot} className="mt-4" /> : null}
         {isAi && open ? <div className="mt-4 border-t border-border pt-4" data-testid="ai-connection-inline-repair">{inlineContent}</div> : null}
 
-        {(!isEmail && completeMutation.isError) ||
-        (selectAiAccountMutation.isError && selectAiAccountMutation.variables?.generation === generation) ||
-        adoptMutation.isError ||
-        declineMutation.isError ||
-        phaseMutation.isError ? (
+        {(!isEmail && completeMutation.error) ||
+        (selectAiAccountMutation.error && selectAiAccountMutation.variables?.generation === generation) ||
+        adoptMutation.error ||
+        declineMutation.error ||
+        phaseMutation.error ? (
           <p className="mt-3 text-sm text-destructive" role="alert">
             {actionErrorMessage}
+            {describeError(
+              completeMutation.error ??
+                selectAiAccountMutation.error ??
+                adoptMutation.error ??
+                declineMutation.error ??
+                phaseMutation.error,
+            ).body}
           </p>
         ) : null}
-        {selectAiAccountMutation.isError && selectAiAccountMutation.variables?.generation === generation && (
+        {selectAiAccountMutation.error && selectAiAccountMutation.variables?.generation === generation && (
           <Button className="mt-3" onClick={() => selectAiAccountMutation.mutate(selectAiAccountMutation.variables!)}>
             {translateInstant("connectionUi.intent.retryUsingConnection", { defaultValue: "Retry using this connection" })}
           </Button>

@@ -201,7 +201,7 @@
   },
   "connectionUi.intent.adoptionReadyDescription": {
     "en": "Your account is connected. Use it for {{agent}} to resume this task.",
-    "zh-CN": "你的账户已连接。请将其用于 {{agent}} 以恢复此任务。",
+    "zh-CN": "你的账户已连接。为 {{agent}} 选择此连接，即可继续此任务。",
     "reviewedEnglishHash": "9cf5134fa189bfd02d7f8ae368fe57d16bb940933787da31fef7aff38e8160e6"
   },
   "connectionUi.intent.agentAiConnectionChanged": {

@@ -254,7 +254,6 @@ export function RoutineRunVariablesDialog({
   const { data: experimentalSettings } = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
     queryFn: () => instanceSettingsApi.getExperimental(),
-    retry: false,
   });
 
   const { visible: workspaceIsolationControlsVisible } = useWorkspaceIsolationControls();

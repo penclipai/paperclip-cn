@@ -22,7 +22,7 @@ if (fixture) {
     );
   fs.mkdirSync(path.join(fixtureDir, "codex-home"));
 }
-const server = base.webServer as Exclude<typeof base.webServer, unknown[]>;
+const server = base.webServer as Exclude<typeof base.webServer, unknown[] | undefined>;
 export default defineConfig({
   ...base,
   testMatch: "composer-stop.spec.ts",

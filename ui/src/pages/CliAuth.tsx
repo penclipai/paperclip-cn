@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { accessApi } from "../api/access";
 import { ApiError } from "../api/client";
 import { authApi } from "../api/auth";
+import { useQueryView } from "../components/QueryView";
 import { queryKeys } from "../lib/queryKeys";
 
 function cliAuthRetryDelay(error: unknown): number {
@@ -38,7 +39,6 @@ export function CliAuthPage() {
   const sessionQuery = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
-    retry: false,
   });
   const challengeQueryKey = useMemo(() => ["cli-auth-challenge", challengeId, token] as const, [challengeId, token]);
   const retryWindowEndsAt = useMemo(() => Date.now() + 10 * 60_000, [challengeId, token]);
@@ -55,6 +55,7 @@ export function CliAuthPage() {
     },
     retryDelay: (_failureCount, error) => cliAuthRetryDelay(error),
   });
+  const challengeView = useQueryView(challengeQuery);
 
   const approveMutation = useMutation({
     mutationFn: () => accessApi.approveCliAuthChallenge(challengeId, token),
@@ -82,7 +83,7 @@ export function CliAuthPage() {
     </div>;
   }
 
-  if (challengeQuery.error) {
+  if (challengeView.kind === "error" || (challengeQuery.error && isCliAuthRateLimit(challengeQuery.error))) {
     return (
       <div className="mx-auto max-w-xl py-10">
         <Card className="block p-6">

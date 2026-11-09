@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams, useSearchParams } from "@/lib/router";
 import { accessApi } from "../api/access";
 import { authApi } from "../api/auth";
+import { useQueryView } from "../components/QueryView";
 import { queryKeys } from "../lib/queryKeys";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,14 +25,13 @@ export function BoardClaimPage() {
   const sessionQuery = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
-    retry: false,
   });
   const statusQuery = useQuery({
     queryKey: ["board-claim", token, code],
     queryFn: () => accessApi.getBoardClaimStatus(token, code),
     enabled: token.length > 0 && code.length > 0,
-    retry: false,
   });
+  const statusView = useQueryView(statusQuery);
 
   const claimMutation = useMutation({
     mutationFn: () => accessApi.claimBoard(token, code),
@@ -52,7 +52,7 @@ export function BoardClaimPage() {
     return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{translateInstant("boardClaim.loading")}</div>;
   }
 
-  if (statusQuery.error) {
+  if (statusView.kind === "error") {
     return (
       <div className="mx-auto max-w-xl py-10">
         <Card className="block p-6">

@@ -1,0 +1,7 @@
+{
+  "accessInvites.manageForbidden": {
+    "en": "You do not have permission to manage organization invites.",
+    "zh-CN": "你没有管理组织邀请的权限。",
+    "reviewedEnglishHash": "e61b97198c4be1b28dcc832ac03befec980272d03682a01f8a4774988f3ff5bc"
+  }
+}

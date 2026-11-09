@@ -28,6 +28,8 @@ const { windowsOwnershipQueryFixture } = vi.hoisted(() => ({
   windowsOwnershipQueryFixture: {
     enabled: false,
     port: 45_432,
+    state: "LISTENING",
+    timedOut: true,
     calls: [] as Array<{ command: string; timeout?: number }>,
   },
 }));
@@ -62,7 +64,7 @@ vi.mock("node:child_process", async (importOriginal) => {
       && (command === "netstat" || command === "powershell.exe")
     ) {
       windowsOwnershipQueryFixture.calls.push({ command, timeout });
-      if (timeout !== undefined) {
+      if (windowsOwnershipQueryFixture.timedOut && timeout !== undefined) {
         const error = Object.assign(new Error("external ownership query timed out"), {
           code: "ETIMEDOUT",
           killed: true,
@@ -70,7 +72,7 @@ vi.mock("node:child_process", async (importOriginal) => {
         if (callback) queueMicrotask(() => callback(error, "", ""));
       } else if (command === "netstat") {
         const port = windowsOwnershipQueryFixture.port;
-        if (callback) queueMicrotask(() => callback(null, `  TCP    127.0.0.1:${port}     0.0.0.0:0     LISTENING     4242\r\n`, ""));
+        if (callback) queueMicrotask(() => callback(null, `  TCP    127.0.0.1:${port}     0.0.0.0:0     ${windowsOwnershipQueryFixture.state}     4242\r\n`, ""));
       } else if (callback) {
         queueMicrotask(() => callback(null, "31337\r\n", ""));
       }
@@ -129,6 +131,8 @@ async function canRunWorkspaceShell() {
 describe("local service supervision", () => {
   afterEach(async () => {
     windowsOwnershipQueryFixture.enabled = false;
+    windowsOwnershipQueryFixture.state = "LISTENING";
+    windowsOwnershipQueryFixture.timedOut = true;
     windowsOwnershipQueryFixture.calls = [];
     lsofFailureFixture.enabled = false;
     lsofFailureFixture.code = 1;
@@ -191,6 +195,20 @@ describe("local service supervision", () => {
         { command: "netstat", timeout: 2_000 },
         { command: "powershell.exe", timeout: 2_000 },
       ]);
+    } finally {
+      Object.defineProperty(process, "platform", { value: originalPlatform });
+    }
+  });
+
+  it("recognizes a localized Windows TCP listener state", async () => {
+    const originalPlatform = process.platform;
+    Object.defineProperty(process, "platform", { value: "win32" });
+    windowsOwnershipQueryFixture.enabled = true;
+    windowsOwnershipQueryFixture.state = "正在侦听";
+    windowsOwnershipQueryFixture.timedOut = false;
+
+    try {
+      await expect(readLocalServicePortOwner(windowsOwnershipQueryFixture.port)).resolves.toBe(4242);
     } finally {
       Object.defineProperty(process, "platform", { value: originalPlatform });
     }
@@ -290,6 +308,7 @@ describe("local service supervision", () => {
           worktreePath: null,
           warnings: [],
           created: false,
+          branchCreatedByRuntime: false,
         },
         config: {
           workspaceRuntime: {
@@ -379,7 +398,14 @@ describe("local service supervision", () => {
       } else {
         await terminateLocalService(target);
       }
-      expect(await readLocalServicePortOwner(port)).toBe(process.pid);
+      await expect(new Promise<void>((resolve, reject) => {
+        const probe = net.createConnection({ host: "127.0.0.1", port });
+        probe.once("connect", () => {
+          probe.destroy();
+          resolve();
+        });
+        probe.once("error", reject);
+      })).resolves.toBeUndefined();
     } finally {
       if (process.platform === "win32") {
         try {

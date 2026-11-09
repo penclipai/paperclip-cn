@@ -28,7 +28,7 @@ import {
 import type { WorkspaceDiffResponse } from "../contracts.js";
 
 type WorkspaceDiffData = WorkspaceDiffResponse;
-type WorkspacePatchDiffOptions = PatchDiffProps<undefined, undefined>["options"];
+type WorkspacePatchDiffOptions = PatchDiffProps<undefined>["options"];
 type DiffViewMode = "working-tree" | "head";
 
 type LucideIconProps = { size?: number };
@@ -252,13 +252,12 @@ function WorkspacePatchDiff({
   options: WorkspacePatchDiffOptions;
 }) {
   const fileDiff = useMemo(() => getSingularPatch(patch), [patch]);
-  const { ref } = useFileDiffInstance({
+  const { ref } = useFileDiffInstance<undefined>({
     fileDiff,
     options,
     // This tab only shows a diff; it does not open an edit session.
     edit: false,
     editorOptions: undefined,
-    editStateKey: undefined,
     metrics: undefined,
     lineAnnotations: undefined,
     selectedLines: undefined,

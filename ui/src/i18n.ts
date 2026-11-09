@@ -1,7 +1,8 @@
-import i18n from "i18next";
+import i18n, { type TOptions } from "i18next";
 import Backend from "i18next-http-backend";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
+import { useTranslation as useReactI18nextTranslation } from "react-i18next";
 import {
   DEFAULT_UI_LOCALE,
   normalizeUiLocale,
@@ -9,6 +10,7 @@ import {
   SUPPORTED_UI_LOCALES,
 } from "@penclipai/shared";
 import { convertDetectedUiLocale } from "./lib/locale-detection";
+import { i18nextResources } from "./i18n/locales";
 
 export const LOCALE_STORAGE_KEY = "paperclip.locale";
 
@@ -56,6 +58,16 @@ if (!i18n.isInitialized) {
     });
 }
 
+// Upstream owns a small set of startup-copy resources under `src/i18n/`.
+// Keep them in their own namespace so they augment, rather than reinitialize
+// or replace, the CN fork's server-loaded `common` catalog.
+for (const [locale, resources] of Object.entries(i18nextResources)) {
+  const translation = resources?.translation;
+  if (translation && typeof translation === "object") {
+    i18n.addResourceBundle(locale, "translation", translation, true, true);
+  }
+}
+
 applyDocumentLanguage(i18n.resolvedLanguage ?? i18n.language);
 i18n.on("languageChanged", applyDocumentLanguage);
 
@@ -69,5 +81,13 @@ export function translateInstant(
 ): string {
   return i18n.t(key, options);
 }
+
+/** Compatibility surface for upstream imports from `@/i18n`. */
+export function t(key: string, options: TOptions = {}): string {
+  return i18n.t(key, { ns: "translation", keySeparator: ".", ...options });
+}
+
+export const useTranslation = useReactI18nextTranslation;
+export { i18n };
 
 export default i18n;

@@ -425,7 +425,7 @@ describe("codex execute", () => {
     process.env.PATH = `${binDir}${path.delimiter}${process.env.PATH ?? ""}`;
     await seedSharedCodexAuth(root);
 
-    let loggedCommand: string | null = null;
+    const loggedCommand: { value: string | null } = { value: null };
     let loggedEnv: Record<string, string> = {};
     try {
       const result = await execute({
@@ -456,7 +456,7 @@ describe("codex execute", () => {
         authToken: "run-jwt-token",
         onLog: async () => {},
         onMeta: async (meta) => {
-          loggedCommand = meta.command;
+          loggedCommand.value = meta.command;
           loggedEnv = meta.env ?? {};
         },
       });
@@ -464,7 +464,7 @@ describe("codex execute", () => {
       expect(result.exitCode).toBe(0);
       expect(result.errorMessage).toBeNull();
       const resolvedCommandPath = process.platform === "win32" ? `${commandPath}.cmd` : commandPath;
-      expect(loggedCommand?.toLowerCase()).toBe(resolvedCommandPath.toLowerCase());
+      expect(loggedCommand.value?.toLowerCase()).toBe(resolvedCommandPath.toLowerCase());
       expect(loggedEnv.HOME).toBe(root);
       expect(loggedEnv.PAPERCLIP_RESOLVED_COMMAND?.toLowerCase()).toBe(resolvedCommandPath.toLowerCase());
     } finally {
@@ -1361,7 +1361,7 @@ process.exit(1);
 
     const policy = conversationMode
       ? buildPaperclipTaskMarkdown({
-          issue: { id: "issue-1", title: "Chat", workMode: "planning", conversationAgentId: "agent-1" },
+          issue: { id: "issue-1", identifier: null, title: "Chat", workMode: "planning", conversationAgentId: "agent-1" },
           interaction: { kind: "request_confirmation", status: "rejected" },
           planReview: { status: "rejected", reason: "Revise the final note." },
           includeDescription: false,
@@ -1459,7 +1459,7 @@ process.exit(1);
       expect(invocationPrompt).toContain(policy);
       if (resumedSession) expect(capture.prompt).not.toContain("Full description that must not replay");
       else expect(capture.prompt).toContain("Full description that must not replay");
-      expect(promptMetrics.taskContextChars).toBe(resumedSession ? policy.length : `Full description that must not replay\n${policy}`.length);
+      expect(promptMetrics.taskContextChars).toBe(resumedSession ? policy!.length : `Full description that must not replay\n${policy}`.length);
       if (conversationMode) {
         expect(invocationPrompt).toContain(AGENT_CHAT_DIRECTIVE);
         expect(invocationPrompt).toContain("baseRevisionId set to that latestRevisionId");

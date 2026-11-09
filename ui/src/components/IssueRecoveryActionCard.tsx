@@ -1,5 +1,11 @@
+import { useMutation } from "@tanstack/react-query";
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { issuesApi } from "../api/issues";
+import { describeError } from "../api/errors";
+import { Checkbox } from "./ui/checkbox";
+import { NativeSelect } from "./ui/select";
+import type { Issue } from "@penclipai/shared";
 import { isNativeWorkspaceExportRepairCause } from "@penclipai/shared";
 import { useWorkspaceIsolationControls } from "@/hooks/useWorkspaceIsolationControls";
 import { requiresExecutionReconciliation } from "@penclipai/shared";
@@ -421,7 +427,6 @@ function BranchFacet({
   branch: string | null;
   sha: string | null;
 }) {
-  useTranslation();
   const shortSha = formatShortSha(sha);
   return (
     <div className="min-w-0 rounded-md border border-border/70 bg-background/60 px-2.5 py-2">
@@ -433,7 +438,7 @@ function BranchFacet({
         {branch ? (
           <code className="truncate font-mono text-xs text-foreground/90">{branch}</code>
         ) : (
-          <span className="text-xs italic text-muted-foreground">{translateInstant("issueRecoveryAction.detachedUnknown")}</span>
+          <span className="text-xs italic text-muted-foreground">{translateInstant("issueRecoveryAction.detachedUnknown", { defaultValue: "detached / unknown" })}</span>
         )}
       </div>
       <div className="mt-0.5 pl-5 font-mono text-(length:--text-micro) text-muted-foreground">
@@ -450,7 +455,6 @@ function DivergenceDiagnosis({
   divergence: WorkspaceDivergence;
   dividerClass: string;
 }) {
-  useTranslation();
   const badge = ANCESTRY_BADGE[divergence.ancestryVerdict ?? "unknown"];
   return (
     <div
@@ -462,7 +466,8 @@ function DivergenceDiagnosis({
     >
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-          {translateInstant("issueRecoveryAction.divergenceDiagnosis")}</span>
+          {translateInstant("issueRecoveryAction.divergenceDiagnosis", { defaultValue: "Divergence diagnosis" })}
+        </span>
         <Badge variant="outline"
           data-testid="recovery-ancestry-verdict"
           className={cn(
@@ -475,12 +480,12 @@ function DivergenceDiagnosis({
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
         <BranchFacet
-          label={translateInstant("issueRecoveryAction.expectedRecorded")}
+          label={translateInstant("issueRecoveryAction.expectedRecorded", { defaultValue: "Expected · recorded" })}
           branch={divergence.expectedBranch}
           sha={divergence.expectedHeadSha}
         />
         <BranchFacet
-          label={translateInstant("issueRecoveryAction.breakGlass.live")}
+          label={translateInstant("issueRecoveryAction.breakGlass.live", { defaultValue: "Live · checked out" })}
           branch={divergence.liveBranch}
           sha={divergence.liveHeadSha}
         />
@@ -495,9 +500,11 @@ function DivergenceDiagnosis({
         >
           <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
           <span>
-            {translateInstant("issueRecoveryAction.claimedBy")}{" "}
+            {translateInstant("issueRecoveryAction.claimedBy", { defaultValue: "Worktree claimed by" })}{" "}
             <code className="font-mono text-foreground/90">{contentionLabel(divergence.contention)}</code>{" "}
-            {divergence.contention.hasActiveRun ? "(active run)" : "(claim held)"} {translateInstant("— the lossless repair can&apos;t run while another workspace holds the live branch.")}</span>
+            {divergence.contention.hasActiveRun ? "(active run)" : "(claim held)"} — the lossless repair
+            can&apos;t run while another workspace holds the live branch.
+          </span>
         </p>
       ) : null}
     </div>
@@ -527,7 +534,6 @@ function BreakGlassOverride({
   onConfirm: (reason: string) => void;
   pending: boolean;
 }) {
-  useTranslation();
   const [reason, setReason] = useState("");
   const trimmedReason = reason.trim();
   const canSubmit = trimmedReason.length > 0 && !pending;
@@ -546,7 +552,8 @@ function BreakGlassOverride({
           className="border-red-400/60 text-red-700 hover:bg-red-500/10 dark:border-red-500/40 dark:text-red-300"
         >
           <OctagonAlert className="h-3.5 w-3.5" aria-hidden />
-          {translateInstant("I&apos;ve verified this — reconcile anyway")}</Button>
+          I&apos;ve verified this — reconcile anyway
+        </Button>
       </PopoverTrigger>
       <PopoverContent
         align="start"
@@ -560,43 +567,46 @@ function BreakGlassOverride({
             className="flex items-center gap-1.5 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-red-700 dark:text-red-300"
           >
             <OctagonAlert className="h-3.5 w-3.5" aria-hidden />
-            {translateInstant("issueRecoveryAction.breakGlass.title")}</div>
+            Break-glass reconciliation
+          </div>
           <p className="text-xs leading-5 text-muted-foreground">
-            {translateInstant("This overrides Paperclip&apos;s safety check and points the recorded workspace at the live branch")}{" "}
-            <span className="font-medium text-foreground/80">{translateInstant("issueRecoveryAction.noAncestryProof")}</span>{translateInstant("issueRecoveryAction.confirmDivergence")}</p>
+            This overrides Paperclip&apos;s safety check and points the recorded workspace at the live
+            branch{" "}
+            <span className="font-medium text-foreground/80">{translateInstant("issueRecoveryAction.noAncestryProof", { defaultValue: "without an ancestry proof" })}</span>{translateInstant("issueRecoveryAction.confirmDivergence", { defaultValue: ". Confirm the divergence below and record why before continuing." })}
+          </p>
         </div>
         <dl
           data-testid="recovery-breakglass-restated-divergence"
           className="space-y-1.5 rounded-md border border-red-400/40 bg-red-500/5 px-2.5 py-2 text-(length:--text-micro)"
         >
           <div className="flex items-center justify-between gap-2">
-            <dt className="shrink-0 text-muted-foreground">{translateInstant("issueRecoveryAction.breakGlass.recorded")}</dt>
+            <dt className="shrink-0 text-muted-foreground">{translateInstant("issueRecoveryAction.breakGlass.recorded", { defaultValue: "Recorded · expected" })}</dt>
             <dd className="min-w-0 truncate font-mono text-foreground/90">
               {divergence.expectedBranch ?? "detached"}
               {expectedSha ? ` @ ${expectedSha}` : ""}
             </dd>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <dt className="shrink-0 text-muted-foreground">{translateInstant("issueRecoveryAction.breakGlass.live")}</dt>
+            <dt className="shrink-0 text-muted-foreground">{translateInstant("issueRecoveryAction.breakGlass.live", { defaultValue: "Live · checked out" })}</dt>
             <dd className="min-w-0 truncate font-mono text-foreground/90">
               {divergence.liveBranch ?? "detached"}
               {liveSha ? ` @ ${liveSha}` : ""}
             </dd>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <dt className="shrink-0 text-muted-foreground">{translateInstant("issueRecoveryAction.breakGlass.ancestryVerdict")}</dt>
+            <dt className="shrink-0 text-muted-foreground">{translateInstant("issueRecoveryAction.breakGlass.ancestryVerdict", { defaultValue: "Ancestry verdict" })}</dt>
             <dd className="font-medium">{verdictBadge.label}</dd>
           </div>
         </dl>
         <div className="space-y-1">
           <Label htmlFor="recovery-breakglass-reason" className="text-(length:--text-micro) text-muted-foreground">
-            {translateInstant("issueScheduledRetry.reason")}{" "}<span className="text-red-600 dark:text-red-400">{translateInstant("issueRecoveryAction.breakGlass.reasonRequired")}</span>
+            {translateInstant("issueScheduledRetry.reason", { defaultValue: "Reason" })} <span className="text-red-600 dark:text-red-400">{translateInstant("issueRecoveryAction.breakGlass.reasonRequired", { defaultValue: "(required — recorded in the audit log)" })}</span>
           </Label>
           <Textarea
             id="recovery-breakglass-reason"
             value={reason}
             onChange={(event) => setReason(event.target.value)}
-            placeholder={translateInstant("issueRecoveryAction.breakGlass.reasonPlaceholder")}
+            placeholder="e.g. Verified the live branch carries only the intended follow-up commits; safe to adopt."
             className="min-h-20 text-xs"
             data-testid="recovery-breakglass-reason"
             aria-required="true"
@@ -642,7 +652,6 @@ function RepairWorkspace({
   disabled: boolean;
   disabledReason: string | null;
 }) {
-  useTranslation();
   const dirtyCount = divergence.dirtyFileCount;
   const dirtyLabel =
     dirtyCount === null
@@ -662,7 +671,8 @@ function RepairWorkspace({
       ) : (
         <Wrench className="h-3.5 w-3.5" aria-hidden />
       )}
-      {translateInstant("Repair workspace — quarantine changes &amp; restore branch")}</Button>
+      Repair workspace — quarantine changes &amp; restore branch
+    </Button>
   );
   if (disabled) {
     // Contended: the server refuses the repair, so render a plainly disabled control with the reason
@@ -693,29 +703,31 @@ function RepairWorkspace({
             className="flex items-center gap-1.5 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-sky-700 dark:text-sky-300"
           >
             <Wrench className="h-3.5 w-3.5" aria-hidden />
-            {translateInstant("issueRecoveryAction.repair.title")}</div>
+            {translateInstant("issueRecoveryAction.repair.title", { defaultValue: "Repair workspace" })}
+          </div>
           <p className="text-xs leading-5 text-muted-foreground">
-            {translateInstant("issueRecoveryAction.repair.description")}</p>
+            {translateInstant("issueRecoveryAction.repair.description", { defaultValue: "This is lossless — no reason required. Your uncommitted changes are committed onto a fresh rescue branch, then the recorded branch is restored so the task can resume. The live branch is left exactly as it is." })}
+          </p>
         </div>
         <dl
           data-testid="recovery-repair-restated"
           className="space-y-1.5 rounded-md border border-sky-400/30 bg-sky-500/5 px-2.5 py-2 text-(length:--text-micro)"
         >
           <div className="flex items-center justify-between gap-2">
-            <dt className="shrink-0 text-muted-foreground">{translateInstant("issueRecoveryAction.repair.dirtyChanges")}</dt>
+            <dt className="shrink-0 text-muted-foreground">{translateInstant("issueRecoveryAction.repair.dirtyChanges", { defaultValue: "Dirty changes" })}</dt>
             <dd data-testid="recovery-repair-dirty-count" className="font-medium text-foreground/90">
               {dirtyLabel}
             </dd>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <dt className="shrink-0 text-muted-foreground">{translateInstant("issueRecoveryAction.repair.liveBranch")}</dt>
+            <dt className="shrink-0 text-muted-foreground">{translateInstant("issueRecoveryAction.repair.liveBranch", { defaultValue: "Live branch" })}</dt>
             <dd className="min-w-0 truncate font-mono text-foreground/90">
               {divergence.liveBranch ?? "detached"}
-              <span className="ml-1 font-sans text-muted-foreground">{translateInstant("issueRecoveryAction.repair.leftUntouched")}</span>
+              <span className="ml-1 font-sans text-muted-foreground">{translateInstant("issueRecoveryAction.repair.leftUntouched", { defaultValue: "(left untouched)" })}</span>
             </dd>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <dt className="shrink-0 text-muted-foreground">{translateInstant("issueRecoveryAction.repair.rescueBranch")}</dt>
+            <dt className="shrink-0 text-muted-foreground">{translateInstant("issueRecoveryAction.repair.rescueBranch", { defaultValue: "Rescue branch" })}</dt>
             <dd
               data-testid="recovery-repair-rescue-branch"
               className="min-w-0 truncate font-mono text-foreground/90"
@@ -725,7 +737,7 @@ function RepairWorkspace({
             </dd>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <dt className="shrink-0 text-muted-foreground">{translateInstant("issueRecoveryAction.repair.restoreTo")}</dt>
+            <dt className="shrink-0 text-muted-foreground">{translateInstant("issueRecoveryAction.repair.restoreTo", { defaultValue: "Restore to" })}</dt>
             <dd className="min-w-0 truncate font-mono text-foreground/90">
               {divergence.expectedBranch ?? "recorded branch"}
             </dd>
@@ -854,13 +866,12 @@ function RunChip({
   agentId: string | null | undefined;
   status?: string | null;
 }) {
-  useTranslation();
   if (!runId) return <MissingValue />;
   const short = shortenRunId(runId);
   const inner = (
     <>
       <code className="rounded bg-background/80 px-1.5 py-0.5 font-mono text-(length:--text-micro) text-foreground/80">
-        {translateInstant("run")}{" "}{short}
+        run {short}
       </code>
       {status ? (
         <span className="font-sans text-(length:--text-micro) text-muted-foreground">{status}</span>
@@ -995,7 +1006,6 @@ export function IssueRecoveryActionCard({
   variant = "full",
   className,
 }: IssueRecoveryActionCardProps) {
-  useTranslation();
   const { visible: workspaceIsolationControlsVisible } = useWorkspaceIsolationControls();
   const liveness = useMemo(() => ({ scheduledRetry }), [scheduledRetry]);
   const cardState: RecoveryCardCardState = forcedState ?? deriveRecoveryCardState(action, liveness);
@@ -1163,7 +1173,7 @@ export function IssueRecoveryActionCard({
       <dl className={cn("border-t bg-background/40 dark:bg-background/20", tone.divider)}>
         {lineage ? (
           <>
-            <MetadataRow label={translateInstant("issueRecoveryAction.metadata.taskOwner")}>
+            <MetadataRow label={translateInstant("issueRecoveryAction.metadata.taskOwner", { defaultValue: "Task owner" })}>
               <span
                 className="inline-flex flex-wrap items-center gap-1.5"
                 data-testid="recovery-source-owner"
@@ -1173,39 +1183,39 @@ export function IssueRecoveryActionCard({
                   agentMap={agentMap}
                   fallback="unassigned"
                 />
-                <span className="text-muted-foreground">{translateInstant("issueRecoveryAction.owner.keepsTask")}</span>
+                <span className="text-muted-foreground">{translateInstant("issueRecoveryAction.owner.keepsTask", { defaultValue: "keeps this task" })}</span>
               </span>
             </MetadataRow>
-            <MetadataRow label={translateInstant("issueRecoveryAction.metadata.recoveryOwner")}>
+            <MetadataRow label={translateInstant("issueRecoveryAction.metadata.recoveryOwner", { defaultValue: "Recovery owner" })}>
               <span
                 className="inline-flex flex-wrap items-center gap-1.5"
                 data-testid="recovery-recovery-owner"
               >
                 {lineage.lane === "native_run" && (action.ownerType !== "board" || Boolean(lineage.liveRunId)) ? (
                   <>
-                    <span className="font-medium">{translateInstant("Paperclip")}</span>
-                    <span className="text-muted-foreground">{translateInstant("recovers the existing run")}</span>
+                    <span className="font-medium">{translateInstant("Paperclip", { defaultValue: "Paperclip" })}</span>
+                    <span className="text-muted-foreground">{translateInstant("recovers the existing run", { defaultValue: "recovers the existing run" })}</span>
                   </>
                 ) : recoveryOwnerIsSourceOwner ? (
-                  <span className="font-medium">{translateInstant("issueRecoveryAction.owner.originalRetrying")}</span>
+                  <span className="font-medium">{translateInstant("issueRecoveryAction.owner.originalRetrying", { defaultValue: "Original owner — retrying itself" })}</span>
                 ) : action.ownerType === "agent" && action.ownerAgentId ? (
                   <>
                     <AgentLink agentId={action.ownerAgentId} agentMap={agentMap} />
-                    <span className="text-muted-foreground">{translateInstant("issueRecoveryAction.owner.repairsNextStep")}</span>
+                    <span className="text-muted-foreground">{translateInstant("issueRecoveryAction.owner.repairsNextStep", { defaultValue: "repairs the next step only" })}</span>
                   </>
                 ) : action.ownerType === "board" ? (
                   <>
-                    <span className="font-medium">{translateInstant("issueRecoveryAction.owner.board")}</span>
-                    <span className="text-muted-foreground">{translateInstant("issueRecoveryAction.owner.decidesNextStep")}</span>
+                    <span className="font-medium">{translateInstant("issueRecoveryAction.owner.board", { defaultValue: "Board" })}</span>
+                    <span className="text-muted-foreground">{translateInstant("issueRecoveryAction.owner.decidesNextStep", { defaultValue: "decides the next step only" })}</span>
                   </>
                 ) : action.ownerType === "user" && action.ownerUserId ? (
-                  <span className="font-medium">{translateInstant("companySettings.sshUserFallback")}{" "}{action.ownerUserId.slice(0, 6)}</span>
+                  <span className="font-medium">{translateInstant("companySettings.sshUserFallback", { defaultValue: "user" })} {action.ownerUserId.slice(0, 6)}</span>
                 ) : (
-                  <span className="text-muted-foreground">{translateInstant("issueRecoveryAction.unassigned")}</span>
+                  <span className="text-muted-foreground">{translateInstant("issueRecoveryAction.unassigned", { defaultValue: "unassigned — pick one to wake them" })}</span>
                 )}
               </span>
             </MetadataRow>
-            <MetadataRow label={translateInstant("issueRecoveryAction.metadata.retryProgress")}>
+            <MetadataRow label={translateInstant("issueRecoveryAction.metadata.retryProgress", { defaultValue: "Retry progress" })}>
               <span
                 className="inline-flex flex-wrap items-center gap-x-2 gap-y-1"
                 data-testid="recovery-retry-progress"
@@ -1221,7 +1231,8 @@ export function IssueRecoveryActionCard({
                     title={formatTimeAbsolute(lineage.nextRetryAt) ?? undefined}
                     data-testid="recovery-next-retry"
                   >
-                    {translateInstant("issueRecoveryAction.retry.running")}</span>
+                    {translateInstant("issueRecoveryAction.retry.running", { defaultValue: "Attempt running now" })}
+                  </span>
                 ) : lineage.retryExpired ? (
                   // The due time is stated plainly as missed. Rendering it as "Next try 5m
                   // ago" is what made an abandoned lane read as healthy recovery.
@@ -1243,53 +1254,55 @@ export function IssueRecoveryActionCard({
                   </span>
                 ) : lineage.exhausted ? (
                   <span className={RETRY_PILL_CLASS} data-testid="recovery-next-retry">
-                    {translateInstant("issueRecoveryAction.retry.exhausted")}</span>
+                    {translateInstant("issueRecoveryAction.retry.exhausted", { defaultValue: "Automatic retries used up" })}
+                  </span>
                 ) : null}
               </span>
             </MetadataRow>
             {lineage.lane !== "source_owner" && lineage.sourceMaxAttempts !== null ? (
-              <MetadataRow label={translateInstant("issueRecoveryAction.metadata.ownerRetries")}>
+              <MetadataRow label={translateInstant("issueRecoveryAction.metadata.ownerRetries", { defaultValue: "Owner retries" })}>
                 <span data-testid="recovery-source-attempts">
-                  {translateInstant("The original owner used")}{" "}{lineage.sourceAttempt ?? lineage.sourceMaxAttempts} {translateInstant("issueCommon.of")}{" "}
-                  {lineage.sourceMaxAttempts} {translateInstant("automatic attempts.")}</span>
+                  {translateInstant("The original owner used", { defaultValue: "The original owner used" })} {lineage.sourceAttempt ?? lineage.sourceMaxAttempts} {translateInstant("issueCommon.of", { defaultValue: "of" })}{" "}
+                  {lineage.sourceMaxAttempts} {translateInstant("automatic attempts.", { defaultValue: "automatic attempts." })}
+                </span>
               </MetadataRow>
             ) : null}
           </>
         ) : (
-        <MetadataRow label={translateInstant("issueRecoveryAction.metadata.owner")}>
+        <MetadataRow label={translateInstant("issueRecoveryAction.metadata.owner", { defaultValue: "Owner" })}>
           <span className="inline-flex flex-wrap items-center gap-1.5">
             {action.ownerType === "agent" && action.ownerAgentId ? (
               <>
-                <span className="text-muted-foreground">{translateInstant("issueRecoveryAction.owner.recovery")}</span>
+                <span className="text-muted-foreground">{translateInstant("issueRecoveryAction.owner.recovery", { defaultValue: "Recovery:" })}</span>
                 <AgentLink agentId={action.ownerAgentId} agentMap={agentMap} />
               </>
             ) : action.ownerType === "board" ? (
-              <span className="font-medium">{translateInstant("issueRecoveryAction.owner.board")}</span>
+              <span className="font-medium">{translateInstant("issueRecoveryAction.owner.board", { defaultValue: "Board" })}</span>
             ) : action.ownerType === "user" && action.ownerUserId ? (
-              <span className="font-medium">{translateInstant("companySettings.sshUserFallback")}{" "}{action.ownerUserId.slice(0, 6)}</span>
+              <span className="font-medium">{translateInstant("companySettings.sshUserFallback", { defaultValue: "user" })} {action.ownerUserId.slice(0, 6)}</span>
             ) : action.ownerType === "system" ? (
-              <span className="font-medium">{translateInstant("issueRecoveryAction.owner.system")}</span>
+              <span className="font-medium">{translateInstant("issueRecoveryAction.owner.system", { defaultValue: "System" })}</span>
             ) : (
-              <span className="text-muted-foreground">{translateInstant("issueRecoveryAction.unassigned")}</span>
+              <span className="text-muted-foreground">{translateInstant("issueRecoveryAction.unassigned", { defaultValue: "unassigned — pick one to wake them" })}</span>
             )}
             {action.returnOwnerAgentId ? (
               <>
-                <span className="text-muted-foreground">{translateInstant("issueRecoveryAction.current.owner.returnsTo")}</span>
+                <span className="text-muted-foreground">{translateInstant("issueRecoveryAction.current.owner.returnsTo", { defaultValue: "→ Returns to:" })}</span>
                 <AgentLink agentId={action.returnOwnerAgentId} agentMap={agentMap} />
               </>
             ) : null}
           </span>
         </MetadataRow>
         )}
-        <MetadataRow label={translateInstant("issueRecoveryAction.metadata.sourceRun")}>
+        <MetadataRow label={translateInstant("issueRecoveryAction.metadata.sourceRun", { defaultValue: "Source run" })}>
           <RunChip runId={sourceRunId} agentId={action.previousOwnerAgentId} />
         </MetadataRow>
         {correctiveRunId ? (
-          <MetadataRow label={translateInstant("issueRecoveryAction.metadata.correctiveRun")}>
+          <MetadataRow label={translateInstant("issueRecoveryAction.metadata.correctiveRun", { defaultValue: "Corrective run" })}>
             <RunChip runId={correctiveRunId} agentId={action.previousOwnerAgentId} />
           </MetadataRow>
         ) : null}
-        <MetadataRow label={translateInstant("issueRecoveryAction.metadata.evidence")}>
+        <MetadataRow label={translateInstant("issueRecoveryAction.metadata.evidence", { defaultValue: "Evidence" })}>
           {evidenceSummary ? (
             evidenceSummary.isCode ? (
               <span className="break-words font-mono text-(length:--text-micro) text-foreground/80">
@@ -1302,28 +1315,28 @@ export function IssueRecoveryActionCard({
             <MissingValue />
           )}
         </MetadataRow>
-        <MetadataRow label={translateInstant("issueRecoveryAction.metadata.nextAction")}>
+        <MetadataRow label={translateInstant("issueRecoveryAction.metadata.nextAction", { defaultValue: "Next action" })}>
           {action.nextAction ? <span>{action.nextAction}</span> : <MissingValue />}
         </MetadataRow>
-        <MetadataRow label={translateInstant("Follow-up")}>
+        <MetadataRow label="Follow-up">
           <span className="inline-flex flex-wrap items-center gap-1.5">
             {wakeSummary ? <span>{wakeSummary}</span> : <MissingValue />}
             {showAttempt ? (
               <span className="rounded-md border border-border/50 bg-background/60 px-1.5 py-0.5 text-(length:--text-micro) text-muted-foreground">
-                {translateInstant("issueRecoveryAction.attempt")}{" "}{action.attemptCount} {translateInstant("issueCommon.of")}{" "}{action.maxAttempts}
+                {translateInstant("issueRecoveryAction.attempt", { defaultValue: "attempt" })} {action.attemptCount} {translateInstant("issueCommon.of", { defaultValue: "of" })} {action.maxAttempts}
               </span>
             ) : null}
             {showTimeoutInline ? (
               <span className="rounded-md border border-border/50 bg-background/60 px-1.5 py-0.5 text-(length:--text-micro) text-muted-foreground">
-                {translateInstant("Times out")}{" "}{formatTimeShort(action.timeoutAt) ?? "soon"}
+                {translateInstant("Times out", { defaultValue: "Times out" })} {formatTimeShort(action.timeoutAt) ?? "soon"}
               </span>
             ) : null}
           </span>
         </MetadataRow>
         {cardState === "resolved" && action.outcome ? (
-          <MetadataRow label={translateInstant("issueRecoveryAction.metadata.resolution")}>
+          <MetadataRow label={translateInstant("issueRecoveryAction.metadata.resolution", { defaultValue: "Resolution" })}>
             <span className={cn("font-medium", tone.labelClass)}>
-              {translateInstant("Resolved as")}{" "}{OUTCOME_LABEL[action.outcome]}
+              {translateInstant("Resolved as", { defaultValue: "Resolved as" })} {OUTCOME_LABEL[action.outcome]}
               {action.resolvedAt ? ` · ${formatTimeShort(action.resolvedAt) ?? ""}` : ""}
             </span>
           </MetadataRow>
@@ -1341,9 +1354,10 @@ export function IssueRecoveryActionCard({
                   size="sm"
                   variant="default"
                   data-testid="recovery-action-resolve-trigger"
-                  aria-label={translateInstant("issueRecoveryAction.resolve.ariaLabel")}
+                  aria-label={translateInstant("issueRecoveryAction.resolve.ariaLabel", { defaultValue: "Resolve recovery" })}
                 >
-                  {translateInstant("issueRecoveryAction.resolve.trigger")}</Button>
+                  {translateInstant("issueRecoveryAction.resolve.trigger", { defaultValue: "Resolve…" })}
+                </Button>
               </PopoverTrigger>
               <PopoverContent
                 align="start"
@@ -1351,7 +1365,8 @@ export function IssueRecoveryActionCard({
                 className="w-72 p-1.5"
               >
                 <div className="px-2 py-1 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                  {translateInstant("issueRecoveryAction.resolve.ariaLabel")}</div>
+                  {translateInstant("issueRecoveryAction.resolve.ariaLabel", { defaultValue: "Resolve recovery" })}
+                </div>
                 <div className="flex flex-col">
                   {visibleResolveOptions.map((option) => (
                     <button
@@ -1386,7 +1401,8 @@ export function IssueRecoveryActionCard({
               ) : (
                 <RefreshCw className="h-3.5 w-3.5" aria-hidden />
               )}
-              {translateInstant("Reconcile forward &amp; continue")}</Button>
+              Reconcile forward &amp; continue
+            </Button>
           ) : null}
           {showRepairAction && divergence ? (
             <RepairWorkspace
@@ -1413,36 +1429,41 @@ export function IssueRecoveryActionCard({
                   ) : (
                     <GitBranchPlus className="h-3.5 w-3.5" aria-hidden />
                   )}
-                  {translateInstant("issueRecoveryAction.reissue.title")}{reissueRecommended ? (
+                  Re-issue on isolated workspace
+                  {reissueRecommended ? (
                     <span
                       data-testid="recovery-reissue-recommended"
                       className="ml-1 rounded-sm bg-background/25 px-1.5 py-0.5 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-label)"
                     >
-                      {translateInstant("issueRecoveryAction.reissue.recommended")}</span>
+                      {translateInstant("issueRecoveryAction.reissue.recommended", { defaultValue: "Recommended" })}
+                    </span>
                   ) : null}
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="start" sideOffset={6} className="w-80 space-y-3 p-3">
                 <div className="space-y-1">
                   <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                    {translateInstant("issueRecoveryAction.reissue.title")}</div>
+                    Re-issue on isolated workspace
+                  </div>
                   <p className="text-xs leading-5 text-muted-foreground">
-                    {translateInstant("issueRecoveryAction.reissue.description")}</p>
+                    Creates a fresh copy of this task on an isolated git worktree based on the live
+                    branch. Your current workspace and its commits are left untouched.
+                  </p>
                 </div>
                 <dl className="space-y-1 rounded-md border border-border/70 bg-muted/30 px-2.5 py-2 text-(length:--text-micro)">
                   <div className="flex items-center justify-between gap-2">
-                    <dt className="text-muted-foreground">{translateInstant("issueRecoveryAction.reissue.baseRef")}</dt>
+                    <dt className="text-muted-foreground">{translateInstant("issueRecoveryAction.reissue.baseRef", { defaultValue: "Base ref" })}</dt>
                     <dd className="min-w-0 truncate font-mono text-foreground/90">{reissueBaseRef}</dd>
                   </div>
                   <div className="flex items-center justify-between gap-2">
-                    <dt className="text-muted-foreground">{translateInstant("issueRecoveryAction.reissue.recorded")}</dt>
+                    <dt className="text-muted-foreground">{translateInstant("issueRecoveryAction.reissue.recorded", { defaultValue: "Recorded" })}</dt>
                     <dd className="min-w-0 truncate font-mono text-foreground/80">
                       {divergence.expectedBranch ?? "—"}
                     </dd>
                   </div>
                   {reissueVerdictBadge ? (
                     <div className="flex items-center justify-between gap-2">
-                      <dt className="text-muted-foreground">{translateInstant("issueRecoveryAction.reissue.ancestry")}</dt>
+                      <dt className="text-muted-foreground">{translateInstant("issueRecoveryAction.reissue.ancestry", { defaultValue: "Ancestry" })}</dt>
                       <dd className="font-medium">{reissueVerdictBadge.label}</dd>
                     </div>
                   ) : null}
@@ -1477,10 +1498,12 @@ export function IssueRecoveryActionCard({
           {showResolveActions ? (
             cardState === "observe_only" ? (
               <span className="text-(length:--text-micro) text-muted-foreground">
-                {translateInstant("issueRecoveryAction.footer.observeOnly")}</span>
+                {translateInstant("issueRecoveryAction.footer.observeOnly", { defaultValue: "Recovery is observing without interrupting the live run." })}
+              </span>
             ) : (
               <span className="text-(length:--text-micro) text-muted-foreground">
-                {translateInstant("issueRecoveryAction.footer.decisionRequired")}</span>
+                {translateInstant("issueRecoveryAction.footer.decisionRequired", { defaultValue: "The card stays open until an explicit decision is recorded." })}
+              </span>
             )
           ) : null}
         </div>
@@ -1492,3 +1515,55 @@ export function IssueRecoveryActionCard({
 export type { IssueRecoveryActionStatus };
 
 export default IssueRecoveryActionCard;
+
+/** Separate original-host confirmations: the opaque authority is supplied by
+ * the server snapshot, never entered or edited by the operator. */
+export function NativeControllerContainmentRecovery({ issue, canManage, onRecorded }: {
+  issue: Pick<Issue, "id" | "status" | "activeRecoveryAction">; canManage: boolean; onRecorded: () => void;
+}) {
+  const action = issue.activeRecoveryAction;
+  const [controllerStopped, setControllerStopped] = useState(false);
+  const [providerStopped, setProviderStopped] = useState(false);
+  const [outcome, setOutcome] = useState<"" | "completed" | "not_performed" | "mixed">("");
+  const [evidence, setEvidence] = useState("");
+  const authority = action?.evidence?.controllerAuthority;
+  const digest = authority && typeof authority === "object" && !Array.isArray(authority)
+    ? (authority as Record<string, unknown>).digest : undefined;
+  const runId = action?.evidence?.runId;
+  const submit = useMutation({ mutationFn: async () => {
+    if (!action || typeof runId !== "string" || typeof digest !== "string" || !outcome
+      || !controllerStopped || !providerStopped) throw new Error("Confirm both original-host stops and review the action outcomes.");
+    return issuesApi.resolveRecoveryAction(issue.id, { actionId: action.id, outcome: "restored", sourceIssueStatus: issue.status,
+      executionReconciliation: { runId, controllerStopped: true, providerStopped: true,
+        controllerAuthorityDigest: digest, actionOutcome: outcome, outcomeEvidence: evidence.trim() } });
+  }, onSuccess: onRecorded });
+  if (!action || action.kind !== "active_run_watchdog" || action.ownerType !== "board"
+    || action.cause !== "native_restart_recovery_blocked" || action.evidence?.reason !== "controller_process_space_unverified"
+    || !["active", "escalated"].includes(action.status) || typeof digest !== "string") return null;
+  return <section aria-label="Original controller recovery">
+    <h3>Verify the original execution stopped</h3>
+    <p>Paperclip cannot compare process IDs across hosts or kernel sessions. Stop both the controller and provider on the original host before recording evidence. The saved lease must also expire and environment/workspace cleanup must finish. Recording containment does not retry the task.</p>
+    {canManage ? <>
+      <Label><Checkbox checked={controllerStopped} onCheckedChange={value => setControllerStopped(value === true)} /> I verified the original controller stopped on its original host.</Label>
+      <Label><Checkbox checked={providerStopped} onCheckedChange={value => setProviderStopped(value === true)} /> I verified the original provider and its tools stopped on their original host.</Label>
+      <Label>Reviewed external action outcomes
+        <NativeSelect value={outcome} onChange={event => {
+          const value = event.target.value;
+          if (value === "completed" || value === "not_performed" || value === "mixed" || value === "") setOutcome(value);
+        }}>
+          <option value="">Select only after reviewing the effects</option>
+          <option value="completed">All completed</option>
+          <option value="not_performed">None performed</option>
+          <option value="mixed">Some completed and some not performed</option>
+        </NativeSelect>
+      </Label>
+      <Label>Original-host containment evidence and actions that must not be repeated
+        <Textarea maxLength={12000} value={evidence} onChange={event => setEvidence(event.target.value)} />
+      </Label>
+      <p>If any action outcome is still unknown, keep this hold. After evidence and cleanup settle, use the task’s ordinary Retry action separately.</p>
+      <Button disabled={submit.isPending || !controllerStopped || !providerStopped || !outcome || evidence.trim().length < 20}
+        onClick={() => submit.mutate()}>{submit.isPending ? "Recording…" : "Record containment"}</Button>
+      {submit.error && <p role="alert">{describeError(submit.error).body}</p>}
+    </> : <p>A company owner, company administrator, or instance administrator must review this original-host execution.</p>}
+  </section>;
+}

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Project, ProjectRepository } from "@penclipai/shared";
 import { projectsApi } from "@/api/projects";
+import { describeError } from "@/api/errors";
 import { queryKeys } from "@/lib/queryKeys";
 import { ConnectionSetupFlow } from "@/features/connections/ConnectionSetupFlow";
 import { ProjectRepositoryInput, repositoryOptionsKey } from "./ProjectRepositoryInput";

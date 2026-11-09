@@ -1,7 +1,12 @@
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
-import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import {
   ExternalLink,
   GitPullRequest,
@@ -17,10 +22,7 @@ import {
   githubChatApi,
   type GitHubConfigurationRecord,
 } from "@/api/githubChat";
-import {
-  chatEndpointsApi,
-  type ChatEndpoint,
-} from "@/api/chatEndpoints";
+import { chatEndpointsApi, type ChatEndpoint } from "@/api/chatEndpoints";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/EmptyState";
@@ -39,6 +41,7 @@ import {
   GitHubToggle,
 } from "./GitHubBotConfiguration";
 import { ChatExecutionDefaults } from "./ChatExecutionDefaults";
+import { describeError } from "@/api/errors";
 
 export function GitHubRepositoryAccess({
   endpointId,
@@ -64,10 +67,16 @@ export function GitHubRepositoryAccess({
   const more = useRef<HTMLDivElement>(null);
   const list = useInfiniteQuery({
     queryKey: ["github-bot-repository-pages", endpointId, search],
-    queryFn: ({ pageParam }) => githubChatApi.repositories(endpointId, { limit: 20, offset: pageParam, search }),
+    queryFn: ({ pageParam }) =>
+      githubChatApi.repositories(endpointId, {
+        limit: 20,
+        offset: pageParam,
+        search,
+      }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
   });
+  const listView = useQueryView(list);
   const rows = list.data?.pages.flatMap((page) => page.items) ?? [];
   const summary = list.data?.pages[0];
   const disableAll = (summary?.enabledCount ?? 0) > 0;
@@ -75,17 +84,39 @@ export function GitHubRepositoryAccess({
     if (scroller.current) scroller.current.scrollTop = 0;
   }, [search]);
   useEffect(() => {
-    if (!list.hasNextPage || list.isFetching || list.isError || pending || !more.current || typeof IntersectionObserver === "undefined") return;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry?.isIntersecting) void list.fetchNextPage({ cancelRefetch: false });
-    }, { root: scroller.current });
+    if (
+      !list.hasNextPage ||
+      list.isFetching ||
+      list.isError ||
+      listView.kind === "error" ||
+      pending ||
+      !more.current ||
+      typeof IntersectionObserver === "undefined"
+    )
+      return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting)
+          void list.fetchNextPage({ cancelRefetch: false });
+      },
+      { root: scroller.current },
+    );
     observer.observe(more.current);
     return () => observer.disconnect();
-  }, [list.hasNextPage, list.isFetching, list.isError, list.fetchNextPage, pending]);
+  }, [
+    list.hasNextPage,
+    list.isFetching,
+    list.isError,
+    listView.kind,
+    list.fetchNextPage,
+    pending,
+  ]);
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-base font-semibold">{translateInstant("Repositories")}</h2>
+        <h2 className="text-base font-semibold">
+          {translateInstant("Repositories")}
+        </h2>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -99,82 +130,141 @@ export function GitHubRepositoryAccess({
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
               <a href={managementUrl} target="_blank" rel="noreferrer">
-                {translateInstant("Manage on GitHub")}<ExternalLink className="size-4" />
+                {translateInstant("Manage on GitHub")}
+                <ExternalLink className="size-4" />
               </a>
             </DropdownMenuItem>
             <DropdownMenuItem disabled={pending} onClick={onRefresh}>
               <RefreshCw className="size-4" />
-              {translateInstant("Refresh repositories")}</DropdownMenuItem>
+              {translateInstant("Refresh repositories")}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
       <p className="text-xs text-muted-foreground">
-        {translateInstant("Choose where the bot can receive messages and use tools. Repository changes save immediately.")}</p>
+        {translateInstant(
+          "Choose where the bot can receive messages and use tools. Repository changes save immediately.",
+        )}
+      </p>
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-0 flex-1 basis-48">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input aria-label={translateInstant("Search repositories")} placeholder={translateInstant("Search repositories")} className="pl-9"
-            value={search} maxLength={200} onChange={(event) => setSearch(event.target.value)} />
+          <Input
+            aria-label={translateInstant("Search repositories")}
+            placeholder={translateInstant("Search repositories")}
+            className="pl-9"
+            value={search}
+            maxLength={200}
+            onChange={(event) => setSearch(event.target.value)}
+          />
         </div>
-        <Button variant="outline" size="sm" disabled={pending || list.isFetching || !summary || !summary.totalCount || (!disableAll && !summary.availableCount)}
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={
+            pending ||
+            list.isFetching ||
+            !summary ||
+            !summary.totalCount ||
+            (!disableAll && !summary.availableCount)
+          }
           aria-label={`${disableAll ? "Disable" : "Enable"} all repositories`}
-          onClick={() => onToggleAll(!disableAll)}>
+          onClick={() => onToggleAll(!disableAll)}
+        >
           {disableAll ? "Disable all" : "Enable all"}
         </Button>
       </div>
-      {summary && <p className="text-xs text-muted-foreground">
-        {summary.enabledCount} {translateInstant("issueCommon.of")}{" "}{summary.totalCount} {translateInstant("repositories enabled. Toggle all applies across the entire connection.")}</p>}
-      {list.isError && <p role="alert" className="text-sm text-destructive">
-        {translateInstant("Could not load repositories.")}{" "}<Button variant="link" size="sm" onClick={() => void list.refetch()}>{translateInstant("Try again")}</Button>
-      </p>}
-      <div ref={scroller} role="region" aria-label={translateInstant("Repositories")} tabIndex={0}
-        className="max-h-96 overflow-y-auto overscroll-contain border-y border-border">
+      {summary && (
+        <p className="text-xs text-muted-foreground">
+          {summary.enabledCount} {translateInstant("issueCommon.of", { defaultValue: "of" })} {summary.totalCount} {translateInstant("repositories enabled. Toggle all applies across the entire connection.", { defaultValue: "repositories enabled. Toggle all applies across the entire connection." })}
+        </p>
+      )}
+      {listView.kind === "error" && (
+        <QueryErrorState
+          error={list.error}
+          action="load repositories"
+          onRetry={listView.retry}
+          retrying={listView.isFetching}
+        />
+      )}
+      <div
+        ref={scroller}
+        role="region"
+        aria-label={translateInstant("Repositories")}
+        tabIndex={0}
+        className="max-h-96 overflow-y-auto overscroll-contain border-y border-border"
+      >
         <div className="divide-y divide-border">
-        {rows.map((resource) => (
-          <div key={resource.id} className="px-1 py-1">
-            <GitHubToggle
-              label={resource.label ?? resource.providerResourceId}
-              checked={resource.enabled}
-              disabled={
-                pending ||
-                (resource.availability !== "available" && !resource.enabled)
-              }
-              description={
-                resource.availability === "available"
-                  ? undefined
-                  : "Unavailable on GitHub. Update the App’s installation access, then refresh."
-              }
-              onChange={(enabled) => onChange(resource.id, enabled)}
-            />
-            <details className="text-sm">
-              <summary className="cursor-pointer text-muted-foreground">Task defaults</summary>
-              <div className="pt-3">
-                <ChatExecutionDefaults
-                  companyId={companyId}
-                  value={resource.executionDefaults}
-                  resource
-                  onSave={async (executionDefaults) => {
-                    await chatEndpointsApi.updateResources(endpointId, [{ id: resource.id, executionDefaults }]);
-                    await client.invalidateQueries({ queryKey: ["github-bot-repositories", endpointId] });
-                    await client.invalidateQueries({ queryKey: ["github-bot-repository-pages", endpointId] });
-                  }}
-                />
-              </div>
-            </details>
-          </div>
-        ))}
+          {rows.map((resource) => (
+            <div key={resource.id} className="px-1 py-1">
+              <GitHubToggle
+                label={resource.label ?? resource.providerResourceId}
+                checked={resource.enabled}
+                disabled={
+                  pending ||
+                  (resource.availability !== "available" && !resource.enabled)
+                }
+                description={
+                  resource.availability === "available"
+                    ? undefined
+                    : "Unavailable on GitHub. Update the App’s installation access, then refresh."
+                }
+                onChange={(enabled) => onChange(resource.id, enabled)}
+              />
+              <details className="text-sm">
+                <summary className="cursor-pointer text-muted-foreground">
+                  Task defaults
+                </summary>
+                <div className="pt-3">
+                  <ChatExecutionDefaults
+                    companyId={companyId}
+                    value={resource.executionDefaults}
+                    resource
+                    onSave={async (executionDefaults) => {
+                      await chatEndpointsApi.updateResources(endpointId, [
+                        { id: resource.id, executionDefaults },
+                      ]);
+                      await client.invalidateQueries({
+                        queryKey: ["github-bot-repositories", endpointId],
+                      });
+                      await client.invalidateQueries({
+                        queryKey: ["github-bot-repository-pages", endpointId],
+                      });
+                    }}
+                  />
+                </div>
+              </details>
+            </div>
+          ))}
         </div>
-        {list.isPending ? <p role="status" className="py-4 text-sm text-muted-foreground">{translateInstant("Loading repositories…")}</p> : rows.length === 0 && !list.isError && (
-          <p className="py-4 text-sm text-muted-foreground">
-            {search ? "No repositories match your search." : "No repositories available. Add repository access on GitHub, then refresh."}
+        {list.isPending || listView.kind === "reconnecting" ? (
+          <p role="status" className="py-4 text-sm text-muted-foreground">
+            {translateInstant("Loading repositories…", { defaultValue: "Loading repositories…" })}
           </p>
+        ) : (
+          (listView.kind === "ready" || listView.kind === "stale") &&
+          rows.length === 0 && (
+            <p className="py-4 text-sm text-muted-foreground">
+              {search
+                ? "No repositories match your search."
+                : "No repositories available. Add repository access on GitHub, then refresh."}
+            </p>
+          )
         )}
-        {list.hasNextPage && <div ref={more} className="flex justify-center py-2">
-          <Button variant="ghost" size="sm" disabled={pending || list.isFetching}
-            onClick={() => void list.fetchNextPage({ cancelRefetch: false })}>
-            {list.isFetchingNextPage ? translateInstant("Loading repositories…") : "Load more repositories"}
-          </Button>
-        </div>}
+        {list.hasNextPage && (
+          <div ref={more} className="flex justify-center py-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={pending || list.isFetching}
+              onClick={() => void list.fetchNextPage({ cancelRefetch: false })}
+            >
+              {list.isFetchingNextPage
+                ? translateInstant("Loading repositories…")
+                : "Load more repositories"}
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -193,18 +283,26 @@ export function GitHubBotManagement({
     queryKey: ["github-bot-configuration", endpoint.id],
     queryFn: () => githubChatApi.configuration(endpoint.id),
   });
+  const configurationView = useQueryView(query);
   const [draft, setDraft] = useState<GitHubConfigurationRecord | null>(null);
   const [editorVersion, setEditorVersion] = useState(0);
   const [scoreText, setScoreText] = useState<string | null>(null);
-  const [automaticMode, setAutomaticMode] = useState<"linked_authors" | "allowed_authors" | null>(null);
+  const [automaticMode, setAutomaticMode] = useState<
+    "linked_authors" | "allowed_authors" | null
+  >(null);
   const [pending, setPending] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const record = draft ?? query.data;
-  const currentScoreText = scoreText ?? String(record?.configuration.defaults.ratingThreshold ?? 5);
+  const currentScoreText =
+    scoreText ?? String(record?.configuration.defaults.ratingThreshold ?? 5);
   const score = Number(currentScoreText);
-  const scoreValid = record?.configuration.defaults.ratingThreshold === null ||
-    (currentScoreText.trim() !== "" && Number.isInteger(score) && score >= 1 && score <= 5);
+  const scoreValid =
+    record?.configuration.defaults.ratingThreshold === null ||
+    (currentScoreText.trim() !== "" &&
+      Number.isInteger(score) &&
+      score >= 1 &&
+      score <= 5);
   const dirty = Boolean(
     draft &&
       JSON.stringify(draft.configuration) !==
@@ -226,28 +324,25 @@ export function GitHubBotManagement({
     try {
       await fn();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not save changes.");
+      setError(describeError(e).body);
     } finally {
       setPending(false);
     }
   };
-  if (query.isError)
+  if (configurationView.kind === "error")
     return (
-      <p role="alert" className="text-sm text-destructive">
-        {translateInstant("Could not load the bot configuration.")}{" "}
-        <Button
-          variant="link"
-          onClick={() => {
-            void query.refetch();
-          }}
-        >
-          {translateInstant("Try again")}</Button>
-      </p>
+      <QueryErrorState
+        error={query.error}
+        action="load the bot configuration"
+        onRetry={configurationView.retry}
+        retrying={configurationView.isFetching}
+      />
     );
   if (!record)
     return (
       <p role="status" className="text-sm text-muted-foreground">
-        {translateInstant("Loading configuration…")}</p>
+        {translateInstant("Loading configuration…")}
+      </p>
     );
   const config = record.configuration;
   return (
@@ -267,8 +362,12 @@ export function GitHubBotManagement({
               onRefresh={() =>
                 void act(async () => {
                   await githubChatApi.refreshRepositories(endpoint.id);
-                  await client.invalidateQueries({ queryKey: ["github-bot-repositories", endpoint.id] });
-                  await client.invalidateQueries({ queryKey: ["github-bot-repository-pages", endpoint.id] });
+                  await client.invalidateQueries({
+                    queryKey: ["github-bot-repositories", endpoint.id],
+                  });
+                  await client.invalidateQueries({
+                    queryKey: ["github-bot-repository-pages", endpoint.id],
+                  });
                   setNotice(
                     "Repository access refreshed. New repositories stay disabled.",
                   );
@@ -279,15 +378,28 @@ export function GitHubBotManagement({
                   await chatEndpointsApi.updateResources(endpoint.id, [
                     { id, enabled },
                   ]);
-                  await client.invalidateQueries({ queryKey: ["github-bot-repositories", endpoint.id] });
-                  await client.invalidateQueries({ queryKey: ["github-bot-repository-pages", endpoint.id] });
+                  await client.invalidateQueries({
+                    queryKey: ["github-bot-repositories", endpoint.id],
+                  });
+                  await client.invalidateQueries({
+                    queryKey: ["github-bot-repository-pages", endpoint.id],
+                  });
                 })
               }
-              onToggleAll={(enabled) => void act(async () => {
-                await githubChatApi.toggleAllRepositories(endpoint.id, enabled);
-                await client.invalidateQueries({ queryKey: ["github-bot-repositories", endpoint.id] });
-                await client.invalidateQueries({ queryKey: ["github-bot-repository-pages", endpoint.id] });
-              })}
+              onToggleAll={(enabled) =>
+                void act(async () => {
+                  await githubChatApi.toggleAllRepositories(
+                    endpoint.id,
+                    enabled,
+                  );
+                  await client.invalidateQueries({
+                    queryKey: ["github-bot-repositories", endpoint.id],
+                  });
+                  await client.invalidateQueries({
+                    queryKey: ["github-bot-repository-pages", endpoint.id],
+                  });
+                })
+              }
             />
             <GitHubAccessEditor
               endpointId={endpoint.id}
@@ -298,12 +410,16 @@ export function GitHubBotManagement({
             {!config.toolsEnabled && (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  {translateInstant("This saved bot has GitHub tools disabled, so it cannot start work or respond.")}</p>
+                  {translateInstant(
+                    "This saved bot has GitHub tools disabled, so it cannot start work or respond.",
+                  )}
+                </p>
                 <Button
                   variant="outline"
                   onClick={() => edit({ ...config, toolsEnabled: true })}
                 >
-                  {translateInstant("Enable bot tools")}</Button>
+                  {translateInstant("Enable bot tools")}
+                </Button>
               </div>
             )}
             {endpoint.connectionId && (
@@ -311,16 +427,23 @@ export function GitHubBotManagement({
                 className="text-xs text-muted-foreground underline underline-offset-4"
                 to={`/apps/${endpoint.connectionId}`}
               >
-                {translateInstant("Manage tool permissions")}</Link>
+                {translateInstant("Manage tool permissions")}
+              </Link>
             )}
           </>
         ) : (
           <>
-            <GitHubPolicyEditor key={editorVersion}
+            <GitHubPolicyEditor
+              key={editorVersion}
               readOnly={pending}
               scoreText={currentScoreText}
               onScoreTextChange={setScoreText}
-              rememberedAutomaticMode={automaticMode ?? (config.defaults.invocation === "mentions_only" ? "linked_authors" : config.defaults.invocation)}
+              rememberedAutomaticMode={
+                automaticMode ??
+                (config.defaults.invocation === "mentions_only"
+                  ? "linked_authors"
+                  : config.defaults.invocation)
+              }
               accessHref={`/apps/chat/${endpoint.id}/access`}
               policy={config.defaults}
               onChange={(defaults) => edit({ ...config, defaults })}
@@ -351,7 +474,8 @@ export function GitHubBotManagement({
               setError("");
             }}
           >
-            {translateInstant("routineDetail.discardChanges")}</Button>
+            {translateInstant("routineDetail.discardChanges")}
+          </Button>
           <Button
             disabled={pending || !scoreValid}
             onClick={() =>
@@ -372,7 +496,9 @@ export function GitHubBotManagement({
               })
             }
           >
-            {pending ? translateInstant("Saving…") : translateInstant("Save changes")}
+            {pending
+              ? translateInstant("Saving…")
+              : translateInstant("Save changes")}
           </Button>
         </div>
       )}
@@ -417,7 +543,8 @@ function ReviewResult({ review }: { review: GitHubTaskReview }) {
           {gitHubReviewResultLabel(review)}
         </span>
         <span className="text-xs text-muted-foreground">
-          {translateInstant("artifactsPanel.type.commit")}{" "}<code>{review.headSha.slice(0, 7)}</code> ·{" "}
+          {translateInstant("artifactsPanel.type.commit")}{" "}
+          <code>{review.headSha.slice(0, 7)}</code> ·{" "}
           {formatDateTime(review.updatedAt)}
         </span>
       </div>
@@ -427,14 +554,16 @@ function ReviewResult({ review }: { review: GitHubTaskReview }) {
         </MarkdownBody>
       ) : (
         <p className="text-sm text-muted-foreground">
-          {translateInstant("No assessment has been submitted yet.")}</p>
+          {translateInstant("No assessment has been submitted yet.")}
+        </p>
       )}
       <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
         <Link
           className="underline underline-offset-4"
           to={`/issues/${review.issueId}`}
         >
-          {translateInstant("Paperclip task")}</Link>
+          {translateInstant("Paperclip task")}
+        </Link>
         {review.summaryUrl && (
           <a
             className="underline underline-offset-4"
@@ -442,7 +571,8 @@ function ReviewResult({ review }: { review: GitHubTaskReview }) {
             target="_blank"
             rel="noreferrer"
           >
-            {translateInstant("GitHub comment")}</a>
+            {translateInstant("GitHub comment")}
+          </a>
         )}
         {review.checkUrl && (
           <a
@@ -451,17 +581,22 @@ function ReviewResult({ review }: { review: GitHubTaskReview }) {
             target="_blank"
             rel="noreferrer"
           >
-            {translateInstant("Check")}</a>
+            {translateInstant("Check")}
+          </a>
         )}
       </div>
-      <section className="space-y-4 text-sm" aria-label={translateInstant("Review evidence")}>
+      <section
+        className="space-y-4 text-sm"
+        aria-label={translateInstant("Review evidence")}
+      >
         <div className="space-y-3">
           {review.runId && (
             <Link
               className="text-xs underline underline-offset-4"
               to={`/issues/${review.issueId}?runId=${review.runId}`}
             >
-              {translateInstant("Agent run")}</Link>
+              {translateInstant("Agent run")}
+            </Link>
           )}
           {review.assessment && (
             <>
@@ -469,7 +604,9 @@ function ReviewResult({ review }: { review: GitHubTaskReview }) {
               <MarkdownBody>{review.assessment.rationale}</MarkdownBody>
               {review.assessment.findings.length > 0 && (
                 <section className="space-y-3">
-                  <h3 className="font-medium">{translateInstant("Findings")}</h3>
+                  <h3 className="font-medium">
+                    {translateInstant("Findings")}
+                  </h3>
                   {review.assessment.findings.map((finding) => (
                     <div
                       key={finding.key}
@@ -483,9 +620,13 @@ function ReviewResult({ review }: { review: GitHubTaskReview }) {
                   ))}
                 </section>
               )}
-              <h3 className="font-medium">{translateInstant("secrets.coverage")}</h3>
+              <h3 className="font-medium">
+                {translateInstant("secrets.coverage")}
+              </h3>
               <p className="text-xs text-muted-foreground">
-                {review.assessment.coverage.reviewedPaths.length} {translateInstant("files reviewed ·")}{" "}{review.assessment.coverage.omittedPaths.length} omitted
+                {review.assessment.coverage.reviewedPaths.length}{" "}
+                {translateInstant("files reviewed ·")}{" "}
+                {review.assessment.coverage.omittedPaths.length} omitted
               </p>
               {review.assessment.coverage.limitations.map((limit, index) => (
                 <p key={index} className="text-xs text-muted-foreground">
@@ -513,7 +654,9 @@ export function GitHubReviewList({
       <EmptyState
         icon={GitPullRequest}
         message={translateInstant("No reviews yet")}
-        description={translateInstant("Mention the bot on a pull request, or enable automatic events in Settings.")}
+        description={translateInstant(
+          "Mention the bot on a pull request, or enable automatic events in Settings.",
+        )}
       />
     );
   return (
@@ -566,7 +709,8 @@ export function GitHubReviewDetail({
         className="text-sm text-muted-foreground hover:underline"
         to={`/apps/chat/${endpointId}/reviews`}
       >
-        {translateInstant("← All reviews")}</Link>
+        {translateInstant("← All reviews")}
+      </Link>
       <header className="space-y-2">
         <h2 className="text-lg font-semibold">
           {review.event.title || `Pull request #${review.pullNumber}`}
@@ -595,37 +739,52 @@ export function GitHubReviews({
   useTranslation();
   const query = useQuery({
     queryKey: ["github-bot-reviews", endpointId, reviewId ?? "list"],
-    queryFn: async () => reviewId ? [await githubChatApi.review(endpointId, reviewId)] : githubChatApi.reviews(endpointId),
+    queryFn: async () =>
+      reviewId
+        ? [await githubChatApi.review(endpointId, reviewId)]
+        : githubChatApi.reviews(endpointId),
     refetchInterval: 5000,
   });
-  if (query.isError)
-    return (
-      <p role="alert" className="text-sm text-destructive">
-        {reviewId ? "This review could not be loaded or was not found in this connection." : "Reviews could not be loaded."}{" "}
-        <Button variant="link" onClick={() => void query.refetch()}>
-          {translateInstant("Try again")}</Button>
+  const view = useQueryView(query);
+  const missingReview = (
+    <div className="space-y-3">
+      <p role="alert" className="text-sm text-muted-foreground">
+        {translateInstant("This review was not found in this connection.", { defaultValue: "This review was not found in this connection." })}
       </p>
+      <Link
+        to={`/apps/chat/${endpointId}/reviews`}
+        className="text-sm underline"
+      >
+        {translateInstant("All reviews", { defaultValue: "All reviews" })}
+      </Link>
+    </div>
+  );
+  if (view.kind === "error") {
+    if (reviewId && view.errorKind === "not_found") return missingReview;
+    return (
+      <QueryErrorState
+        error={query.error}
+        action={reviewId ? "load the review" : "load reviews"}
+        onRetry={view.retry}
+        retrying={view.isFetching}
+      />
     );
-  if (query.isPending)
+  }
+  if (query.isPending || view.kind === "reconnecting")
     return (
       <p role="status" className="text-sm text-muted-foreground">
-        {translateInstant("Loading reviews…")}</p>
+        {translateInstant("Loading reviews…")}
+      </p>
     );
   if (reviewId) {
-    const review = query.data.find((review) => review.id === reviewId);
+    const review = query.data?.find((review) => review.id === reviewId);
     return review ? (
       <GitHubReviewDetail endpointId={endpointId} review={review} />
     ) : (
-      <div className="space-y-3">
-        <p role="alert" className="text-sm text-muted-foreground">
-          {translateInstant("This review was not found in this connection.")}</p>
-        <Link
-          to={`/apps/chat/${endpointId}/reviews`}
-          className="text-sm underline"
-        >
-          {translateInstant("All reviews")}</Link>
-      </div>
+      missingReview
     );
   }
-  return <GitHubReviewList endpointId={endpointId} reviews={query.data} />;
+  return (
+    <GitHubReviewList endpointId={endpointId} reviews={query.data ?? []} />
+  );
 }

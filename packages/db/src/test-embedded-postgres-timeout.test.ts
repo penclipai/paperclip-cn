@@ -31,6 +31,7 @@ describe("stopEmbeddedPostgresBounded", () => {
       {
         initialise: async () => undefined,
         start: async () => undefined,
+        stopGracefully: async () => undefined,
         stop: () => {
           rawStop = new Promise<void>((resolve) => { resolveStop = resolve; });
           return rawStop;
@@ -68,7 +69,7 @@ describe("stopEmbeddedPostgresBounded", () => {
     });
 
     await stopBounded(
-      { initialise: async () => undefined, start: async () => undefined, stop: async () => { throw new Error("missing pid"); } },
+      { initialise: async () => undefined, start: async () => undefined, stopGracefully: async () => undefined, stop: async () => { throw new Error("missing pid"); } },
       cleanup,
       "C:/tmp/paperclip-owned-reject-db",
     );
@@ -82,7 +83,7 @@ describe("stopEmbeddedPostgresBounded", () => {
     __setManagedEmbeddedPostgresShutdownForTests(async () => { steps.push("authority"); });
 
     await stopBounded(
-      { initialise: async () => undefined, start: async () => undefined, stop: async () => { throw new Error("missing pid"); } },
+      { initialise: async () => undefined, start: async () => undefined, stopGracefully: async () => undefined, stop: async () => { throw new Error("missing pid"); } },
       cleanup,
       "C:/tmp/paperclip-owned-reject-db",
     );
@@ -104,6 +105,7 @@ describe("stopEmbeddedPostgresBounded", () => {
       {
         initialise: async () => undefined,
         start: async () => undefined,
+        stopGracefully: async () => undefined,
         stop: () => {
           rawStop = new Promise<void>((resolve) => { resolveStop = resolve; });
           return rawStop;

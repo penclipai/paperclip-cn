@@ -27,6 +27,7 @@ import { auditApi, type AuditActionRecord, type AuditActionFilters } from "@/api
 import { agentsApi } from "@/api/agents";
 import { accessApi } from "@/api/access";
 import { ApiError } from "@/api/client";
+import { useQueryView } from "@/components/QueryView";
 import { useToastActions } from "@/context/ToastContext";
 
 const PAGE_SIZE = 50;
@@ -324,7 +325,6 @@ export function AuditFeed({
   const userDirectory = useQuery({
     queryKey: queryKeys.access.companyUserDirectory(companyId),
     queryFn: () => accessApi.listUserDirectory(companyId),
-    retry: false,
   });
 
   const agentMap = useMemo(
@@ -376,9 +376,11 @@ export function AuditFeed({
       auditApi.listAgentActions(companyId, { ...filters, limit: PAGE_SIZE, cursor: pageParam ?? undefined }),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    retry: (count, error) => !(error instanceof ApiError && error.status === 403) && count < 2,
+    // The shared retry policy already covers this: a 403 never retries, a
+    // transient failure pauses across an outage and retries with backoff.
   });
 
+  const feedView = useQueryView(feed);
   const permissionDenied = feed.error instanceof ApiError && feed.error.status === 403;
   const hasBasicPage = feed.data?.pages.some((page) => page.accessTier === "basic") ?? false;
   const hasFullPage = feed.data?.pages.some((page) => page.accessTier === "full") ?? false;
@@ -502,7 +504,6 @@ export function AuditFeed({
     } catch (error) {
       pushToast({
         title: translateInstant("companyExport.exportFailedTitle"),
-        body: error instanceof Error ? error.message : "Could not export the audit log.",
         tone: "error",
       });
     } finally {
@@ -649,7 +650,7 @@ export function AuditFeed({
           <CardContent className="py-14 text-center text-sm text-muted-foreground">
             {translateInstant("auditFeed.refreshingAccess")}</CardContent>
         </Card>
-      ) : feed.isLoading ? (
+      ) : feedView.kind === "loading" || feedView.kind === "reconnecting" ? (
         <Card>
           <CardContent className="py-14 text-center text-sm text-muted-foreground">{translateInstant("tools.advanced.loading")}</CardContent>
         </Card>

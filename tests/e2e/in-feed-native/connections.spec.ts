@@ -79,7 +79,7 @@ for (const journey of ['connect', 'decline', 'restart'] as const) test(`fresh na
     const fixtureEntry = resolve(root, 'tests/e2e/fixtures/in-feed-codex.mjs');
     const fixtureLoader = resolve(root, 'tests/e2e/fixtures/in-feed-codex-loader.mjs');
     const shutdownHelper = resolve(root, 'tests/e2e/fixtures/native-test-drive-shutdown.mjs');
-    const env = { ...process.env, IN_FEED_FIXTURE_KEY: 'not-a-real-model-key', NODE_ENV: 'test', IN_FEED_TEST_DRIVE_SHUTDOWN: '1', IN_FEED_TEST_CONNECTION_DELIVERY_HOLD: journey === 'restart' ? '1' : '0',
+    const env: NodeJS.ProcessEnv = { ...process.env, IN_FEED_FIXTURE_KEY: 'not-a-real-model-key', NODE_ENV: 'test', IN_FEED_TEST_DRIVE_SHUTDOWN: '1', IN_FEED_TEST_CONNECTION_DELIVERY_HOLD: journey === 'restart' ? '1' : '0',
       IN_FEED_CODEX_ENTRY: fixtureEntry,
       IN_FEED_CODEX_MODE: 'connection',
       NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ''} --import=${pathToFileURL(fixtureLoader).href} --import=${pathToFileURL(shutdownHelper).href}` };

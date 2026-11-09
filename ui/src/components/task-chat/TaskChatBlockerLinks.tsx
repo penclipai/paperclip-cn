@@ -4,11 +4,20 @@ import type {
   IssueBlockerAttentionIssueSummary,
   IssueRelationIssueSummary,
 } from "@penclipai/shared";
-import { CheckCircle2, Circle } from "lucide-react";
+import { useMemo } from "react";
+import { useQueries } from "@tanstack/react-query";
+import { ISSUE_SUMMARIES_MAX_IDS } from "@penclipai/shared";
+import { issuesApi } from "@/api/issues";
+import { useCoordinatorWorkspaceEnabled } from "@/hooks/useCoordinatorWorkspaceEnabled";
 import { createIssueDetailPath } from "@/lib/issueDetailBreadcrumb";
+import { queryKeys } from "@/lib/queryKeys";
+import {
+  taskStatusIconProps,
+  type TaskStatusPresentationInput,
+} from "@/lib/task-status-presentation";
+import { StatusIcon } from "../StatusIcon";
 import {
   orderWaitingBlockers,
-  type WaitingBlockerStatus,
   type WaitingBlockerStep,
 } from "@/lib/issue-blockers";
 import { Link } from "@/lib/router";
@@ -25,7 +34,10 @@ export function resolveTaskChatBlockers(
   terminalBlocker?: IssueBlockerAttentionIssueSummary | null,
 ): {
   directBlocker: IssueRelationIssueSummary | IssueBlockerAttentionIssueSummary;
-  ultimateBlocker: IssueRelationIssueSummary | IssueBlockerAttentionIssueSummary | null;
+  ultimateBlocker:
+    | IssueRelationIssueSummary
+    | IssueBlockerAttentionIssueSummary
+    | null;
 } | null {
   const unresolvedBlockers = blockers.filter(isUnresolved);
   if (unresolvedBlockers.length === 0) return null;
@@ -33,10 +45,13 @@ export function resolveTaskChatBlockers(
   const directBlocker = directBlockerIssueId
     ? unresolvedBlockers.find((blocker) => blocker.id === directBlockerIssueId)
     : terminalBlockerIssueId
-      ? unresolvedBlockers.find((blocker) => (
-          blocker.id === terminalBlockerIssueId
-          || blocker.terminalBlockers?.some((terminal) => terminal.id === terminalBlockerIssueId)
-        ))
+      ? unresolvedBlockers.find(
+          (blocker) =>
+            blocker.id === terminalBlockerIssueId ||
+            blocker.terminalBlockers?.some(
+              (terminal) => terminal.id === terminalBlockerIssueId,
+            ),
+        )
       : unresolvedBlockers[0];
 
   // A selected intermediate blocker is not part of `terminalBlockers`, which
@@ -51,22 +66,28 @@ export function resolveTaskChatBlockers(
     };
   }
 
-  const terminalBlockers = directBlocker.terminalBlockers?.filter(isUnresolved) ?? [];
+  const terminalBlockers =
+    directBlocker.terminalBlockers?.filter(isUnresolved) ?? [];
   const ultimateBlocker = terminalBlockerIssueId
     ? terminalBlocker?.id === terminalBlockerIssueId
       ? terminalBlocker
-      : terminalBlockers.find((blocker) => blocker.id === terminalBlockerIssueId) ?? null
-    : terminalBlockers[0] ?? null;
+      : (terminalBlockers.find(
+          (blocker) => blocker.id === terminalBlockerIssueId,
+        ) ?? null)
+    : (terminalBlockers[0] ?? null);
 
   return {
     directBlocker,
-    ultimateBlocker: ultimateBlocker?.id === directBlocker.id ? null : ultimateBlocker,
+    ultimateBlocker:
+      ultimateBlocker?.id === directBlocker.id ? null : ultimateBlocker,
   };
 }
 
 export interface ResolvedTaskChatLiveWork {
   steps: WaitingBlockerStep[];
-  nowRunning: Array<IssueRelationIssueSummary | IssueBlockerAttentionIssueSummary>;
+  nowRunning: Array<
+    IssueRelationIssueSummary | IssueBlockerAttentionIssueSummary
+  >;
 }
 
 export function resolveTaskChatLiveWork(
@@ -78,14 +99,24 @@ export function resolveTaskChatLiveWork(
 
   const steps = orderWaitingBlockers(blockers, liveIssueIds);
   const stepIds = new Set(steps.map((step) => step.blocker.id));
-  const terminalCandidates: Array<IssueRelationIssueSummary | IssueBlockerAttentionIssueSummary> = [];
-  for (const blocker of blockers) terminalCandidates.push(...(blocker.terminalBlockers ?? []));
+  const terminalCandidates: Array<
+    IssueRelationIssueSummary | IssueBlockerAttentionIssueSummary
+  > = [];
+  for (const blocker of blockers)
+    terminalCandidates.push(...(blocker.terminalBlockers ?? []));
   if (selectedTerminalBlocker) terminalCandidates.push(selectedTerminalBlocker);
 
-  const nowRunning: Array<IssueRelationIssueSummary | IssueBlockerAttentionIssueSummary> = [];
+  const nowRunning: Array<
+    IssueRelationIssueSummary | IssueBlockerAttentionIssueSummary
+  > = [];
   const seen = new Set<string>();
   for (const blocker of terminalCandidates) {
-    if (!liveIssueIds.has(blocker.id) || stepIds.has(blocker.id) || seen.has(blocker.id)) continue;
+    if (
+      !liveIssueIds.has(blocker.id) ||
+      stepIds.has(blocker.id) ||
+      seen.has(blocker.id)
+    )
+      continue;
     seen.add(blocker.id);
     nowRunning.push(blocker);
   }
@@ -113,8 +144,12 @@ function BlockerRow({
       title={`${blocker.identifier ?? blocker.id.slice(0, 8)} — ${blocker.title}`}
     >
       <span className="shrink-0 font-medium">{label}</span>
-      <span className="shrink-0 font-mono">{blocker.identifier ?? blocker.id.slice(0, 8)}</span>
-      <span className="truncate text-amber-700/80 dark:text-amber-300/80">{blocker.title}</span>
+      <span className="shrink-0 font-mono">
+        {blocker.identifier ?? blocker.id.slice(0, 8)}
+      </span>
+      <span className="truncate text-amber-700/80 dark:text-amber-300/80">
+        {blocker.title}
+      </span>
     </Link>
   ) : (
     <div className="flex min-w-0 items-baseline gap-1.5 whitespace-nowrap">
@@ -124,47 +159,78 @@ function BlockerRow({
         className="flex min-w-0 items-baseline gap-1 text-amber-800 underline-offset-2 hover:underline dark:text-amber-200"
         title={`${blocker.identifier ?? blocker.id.slice(0, 8)} — ${blocker.title}`}
       >
-        <span className="shrink-0 font-mono">{blocker.identifier ?? blocker.id.slice(0, 8)}</span>
-        <span className="truncate text-amber-700/80 dark:text-amber-300/80">{blocker.title}</span>
+        <span className="shrink-0 font-mono">
+          {blocker.identifier ?? blocker.id.slice(0, 8)}
+        </span>
+        <span className="truncate text-amber-700/80 dark:text-amber-300/80">
+          {blocker.title}
+        </span>
       </Link>
     </div>
   );
 }
 
-function LiveWorkGlyph({ status }: { status: WaitingBlockerStatus }) {
-  const label = status === "done" ? "Done" : status === "running" ? "Running" : "Waiting";
-  if (status === "done") {
-    return (
-      <CheckCircle2
-        className="h-3.5 w-3.5 text-blue-500 dark:text-blue-400"
-        role="img"
-        aria-label={label}
-      />
-    );
-  }
-  if (status === "running") {
-    return (
-      <span className="flex h-3.5 w-3.5 items-center justify-center" role="img" aria-label={label}>
-        <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-blue-400" aria-hidden />
-      </span>
-    );
-  }
-  return (
-    <Circle
-      className="h-3.5 w-3.5 text-blue-300 dark:text-blue-500/50"
-      role="img"
-      aria-label={label}
-    />
-  );
+type LiveWorkBlocker =
+  | IssueRelationIssueSummary
+  | IssueBlockerAttentionIssueSummary;
+
+/**
+ * The strip shows tasks, so it draws the shared task status glyph. Relation
+ * summaries do not carry blocker attention or the waiting-conversation state,
+ * so the same `/issues/summaries` projection that the sidebar and created-task
+ * cards use supplies them; until it loads, the relation status is used.
+ */
+function useLiveWorkStatusPresentation(
+  companyId: string | null | undefined,
+  blockers: LiveWorkBlocker[],
+): (blocker: LiveWorkBlocker) => TaskStatusPresentationInput {
+  const { userId } = useCoordinatorWorkspaceEnabled();
+  // The summaries endpoint accepts at most ISSUE_SUMMARIES_MAX_IDS per request.
+  const batches = useMemo(() => {
+    const ids = [...new Set(blockers.map((blocker) => blocker.id))].sort();
+    const chunks: string[][] = [];
+    for (let index = 0; index < ids.length; index += ISSUE_SUMMARIES_MAX_IDS) {
+      chunks.push(ids.slice(index, index + ISSUE_SUMMARIES_MAX_IDS));
+    }
+    return chunks;
+  }, [blockers]);
+  const results = useQueries({
+    queries: batches.map((ids) => ({
+      queryKey: queryKeys.issues.summaryBatch(
+        companyId ?? "__none__",
+        userId,
+        ids,
+      ),
+      queryFn: ({ signal }: { signal: AbortSignal }) =>
+        issuesApi.summaries(companyId!, ids, { signal }),
+      enabled: Boolean(companyId),
+    })),
+  });
+  const summaries = results.flatMap((result) => result.data ?? []);
+  return (blocker) => {
+    const summary = summaries.find((candidate) => candidate.id === blocker.id);
+    if (summary) return taskStatusIconProps(summary);
+    if ("status" in blocker) return taskStatusIconProps(blocker);
+    // A sampled terminal blocker carries no status; it is only listed while live.
+    return { status: "in_progress" };
+  };
+}
+
+function LiveWorkGlyph({
+  presentation,
+}: {
+  presentation: TaskStatusPresentationInput;
+}) {
+  return <StatusIcon {...presentation} size="sm" />;
 }
 
 function LiveWorkLink({
   blocker,
-  status,
+  presentation,
   label,
 }: {
-  blocker: IssueRelationIssueSummary | IssueBlockerAttentionIssueSummary;
-  status: WaitingBlockerStatus;
+  blocker: LiveWorkBlocker;
+  presentation: TaskStatusPresentationInput;
   label?: string;
 }) {
   const streamlined = useStreamlinedTaskChatPresentation();
@@ -172,15 +238,23 @@ function LiveWorkLink({
   return (
     <Link
       to={createIssueDetailPath(issuePathId)}
-      className={streamlined
-        ? "flex min-w-0 items-center gap-1.5 rounded px-1 py-0.5 text-blue-800 underline-offset-2 transition-colors hover:bg-accent/50 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:text-blue-200"
-        : "flex min-w-0 items-baseline gap-1 text-blue-800 underline-offset-2 hover:underline dark:text-blue-200"}
+      className={
+        streamlined
+          ? "flex min-w-0 items-center gap-1.5 rounded px-1 py-0.5 text-blue-800 underline-offset-2 transition-colors hover:bg-accent/50 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:text-blue-200"
+          : "flex min-w-0 items-baseline gap-1 text-blue-800 underline-offset-2 hover:underline dark:text-blue-200"
+      }
       title={`${blocker.identifier ?? blocker.id.slice(0, 8)} — ${blocker.title}`}
     >
-      {streamlined && label ? <span className="shrink-0 font-medium">{label}</span> : null}
-      {streamlined ? <LiveWorkGlyph status={status} /> : null}
-      <span className="shrink-0 font-mono">{blocker.identifier ?? blocker.id.slice(0, 8)}</span>
-      <span className="truncate text-blue-700/80 dark:text-blue-300/80">{blocker.title}</span>
+      {streamlined && label ? (
+        <span className="shrink-0 font-medium">{label}</span>
+      ) : null}
+      {streamlined ? <LiveWorkGlyph presentation={presentation} /> : null}
+      <span className="shrink-0 font-mono">
+        {blocker.identifier ?? blocker.id.slice(0, 8)}
+      </span>
+      <span className="truncate text-blue-700/80 dark:text-blue-300/80">
+        {blocker.title}
+      </span>
     </Link>
   );
 }
@@ -191,14 +265,20 @@ export function TaskChatBlockerLinks({
   placement,
 }: {
   directBlocker: IssueRelationIssueSummary | IssueBlockerAttentionIssueSummary;
-  ultimateBlocker: IssueRelationIssueSummary | IssueBlockerAttentionIssueSummary | null;
+  ultimateBlocker:
+    | IssueRelationIssueSummary
+    | IssueBlockerAttentionIssueSummary
+    | null;
   placement: "top" | "bottom";
 }) {
   useTranslation();
   const streamlined = useStreamlinedTaskChatPresentation();
-  const directLabel = streamlined && placement === "bottom" ? "Still blocked by" : "Blocked by";
+  const directLabel =
+    streamlined && placement === "bottom" ? "Still blocked by" : "Blocked by";
   const rootLabel = streamlined
-    ? placement === "bottom" ? "Root blocker remains" : "Root blocker"
+    ? placement === "bottom"
+      ? "Root blocker remains"
+      : "Root blocker"
     : "Ultimately blocked by";
   return (
     <div
@@ -218,13 +298,29 @@ export function TaskChatBlockerLinks({
 export function TaskChatLiveWorkLinks({
   liveWork,
   placement,
+  companyId,
 }: {
   liveWork: ResolvedTaskChatLiveWork;
   placement: "top" | "bottom";
+  companyId?: string | null;
 }) {
   useTranslation();
   const streamlined = useStreamlinedTaskChatPresentation();
-  const heading = streamlined && placement === "bottom" ? "Still waiting on live work" : "Waiting on live work";
+  const listedBlockers = useMemo(
+    () => [
+      ...liveWork.steps.map((step) => step.blocker),
+      ...liveWork.nowRunning,
+    ],
+    [liveWork],
+  );
+  const presentationFor = useLiveWorkStatusPresentation(
+    companyId,
+    listedBlockers,
+  );
+  const heading =
+    streamlined && placement === "bottom"
+      ? "Still waiting on live work"
+      : "Waiting on live work";
   return (
     <div
       aria-label={translateInstant("Tasks waiting on live work")}
@@ -233,37 +329,67 @@ export function TaskChatLiveWorkLinks({
       className="flex min-w-0 flex-col gap-1.5 overflow-hidden text-(length:--text-micro) leading-4 text-blue-700 dark:text-blue-300"
     >
       <div className="flex items-center gap-1.5 font-medium">
-        <span className="flex h-3.5 w-3.5 items-center justify-center" aria-hidden>
+        <span
+          className="flex h-3.5 w-3.5 items-center justify-center"
+          aria-hidden
+        >
           <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-blue-400" />
         </span>
         {heading}
       </div>
       <ol className="flex min-w-0 flex-col gap-1">
-        {liveWork.steps.map(({ blocker, status }, index) => (
+        {liveWork.steps.map(({ blocker }, index) => (
           <li
             key={blocker.id}
             data-testid="task-chat-live-work-step"
-            className={streamlined ? "min-w-0 whitespace-nowrap" : "flex min-w-0 items-center gap-1.5 whitespace-nowrap"}
+            className={
+              streamlined
+                ? "min-w-0 whitespace-nowrap"
+                : "flex min-w-0 items-center gap-1.5 whitespace-nowrap"
+            }
           >
             {!streamlined ? (
               <>
-                <span className="w-4 shrink-0 text-right font-mono text-blue-500/80" aria-hidden>
-                  {index + 1}{translateInstant(".")}</span>
-                <LiveWorkGlyph status={status} />
+                <span
+                  className="w-4 shrink-0 text-right font-mono text-blue-500/80"
+                  aria-hidden
+                >
+                  {index + 1}{translateInstant(".", { defaultValue: "." })}
+                </span>
+                <LiveWorkGlyph presentation={presentationFor(blocker)} />
               </>
             ) : null}
-            <LiveWorkLink blocker={blocker} status={status} />
+            <LiveWorkLink
+              blocker={blocker}
+              presentation={presentationFor(blocker)}
+            />
           </li>
         ))}
       </ol>
-      {liveWork.nowRunning.map((blocker) => streamlined ? (
-        <LiveWorkLink key={blocker.id} blocker={blocker} status="running" label={translateInstant("issueBlocked.waiting.nowRunning")} />
-      ) : (
-        <div key={blocker.id} className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
-          <span className="shrink-0 font-medium">{translateInstant("issueBlocked.waiting.nowRunning")}</span>
-          <LiveWorkLink blocker={blocker} status="running" />
-        </div>
-      ))}
+      {liveWork.nowRunning.map((blocker) =>
+        streamlined ? (
+          <LiveWorkLink
+            key={blocker.id}
+            blocker={blocker}
+            presentation={presentationFor(blocker)}
+            label={translateInstant("taskChat.blocker.nowRunning")}
+          />
+        ) : (
+          <div
+            key={blocker.id}
+            className="flex min-w-0 items-center gap-1.5 whitespace-nowrap"
+          >
+            <span className="shrink-0 font-medium">
+              {translateInstant("taskChat.blocker.nowRunning")}
+            </span>
+            <LiveWorkGlyph presentation={presentationFor(blocker)} />
+            <LiveWorkLink
+              blocker={blocker}
+              presentation={presentationFor(blocker)}
+            />
+          </div>
+        ),
+      )}
     </div>
   );
 }

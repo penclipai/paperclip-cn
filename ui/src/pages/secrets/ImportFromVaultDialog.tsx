@@ -235,7 +235,7 @@ function isPermissionError(error: unknown): boolean {
   if (!(error instanceof ApiError)) return false;
   if (apiErrorCode(error) === "access_denied") return true;
   if (error.status === 401 || error.status === 403) return true;
-  const message = error.message.toLowerCase();
+  const message = error.message.toLowerCase(); // query-error-ok: classifies the failure, nothing is rendered here
   return (
     message.includes("accessdenied") ||
     message.includes("access denied") ||
@@ -246,7 +246,7 @@ function isPermissionError(error: unknown): boolean {
 function isThrottlingError(error: unknown): boolean {
   if (!(error instanceof ApiError)) return false;
   if (apiErrorCode(error) === "throttled") return true;
-  const message = error.message.toLowerCase();
+  const message = error.message.toLowerCase(); // query-error-ok: classifies the failure, nothing is rendered here
   return message.includes("throttl") || message.includes("toomanyrequests");
 }
 
