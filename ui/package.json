@@ -41,7 +41,7 @@
     "@lexical/clipboard": "0.48.0",
     "@lexical/link": "0.48.0",
     "@lezer/highlight": "^1.2.3",
-    "@mdxeditor/editor": "^4.2.3",
+    "@mdxeditor/editor": "^4.2.5",
     "@penclipai/adapter-claude-local": "workspace:*",
     "@penclipai/adapter-codex-local": "workspace:*",
     "@penclipai/adapter-cursor-cloud": "workspace:*",
@@ -101,7 +101,7 @@
     "storybook": "10.6.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
-    "vite": "^8.2.2",
+    "vite": "^8.2.4",
     "vitest": "^5.0.3"
   },
   "engines": {
