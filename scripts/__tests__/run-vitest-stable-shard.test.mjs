@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { chmodSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -379,7 +379,7 @@ test("Windows shard execution invokes only command-bounded chunks covering its a
     if (process.platform === "win32") {
       assert.equal(fixture.calls.length, plan.windowsGeneralServerCommandChunks.length);
       for (const [index, call] of fixture.calls.entries()) {
-        const invokedFiles = call.args.filter((arg) => arg.startsWith("server/") && arg.endsWith(".test.ts"));
+        const invokedFiles = call.args.filter((arg) => arg.startsWith("server/") && /\.test\.[cm]?[jt]sx?$/.test(arg));
         assert.deepEqual(invokedFiles, plan.windowsGeneralServerCommandChunks[index].files);
       }
     } else {
@@ -387,7 +387,7 @@ test("Windows shard execution invokes only command-bounded chunks covering its a
     }
 
     const invokedFiles = fixture.calls.flatMap((call) =>
-      call.args.filter((arg) => arg.startsWith("server/") && arg.endsWith(".test.ts")),
+      call.args.filter((arg) => arg.startsWith("server/") && /\.test\.[cm]?[jt]sx?$/.test(arg)),
     );
     assert.deepEqual(invokedFiles.sort(), [...plan.selectedGeneralServerSuites].sort());
   } finally {
@@ -965,7 +965,7 @@ test("default chat isolation executes every partition sequentially before other 
 
 test("default chat isolation propagates failure without starting another partition or group", { skip: process.platform === "win32" }, () => {
   const { result, events } = defaultLauncher({ failureIndex: 2 });
-  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.equal(result.status, 7, result.stdout + result.stderr);
   assert.match(result.stderr, /failed \(7\)/);
   assert.equal(events.length, 6);
   assert.ok(events.every(event => event.selected.length === 1));
