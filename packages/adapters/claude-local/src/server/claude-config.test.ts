@@ -361,6 +361,7 @@ describe("Claude tool shell prefix", () => {
     const binDir = path.join(root, "bin");
     await fs.mkdir(binDir, { recursive: true });
     await fs.symlink(bash, path.join(binDir, "bash"));
+    await fs.symlink(bash, path.join(binDir, "sh"));
     await expect(runThroughPrefix(prefixPath, probe, { PATH: binDir, SHELL: "/bin/sh" }))
       .resolves.toBe("bash");
     await expect(runThroughPrefix(prefixPath, `printf '%s' "q'uote"`, { PATH: process.env.PATH ?? "", SHELL: bash }))

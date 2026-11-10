@@ -9622,7 +9622,7 @@ it("cold-restores a suspended provider session under its durable run binding", a
     });
   } finally {
     await restored.transport.close();
-    await releaseMaterializedNativeRuntimeSkills(
+    await runtimeMaterializer.releaseMaterializedNativeRuntimeSkills(
       join(stateDirectory, "codex-home", "skills"),
     );
     await rm(stateDirectory, { recursive: true, force: true });
@@ -10268,13 +10268,14 @@ it.each([true, false])("preserves prepared OpenCode cleanup errors (primary fail
 });
 
 it.each([
-  { model: "openrouter/deepseek/deepseek-v4-flash-0731", supportsReasoning: true },
-  { model: "anthropic/claude-sonnet-4", supportsReasoning: false },
+  { model: "openrouter/deepseek/deepseek-v4-flash-0731", supportsReasoning: true, adoptAfterTurn: false },
+  { model: "openrouter/deepseek/deepseek-v4-flash-0731", supportsReasoning: true, adoptAfterTurn: true },
+  { model: "anthropic/claude-sonnet-4", supportsReasoning: false, adoptAfterTurn: false },
 ])(
   process.platform === "win32"
     ? "rejects a remote OpenCode prepared fixture at the native Windows cwd boundary ($model)"
-    : "preserves prepared input and completion feedback through runnerd and the real OpenCode proxy boundary ($model)",
-  async ({ model, supportsReasoning }) => {
+    : "preserves prepared input and completion feedback through runnerd and the real OpenCode proxy boundary ($model, live adoption: $adoptAfterTurn)",
+  async ({ model, supportsReasoning, adoptAfterTurn }) => {
   const root = await mkdtemp(join(tmpdir(), "runnerd-prepared-opencode-"));
   // GitHub-hosted Linux toolcache Node can be group-writable, unlike the AWS
   // fleet. Qualify an owned copy with strict permissions, never chmod the host

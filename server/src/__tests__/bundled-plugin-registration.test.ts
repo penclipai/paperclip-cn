@@ -259,7 +259,7 @@ describePostgres("bundled image registration in PostgreSQL", () => {
     const image = bundledImageFixture(npmManifest);
     roots.push(image.root);
     const localPluginDir = path.join(image.root, "npm-home");
-    const packageRoot = path.join(localPluginDir, "node_modules", "@paperclipai", "plugin-daytona");
+    const packageRoot = path.join(localPluginDir, "node_modules", "@penclipai", "plugin-daytona");
     mkdirSync(path.dirname(packageRoot), { recursive: true });
     cpSync(image.packageRoot, packageRoot, { recursive: true });
     const metadata = JSON.parse(readFileSync(path.join(packageRoot, "package.json"), "utf8"));
@@ -272,7 +272,8 @@ describePostgres("bundled image registration in PostgreSQL", () => {
     try {
       const current = runtime();
       const loader = pluginLoader(db, { localPluginDir, enableNpmDiscovery: false, enableLocalFilesystem: false }, current.services as unknown as PluginRuntimeServices);
-      expect((await loader.loadSingle(row.id)).success).toBe(true);
+      const loaded = await loader.loadSingle(row.id);
+      expect(loaded.success, loaded.success ? undefined : loaded.error).toBe(true);
       expect(current.services.workerManager.startWorker).toHaveBeenCalledWith(row.id, expect.objectContaining({ env: expect.objectContaining({ DAYTONA_API_KEY: "synthetic-provider-key" }) }));
     } finally { vi.unstubAllEnvs(); }
   });

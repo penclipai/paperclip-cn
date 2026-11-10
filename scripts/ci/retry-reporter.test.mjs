@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -149,13 +149,14 @@ test("outside the PR workflow the same flake fails without a retry", () => {
 test("run-vitest-stable passes --retry to vitest run only in the PR workflow", () => {
   const directory = mkdtempSync(path.join(tmpdir(), "retry-wrapper-"));
   try {
-    const bin = path.join(directory, "bin");
-    mkdirSync(bin);
-    writeFileSync(path.join(bin, "pnpm"), '#!/bin/sh\nprintf "%s\\n" "$@" >> "$RETRY_ARGS_FILE"\n');
-    chmodSync(path.join(bin, "pnpm"), 0o755);
+    const fakePnpm = path.join(directory, "fake-pnpm.cjs");
+    writeFileSync(fakePnpm,
+      'require("node:fs").appendFileSync(process.env.RETRY_ARGS_FILE, process.argv.slice(2).join("\\n") + "\\n");\n');
     const invoke = (env) => {
       const argsFile = path.join(directory, `args-${Math.random()}`);
-      const childEnv = { ...process.env, ...env, PATH: `${bin}${path.delimiter}${process.env.PATH}`, RETRY_ARGS_FILE: argsFile };
+      // The wrapper prefers npm_execpath over PATH when pnpm invokes this test.
+      // Pin the fake entry point so CI cannot launch the real workspace suite.
+      const childEnv = { ...process.env, ...env, npm_execpath: fakePnpm, RETRY_ARGS_FILE: argsFile };
       for (const key of Object.keys(childEnv)) {
         if (key === "PAPERCLIP_CI_TEST_SELECTION" || key === "PAPERCLIP_CI_PROFILE" || /^PAPERCLIP_.*_TEST_DATABASE_URL$/.test(key)) delete childEnv[key];
       }
