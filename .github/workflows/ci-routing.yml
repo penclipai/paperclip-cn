@@ -169,11 +169,6 @@ jobs:
             "/repos/penclipai/paperclip-cn/git/commits/$EVENT_MERGE_SHA" 2>/dev/null)" \
             || fail_closed 'could not inspect the event merge commit'
 
-          live_merge_json="$(gh api \
-            -H 'Accept: application/vnd.github+json' \
-            -H 'X-GitHub-Api-Version: 2022-11-28' \
-            "/repos/penclipai/paperclip-cn/git/commits/$live_merge_sha" 2>/dev/null)" \
-            || fail_closed 'could not inspect the current merge commit'
           validate_merge_commit() {
             local merge_json="$1"
             local expected_sha="$2"
@@ -195,12 +190,12 @@ jobs:
             local snapshot_sha="$1"
             local comparison
             [[ "$snapshot_sha" == "$EVENT_BASE_SHA" || "$snapshot_sha" == "$live_base_ref_sha" ]] && return 0
-            comparison="$(gh api "/repos/paperclipai/paperclip/compare/$EVENT_BASE_SHA...$snapshot_sha" 2>/dev/null)" || return 1
+            comparison="$(gh api "/repos/penclipai/paperclip-cn/compare/$EVENT_BASE_SHA...$snapshot_sha" 2>/dev/null)" || return 1
             jq -e --arg base "$EVENT_BASE_SHA" '
               .merge_base_commit.sha == $base and
               (.status == "ahead" or .status == "identical")
             ' <<< "$comparison" >/dev/null 2>&1 || return 1
-            comparison="$(gh api "/repos/paperclipai/paperclip/compare/$snapshot_sha...$live_base_ref_sha" 2>/dev/null)" || return 1
+            comparison="$(gh api "/repos/penclipai/paperclip-cn/compare/$snapshot_sha...$live_base_ref_sha" 2>/dev/null)" || return 1
             jq -e --arg base "$snapshot_sha" '
               .merge_base_commit.sha == $base and
               (.status == "ahead" or .status == "identical")

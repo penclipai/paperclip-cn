@@ -3,15 +3,15 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { runInNewContext } from "node:vm";
 
-const fleet = "runs-on/fleet=paperclip-post-merge-x64/env=public-ci";
+const upstreamFleet = "runs-on/fleet=paperclip-post-merge-x64/env=public-ci";
 const sha = "a".repeat(40);
 const base = {
-  repository: "paperclipai/paperclip", repository_id: "1170821064",
+  repository: "penclipai/paperclip-cn", repository_id: "1192887762",
   ref: "refs/heads/master", event_name: "push", sha, run_attempt: 1,
 };
 const expectedJobs = {
   "docker.yml": ["source_verification", "publication_verification"],
-  "cloud-readiness.yml": ["admission", "source_verified"],
+  "cloud-readiness.yml": [],
   "cloud-migrator-artifacts.yml": [],
   "release-verify.yml": ["typecheck", "general_tests", "serialized_tests", "runner_workflow_evals", "verify_paperclip_runner", "build"],
   "runner-chaos-evals.yml": ["chaos_and_recovery"],
@@ -20,8 +20,8 @@ const expectedJobs = {
 for (const [file, expectedNames] of Object.entries(expectedJobs)) {
   const workflow = readFileSync(new URL(`../../workflows/${file}`, import.meta.url), "utf8");
   const jobs = [...workflow.matchAll(/^  ([a-z_]+):\n([\s\S]*?)(?=^  [a-z_]+:\n|(?![\s\S]))/gm)];
-  const routed = jobs.filter(([, , body]) => body.includes(fleet));
-  test(`${file}: all intended jobs carry the post-merge guard`, () => {
+  const routed = jobs.filter(([, , body]) => body.includes(upstreamFleet));
+  test(`${file}: upstream fleet expressions cannot allocate CN fork capacity`, () => {
     assert.deepEqual(routed.map(([, name]) => name).sort(), [...expectedNames].sort());
   });
   for (const [, job, body] of routed) {
@@ -32,8 +32,8 @@ for (const [file, expectedNames] of Object.entries(expectedJobs)) {
     const inputs = { ref: sha, source_ref: sha, channel: "cloud-migrator" };
     const defaultContext = { ...base, event_name: release ? "workflow_dispatch" : "push" };
     const cases = [
-      { name: "exact master source", expected: fleet },
-      { name: "manual exact master source", github: { event_name: "workflow_dispatch" }, expected: fleet },
+      { name: "exact CN master source" },
+      { name: "manual exact CN master source", github: { event_name: "workflow_dispatch" } },
       { name: "switch disabled", enabled: "false" },
       { name: "switch absent", enabled: "" },
       { name: "malformed switch", enabled: "yes" },
@@ -59,10 +59,10 @@ for (const [file, expectedNames] of Object.entries(expectedJobs)) {
       cases.push({ name: "preview of master", inputs: { channel: "preview" } });
       cases.push({ name: "stable release", inputs: { channel: "stable" } });
     }
-    cases.push({ name: "first attempt as a string", github: { run_attempt: "1" }, expected: fleet });
-    cases.push({ name: "admitted retry", github: { run_attempt: 2 }, expected: release ? "ubuntu-latest" : fleet });
-    cases.push({ name: "later retry", github: { run_attempt: 3 }, expected: release ? "ubuntu-latest" : fleet });
-    cases.push({ name: "retry attempt as a string", github: { run_attempt: "2" }, expected: release ? "ubuntu-latest" : fleet });
+    cases.push({ name: "first attempt as a string", github: { run_attempt: "1" } });
+    cases.push({ name: "admitted retry", github: { run_attempt: 2 } });
+    cases.push({ name: "later retry", github: { run_attempt: 3 } });
+    cases.push({ name: "retry attempt as a string", github: { run_attempt: "2" } });
     cases.push({ name: "missing attempt", github: { run_attempt: undefined } });
     for (const { name, github = {}, inputs: overrides = {}, enabled = "true", expected = "ubuntu-latest" } of cases) {
       test(`${file}/${job}: ${name}`, () => {
@@ -73,8 +73,7 @@ for (const [file, expectedNames] of Object.entries(expectedJobs)) {
         const timeout = body.match(/^    timeout-minutes: (.+)$/m)?.[1];
         assert.ok(timeout, "AWS jobs need a timeout below the 45-minute instance lifetime");
         const minutes = timeout.startsWith("${{") ? runInNewContext(timeout.slice(3, -2), context) : Number(timeout);
-        if (expected === fleet) assert.ok(minutes > 0 && minutes < 45);
-        if (release && job === "plan_preview") assert.equal(minutes, expected === fleet ? 10 : 360);
+        if (release && job === "plan_preview") assert.equal(minutes, 360);
       });
     }
   }
@@ -89,7 +88,7 @@ for (const [file, expectedNames] of Object.entries(expectedJobs)) {
 }
 
 
-test("Cloud source proof keeps source-only gating on protected verification capacity", () => {
+test("Cloud source proof keeps source-only gating on the hosted CN verifier", () => {
   const workflow = readFileSync(new URL("../../workflows/cloud-readiness.yml", import.meta.url), "utf8");
   const bodies = new Map();
   for (const [name, needs] of [
@@ -98,7 +97,7 @@ test("Cloud source proof keeps source-only gating on protected verification capa
     const body = workflow.match(new RegExp(`^  ${name}:\\n([\\s\\S]*?)(?=^  [a-z_]+:|(?![\\s\\S]))`, "m"))?.[1];
     assert.ok(body, `missing ${name} job`);
     bodies.set(name, body);
-    assert.match(body, /runs-on:.*paperclip-post-merge-x64/);
+    assert.match(body, /^    runs-on: ubuntu-latest$/m);
     assert.doesNotMatch(body, /^ +continue-on-error:|^ +if:.*always\(\)/m);
     assert.match(body, /^    if: github.repository == 'penclipai\/paperclip-cn' && github.repository_id == '1192887762' && github.ref == 'refs\/heads\/master'$/m);
     assert.match(body, /^ +SOURCE_SHA: \$\{\{ github.sha \}\}$/m);

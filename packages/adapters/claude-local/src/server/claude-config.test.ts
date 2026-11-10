@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AdapterExecutionTarget } from "@penclipai/adapter-utils/execution-target";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 
 // A shared handle so the managed-config test can force the runtime preparation
 // step to throw an error that carries untrusted markers.
@@ -298,19 +299,27 @@ describe("Claude tool shell prefix", () => {
       remoteClaudeConfigSeedDir: path.join(root, "runtime", "config-seed"),
       remoteToolShellPrefixPath: prefixPath,
     });
-    const { stdout } = await execFileAsync("/bin/sh", ["-c", command], { env: { PATH: process.env.PATH ?? "" } });
-    return { root, prefixPath, stdout };
+    const { stdout } = await runPosixCommand("/bin/sh", ["-c", command], { PATH: process.env.PATH ?? "" });
+    return { root, prefixPath, command, stdout };
+  }
+
+  async function runPosixCommand(command: string, args: string[], env: Record<string, string>) {
+    const prepared = prepareTestPosixShell({ command, args, env });
+    return await execFileAsync(prepared.command, prepared.args, { env: prepared.env });
   }
 
   async function runThroughPrefix(prefixPath: string, commandString: string, env: Record<string, string>) {
-    const { stdout } = await execFileAsync(prefixPath, [commandString], { env });
+    const { stdout } = await runPosixCommand("sh", [prefixPath, commandString], env);
     return stdout.trim();
   }
 
   it("installs the script as a private executable and reports the install", async () => {
-    const { prefixPath, stdout } = await installPrefix();
+    const { prefixPath, command, stdout } = await installPrefix();
     await expect(fs.readFile(prefixPath, "utf8")).resolves.toBe(CLAUDE_TOOL_SHELL_PREFIX_SCRIPT);
-    expect((await fs.stat(prefixPath)).mode & 0o777).toBe(0o700);
+    // The production command must keep its POSIX permission boundary even when
+    // this Windows fixture host cannot report chmod bits through NTFS.
+    expect(command).toContain("chmod 700");
+    if (process.platform !== "win32") expect((await fs.stat(prefixPath)).mode & 0o777).toBe(0o700);
     expect(stdout).toContain("[paperclip] Installed the Claude tool shell prefix.");
     await expect(fs.stat(`${prefixPath}.partial`)).rejects.toMatchObject({ code: "ENOENT" });
   });
@@ -340,7 +349,7 @@ describe("Claude tool shell prefix", () => {
 
   it("runs the command string in the shell Claude Code selects", async () => {
     const { root, prefixPath } = await installPrefix();
-    const bash = (await execFileAsync("/bin/sh", ["-c", "command -v bash"])).stdout.trim();
+    const bash = (await runPosixCommand("sh", ["-c", "command -v bash"], {})).stdout.trim();
     const probe = 'if [ -n "${BASH_VERSION:-}" ]; then echo bash; else echo other; fi';
     await expect(runThroughPrefix(prefixPath, probe, { PATH: process.env.PATH ?? "", SHELL: bash }))
       .resolves.toBe("bash");
@@ -356,7 +365,7 @@ describe("Claude tool shell prefix", () => {
       .resolves.toBe("bash");
     await expect(runThroughPrefix(prefixPath, `printf '%s' "q'uote"`, { PATH: process.env.PATH ?? "", SHELL: bash }))
       .resolves.toBe("q'uote");
-    await expect(execFileAsync(prefixPath, ["exit 7"], { env: { PATH: process.env.PATH ?? "", SHELL: bash } }))
+    await expect(runPosixCommand("sh", [prefixPath, "exit 7"], { PATH: process.env.PATH ?? "", SHELL: bash }))
       .rejects.toMatchObject({ code: 7 });
   });
 

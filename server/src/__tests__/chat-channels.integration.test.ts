@@ -65358,6 +65358,10 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         }
         await db.delete(heartbeatRunEvents).where(eq(heartbeatRunEvents.runId, f.runId));
         await db.delete(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, f.runId));
+        // This case resets the source to a pre-dispatch setup failure. Keep its
+        // "no execution resources" proof complete rather than inheriting the
+        // settled remote lease from the general GitHub retry fixture.
+        await db.delete(environmentLeases).where(eq(environmentLeases.heartbeatRunId, f.runId));
         const diagnostic = mode === "other_setup" ? "A different preparation failure" : "The workspace still has an unfinished writer or save operation.";
         await db.update(heartbeatRuns).set({ runtimeMode: "legacy", nativeIssueId: null, nativePhase: null,
           errorCode: "setup_failed", error: diagnostic, sessionIdBefore: "inherited-display-hint",
@@ -68198,6 +68202,14 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           companyId: context.fixture.companyId, agentId: context.fixture.assignedAgentId, runId: context.runId,
           seq: 1, eventType: "native.local_process_stopped", payload: { processPid: 999999999, processGroupId: null },
         });
+        if (kind === "stopped" || kind === "real_queue" || kind === "cancelled_stopped") {
+          const lease = { id: randomUUID(), companyId: context.fixture.companyId, issueId: context.issue.id,
+            heartbeatRunId: context.runId, provider: "daytona", providerLeaseId: randomUUID(),
+            status: "released" as const, cleanupStatus: "success" as const, releasedAt: new Date(),
+            leasePolicy: "ephemeral" as const };
+          await db.insert(environmentLeases).values({ ...lease, metadata: { remoteExecutionTermination:
+            remoteTerminationReceipt(lease, { providerLeaseId: lease.providerLeaseId, state: "destroyed" }) } });
+        }
         const request = { db, companyId: context.fixture.companyId, issueId: context.issue.id,
           actorId: "owner-user", actorSource: "cloud_tenant", observedRunId: context.runId, idempotencyKey: randomUUID(),
           prepareChatRetry: context.service.prepareFailedChatRunRetry };

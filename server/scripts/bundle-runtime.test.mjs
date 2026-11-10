@@ -73,7 +73,7 @@ describe("bundleRuntime", () => {
 
   it("packages a maintenance entry without starting the application or needing a TypeScript loader", async () => {
     const maintenanceEntry = path.join(root, "server", "dist", "maintenance.js");
-    write(maintenanceEntry, 'import { asset } from "@paperclipai/fixture"; console.log(JSON.stringify({ asset, phase: process.argv.at(-1) }));');
+    write(maintenanceEntry, 'import { asset } from "@penclipai/fixture"; console.log(JSON.stringify({ asset, phase: process.argv.at(-1) }));');
     const outdir = path.join(root, "server", "dist-runtime");
     await bundleRuntime({ entry: path.join(root, "server", "dist", "index.js"), outdir, maintenanceEntry });
     const { stdout } = await execFileAsync(process.execPath, [path.join(outdir, "agent-files.mjs"), "--phase=eligibility"], { timeout: 30_000 });
@@ -82,7 +82,7 @@ describe("bundleRuntime", () => {
 
   it("packages standalone enrollment without starting the app", async () => {
     const ephemeralMigrationEntry = path.join(root, "server", "dist", "migration.js");
-    write(ephemeralMigrationEntry, 'import { values } from "@paperclipai/fixture"; console.log(JSON.stringify({ migrated: values.doubled }));');
+    write(ephemeralMigrationEntry, 'import { values } from "@penclipai/fixture"; console.log(JSON.stringify({ migrated: values.doubled }));');
     const outdir = path.join(root, "server", "dist-runtime");
     await bundleRuntime({ entry: path.join(root, "server", "dist", "index.js"), outdir, ephemeralMigrationEntry });
     const { stdout } = await execFileAsync(process.execPath, [path.join(outdir, "ephemeral-migration.mjs")], { timeout: 30_000 });
@@ -91,7 +91,7 @@ describe("bundleRuntime", () => {
 
   it("packages online harness preparation as a standalone plain-Node entry", async () => {
     const nativeHarnessPrestageEntry = path.join(root, "server", "dist", "prestage.js");
-    write(nativeHarnessPrestageEntry, 'import { values } from "@paperclipai/fixture"; console.log(JSON.stringify({ copied: values.doubled, enrollmentReady: false }));');
+    write(nativeHarnessPrestageEntry, 'import { values } from "@penclipai/fixture"; console.log(JSON.stringify({ copied: values.doubled, enrollmentReady: false }));');
     const outdir = path.join(root, "server", "dist-runtime");
     await bundleRuntime({ entry: path.join(root, "server", "dist", "index.js"), outdir, nativeHarnessPrestageEntry });
     const { stdout } = await execFileAsync(process.execPath, [path.join(outdir, "native-harness-prestage.mjs")], { timeout: 30_000 });
@@ -100,7 +100,7 @@ describe("bundleRuntime", () => {
 
   it("packages the finite online workspace entry without starting the app", async () => {
     const onlineWorkspaceMigrationEntry = path.join(root, "server", "dist", "online.js");
-    write(onlineWorkspaceMigrationEntry, 'import { values } from "@paperclipai/fixture"; console.log(JSON.stringify({ migrated: values.doubled, enrollmentReady: false }));');
+    write(onlineWorkspaceMigrationEntry, 'import { values } from "@penclipai/fixture"; console.log(JSON.stringify({ migrated: values.doubled, enrollmentReady: false }));');
     const outdir = path.join(root, "server", "dist-runtime");
     await bundleRuntime({ entry: path.join(root, "server", "dist", "index.js"), outdir, onlineWorkspaceMigrationEntry });
     const { stdout } = await execFileAsync(process.execPath, [path.join(outdir, "online-workspace-migration.mjs")], { timeout: 30_000 });

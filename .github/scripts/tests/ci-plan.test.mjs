@@ -4,10 +4,16 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import { comparisonPaths, planTasks } from "../ci-plan.mjs";
 import { mergeDiff } from "../ci-diff.mjs";
 
 const root = new URL("../../../", import.meta.url);
+const rootPath = fileURLToPath(root);
+const bash = process.platform === "win32" ? "C:\\Program Files\\Git\\bin\\bash.exe" : "bash";
+const bashPath = (file) => process.platform === "win32"
+  ? `/${file[0].toLowerCase()}${file.slice(2).replaceAll("\\", "/")}`
+  : file;
 const config = JSON.parse(readFileSync(new URL("turbo.json", root), "utf8"));
 const lanes = JSON.parse(readFileSync(new URL(".github/ci-task-matrix.json", root), "utf8"));
 const plan = (paths, options = {}) => planTasks({ config, lanes, paths, ...options });
@@ -172,9 +178,9 @@ test("local planner reads a real Git rename and handles a missing revision conse
     mkdirSync(path.join(directory, "releases"));
     git("mv", "packages/shared/src/input.ts", "releases/v1.md"); git("commit", "-qm", "rename");
     for (const revision of [base, "missing-revision"]) {
-      const result = spawnSync(process.execPath, [new URL("../ci-plan.mjs", import.meta.url).pathname, revision], {
+      const result = spawnSync(process.execPath, [fileURLToPath(new URL("../ci-plan.mjs", import.meta.url)), revision], {
         cwd: directory, encoding: "utf8", env: { ...process.env, GITHUB_OUTPUT: "", GITHUB_STEP_SUMMARY: "",
-          CI_TASK_CONFIG: new URL("turbo.json", root).pathname, CI_TASK_MATRIX: new URL(".github/ci-task-matrix.json", root).pathname },
+          CI_TASK_CONFIG: fileURLToPath(new URL("turbo.json", root)), CI_TASK_MATRIX: fileURLToPath(new URL(".github/ci-task-matrix.json", root)) },
       });
       assert.equal(result.status, 0, result.stderr);
       const resultPlan = JSON.parse(result.stdout);
@@ -222,12 +228,14 @@ test("required aggregates reject omitted, failed and cancelled selected work", (
 test("the real routing step uses pinned trusted definitions and defaults to full on fetch failure", () => {
   const workflow = readFileSync(new URL(".github/workflows/ci-routing.yml", root), "utf8");
   const block = workflow.split("      - name: Plan affected CI tasks from trusted definitions\n")[1];
-  const shell = block.split("        run: |\n")[1].split("\n").map((line) => line.slice(10)).join("\n");
+  const shell = block.split("        run: |\n")[1].split("\n").map((line) => line.slice(10)).join("\n")
+    .replaceAll("gh api", '"$TEST_GH" api')
+    .replace(/(^|\n)(\s*)git /g, '$1$2"$TEST_GIT" ');
   const directory = mkdtempSync(path.join(tmpdir(), "ci-routing-plan-"));
   try {
     const repository = path.join(directory, "source");
     mkdirSync(repository);
-    const gitBin = execFileSync("which", ["git"], { encoding: "utf8" }).trim();
+    const gitBin = process.env.GIT || (process.platform === "win32" ? "C:\\Program Files\\Git\\cmd\\git.exe" : "git");
     const git = (...args) => execFileSync(gitBin, args, { cwd: repository, encoding: "utf8" }).trim();
     git("init", "-q", "-b", "main"); git("config", "user.name", "CI"); git("config", "user.email", "ci@example.invalid");
     writeFileSync(path.join(repository, "base"), "base"); git("add", "."); git("commit", "-qm", "base");
@@ -245,14 +253,15 @@ test("the real routing step uses pinned trusted definitions and defaults to full
     writeFileSync(path.join(directory, "git"), `#!/usr/bin/env node
 const {spawnSync}=require('node:child_process');
 if(process.env.TEST_GIT_FAILURE==='true')process.exit(1);
-const args=process.argv.slice(2).map(a=>a==='https://github.com/paperclipai/paperclip.git'?process.env.TEST_GIT_REPOSITORY:a);
+const args=process.argv.slice(2).map(a=>a==='https://github.com/penclipai/paperclip-cn.git'?process.env.TEST_GIT_REPOSITORY:a);
 const r=spawnSync(${JSON.stringify(gitBin)},args,{stdio:'inherit'});process.exit(r.status??1);
 `);
     chmodSync(path.join(directory, "git"), 0o755);
     const gh = path.join(directory, "gh");
     writeFileSync(gh, `#!/usr/bin/env node
 const fs = require('node:fs'), path = require('node:path');
-const endpoint = process.argv.find(arg => arg.startsWith('/repos/'));
+const rawEndpoint = process.argv.find(arg => arg.includes('/repos/'));
+const endpoint = rawEndpoint && '/repos/' + rawEndpoint.split('/repos/').at(-1);
 if (endpoint?.endsWith('/git/ref/heads/master')) console.log('a'.repeat(40));
 else if (endpoint?.includes('/contents/')) {
   if (process.env.TEST_FETCH_FAILURE === 'true') process.exit(1);
@@ -263,14 +272,27 @@ else if (endpoint?.includes('/contents/')) {
 else process.exit(3);
 `);
     chmodSync(gh, 0o755);
+    const gitHook = path.join(directory, "git-hook.cjs");
+    writeFileSync(gitHook, `const childProcess = require("node:child_process");
+const { syncBuiltinESMExports } = require("node:module");
+const originalExecFileSync = childProcess.execFileSync;
+childProcess.execFileSync = function(command, args = [], options) {
+  if (command !== "git") return originalExecFileSync.call(this, command, args, options);
+  const rewritten = args.map((arg) => arg === "https://github.com/penclipai/paperclip-cn.git" ? process.env.TEST_GIT_REPOSITORY : arg);
+  return originalExecFileSync.call(this, process.env.TEST_GIT_BIN, rewritten, options);
+};
+syncBuiltinESMExports();
+`);
     for (const overrides of [{}, { TEST_FETCH_FAILURE: "true" }, { TEST_GIT_FAILURE: "true" }, { PROFILE_CI: "true" }, { STACK_JSON: "{}" }, { FULL_CI: "false" }]) {
       const output = path.join(directory, "output");
       writeFileSync(output, "");
-      const result = spawnSync("bash", ["-c", shell], { encoding: "utf8", env: {
-        ...process.env, PATH: `${directory}:${process.env.PATH}`, TEST_TRUSTED_ROOT: root.pathname,
+      const result = spawnSync(bash, ["-c", shell], { encoding: "utf8", env: {
+        ...process.env, PATH: `${bashPath(directory)}:${process.env.PATH}`, TEST_TRUSTED_ROOT: rootPath,
+        TEST_GH: bashPath(gh), TEST_GIT: bashPath(path.join(directory, "git")),
         RUNNER_TEMP: directory, FULL_CI: "true", PROFILE_CI: "false", FORCE_FULL_CI: "false",
         CI_INCREMENTAL_MODE: "enabled", STACK_JSON: "null", EVENT_BASE_SHA: "b".repeat(40), EVENT_HEAD_SHA: prHead, EVENT_MERGE_SHA: merge,
-        TEST_GIT_REPOSITORY: repository,
+        TEST_GIT_REPOSITORY: repository, TEST_GIT_BIN: gitBin,
+        NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ""} --require=${JSON.stringify(gitHook)}`,
         GITHUB_OUTPUT: output, GITHUB_STEP_SUMMARY: "", ...overrides,
       } });
       assert.equal(result.status, 0, result.stderr);

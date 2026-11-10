@@ -6,6 +6,19 @@ import path from "node:path";
 import test from "node:test";
 import vm from "node:vm";
 
+const bash = process.platform === "win32" ? "C:\\Program Files\\Git\\bin\\bash.exe" : "bash";
+const bashPath = (file) => process.platform === "win32"
+  ? `/${file[0].toLowerCase()}${file.slice(2).replaceAll("\\", "/")}`
+  : file;
+const writeWindowsJqShim = (file) => {
+  if (process.platform === "win32") {
+    // Native jq defaults to CRLF, which Bash command substitution preserves as
+    // a trailing carriage return. Match the Linux CI contract in this fixture.
+    writeFileSync(file, "#!/usr/bin/env bash\nexec jq.exe -b \"$@\"\n");
+    chmodSync(file, 0o700);
+  }
+};
+
 const workflow = readFileSync(new URL("../../workflows/ci-routing.yml", import.meta.url), "utf8");
 const jobs = workflow.split(/^jobs:\n/m)[1];
 
@@ -45,11 +58,36 @@ function executeStep(name, overrides = {}) {
     const gh = path.join(directory, "gh");
     writeFileSync(gh, githubStub);
     chmodSync(gh, 0o700);
-    const result = spawnSync("bash", ["-c", stepScript(name)], {
+    writeWindowsJqShim(path.join(directory, "jq"));
+    const ghHook = path.join(directory, "gh-hook.cjs");
+    writeFileSync(ghHook, `const childProcess = require("node:child_process");
+const { syncBuiltinESMExports } = require("node:module");
+const originalExecFileSync = childProcess.execFileSync;
+childProcess.execFileSync = function(command, args = [], options) {
+  if (command !== "gh") return originalExecFileSync.call(this, command, args, options);
+  const endpoint = args.find((arg) => /^\\/(?:repos|users)\\//.test(arg));
+  let output;
+  if (endpoint?.includes("/contents/.github/CODEOWNERS?ref=")) {
+    if (process.env.TEST_CODEOWNERS_FAIL) throw new Error("stubbed CODEOWNERS failure");
+    output = JSON.stringify({ encoding: "base64", content: process.env.TEST_CODEOWNERS_BASE64 });
+  } else if (endpoint === "/users/ci-owner") {
+    if (process.env.TEST_OWNER_LOOKUP_FAIL) throw new Error("stubbed owner lookup failure");
+    output = JSON.stringify({ id: Number(process.env.TEST_CI_OWNER_ID || 34892728), type: process.env.TEST_CI_OWNER_TYPE || "User" });
+  } else {
+    throw new Error("unexpected nested gh endpoint: " + endpoint);
+  }
+  return options?.encoding ? output : Buffer.from(output);
+};
+syncBuiltinESMExports();
+`);
+    // Feeding the body to stdin avoids Git Bash/MSYS rewriting API paths
+    // embedded in a `bash -c` command-line argument on Windows.
+    const result = spawnSync(bash, ["-s"], {
       encoding: "utf8",
+      input: stepScript(name),
       env: {
         ...process.env,
-        PATH: `${directory}:${process.env.PATH}`,
+        PATH: `${bashPath(directory)}:${process.env.PATH}`,
         GITHUB_OUTPUT: output,
         RUNNER_TEMP: directory,
         TEST_OWNER_HELPER: path.resolve("scripts/ci-profile/authorize.mjs"),
@@ -70,16 +108,21 @@ function executeStep(name, overrides = {}) {
         EVENT_MERGE_SHA: "2222222222222222222222222222222222222222",
         RUN_ID: "123456789",
         RUN_ATTEMPT: "1",
+        NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ""} --require=${JSON.stringify(ghHook)}`,
         ...overrides,
       },
     });
     assert.equal(result.status, 0, result.stderr);
     const lines = readFileSync(output, "utf8").trim().split("\n");
     assert.equal(lines.length, 1, "each step must emit exactly one decision");
-    return Object.fromEntries(lines.map((line) => {
+    return {
+      ...Object.fromEntries(lines.map((line) => {
       const separator = line.indexOf("=");
       return [line.slice(0, separator), line.slice(separator + 1)];
-    }));
+      })),
+      stdout: result.stdout,
+      stderr: result.stderr,
+    };
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
@@ -177,7 +220,8 @@ const routeCases = [
 
 for (const [name, env, expected = "ubuntu-latest"] of routeCases) {
   test(`runner decision: ${name}`, () => {
-    assert.equal(executeStep("Validate PR identity and select runner", env).runner, expected);
+    const result = executeStep("Validate PR identity and select runner", env);
+    assert.equal(result.runner, expected, `${result.stdout}${result.stderr}`);
   });
 }
 
@@ -342,7 +386,7 @@ const catalogContext = {
 };
 
 const catalogPlacementCases = [
-  ["approved first manual master attempt", {}, awsRunner],
+  ["CN fork keeps the catalog action hosted", {}],
   ["foreign repository", { repository: "other/paperclip" }],
   ["foreign repository ID", { repository_id: "999" }],
   ["untrusted branch", { ref: "refs/heads/other" }],
@@ -364,6 +408,25 @@ for (const [name, overrides, expected = "ubuntu-latest"] of catalogPlacementCase
     assert.equal(routingPlacement({}, { ...catalogContext, ...overrides }, catalogAuthorize), expected);
   });
 }
+
+test("catalog fleet allocation requires canonical upstream identity and first manual dispatch", () => {
+  const upstream = {
+    ...catalogContext,
+    repository: "paperclipai/paperclip",
+    repository_id: "1170821064",
+    workflow_ref: "paperclipai/paperclip/.github/workflows/chat-catalog-testops.yml@refs/heads/master",
+  };
+  assert.equal(routingPlacement({}, upstream, catalogAuthorize), awsRunner);
+  for (const overrides of [
+    { actor_id: "999" },
+    { triggering_actor: "other" },
+    { run_attempt: "2" },
+    { ref: "refs/heads/other" },
+    { event_name: "push" },
+  ]) {
+    assert.equal(routingPlacement({}, { ...upstream, ...overrides }, catalogAuthorize), "ubuntu-latest");
+  }
+});
 
 test("catalog placement retains downstream jobs and actual dispatch guard", () => {
   assert.match(catalogWorkflow.split("  select:\n")[1].split("\n  build:\n")[0], /^ {4}runs-on: ubuntu-latest$/m);

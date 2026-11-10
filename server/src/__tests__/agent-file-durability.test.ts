@@ -143,14 +143,21 @@ describe("durable agent file authority", () => {
     await materializeInstructionBytes(root, "empty.txt", Buffer.alloc(0));
     await materializeInstructionBytes(root, "script.sh", Buffer.from("#!/bin/sh\n"));
     await fs.chmod(path.join(root, "script.sh"), 0o755);
+    const sourceStat = await fs.stat(path.join(root, "script.sh"));
+    const sourceMode = sourceStat.mode & 0o777;
     await fs.mkdir(path.join(root, "empty-folder"));
     await db.update(agents).set({ adapterConfig: { instructionsBundleMode: "managed", instructionsRootPath: root } }).where(eq(agents.id, agentId));
     expect(await store().read(companyId, agentId, "AGENTS.md", actor())).toEqual(Buffer.from("Original"));
+    const [head] = await db.select().from(agentFileRoots).where(eq(agentFileRoots.agentId, agentId));
+    expect(head.entries).toContainEqual(expect.objectContaining({ path: "script.sh", kind: "file", mode: sourceStat.mode }));
     await replaceFilesystem();
     vi.stubEnv("PAPERCLIP_DURABLE_AGENT_FILES", "false");
     expect(await store().read(companyId, agentId, "nested/data.bin", actor())).toEqual(binary);
     expect(await store().read(companyId, agentId, "empty.txt", actor())).toEqual(Buffer.alloc(0));
-    expect((await fs.stat(path.join(root, "script.sh"))).mode & 0o777).toBe(0o755);
+    // Compare the projection with the legacy source mode. On POSIX that keeps
+    // the executable-bit assertion; Windows preserves only the mode it can
+    // represent before the legacy import.
+    expect((await fs.stat(path.join(root, "script.sh"))).mode & 0o777).toBe(sourceMode);
     expect((await fs.stat(path.join(root, "empty-folder"))).isDirectory()).toBe(true);
   });
 

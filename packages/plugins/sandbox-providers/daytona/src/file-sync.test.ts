@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import zlib from "node:zlib";
 import { Transform } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
+import { prepareTestPosixShell } from "../../../../adapter-utils/src/test-fixtures/posix-shell.js";
 
 // The plugin module imports `@daytonaio/sdk` as a value, but the sync tests never
 // touch a real Daytona client — every sandbox call goes through a local mock. Stub
@@ -276,7 +277,16 @@ function createRealExecSandbox(input?: {
       process: {
         executeCommand: async (command: string) => {
           commands.push({ command });
-          const result = spawnSync("/bin/sh", ["-c", command], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024, env: input?.commandEnv });
+          const shell = prepareTestPosixShell({
+            command: "/bin/sh",
+            args: ["-c", command],
+            env: input?.commandEnv ?? process.env,
+          });
+          const result = spawnSync(shell.command, shell.args, {
+            encoding: "utf8",
+            maxBuffer: 64 * 1024 * 1024,
+            env: shell.env,
+          });
           const output = (result.stdout ?? "") + (result.stderr ?? "");
           return { exitCode: result.status ?? 1, result: input?.hideZstd ? output.replace("PAPERCLIP_ZSTD_AVAILABLE\n", "") : output };
         },
@@ -1200,8 +1210,14 @@ describe("daytona file-sync inbound gzip transport fallback (sandbox without zst
       expect(uploaded[0]!.destination.endsWith(".gz")).toBe(true);
       expect(uploaded[0]!.bytes).toBeLessThan((ZSTD_MIN_SOURCE_BYTES_FOR_TEST + 1024) / 2);
       expect(commands.some((entry) => entry.command.includes("gzip -dc"))).toBe(true);
+      expect(commands.some((entry) => entry.command.includes("chmod 600"))).toBe(true);
       expect(await sha256OfFile(targetPath)).toBe(await sha256OfFile(sourcePath));
-      expect((await fs.stat(targetPath)).mode & 0o777).toBe(0o600);
+      // Git Bash on Windows cannot faithfully project a POSIX 0600 mode onto
+      // the NTFS-backed fake sandbox. The exact remote chmod remains asserted
+      // above; POSIX hosts additionally verify the resulting inode mode.
+      if (process.platform !== "win32") {
+        expect((await fs.stat(targetPath)).mode & 0o777).toBe(0o600);
+      }
       expect((await fs.readdir(remoteDir)).filter((name) => name.includes(".paperclip-upload"))).toHaveLength(0);
     } finally {
       await fs.rm(root, { recursive: true, force: true });

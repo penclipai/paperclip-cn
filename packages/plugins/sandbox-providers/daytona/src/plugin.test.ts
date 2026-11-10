@@ -4,6 +4,7 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { prepareTestPosixShell } from "../../../../adapter-utils/src/test-fixtures/posix-shell.js";
 
 const mockCreate = vi.hoisted(() => vi.fn());
 const mockGet = vi.hoisted(() => vi.fn());
@@ -2570,21 +2571,31 @@ describe("Daytona sandbox provider plugin", () => {
   it("opens existing files in the recorded directory after a stopped sandbox resumes", async () => {
     const directory = await fs.mkdtemp(path.join(os.tmpdir(), "daytona-resume-cwd-"));
     const allocationRoot = path.join(directory, "paperclip-workspace");
-    const remoteCwd = path.join(allocationRoot, ".paperclip-workspaces", "fixture-workspace");
-    const sentinelPath = path.join(allocationRoot, ".paperclip-runtime", "reusable-sandbox-lease.json");
-    await fs.mkdir(remoteCwd, { recursive: true });
-    await fs.mkdir(path.dirname(sentinelPath), { recursive: true });
-    await fs.writeFile(sentinelPath, JSON.stringify({ token: "file-token" }));
-    await fs.writeFile(path.join(remoteCwd, "saved.txt"), "retained work\n");
+    const hostRemoteCwd = path.join(allocationRoot, ".paperclip-workspaces", "fixture-workspace");
+    const hostSentinelPath = path.join(allocationRoot, ".paperclip-runtime", "reusable-sandbox-lease.json");
+    // Provider lease metadata is always a POSIX remote path, even while this
+    // fixture stores the stand-in sandbox filesystem on a Windows host.
+    const toRemotePath = (value: string) => process.platform === "win32"
+      ? value.replace(/^([A-Za-z]):[\\/]/, (_match, drive: string) => `/${drive.toLowerCase()}/`).replace(/\\/g, "/")
+      : value;
+    const remoteCwd = toRemotePath(hostRemoteCwd);
+    const sentinelPath = toRemotePath(hostSentinelPath);
+    await fs.mkdir(hostRemoteCwd, { recursive: true });
+    await fs.mkdir(path.dirname(hostSentinelPath), { recursive: true });
+    await fs.writeFile(hostSentinelPath, JSON.stringify({ token: "file-token" }));
+    await fs.writeFile(path.join(hostRemoteCwd, "saved.txt"), "retained work\n");
     const sandbox = createMockSandbox({ state: "stopped", workDir: directory });
-    sandbox.process.executeCommand.mockImplementation(async command => ({ exitCode: 0,
-      result: execFileSync("sh", ["-c", command], { encoding: "utf8", cwd: directory }) }));
+    sandbox.process.executeCommand.mockImplementation(async command => {
+      const shell = prepareTestPosixShell({ command: "sh", args: ["-c", command], env: process.env });
+      return { exitCode: 0, result: execFileSync(shell.command, shell.args, { encoding: "utf8", cwd: directory, env: shell.env }) };
+    });
     mockGet.mockResolvedValue(sandbox);
     try {
       const resumed = await plugin.definition.onEnvironmentResumeLease!({ driverKey: "daytona", companyId: "company-1",
         environmentId: "env-1", providerLeaseId: sandbox.id, config: { apiKey: "fixture-key" }, requestedCwd: remoteCwd,
         leaseMetadata: { remoteCwd, workspaceSentinel: { path: sentinelPath, token: "file-token" } } });
-      expect(await fs.readFile(path.join(resumed.metadata!.remoteCwd as string, "saved.txt"), "utf8")).toBe("retained work\n");
+      expect(resumed.metadata!.remoteCwd).toBe(remoteCwd);
+      expect(await fs.readFile(path.join(hostRemoteCwd, "saved.txt"), "utf8")).toBe("retained work\n");
       expect(sandbox.fs.createFolder).not.toHaveBeenCalled();
       expect(sandbox.fs.uploadFile).not.toHaveBeenCalled();
       expect(mockCreate).not.toHaveBeenCalled();

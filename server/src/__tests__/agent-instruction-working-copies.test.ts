@@ -195,6 +195,14 @@ describe("registered run instruction copies", () => {
         expect(await copies.get(companyId, copy.runId)).toMatchObject({ state: "pending_collection", processStoppedAt: null });
         expect(await fs.readFile(path.join(root, entryFile), "utf8")).toBe(initial);
         await appendHeartbeatRunEvent(db, { ...target(), runId: copy.runId, eventType: "native.local_process_stopped", stream: "system" });
+        if (process.platform === "win32") {
+          // A historical direct-PID event is not process-tree stop proof on
+          // Windows. The worker must leave the copy pending until the internal
+          // owner that joined the process performs the collection.
+          await vi.advanceTimersByTimeAsync(30_000);
+          expect(await copies.get(companyId, copy.runId)).toMatchObject({ state: "pending_collection", processStoppedAt: null });
+          await copies.collectStopped({ companyId, runId: copy.runId });
+        }
         await vi.advanceTimersByTimeAsync(30_000); await saved(copy.runId);
       } finally { await worker.stop(); }
     });

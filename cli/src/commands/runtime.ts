@@ -97,7 +97,7 @@ export async function resolveAntigravityProvisioner(serverUrl: string): Promise<
   const url = new URL(serverUrl);
   if (url.protocol !== "file:" || url.search || url.hash) throw new Error("Antigravity setup requires an installed Paperclip server");
   const entry = await realpath(fileURLToPath(url));
-  if (!entry.endsWith("/dist/index.js")) throw new Error("Antigravity setup requires the published server layout");
+  if (basename(entry) !== "index.js" || basename(dirname(entry)) !== "dist") throw new Error("Antigravity setup requires the published server layout");
   const root = resolve(dirname(entry), "..");
   const manifest = join(root, "package.json");
   const info = await lstat(manifest);
@@ -134,7 +134,7 @@ export async function resolveKimiProvisioner(serverUrl: string): Promise<string>
   const url = new URL(serverUrl);
   if (url.protocol !== "file:" || url.search || url.hash) throw new Error("Kimi setup requires an installed Paperclip server");
   const entry = await realpath(fileURLToPath(url));
-  if (!entry.endsWith("/dist/index.js")) throw new Error("Kimi setup requires the published server layout");
+  if (basename(entry) !== "index.js" || basename(dirname(entry)) !== "dist") throw new Error("Kimi setup requires the published server layout");
   const root = resolve(dirname(entry), "..");
   const manifest = join(root, "package.json");
   const info = await lstat(manifest);

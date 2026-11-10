@@ -837,7 +837,7 @@ describe("emitOnlyTscArgs", () => {
   it("is what the Dockerfile selects for the server build", () => {
     const dockerfile = readFileSync(path.join(serverRoot, "..", "Dockerfile"), "utf8");
 
-    expect(dockerfile).toContain("RUN PAPERCLIP_TSC_EMIT_ONLY=1 pnpm --filter @paperclipai/server build\n");
+    expect(dockerfile).toContain("RUN PAPERCLIP_TSC_EMIT_ONLY=1 pnpm --filter @penclipai/server build");
   });
 });
 
