@@ -16,6 +16,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { runNodeScript, runPnpm } from "./utils.mjs";
 import { createDetachedDeployWorkspace, isQualifiedCopilotPlatform } from "./detached-deploy-workspace.mjs";
+import { pruneStagedBundledPluginUiSourceMaps } from "./bundled-plugin-ui-sourcemaps.mjs";
 import { optimizeRuntimePayload, pruneVerifiedCopilotMaterializer } from "./runtime-payload.mjs";
 import { checkCatalog } from "../../../scripts/i18n-catalog.mjs";
 
@@ -278,6 +279,11 @@ function copyBundledPluginPackage(packageJsonPath) {
     copyIfExists(path.resolve(packageRoot, entryName), path.resolve(destinationRoot, entryName), {
       dereference: true,
     });
+  }
+
+  const removedUiSourceMaps = pruneStagedBundledPluginUiSourceMaps(destinationRoot);
+  if (removedUiSourceMaps.length > 0) {
+    console.log(`[desktop-stage] Removed ${removedUiSourceMaps.length} optional bundled-plugin UI source maps from ${relativePackageRoot}.`);
   }
 
   return { sourceRoot: packageRoot, stagedRoot: destinationRoot };

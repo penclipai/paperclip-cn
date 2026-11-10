@@ -5119,6 +5119,14 @@ it with a relative symlink to the selected native executable. Its existing
 entrypoint remains available. Linux staging rejects musl or an unknown libc
 before trimming files. Windows payloads and other providers are preserved.
 
+The Electron-only staged copy omits generated `.js.map` and `.d.ts.map` files
+from first-party bundled plugin UI directories only when a matching regular
+JavaScript or declaration file ends with the exact
+`//# sourceMappingURL=<map filename>` marker. It removes that marker before
+deleting the map. Other maps stay in place. Source trees, published plugin
+packages, plugin runtime code and assets, dependencies, and provider payloads
+remain unchanged.
+
 Run the fixture regressions with:
 
 ```sh
