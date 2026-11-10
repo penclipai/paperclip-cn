@@ -2951,7 +2951,10 @@ process.on("SIGTERM", () => child.kill("SIGTERM"));
 
   /** Daytona wave s9301: the relaunched remote runner exited before run.prepare. */
   async function seedExitedRemoteRunner(label: string, failure: Record<string, unknown> = {}, attempt = 2) {
-    const fixture = await seedUnlaunchedRemoteClaim(label, { bootstrapRetry: true, attempt,
+    // `issues.identifier` is globally unique. The same focused integration case
+    // can be retried against a retained test database, so scope its seed label
+    // to this invocation without changing the recovery scenario itself.
+    const fixture = await seedUnlaunchedRemoteClaim(`${label}-${randomUUID()}`, { bootstrapRetry: true, attempt,
       event: { eventType: "native.process_start_requested" }, run: { processPid: 955, processStartedAt: new Date(Date.now() - 30_000) } });
     await fixture.db.insert(heartbeatRunEvents).values({ companyId, runId: fixture.runId, agentId, seq: 901, stream: "system",
       level: "info", eventType: "native.process_identity_recorded" });

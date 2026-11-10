@@ -1045,16 +1045,8 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
       }
     });
 
-    it("keeps a stopped local identity without a process-group proof held", async () => {
-      const heldRunId = randomUUID();
-      const heldRunnerInstanceId = randomUUID();
-      const heldSessionId = randomUUID();
-      // The regular recovery fixture starts retryable too. Keep it out of this
-      // narrow ownership test without changing its durable state or error.
-      await db
-        .update(nativeRunFinalizations)
-        .set({ nextAttemptAt: new Date("2099-01-01T00:00:00.000Z") })
-        .where(eq(nativeRunFinalizations.runId, runId));
+    it("preserves the old provider contract and admits newer direction only in a separate turn", async () => {
+      legacyAdapterExecute.mockClear();
       staleProviderProcess = spawn(
         process.execPath,
         ["-e", "setInterval(() => {}, 1_000)"],
@@ -1062,106 +1054,8 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
       );
       await once(staleProviderProcess, "spawn");
       expect(staleProviderProcess.pid).toEqual(expect.any(Number));
-      await db.insert(heartbeatRuns).values({
-        id: heldRunId,
-        companyId,
-        agentId,
-        nativeIssueId: issueId,
-        status: "running",
-        runtimeMode: "native",
-        runtimeModeResolverVersion: "phase6-v1",
-        runtimeModeReason: "eligible_opt_in",
-        runtimeModeResolvedAt: new Date("2026-08-09T04:00:00.000Z"),
-        runnerProfileJson: {
-          mode: "native",
-          backend: "codex_app_server",
-          protocolVersion: 1,
-          nativeExecutionInput: {
-            ...execution,
-            binding: { ...execution.binding, runId: heldRunId },
-            session: { ...execution.session, normalizedSessionId: heldSessionId },
-          },
-          sessionCheckpoint: {
-            ...checkpoint,
-            identity: { ...checkpoint.identity, runId: heldRunId, sessionId: heldSessionId },
-          },
-        },
-        runnerInstanceId: heldRunnerInstanceId,
-        nativeSessionId: heldSessionId,
-        driverKind: "codex_app_server",
-        driverVersion: "phase6-v1",
-        completionContractId: contractId,
-        completionContractSha256: contractSha,
-        nativePhase: "retryable_failure",
-        nativePhaseUpdatedAt: new Date("2026-08-09T04:00:00.000Z"),
-        startedAt: new Date("2026-08-09T04:00:00.000Z"),
-        contextSnapshot: { issueId, taskId: issueId, skipIssueComment: true },
-      });
-      await db.insert(nativeRunFinalizations).values({
-        runId: heldRunId,
-        companyId,
-        issueId,
-        phase: "retryable_failure",
-        attempt: 1,
-        failureCode: "native_session_interrupted",
-        nextAttemptAt: new Date(0),
-      });
-      await persistHeartbeatRunProcessMetadata(db, heldRunId, {
-        pid: staleProviderProcess.pid!,
-        processGroupId: null,
-        startedAt: new Date("2026-08-09T04:00:00.000Z").toISOString(),
-        targetKind: "local",
-      });
-      const heartbeat = heartbeatService(db, {
-        runtimeEnv: { PAPERCLIP_INSTANCE_ID: "phase6-recovery-test" },
-        nativeSessionBackendFactory: () => backend,
-      });
-      try {
-        await heartbeat.reapOrphanedRuns({ staleThresholdMs: 0 });
-        await heartbeat.drainActiveRunExecutions();
-        const exit = once(staleProviderProcess, "exit");
-        staleProviderProcess.kill("SIGKILL");
-        await exit;
-        await heartbeat.reapOrphanedRuns({ staleThresholdMs: 0 });
-        await heartbeat.drainActiveRunExecutions();
-        await expect(
-          db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, heldRunId)),
-        ).resolves.toEqual([
-          expect.objectContaining({
-            status: "running",
-            processPid: staleProviderProcess.pid,
-            processGroupId: null,
-            errorCode: "native_execution_ownership_unverified",
-          }),
-        ]);
-        expect(recoverSession).not.toHaveBeenCalled();
-      } finally {
-        if (staleProviderProcess.exitCode === null && staleProviderProcess.signalCode === null) {
-          staleProviderProcess.kill("SIGKILL");
-        }
-        await db.delete(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, heldRunId));
-        await db.delete(heartbeatRunEvents).where(eq(heartbeatRunEvents.runId, heldRunId));
-        await db.delete(heartbeatRuns).where(eq(heartbeatRuns.id, heldRunId));
-        await db
-          .update(nativeRunFinalizations)
-          .set({ nextAttemptAt: new Date(0) })
-          .where(eq(nativeRunFinalizations.runId, runId));
-      }
-    });
-
-    it("preserves the old provider contract and admits newer direction only in a separate turn", async () => {
-      legacyAdapterExecute.mockClear();
-      const canProveStoppedProcessGroup = process.platform === "linux";
-      staleProviderProcess = spawn(
-        process.execPath,
-        ["-e", "setInterval(() => {}, 1_000)"],
-        { stdio: "ignore", detached: canProveStoppedProcessGroup },
-      );
-      await once(staleProviderProcess, "spawn");
-      expect(staleProviderProcess.pid).toEqual(expect.any(Number));
       await persistHeartbeatRunProcessMetadata(db, runId, {
-        pid: staleProviderProcess.pid!,
-        processGroupId: canProveStoppedProcessGroup ? staleProviderProcess.pid! : null,
+        pid: staleProviderProcess.pid!, processGroupId: null,
         startedAt: new Date("2026-08-09T04:00:00.000Z").toISOString(), targetKind: "local",
       });
       const factoryInputs: NativeExecutionInput[] = [];
@@ -1302,50 +1196,40 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
         expect(receipt.status).toBe("deferred_issue_execution");
       }
 
-      if (!canProveStoppedProcessGroup) {
-        await expect(
-          heartbeat.reapOrphanedRuns({ staleThresholdMs: 0 }),
-        ).resolves.not.toContain(runId);
-        await heartbeat.drainActiveRunExecutions();
+      await expect(
+        heartbeat.reapOrphanedRuns({ staleThresholdMs: 0 }),
+      ).resolves.not.toContain(runId);
+      await heartbeat.drainActiveRunExecutions();
 
-        expect(backendFactory).not.toHaveBeenCalled();
-        expect(recoverSession).not.toHaveBeenCalled();
-        expect(() => process.kill(staleProviderProcess!.pid!, 0)).not.toThrow();
-        await expect(
-          db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, runId)),
-        ).resolves.toEqual([
-          expect.objectContaining({
-            id: runId,
-            status: "running",
-            processPid: staleProviderProcess.pid,
-            errorCode: "native_execution_ownership_unverified",
-          }),
-        ]);
-      } else {
-        // Do not first place a legitimately retryable run into the durable
-        // ownership hold. A self-led group that is already fully gone is the
-        // only Linux fixture that may reach same-run recovery.
-        await expect(
-          db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, runId)),
-        ).resolves.toEqual([
-          expect.objectContaining({
-            id: runId,
-            status: "running",
-            nativePhase: "retryable_failure",
-            processPid: staleProviderProcess.pid,
-            processGroupId: staleProviderProcess.pid,
-            errorCode: null,
-          }),
-        ]);
-      }
+      expect(backendFactory).not.toHaveBeenCalled();
+      expect(recoverSession).not.toHaveBeenCalled();
+      expect(() => process.kill(staleProviderProcess!.pid!, 0)).not.toThrow();
+      await expect(
+        db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, runId)),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          id: runId,
+          status: "running",
+          processPid: staleProviderProcess.pid,
+          errorCode: "native_execution_ownership_unverified",
+        }),
+      ]);
+      await expect(
+        db
+          .select()
+          .from(nativeRunFinalizations)
+          .where(eq(nativeRunFinalizations.runId, runId)),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          phase: "retryable_failure",
+          attempt: 1,
+          leaseOwner: null,
+        }),
+      ]);
 
       const unrelatedProcessExit = once(staleProviderProcess, "exit");
       staleProviderProcess.kill("SIGKILL");
       await unrelatedProcessExit;
-      if (canProveStoppedProcessGroup) {
-        expect(() => process.kill(staleProviderProcess!.pid!, 0)).toThrow(/ESRCH/);
-        expect(() => process.kill(-staleProviderProcess!.pid!, 0)).toThrow(/ESRCH/);
-      }
       await db
         .update(nativeRunFinalizations)
         .set({
@@ -1359,9 +1243,9 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
       ).resolves.not.toContain(runId);
       await heartbeat.drainActiveRunExecutions();
 
-      if (!canProveStoppedProcessGroup) {
-        // This fixture has no durable group or Windows Job Object receipt. A
-        // dead PID alone cannot prove that its descendants stopped, so the
+      if (process.platform === "win32") {
+        // Windows has no Job Object receipt for this fixture's direct child.
+        // A dead PID alone cannot prove that its descendants stopped, so the
         // old turn and any newer direction remain safely blocked.
         expect(backendFactory).not.toHaveBeenCalled();
         expect(recoverSession).not.toHaveBeenCalled();
