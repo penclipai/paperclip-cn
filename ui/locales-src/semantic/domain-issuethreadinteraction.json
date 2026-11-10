@@ -61,7 +61,7 @@
   },
   "issueThreadInteraction.approvedBy": {
     "en": "Approved by",
-    "zh-CN": "批准人",
+    "zh-CN": "审批人",
     "reviewedEnglishHash": "8e838c460986340d7b2bdeea53d75148770598789f763f5f36861efe45420a28"
   },
   "issueThreadInteraction.approvedResumeFailed": {
@@ -221,7 +221,7 @@
   },
   "issueThreadInteraction.executedApprovedBy": {
     "en": "Executed · approved by",
-    "zh-CN": "已执行 · 批准人",
+    "zh-CN": "已执行 · 审批人",
     "reviewedEnglishHash": "06a2da80929920ab7b0398fc04ba0c78d5149b921b5d25ee08f9def5e1c17218"
   },
   "issueThreadInteraction.expiredByComment": {
@@ -241,7 +241,7 @@
   },
   "issueThreadInteraction.failedApprovedBy": {
     "en": "Failed · approved by",
-    "zh-CN": "失败 · 批准人",
+    "zh-CN": "失败 · 审批人",
     "reviewedEnglishHash": "9d631b69ad461f595a82b1cc1480a1ac2ec1ce2e5a8822e6b47830a38dc20f9e"
   },
   "issueThreadInteraction.forAgent": {

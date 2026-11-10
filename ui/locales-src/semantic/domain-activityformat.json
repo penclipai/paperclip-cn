@@ -176,12 +176,12 @@
   },
   "activityFormat.action.issue.monitor_escalated_to_board": {
     "en": "escalated a monitor to the board",
-    "zh-CN": "将监控升级到了看板",
+    "zh-CN": "已将监控问题上报董事会",
     "reviewedEnglishHash": "d9d7a2b3bea2595732116b0ab644e01e00f78bbb46ee8352f54050e5577eb11e"
   },
   "activityFormat.action.issue.monitor_exhausted": {
     "en": "exhausted a monitor",
-    "zh-CN": "监控已耗尽",
+    "zh-CN": "监控已达到时限或次数上限",
     "reviewedEnglishHash": "c877954e5ad219a31873ccb9b46e647d8b016ea309d1b498f4c09892516e0d75"
   },
   "activityFormat.action.issue.monitor_recovery_issue_created": {
@@ -191,7 +191,7 @@
   },
   "activityFormat.action.issue.monitor_recovery_wake_queued": {
     "en": "queued a monitor recovery wake",
-    "zh-CN": "已排队监控恢复唤醒",
+    "zh-CN": "已将监控恢复请求加入唤醒队列",
     "reviewedEnglishHash": "d5ffedde1bc2ef11dd27d2dbb7c081dbe24a9e6eb2c0bd4f3b477dc2f799eb1c"
   },
   "activityFormat.action.issue.monitor_scheduled": {
@@ -301,12 +301,12 @@
   },
   "activityFormat.approver": {
     "en": "approver",
-    "zh-CN": "批准人",
+    "zh-CN": "审批人",
     "reviewedEnglishHash": "7a023df6bf29324d9c2dd30086dc8aca140029e59a353152e05480d132d6ed85"
   },
   "activityFormat.approvers": {
     "en": "approvers",
-    "zh-CN": "批准人",
+    "zh-CN": "审批人",
     "reviewedEnglishHash": "45522a36c3195178036cb096c3edf808fb816a43a425b45e722d2eeefb045c09"
   },
   "activityFormat.assigneeCleared": {
@@ -836,12 +836,12 @@
   },
   "activityFormat.row.issue.monitor_escalated_to_board": {
     "en": "escalated monitor for",
-    "zh-CN": "将监控升级到了看板：",
+    "zh-CN": "已将监控问题上报董事会：",
     "reviewedEnglishHash": "c9f669fdd5032e0035a615bc55cc6388a57540c020afb6ae015f64724b727734"
   },
   "activityFormat.row.issue.monitor_exhausted": {
     "en": "exhausted monitor on",
-    "zh-CN": "监控已耗尽：",
+    "zh-CN": "监控已达到时限或次数上限：",
     "reviewedEnglishHash": "563471d4b002d33f30faea38f261d0f0fe046fcccb81152d0b896663880844b5"
   },
   "activityFormat.row.issue.monitor_recovery_issue_created": {
@@ -851,7 +851,7 @@
   },
   "activityFormat.row.issue.monitor_recovery_wake_queued": {
     "en": "queued monitor recovery for",
-    "zh-CN": "已排队监控恢复：",
+    "zh-CN": "已将监控恢复请求加入队列：",
     "reviewedEnglishHash": "02a945795d337e9a695175a33c998a745ca2e6c0493eac681702c38f9bf110e4"
   },
   "activityFormat.row.issue.monitor_scheduled": {

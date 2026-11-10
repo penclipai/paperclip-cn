@@ -32,7 +32,7 @@ export async function selectProjects({ projects, changed, root = process.cwd(), 
             clearTimeout(timer);
             children.delete(child);
             if (code === 0 && result?.graph?.project === projects[index]) resolve(result.graph);
-            else reject(new Error(result?.error || `Graph worker ${projects[index]} exited ${signal || code}`));
+            else reject(new Error(`Graph worker ${projects[index]}: ${result?.error || `exited ${signal || code}`}`));
           });
           child.send({ root, project: projects[index], changed });
         });

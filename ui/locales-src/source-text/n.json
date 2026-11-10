@@ -506,12 +506,12 @@
   },
   "No approvers": {
     "en": "No approvers",
-    "zh-CN": "无批准人",
+    "zh-CN": "无审批人",
     "reviewedEnglishHash": "8f5c6e836858ffb8691a3636a57cf6fa2b4a75a09ffe649fd3098d89b5b4b79b"
   },
   "No approvers found.": {
     "en": "No approvers found.",
-    "zh-CN": "未找到批准人。",
+    "zh-CN": "未找到审批人。",
     "reviewedEnglishHash": "f1a7922d68280d262359888601ef7c04beadd381e2d6c3222d8e5bf4f342967e"
   },
   "No assessment has been submitted yet.": {

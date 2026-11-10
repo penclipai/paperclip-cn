@@ -193,24 +193,26 @@ export async function selectProjectTests({ root = process.cwd(), project, change
     // Setup dependencies are not test-import edges. A change anywhere in their
     // local import closure invalidates the entire project, including helpers.
     const setup = new Set();
-    async function setupClosure(file) {
+    const setupChain = (chain, file) => [...chain, path.relative(root, file).split(path.sep).join("/")].slice(-8).join(" -> ");
+    async function setupClosure(file, chain = []) {
       if (setup.has(file)) return;
       setup.add(file);
       const source = parse(file);
       const coveredBuiltins = declaredInputs(file, source);
       const review = reviewedSetup.get(path.relative(root, file).split(path.sep).join("/"));
       const reviewed = review?.hash === createHash("sha256").update(readFileSync(file)).digest("hex");
-      if (!reviewed && source.reasons.length) throw new Error(`Opaque setup dependency: ${file}`);
+      const context = setupChain(chain, file);
+      if (!reviewed && source.reasons.length) throw new Error(`Opaque setup dependency: ${file} (setup chain: ${context})`);
       for (const specifier of source.imports) {
         if (isBuiltin(specifier)) {
-          if (!reviewed && !pureBuiltins.has(specifier.replace(/^node:/, "")) && !coveredBuiltins.includes(specifier.replace(/^node:/, ""))) throw new Error(`Opaque setup builtin: ${specifier}`);
+          if (!reviewed && !pureBuiltins.has(specifier.replace(/^node:/, "")) && !coveredBuiltins.includes(specifier.replace(/^node:/, ""))) throw new Error(`Opaque setup builtin: ${specifier} (setup chain: ${context})`);
           continue;
         }
         if (reviewed && review.external.includes(specifier)) continue;
         const dependency = await resolve(specifier, file);
-        if (dependency && inside(root, dependency)) await setupClosure(dependency);
-        else if (!dependency) throw new Error(`Unresolved setup dependency: ${specifier}`);
-        else if (!purePackages.has(packageName(specifier))) throw new Error(`Opaque setup package: ${specifier}`);
+        if (dependency && inside(root, dependency)) await setupClosure(dependency, [...chain, path.relative(root, file).split(path.sep).join("/")]);
+        else if (!dependency) throw new Error(`Unresolved setup dependency: ${specifier} (setup chain: ${context})`);
+        else if (!purePackages.has(packageName(specifier))) throw new Error(`Opaque setup package: ${specifier} (setup chain: ${context})`);
       }
     }
     for (const file of [...(owner.config.setupFiles ?? []), ...(owner.config.globalSetup ?? []),

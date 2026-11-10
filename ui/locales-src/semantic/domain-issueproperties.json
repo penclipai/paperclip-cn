@@ -36,7 +36,7 @@
   },
   "issueProperties.approvers": {
     "en": "Approvers",
-    "zh-CN": "批准人",
+    "zh-CN": "审批人",
     "reviewedEnglishHash": "97ecaec16a965f318327711ac796a28bd3e52a0fc9af5bed95d21ce7453d3d20"
   },
   "issueProperties.archivedByAt": {
@@ -121,7 +121,7 @@
   },
   "issueProperties.blockedBy": {
     "en": "Blocked by",
-      "zh-CN": "受阻于",
+    "zh-CN": "受阻于",
     "reviewedEnglishHash": "36931a940259dfe117f3281b4e81fea12f40554406944f8d0e5bc46a19ef750c"
   },
   "issueProperties.blocking": {
@@ -151,7 +151,7 @@
   },
   "issueProperties.checkingMomentarily": {
     "en": "checking momentarily…",
-      "zh-CN": "正在检查…",
+    "zh-CN": "正在检查…",
     "reviewedEnglishHash": "801f78c66b103d62ec27a16e79ead7b92ebfcd251fea657db66526f455d436be"
   },
   "issueProperties.clearAdapterOptions": {
@@ -431,12 +431,12 @@
   },
   "issueProperties.noApprovers": {
     "en": "No approvers",
-    "zh-CN": "无批准人",
+    "zh-CN": "无审批人",
     "reviewedEnglishHash": "8f5c6e836858ffb8691a3636a57cf6fa2b4a75a09ffe649fd3098d89b5b4b79b"
   },
   "issueProperties.noAssignee": {
     "en": "No assignee",
-      "zh-CN": "无负责人",
+    "zh-CN": "无负责人",
     "reviewedEnglishHash": "d64d8cecf4ebff54afe8a87fed86f1dd654047995cd310132fc461f4355fdf9c"
   },
   "issueProperties.noBlockers": {
@@ -616,7 +616,7 @@
   },
   "issueProperties.searchApprovers": {
     "en": "Search approvers...",
-    "zh-CN": "搜索批准人...",
+    "zh-CN": "搜索审批人...",
     "reviewedEnglishHash": "14a9f9899a8f96a7a803134d59ba110928b8e96e83dd9355e952685f502cd093"
   },
   "issueProperties.searchAssignees": {

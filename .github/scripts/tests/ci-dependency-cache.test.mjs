@@ -137,5 +137,5 @@ test('paired test timings remain available when lifecycle hooks disable material
     'server/src/__tests__/setup-supertest.ts', 'server/src/__tests__/workspace-runtime.test.ts',
     'server/src/services/workspace-git-snapshot-streaming.test.ts']) assert.ok(scope.includes(file));
   assert.doesNotMatch(scope, /scripts\/ci-dependency-cache|\.github\/actions\/setup-ci-dependencies/);
-  assert.match(step('Exercise restored dependencies for cache-only changes'), /pnpm exec vitest run --project @paperclipai\/shared/);
+  assert.match(step('Exercise restored dependencies for cache-only changes'), /pnpm exec vitest run --project @penclipai\/shared/);
 });

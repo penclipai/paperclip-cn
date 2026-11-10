@@ -8,7 +8,7 @@ import { selectProjects } from "./select-projects.mjs";
 
 test("parallel project graphs preserve isolation, ordering and conservative selection", async t => {
   const root = realpathSync(mkdtempSync(path.join(tmpdir(), "parallel-graphs-")));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  t.after(() => rmSync(root, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }));
   symlinkSync(path.resolve("node_modules"), path.join(root, "node_modules"), "dir");
   const write = (file, source) => writeFileSync(path.join(root, file), source);
   write(".gitignore", "node_modules/\n");
@@ -29,6 +29,6 @@ test("parallel project graphs preserve isolation, ordering and conservative sele
   assert.deepEqual(stable(parallel), stable(serial));
   assert.deepEqual(parallel[0].selected, ["two/opaque.test.ts"]);
   assert.deepEqual(parallel[1].selected, ["one/leaf.test.ts", "one/opaque.test.ts"]);
-  await assert.rejects(selectProjects({ ...options, projects: ["missing", "one"] }), /missing/);
+  await assert.rejects(selectProjects({ ...options, projects: ["missing", "one"] }), /Graph worker missing:/);
   await assert.rejects(selectProjects({ ...options, concurrency: 3 }), /one or two/);
 });
