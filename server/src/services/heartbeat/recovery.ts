@@ -2207,7 +2207,10 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
             and(
               eq(heartbeatRuns.id, run.id),
               eq(heartbeatRuns.runtimeMode, "native"),
-              eq(heartbeatRuns.nextEventSeq, run.nextEventSeq),
+              // recordNativeLocalProcessStopInTransaction just appended the
+              // server-authored stop receipt under this transaction's row
+              // lock, which reserves exactly one event sequence.
+              eq(heartbeatRuns.nextEventSeq, run.nextEventSeq + 1),
               run.processPid === null
                 ? isNull(heartbeatRuns.processPid)
                 : eq(heartbeatRuns.processPid, run.processPid),

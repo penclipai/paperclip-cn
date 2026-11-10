@@ -620,10 +620,6 @@ test.describe("Board send delivery refresh", () => {
     const resendReleased = new Promise<void>((resolve) => {
       releaseResend = resolve;
     });
-    let confirmRejectedResponse!: () => void;
-    const rejectedResponseDelivered = new Promise<void>((resolve) => {
-      confirmRejectedResponse = resolve;
-    });
     await page.route(
       `**/api/chat-endpoints/${endpointId}/conversations/${conversationId}/publications`,
       async (route) => {
@@ -644,7 +640,7 @@ test.describe("Board send delivery refresh", () => {
         }
         if (sends.length === 2) {
           await resendReleased;
-          await fulfill(
+          return fulfill(
             route,
             {
               error: "A selected file already belongs to another comment",
@@ -658,8 +654,6 @@ test.describe("Board send delivery refresh", () => {
             },
             409,
           );
-          confirmRejectedResponse();
-          return;
         }
         return fulfill(
           route,
@@ -709,11 +703,17 @@ test.describe("Board send delivery refresh", () => {
       banner.getByRole("textbox", { name: "Board update" }),
     ).toBeDisabled();
     await expect.poll(() => sends.length).toBe(2);
+    const rejectedResponse = page.waitForResponse((response) => (
+      response.request().method() === "POST"
+      && response.status() === 409
+      && response.url().includes(
+        `/api/chat-endpoints/${endpointId}/conversations/${conversationId}/publications`,
+      )
+    ));
     releaseResend();
-    // `sends` only proves the browser has begun the retry. Wait until the
-    // intercepted 409 reaches Chromium before asserting the React rejection
-    // state, otherwise loaded CI can begin the assertion before delivery.
-    await rejectedResponseDelivered;
+    // `sends` only proves the browser has begun the retry. Await the actual
+    // browser response, rather than the route handler, before checking React.
+    await rejectedResponse;
     await expect(
       banner.getByText("Update was not sent", { exact: true }),
     ).toBeVisible();

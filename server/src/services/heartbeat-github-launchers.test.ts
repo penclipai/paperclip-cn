@@ -111,7 +111,7 @@ it("keeps anonymous wrappers usable after run cleanup and excludes sandbox image
     await mkdir(bin);
     await mkdir(path.join(root, ".config", "gh"), { recursive: true });
     await writeFile(path.join(root, ".config", "gh", "hosts.yml"), "ambient-image-secret");
-    const ghSource = `
+    const ghSource = `#!/usr/bin/env node
 const fs = require('node:fs');
 process.stdout.write(JSON.stringify({token:process.env.GH_TOKEN || '', githubToken:process.env.GITHUB_TOKEN || '', ssh:process.env.SSH_AUTH_SOCK, global:process.env.GIT_CONFIG_GLOBAL, globalConfig:fs.readFileSync(process.env.GIT_CONFIG_GLOBAL, 'utf8'), imageConfig:fs.existsSync(process.env.GH_CONFIG_DIR + '/hosts.yml')}));`;
     await writeFile(path.join(bin, "gh"), ghSource, { mode: 0o700 });

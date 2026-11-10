@@ -405,7 +405,7 @@ describe("legacy controller lease loss attribution", () => {
     let calls = 0;
     const flakyDb = fakeRenewalDb(() => {
       calls += 1;
-      return calls === 1 ? Promise.reject(new Error("write CONNECTION_CLOSED")) : Promise.resolve([{ id: "run" }]);
+      return calls === 1 ? Promise.reject(new Error("write CONNECTION_CLOSED")) : Promise.resolve([{ id: "run", controllerBootId: legacyControllerBootId }]);
     });
     vi.useFakeTimers();
     const controller = new AbortController();
@@ -425,7 +425,7 @@ describe("legacy controller lease loss attribution", () => {
     const recoveringDb = fakeRenewalDb(() => {
       calls += 1;
       if (calls === 1) return Promise.reject(new Error("connection reset"));
-      return calls === 2 ? Promise.resolve([{ id: "run" }]) : new Promise(() => {});
+      return calls === 2 ? Promise.resolve([{ id: "run", controllerBootId: legacyControllerBootId }]) : new Promise(() => {});
     });
     vi.useFakeTimers();
     const controller = new AbortController();
