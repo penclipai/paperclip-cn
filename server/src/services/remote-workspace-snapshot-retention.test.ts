@@ -347,8 +347,13 @@ describe.skipIf(!support.supported)("remote workspace snapshot retention", () =>
         for (const fixture of [earlier!, later, last]) for (const key of fixture.keys) {
           expect((await storage.headObject(fixture.companyId, key)).exists).toBe(false);
         }
+        for (const fixture of [earlier!, later, last]) {
+          const [snapshot] = await db.select().from(executionWorkspaceSnapshots)
+            .where(eq(executionWorkspaceSnapshots.id, fixture.row.id));
+          expect(snapshot).toMatchObject({ status: "deleted", deleteAfter: null });
+        }
+        expect(await owner.nextDeadlineAt()).toBeNull();
       }, { timeout: 8000, interval: 40 });
-      expect(await owner.nextDeadlineAt()).toBeNull();
       const completed = run.mock.calls.length; await new Promise(resolve => setTimeout(resolve, 100));
       expect(run).toHaveBeenCalledTimes(completed);
     } finally { await worker.stop(); await coordinator.stop(); }
