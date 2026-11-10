@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ShieldAlert } from "lucide-react";
 import { Link } from "@/lib/router";
 import { accessApi } from "@/api/access";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { queryKeys } from "@/lib/queryKeys";
 import { useCompany } from "@/context/CompanyContext";
 
@@ -13,6 +14,9 @@ import { useCompany } from "@/context/CompanyContext";
  * `AdvancedToolsRoute` (PAP-10862, plan D8). Local boards, instance admins,
  * and active company owners/admins/operators pass; the server stays
  * authoritative. Shared so the profiles index and create wizard guard identically.
+ *
+ * An outage before the first load is a placeholder, never a denial: the
+ * denial card is only for a loaded answer (or a real 403).
  */
 export function ToolsAdminGate({ children }: { children: ReactNode }) {
   useTranslation();
@@ -20,15 +24,33 @@ export function ToolsAdminGate({ children }: { children: ReactNode }) {
   const boardAccess = useQuery({
     queryKey: queryKeys.access.currentBoardAccess,
     queryFn: () => accessApi.getCurrentBoardAccess(),
-    retry: false,
   });
+  const view = useQueryView(boardAccess);
 
-  if (boardAccess.isLoading) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{translateInstant("tools.shared.loading")}</div>;
+  if (boardAccess.isLoading || view.kind === "reconnecting") {
+    return (
+      <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">
+        {translateInstant("tools.shared.loading")}
+      </div>
+    );
+  }
+  if (view.kind === "error" && view.errorKind !== "forbidden") {
+    return (
+      <div className="mx-auto max-w-xl py-10">
+        <QueryErrorState
+          error={boardAccess.error}
+          action="check your access"
+          onRetry={view.retry}
+          retrying={view.isFetching}
+        />
+      </div>
+    );
   }
 
   const data = boardAccess.data;
-  const membership = data?.memberships?.find((m) => m.companyId === selectedCompanyId && m.status === "active");
+  const membership = data?.memberships?.find(
+    (m) => m.companyId === selectedCompanyId && m.status === "active",
+  );
   const canManageTools =
     data?.source === "local_implicit" ||
     Boolean(data?.isInstanceAdmin) ||
@@ -43,13 +65,22 @@ export function ToolsAdminGate({ children }: { children: ReactNode }) {
         <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-6">
           <div className="flex items-center gap-2 text-foreground">
             <ShieldAlert className="h-5 w-5 text-muted-foreground" />
-            <h1 className="text-lg font-semibold">{translateInstant("Access profiles require editing access")}</h1>
+            <h1 className="text-lg font-semibold">
+              {translateInstant("Access profiles require editing access")}
+            </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            {translateInstant("Access profiles decide which tools your agents can use. Ask a company editor to set these up, or head back to")}{" "}
-            <Link to="/apps" className="font-medium text-primary hover:underline">
-              {translateInstant("tools.profiles.adminGate.yourApps")}</Link>
-            {translateInstant(".")}</p>
+            {translateInstant(
+              "Access profiles decide which tools your agents can use. Ask a company editor to set these up, or head back to",
+            )}{" "}
+            <Link
+              to="/apps"
+              className="font-medium text-primary hover:underline"
+            >
+              {translateInstant("tools.profiles.adminGate.yourApps")}
+            </Link>
+            {translateInstant(".")}
+          </p>
         </div>
       </div>
     );

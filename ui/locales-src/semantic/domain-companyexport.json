@@ -1,7 +1,7 @@
 {
   "companyExport.attachmentsRequireTasksOrRoutines": {
     "en": "Attachments travel with tasks and routines; re-enable one of them to include attachments.",
-    "zh-CN": "附件会随任务和例程一起导出；请重新启用其中之一以包含附件。",
+    "zh-CN": "附件会随任务和例行任务一同导出；请重新启用其中一项，以包含附件。",
     "reviewedEnglishHash": "4a6bbae0cfea2cb952d13a66fa6d7b422b4d5c48f170ef2b7c1b15fe31bbc73b"
   },
   "companyExport.binaryPreviewUnavailable": {

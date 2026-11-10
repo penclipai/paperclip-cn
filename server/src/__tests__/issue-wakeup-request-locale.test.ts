@@ -12,7 +12,7 @@ const mockIssueService = vi.hoisted(() => ({
 }));
 
 const mockHeartbeatService = vi.hoisted(() => ({
-  wakeup: vi.fn(async () => undefined),
+  wakeup: vi.fn(async (_agentId: string, _request: { contextSnapshot?: Record<string, unknown> }) => undefined),
 }));
 
 const mockLogActivity = vi.hoisted(() => vi.fn(async () => undefined));

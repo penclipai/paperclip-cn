@@ -31,7 +31,7 @@
   },
   "issuePlanDecomposition.idempotentClaimTooltip": {
     "en": "Repeat attempts with this fingerprint reuse this record instead of creating new children",
-    "zh-CN": "具有此指纹的重复尝试会复用此记录，而不会创建新的子问题",
+    "zh-CN": "具有此指纹的重复尝试会复用此记录，而不会创建新的子任务",
     "reviewedEnglishHash": "0c407f0aaf6203b291dc105b0db09110b4de32f50e215b3be8bd70193a76ec81"
   },
   "issuePlanDecomposition.inFlight": {

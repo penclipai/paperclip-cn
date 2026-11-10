@@ -186,6 +186,7 @@ type CapturePayload = {
   skillEntries: string[];
   claudeConfigDir: string | null;
   claudeConfigEntries?: string[];
+  mcpConfigContents?: string | null;
   paperclipApiUrl?: string | null;
   paperclipApiKey?: string | null;
   paperclipApiBridgeMode?: string | null;
@@ -853,7 +854,7 @@ describe("claude execute", () => {
     process.env.PATH = `${binDir}${path.delimiter}${process.env.PATH ?? ""}`;
     process.env.CLAUDE_CONFIG_DIR = claudeConfigDir;
 
-    let loggedCommand: string | null = null;
+    const loggedCommand: { value: string | null } = { value: null };
     let loggedEnv: Record<string, string> = {};
     try {
       const result = await execute({
@@ -884,7 +885,7 @@ describe("claude execute", () => {
         authToken: "run-jwt-token",
         onLog: async () => {},
         onMeta: async (meta) => {
-          loggedCommand = meta.command;
+          loggedCommand.value = meta.command;
           loggedEnv = meta.env ?? {};
         },
       });
@@ -895,7 +896,7 @@ describe("claude execute", () => {
       expect(result.usageBasis).toBe("per_run");
       expect(result.costUsd).toBeNull();
       const resolvedCommandPath = process.platform === "win32" ? `${commandPath}.cmd` : commandPath;
-      expect(loggedCommand?.toLowerCase()).toBe(resolvedCommandPath.toLowerCase());
+      expect(loggedCommand.value?.toLowerCase()).toBe(resolvedCommandPath.toLowerCase());
       expect(loggedEnv.HOME).toBe(root);
       expect(loggedEnv.CLAUDE_CONFIG_DIR).toBe(claudeConfigDir);
       expect(loggedEnv.PAPERCLIP_RESOLVED_COMMAND?.toLowerCase()).toBe(resolvedCommandPath.toLowerCase());
@@ -1073,7 +1074,7 @@ describe("claude execute", () => {
     const preparedCommand = path.join(remoteWorkspace, ".paperclip-runtime/claude-cli/2.1.280/bin/claude");
     const logs: string[] = [];
     const commands: string[] = [];
-    const loggedCommands: string[] = [];
+    const loggedCommands: Array<string | undefined> = [];
     try {
       await fs.writeFile(commandPath, (await fs.readFile(commandPath, "utf8")).replace("2.1.286", "2.1.263"));
       await fs.mkdir(remoteWorkspace, { recursive: true });
@@ -1096,7 +1097,7 @@ describe("claude execute", () => {
             return runner.execute(input);
           } } },
         authToken: "run-jwt-token", onLog: async (_stream, chunk) => { logs.push(chunk); },
-        onMeta: async meta => { commands.push(meta.command); loggedCommands.push(meta.env.PAPERCLIP_RESOLVED_COMMAND); },
+        onMeta: async meta => { commands.push(meta.command); loggedCommands.push(meta.env?.PAPERCLIP_RESOLVED_COMMAND); },
       });
       if (state === "compatible") {
         expect(result.exitCode).toBe(0);

@@ -24,6 +24,7 @@ import { ApiError } from "../api/client";
 const mockAgentsApi = vi.hoisted(() => ({
   list: vi.fn(),
   adapterModels: vi.fn(),
+  runtimeState: vi.fn(),
 }));
 
 const mockProjectsApi = vi.hoisted(() => ({
@@ -37,6 +38,7 @@ const mockExecutionWorkspacesApi = vi.hoisted(() => ({
 
 const mockIssuesApi = vi.hoisted(() => ({
   list: vi.fn(),
+  getContextUsage: vi.fn(),
   getDocument: vi.fn(),
   listAcceptedPlanDecompositions: vi.fn(),
   listAttachments: vi.fn(),
@@ -114,6 +116,7 @@ vi.mock("../api/instanceSettings", () => ({
 
 vi.mock("../context/ToastContext", () => ({
   useToastActions: () => ({ pushToast: vi.fn() }),
+  useOptionalToastActions: () => ({ pushToast: vi.fn() }),
 }));
 
 vi.mock("../hooks/useProjectOrder", () => ({
@@ -638,11 +641,13 @@ describe("IssueProperties", () => {
     document.body.appendChild(container);
     mockAgentsApi.list.mockResolvedValue([]);
     mockAgentsApi.adapterModels.mockResolvedValue([]);
+    mockAgentsApi.runtimeState.mockResolvedValue(null);
     mockRoutinesApi.get.mockReset();
     mockProjectsApi.list.mockResolvedValue([]);
     mockExecutionWorkspacesApi.list.mockResolvedValue([]);
     mockExecutionWorkspacesApi.controlRuntimeCommands.mockReset();
     mockIssuesApi.list.mockResolvedValue([]);
+    mockIssuesApi.getContextUsage.mockResolvedValue(null);
     mockIssuesApi.getDocument.mockResolvedValue(null);
     mockIssuesApi.listAcceptedPlanDecompositions.mockResolvedValue([]);
     mockIssuesApi.listAttachments.mockResolvedValue([]);
@@ -681,6 +686,92 @@ describe("IssueProperties", () => {
 
   afterEach(() => {
     document.body.innerHTML = "";
+  });
+
+  it.each([true, false])("reserves the usage-limit row while runtime data loads (inline: %s)", async (inline) => {
+    let resolveRuntimeState!: (value: unknown) => void;
+    const runtimeState = new Promise<unknown>((resolve) => { resolveRuntimeState = resolve; });
+    mockAgentsApi.runtimeState.mockReturnValueOnce(runtimeState);
+    const root = renderProperties(container, {
+      issue: createIssue({ assigneeAgentId: "agent-1" }),
+      childIssues: [],
+      onUpdate: vi.fn(),
+      inline,
+    });
+
+    try {
+      const row = container.querySelector('[data-property-label="Usage limit"]')
+        ?.closest('[data-property-row="true"]');
+      expect(row).toBeTruthy();
+      expect(row?.querySelector('[role="status"]')?.getAttribute("aria-label"))
+        .toBe("Loading usage limit");
+      const nextRow = row?.nextElementSibling;
+
+      await act(async () => {
+        resolveRuntimeState({
+          stateJson: {
+            providerRateLimits: {
+              schema: "paperclip.provider.rate_limits.v1",
+              provider: "openai",
+              observedAt: new Date().toISOString(),
+              windows: [{
+                id: "primary",
+                label: "5-hour window",
+                shortLabel: "5h",
+                windowMinutes: 300,
+                usedPercent: 42,
+                resetsAt: null,
+                status: "allowed",
+              }],
+              credits: null,
+              limitReached: null,
+            },
+          },
+        });
+      });
+      await waitForAssertion(() => {
+        expect(row?.querySelector('button[aria-label="Provider usage limit: 5h 42%"]')).toBeTruthy();
+      });
+
+      expect(container.querySelector('[data-property-label="Usage limit"]')
+        ?.closest('[data-property-row="true"]')).toBe(row);
+      expect(row?.nextElementSibling).toBe(nextRow);
+      expect(row?.querySelector('[role="status"]')).toBeNull();
+    } finally {
+      act(() => root.unmount());
+    }
+  });
+
+  it.each([null, "user-1"])("does not reserve a usage-limit row without an agent (user: %s)", async (assigneeUserId) => {
+    const root = renderProperties(container, {
+      issue: createIssue({ assigneeUserId }),
+      childIssues: [],
+      onUpdate: vi.fn(),
+    });
+    try {
+      await flush();
+      expect(container.querySelector('[data-property-label="Usage limit"]')).toBeNull();
+    } finally {
+      act(() => root.unmount());
+    }
+  });
+
+  it.each(["missing", "forbidden"])("hides the usage-limit placeholder when runtime data is %s", async (outcome) => {
+    if (outcome === "forbidden") {
+      mockAgentsApi.runtimeState.mockRejectedValueOnce(new ApiError("Forbidden", 403, null));
+    }
+    const root = renderProperties(container, {
+      issue: createIssue({ assigneeAgentId: "agent-1" }),
+      childIssues: [],
+      onUpdate: vi.fn(),
+    });
+    try {
+      await waitForAssertion(() => {
+        expect(container.querySelector('[data-property-label="Usage limit"]')).toBeNull();
+      });
+    } finally {
+      act(() => root.unmount());
+    }
   });
 
   it("marks the task-detail property typography and section rhythm", () => {
@@ -918,6 +1009,9 @@ describe("IssueProperties", () => {
           <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
             <IssueProperties
               issue={createIssue({
+                // Scheduled checks advance only while the task is active; a todo task correctly
+                // renders its paused state instead of a countdown.
+                status: "in_progress",
                 executionPolicy: createExecutionPolicy({ monitor: {
                   nextCheckAt: monitor.nextCheckAt!,
                   notes: monitor.notes,
@@ -954,7 +1048,7 @@ describe("IssueProperties", () => {
 
     renderMonitor({ ...scheduledMonitor, nextCheckAt: at(0), attemptCount: 0 });
     await flush();
-    expect(container.querySelector('[data-testid="monitor-row-trigger"]')?.textContent).toContain("即将检查…");
+    expect(container.querySelector('[data-testid="monitor-row-trigger"]')?.textContent).toContain("正在检查…");
     await act(async () => { await i18n.changeLanguage("en"); });
     expect(container.textContent).toContain("Work");
     expect(container.querySelector('[data-testid="monitor-row-trigger"]')?.textContent).toContain("checking momentarily…");
@@ -2436,15 +2530,18 @@ describe("IssueProperties", () => {
     act(() => root.unmount());
   });
 
-  it("discovers Copilot overrides with the assignee connection and environment", async () => {
-    const binding = { provider: "github", method: "api_key", mode: "shared", connectionId: "11111111-1111-4111-8111-111111111111", grantId: "33333333-3333-4333-8333-333333333333" };
-    mockAgentsApi.list.mockResolvedValue([{ id: "agent-1", name: "Copilot", role: "engineer", status: "active",
+  it.each([
+    { name: "Copilot", acpxAgent: "copilot", provider: "github", method: "api_key", model: "gpt-5.6-luna", label: "Copilot Luna" },
+    { name: "Antigravity", acpxAgent: "antigravity", provider: "google", method: "subscription", model: "gemini-exact", label: "Personal Gemini" },
+  ] as const)("discovers $name overrides with the assignee connection and environment", async ({ acpxAgent, provider, method, model, label }) => {
+    const binding = { provider, method, mode: "shared", connectionId: "11111111-1111-4111-8111-111111111111", grantId: "33333333-3333-4333-8333-333333333333" };
+    mockAgentsApi.list.mockResolvedValue([{ id: "agent-1", name: acpxAgent, role: "engineer", status: "active",
       adapterType: "paperclip_runner", defaultEnvironmentId: "daytona-1",
-      adapterConfig: { provider: "acpx", acpxAgent: "copilot", model: "gpt-5.6-luna" },
+      adapterConfig: { provider: "acpx", acpxAgent, model },
       runtimeConfig: { aiConnection: binding } }]);
-    mockAgentsApi.adapterModels.mockResolvedValue([{ id: "gpt-5.6-luna", label: "Copilot Luna" }]);
+    mockAgentsApi.adapterModels.mockResolvedValue([{ id: model, label }]);
     const { root, queryClient } = renderPropertiesWithQueryClient(container, {
-      issue: createIssue({ assigneeAgentId: "agent-1", assigneeAdapterOverrides: { adapterConfig: { model: "gpt-5.6-luna" } } }),
+      issue: createIssue({ assigneeAgentId: "agent-1", assigneeAdapterOverrides: { adapterConfig: { model } } }),
       childIssues: [], onUpdate: vi.fn(), inline: true,
     });
     await flush();
@@ -2454,7 +2551,7 @@ describe("IssueProperties", () => {
     expect(modelTrigger).toBeDefined();
     await act(async () => modelTrigger!.click());
     await waitForAssertion(() => expect(mockAgentsApi.adapterModels).toHaveBeenCalledWith("company-1", "paperclip_runner", {
-      environmentId: "daytona-1", provider: "acpx", acpxAgent: "copilot", agentId: "agent-1", aiConnection: binding,
+      environmentId: "daytona-1", provider: "acpx", acpxAgent, agentId: "agent-1", aiConnection: binding,
     }));
     await act(async () => { await queryClient.invalidateQueries({ type: "active" }, { cancelRefetch: false }); });
     expect(mockAgentsApi.adapterModels).toHaveBeenCalledTimes(1);
@@ -3101,6 +3198,7 @@ describe("IssueProperties", () => {
     };
 
     renderMonitor(createIssue({
+      status: "in_progress",
       executionPolicy: createExecutionPolicy({ monitor: { ...baseMonitorState, serviceName: "vercel-deploy" } }),
       executionState: createExecutionState({ monitor: baseMonitorState }),
       monitorAttemptCount: 1,
@@ -3114,6 +3212,7 @@ describe("IssueProperties", () => {
     expect(monitorRowText()).toContain("Today, 4:08 PM · Attempt 1");
 
     renderMonitor(createIssue({
+      status: "in_progress",
       executionPolicy: createExecutionPolicy({ monitor: { ...baseMonitorState, nextCheckAt: at(252) } }),
       executionState: createExecutionState({ monitor: { ...baseMonitorState, nextCheckAt: at(132) } }),
       monitorNextCheckAt: new Date(at(192)),
@@ -3123,6 +3222,7 @@ describe("IssueProperties", () => {
     expect(monitorRowText()).toContain("Today, 4:08 PM");
 
     renderMonitor(createIssue({
+      status: "in_progress",
       executionPolicy: createExecutionPolicy({ monitor: { ...baseMonitorState, serviceName: "vercel-deploy" } }),
       executionState: createExecutionState({ monitor: { ...baseMonitorState, attemptCount: 3 } }),
       monitorAttemptCount: 3,
@@ -3131,6 +3231,7 @@ describe("IssueProperties", () => {
     expect(monitorRowText()).toContain("Attempt 3");
 
     renderMonitor(createIssue({
+      status: "in_progress",
       executionPolicy: createExecutionPolicy({ monitor: { ...baseMonitorState, nextCheckAt: at(0) } }),
       executionState: createExecutionState({ monitor: { ...baseMonitorState, nextCheckAt: at(0) } }),
     }));
@@ -3139,6 +3240,7 @@ describe("IssueProperties", () => {
     expect(monitorRowText()).toContain("checking momentarily…");
 
     renderMonitor(createIssue({
+      status: "in_progress",
       executionPolicy: createExecutionPolicy({ monitor: { ...baseMonitorState, nextCheckAt: at(-18) } }),
       executionState: createExecutionState({ monitor: { ...baseMonitorState, nextCheckAt: at(-18) } }),
     }));
@@ -3147,6 +3249,17 @@ describe("IssueProperties", () => {
     expect(monitorRowText()).toContain("Today, 1:38 PM · fires on next tick");
 
     renderMonitor(createIssue({
+      status: "blocked",
+      executionPolicy: createExecutionPolicy({ monitor: { ...baseMonitorState, nextCheckAt: at(-18) } }),
+      executionState: createExecutionState({ monitor: { ...baseMonitorState, nextCheckAt: at(-18) } }),
+    }));
+    await flush();
+    expect(monitorRowText()).toContain("Automatic checks paused");
+    expect(monitorRowText()).toContain("Check now to request a manual check");
+    expect(monitorRowText()).not.toMatch(/overdue|next tick/i);
+
+    renderMonitor(createIssue({
+      status: "in_progress",
       executionPolicy: createExecutionPolicy(),
       executionState: createExecutionState({ monitor: {
         ...baseMonitorState,

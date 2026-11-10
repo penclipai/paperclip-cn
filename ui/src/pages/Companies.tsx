@@ -8,6 +8,7 @@ import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useCloudInstance } from "../hooks/useCloudInstance";
 import { companiesApi } from "../api/companies";
 import { queryKeys } from "../lib/queryKeys";
+import { QueryErrorState } from "../components/QueryView";
 import { formatCents, relativeTime } from "../lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ export function Companies() {
     setSelectedCompanyId,
     loading,
     error,
+    retryCompanies,
   } = useCompany();
   const { openOnboarding } = useDialogActions();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -116,13 +118,25 @@ export function Companies() {
         {isCloud ? null : (
           <Button size="sm" onClick={() => openOnboarding()}>
             <Plus className="h-3.5 w-3.5 mr-1.5" />
-            {translateInstant("New Organization")}</Button>
+            {translateInstant("New Organization")}
+          </Button>
         )}
       </div>
 
-      <div className="h-6">
-        {loading && <p className="text-sm text-muted-foreground">{translateInstant("sidebar.loadingOrganizations")}</p>}
-        {error && <p className="text-sm text-destructive">{error.message}</p>}
+      <div className="min-h-6">
+        {loading && (
+          <p className="text-sm text-muted-foreground">
+            {translateInstant("sidebar.loadingOrganizations")}
+          </p>
+        )}
+        {error ? (
+          <QueryErrorState
+            size="inline"
+            error={error}
+            action="load organizations"
+            onRetry={() => void retryCompanies()}
+          />
+        ) : null}
       </div>
 
       <div className="grid gap-4">
@@ -136,7 +150,8 @@ export function Companies() {
           const budgetPct =
             company.budgetMonthlyCents > 0
               ? Math.round(
-                  (company.spentMonthlyCents / company.budgetMonthlyCents) * 100,
+                  (company.spentMonthlyCents / company.budgetMonthlyCents) *
+                    100,
                 )
               : 0;
 
@@ -154,7 +169,9 @@ export function Companies() {
               }}
               interactive
               className={`block group text-left p-5 ${
-                selected ? "border-primary ring-1 ring-primary hover:border-primary" : ""
+                selected
+                  ? "border-primary ring-1 ring-primary hover:border-primary"
+                  : ""
               }`}
             >
               {/* Header row: name + menu */}
@@ -183,14 +200,21 @@ export function Companies() {
                       >
                         <Check className="h-3.5 w-3.5 text-green-500" />
                       </Button>
-                      <Button variant="ghost" size="icon-xs" onClick={cancelEdit}>
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        onClick={cancelEdit}
+                      >
                         <X className="h-3.5 w-3.5 text-muted-foreground" />
                       </Button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-base">{company.name}</h3>
-                      <Badge variant="ghost"
+                      <h3 className="font-semibold text-base">
+                        {company.name}
+                      </h3>
+                      <Badge
+                        variant="ghost"
                         className={`text-(length:--text-micro) ${
                           company.status === "active"
                             ? "bg-green-500/10 text-green-600 dark:text-green-400"
@@ -238,14 +262,16 @@ export function Companies() {
                         onClick={() => startEdit(company.id, company.name)}
                       >
                         <Pencil className="h-3.5 w-3.5" />
-                        {translateInstant("Rename")}</DropdownMenuItem>
+                        {translateInstant("Rename")}
+                      </DropdownMenuItem>
                       {company.status === "archived" && (
                         <DropdownMenuItem
                           disabled={unarchiveMutation.isPending}
                           onClick={() => unarchiveMutation.mutate(company.id)}
                         >
                           <ArchiveRestore className="h-3.5 w-3.5" />
-                          {translateInstant("common.unarchive")}</DropdownMenuItem>
+                          {translateInstant("common.unarchive")}
+                        </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -253,7 +279,8 @@ export function Companies() {
                         onClick={() => setConfirmDeleteId(company.id)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
-                        {translateInstant("Delete Organization")}</DropdownMenuItem>
+                        {translateInstant("Delete Organization")}
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -264,27 +291,44 @@ export function Companies() {
                 <div className="flex items-center gap-1.5">
                   <Users className="h-3.5 w-3.5" />
                   <span>
-                    {agentCount} {agentCount === 1 ? translateInstant("agent") : translateInstant("agents")}
+                    {agentCount}{" "}
+                    {agentCount === 1
+                      ? translateInstant("agent")
+                      : translateInstant("agents")}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CircleDot className="h-3.5 w-3.5" />
                   <span>
-                    {issueCount} {issueCount === 1 ? translateInstant("issueDetail.task") : "tasks"}
+                    {issueCount}{" "}
+                    {issueCount === 1
+                      ? translateInstant("issueDetail.task")
+                      : "tasks"}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 tabular-nums">
                   <DollarSign className="h-3.5 w-3.5" />
                   <span>
                     {formatCents(company.spentMonthlyCents)}
-                    {company.budgetMonthlyCents > 0
-                      ? <> / {formatCents(company.budgetMonthlyCents)} <span className="text-xs">({budgetPct}%)</span></>
-                      : <span className="text-xs ml-1">{translateInstant("Unlimited budget")}</span>}
+                    {company.budgetMonthlyCents > 0 ? (
+                      <>
+                        {" "}
+                        / {formatCents(company.budgetMonthlyCents)}{" "}
+                        <span className="text-xs">({budgetPct}%)</span>
+                      </>
+                    ) : (
+                      <span className="text-xs ml-1">
+                        {translateInstant("Unlimited budget")}
+                      </span>
+                    )}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 ml-auto">
                   <Calendar className="h-3.5 w-3.5" />
-                  <span>{translateInstant("Created")}{" "}{relativeTime(company.createdAt)}</span>
+                  <span>
+                    {translateInstant("Created")}{" "}
+                    {relativeTime(company.createdAt)}
+                  </span>
                 </div>
               </div>
 
@@ -295,7 +339,10 @@ export function Companies() {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <p className="text-sm text-destructive font-medium">
-                    {translateInstant("Delete this organization and all its data? This cannot be undone.")}</p>
+                    {translateInstant(
+                      "Delete this organization and all its data? This cannot be undone.",
+                    )}
+                  </p>
                   <div className="flex items-center gap-2 ml-4 shrink-0">
                     <Button
                       variant="ghost"
@@ -303,14 +350,17 @@ export function Companies() {
                       onClick={() => setConfirmDeleteId(null)}
                       disabled={deleteMutation.isPending}
                     >
-                      {translateInstant("Cancel")}</Button>
+                      {translateInstant("Cancel")}
+                    </Button>
                     <Button
                       variant="destructive"
                       size="sm"
                       onClick={() => deleteMutation.mutate(company.id)}
                       disabled={deleteMutation.isPending}
                     >
-                      {deleteMutation.isPending ? translateInstant("Deleting…") : translateInstant("Delete")}
+                      {deleteMutation.isPending
+                        ? translateInstant("Deleting…")
+                        : translateInstant("Delete")}
                     </Button>
                   </div>
                 </div>

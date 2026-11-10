@@ -77,4 +77,28 @@ describe("RoutineAuditActivity", () => {
     expect(container.textContent).toContain("Run completed");
     expect(container.textContent).not.toContain("routine.run.completed");
   });
+
+  it("uses the standard retry state when the activity query fails before data arrives", async () => {
+    routineActivityMock.mockRejectedValueOnce(new Error("Activity service unavailable"));
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    root = createRoot(container);
+    flushSync(() => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <RoutineAuditActivity companyId="company-1" routineId="routine-1" />
+        </QueryClientProvider>,
+      );
+    });
+    await flushReact();
+
+    expect(container.textContent).toContain("Couldn't load routine activity");
+    expect(container.textContent).toContain("Activity service unavailable");
+    const retry = [...container.querySelectorAll("button")].find((button) => button.textContent?.includes("Retry"));
+    expect(retry).toBeTruthy();
+
+    routineActivityMock.mockResolvedValueOnce([]);
+    retry!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    await flushReact();
+    expect(routineActivityMock).toHaveBeenCalledTimes(2);
+  });
 });

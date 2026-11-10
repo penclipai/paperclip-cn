@@ -63,5 +63,10 @@
     "en": "Done",
     "zh-CN": "已完成",
     "reviewedEnglishHash": "11a6767d5674c7e45f7e00dc525762275b3a48491ad6045427d2609cc496c516"
+  },
+  "issueFilters.externalObjects.rateLimited": {
+    "en": "Rate limited",
+    "zh-CN": "请求受限",
+    "reviewedEnglishHash": "a06130a5a2818ae524dd3b9b83846510af328eeeee38fb620eb0b398436cd552"
   }
 }

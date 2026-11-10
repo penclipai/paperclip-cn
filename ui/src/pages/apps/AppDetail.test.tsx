@@ -6,10 +6,17 @@ import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getAppStoreDefinition } from "@penclipai/shared";
-import type { AggregatorAppSnapshot, AggregatorAppsResponse } from "@penclipai/shared/aggregator-apps";
+import type {
+  AggregatorAppSnapshot,
+  AggregatorAppsResponse,
+} from "@penclipai/shared/aggregator-apps";
 import i18n from "@/i18n";
+import { ApiError } from "@/api/client";
 import { queryKeys } from "@/lib/queryKeys";
-import { rememberSkillSourceReturn, skillSourceReturnPath } from "@/lib/skill-source-connect-return";
+import {
+  rememberSkillSourceReturn,
+  skillSourceReturnPath,
+} from "@/lib/skill-source-connect-return";
 import { AppDetail } from "./AppDetail";
 import { APP_TABS } from "./app-tabs";
 
@@ -19,7 +26,7 @@ const listApplicationsMock = vi.hoisted(() => vi.fn());
 const listGalleryMock = vi.hoisted(() => vi.fn());
 const listConnectionsMock = vi.hoisted(() => vi.fn());
 const listCatalogMock = vi.hoisted(() => vi.fn());
-const listProfilesMock = vi.hoisted(() => vi.fn());
+const listConnectionProfileConfigurationMock = vi.hoisted(() => vi.fn());
 const listPoliciesMock = vi.hoisted(() => vi.fn());
 const listConnectionActivityMock = vi.hoisted(() => vi.fn());
 const listActionRequestsMock = vi.hoisted(() => vi.fn());
@@ -45,23 +52,35 @@ const getSessionMock = vi.hoisted(() => vi.fn());
 const listAggregatorAppsMock = vi.hoisted(() => vi.fn());
 const syncAggregatorAppsMock = vi.hoisted(() => vi.fn());
 const mockNavigate = vi.hoisted(() => vi.fn());
-const mockParams = vi.hoisted(() => ({ connectionId: "conn-1", tab: "permissions" as string | undefined }));
+const mockParams = vi.hoisted(() => ({
+  connectionId: "conn-1",
+  tab: "permissions" as string | undefined,
+}));
 const mockSearchParams = vi.hoisted(() => ({ value: new URLSearchParams() }));
 const navigateComponentMock = vi.hoisted(() => vi.fn());
 const navigateTopLevelMock = vi.hoisted(() => vi.fn());
 const setBreadcrumbsMock = vi.hoisted(() => vi.fn());
+const popupAssignMock = vi.hoisted(() => vi.fn());
+
+vi.mock("@/components/ai-connections/AiConnectionPoolConnector", () => ({
+  AiConnectionPoolConnector: () => <div>Connection pool controls</div>,
+}));
 
 vi.mock("@/api/tools", () => ({
   toolsApi: {
-    listAggregatorApps: (connectionId: string) => listAggregatorAppsMock(connectionId),
-    syncAggregatorApps: (connectionId: string, force: boolean) => syncAggregatorAppsMock(connectionId, force),
+    listAggregatorApps: (connectionId: string) =>
+      listAggregatorAppsMock(connectionId),
+    syncAggregatorApps: (connectionId: string, force: boolean) =>
+      syncAggregatorAppsMock(connectionId, force),
     getConnection: (connectionId: string) => getConnectionMock(connectionId),
-    getConnectionInstalls: (connectionId: string) => getConnectionInstallsMock(connectionId),
+    getConnectionInstalls: (connectionId: string) =>
+      getConnectionInstallsMock(connectionId),
     listApplications: (companyId: string) => listApplicationsMock(companyId),
     listGallery: (companyId: string) => listGalleryMock(companyId),
     listConnections: (companyId: string) => listConnectionsMock(companyId),
     listCatalog: (connectionId: string) => listCatalogMock(connectionId),
-    listProfiles: (companyId: string) => listProfilesMock(companyId),
+    listConnectionProfileConfiguration: (connectionId: string) =>
+      listConnectionProfileConfigurationMock(connectionId),
     deleteProfile: (profileId: string) => deleteProfileMock(profileId),
     listPolicies: (companyId: string) => listPoliciesMock(companyId),
     listConnectionActivity: (connectionId: string, limit: number) =>
@@ -75,31 +94,49 @@ vi.mock("@/api/tools", () => ({
       updateConnectionMock(connectionId, input),
     finishApp: (companyId: string, connectionId: string, input: unknown) =>
       finishAppMock(companyId, connectionId, input),
-    finalizeOAuthAccess: (companyId: string, connectionId: string, input: unknown) =>
-      finalizeOAuthAccessMock(companyId, connectionId, input),
+    finalizeOAuthAccess: (
+      companyId: string,
+      connectionId: string,
+      input: unknown,
+    ) => finalizeOAuthAccessMock(companyId, connectionId, input),
     putConnectionInstalls: (connectionId: string, installs: unknown) =>
       putConnectionInstallsMock(connectionId, installs),
     archiveConnection: vi.fn(),
     refreshCatalog: (connectionId: string) => refreshCatalogMock(connectionId),
-    checkConnectionHealth: (connectionId: string) => checkConnectionHealthMock(connectionId),
-    startOAuth: (connectionId: string, input?: unknown) => input === undefined
-      ? startOAuthMock(connectionId)
-      : startOAuthMock(connectionId, input),
-    listConnectionGrants: (connectionId: string) => listConnectionGrantsMock(connectionId),
+    checkConnectionHealth: (connectionId: string) =>
+      checkConnectionHealthMock(connectionId),
+    startOAuth: (connectionId: string, input?: unknown) =>
+      input === undefined
+        ? startOAuthMock(connectionId)
+        : startOAuthMock(connectionId, input),
+    listConnectionGrants: (connectionId: string) =>
+      listConnectionGrantsMock(connectionId),
     revokeConnectionGrant: (connectionId: string, grantId: string) =>
       revokeConnectionGrantMock(connectionId, grantId),
-    createConnectionGrantDelegation: (connectionId: string, grantId: string, agentId: string) =>
-      createConnectionGrantDelegationMock(connectionId, grantId, agentId),
+    createConnectionGrantDelegation: (
+      connectionId: string,
+      grantId: string,
+      agentId: string,
+    ) => createConnectionGrantDelegationMock(connectionId, grantId, agentId),
     revokeConnectionGrantDelegation: (
       connectionId: string,
       grantId: string,
       delegationId: string,
-    ) => revokeConnectionGrantDelegationMock(connectionId, grantId, delegationId),
-    replaceConnectionGrantMembers: (connectionId: string, grantId: string, memberUserIds: string[]) =>
+    ) =>
+      revokeConnectionGrantDelegationMock(connectionId, grantId, delegationId),
+    replaceConnectionGrantMembers: (
+      connectionId: string,
+      grantId: string,
+      memberUserIds: string[],
+    ) =>
       replaceConnectionGrantMembersMock(connectionId, grantId, memberUserIds),
-    startPersonalAuthorization: (companyId: string, connectionId: string, input: unknown) =>
-      startPersonalAuthorizationMock(companyId, connectionId, input),
-    reconnectConnection: (id: string, values: unknown) => reconnectConnectionMock(id, values),
+    startPersonalAuthorization: (
+      companyId: string,
+      connectionId: string,
+      input: unknown,
+    ) => startPersonalAuthorizationMock(companyId, connectionId, input),
+    reconnectConnection: (id: string, values: unknown) =>
+      reconnectConnectionMock(id, values),
   },
 }));
 
@@ -138,9 +175,11 @@ vi.mock("@/api/auth", () => ({
 
 vi.mock("@/api/agents", () => ({
   agentsApi: {
-    list: vi.fn().mockResolvedValue([
-      { id: "agent-1", name: "Coder", title: "Engineer", status: "active" },
-    ]),
+    list: vi
+      .fn()
+      .mockResolvedValue([
+        { id: "agent-1", name: "Coder", title: "Engineer", status: "active" },
+      ]),
   },
 }));
 
@@ -177,6 +216,7 @@ vi.mock("@/context/BreadcrumbContext", () => ({
 const pushToastMock = vi.hoisted(() => vi.fn());
 vi.mock("@/context/ToastContext", () => ({
   useToast: () => ({ pushToast: pushToastMock }),
+  useOptionalToastActions: () => ({ pushToast: pushToastMock }),
 }));
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -296,8 +336,15 @@ function dedicatedGitHubGrant(
         repositorySelection: "selected",
         installationIds: ["456"],
         installationOwnerLogins: ["paperclipai"],
-        repositories: [{ id: "789", fullName: "paperclipai/test-repo", installationId: "456" }],
-        installationUrl: "https://github.com/apps/paperclip-test/installations/new",
+        repositories: [
+          {
+            id: "789",
+            fullName: "paperclipai/test-repo",
+            installationId: "456",
+          },
+        ],
+        installationUrl:
+          "https://github.com/apps/paperclip-test/installations/new",
         managementUrl: "https://github.com/settings/installations/456",
         webhookHealth: "pending",
         lastWebhookAt: null,
@@ -335,18 +382,50 @@ function setInputValue(input: HTMLInputElement, value: string) {
   input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
-function aggregatorApps(apps: AggregatorAppSnapshot[] = []): AggregatorAppsResponse {
+function aggregatorApps(
+  apps: AggregatorAppSnapshot[] = [],
+): AggregatorAppsResponse {
   return {
-    provider: "composio", apps, discovery: { availability: "available", message: null },
-    sync: { status: "ready", coverage: "supported_catalog", checked: 2, total: 2, failed: 0,
-      lastCompletedAt: new Date().toISOString(), error: null },
+    provider: "composio",
+    apps,
+    discovery: { availability: "available", message: null },
+    sync: {
+      status: "ready",
+      coverage: "supported_catalog",
+      checked: 2,
+      total: 2,
+      failed: 0,
+      lastCompletedAt: new Date().toISOString(),
+      error: null,
+    },
   };
 }
 
-function observedApp(toolkit: string, name: string, overrides: Partial<AggregatorAppSnapshot> = {}): AggregatorAppSnapshot {
-  return { connectionId: "conn-1", provider: "composio", appSlug: toolkit, appName: name, toolkit,
-    status: "connected", freshness: "fresh", checkedAt: new Date().toISOString(), errorAt: null,
-    accounts: [{ id: `${toolkit}-account`, alias: null, status: "ACTIVE", isDefault: true }], ...overrides };
+function observedApp(
+  toolkit: string,
+  name: string,
+  overrides: Partial<AggregatorAppSnapshot> = {},
+): AggregatorAppSnapshot {
+  return {
+    connectionId: "conn-1",
+    provider: "composio",
+    appSlug: toolkit,
+    appName: name,
+    toolkit,
+    status: "connected",
+    freshness: "fresh",
+    checkedAt: new Date().toISOString(),
+    errorAt: null,
+    accounts: [
+      {
+        id: `${toolkit}-account`,
+        alias: null,
+        status: "ACTIVE",
+        isDefault: true,
+      },
+    ],
+    ...overrides,
+  };
 }
 
 describe("AppDetail", () => {
@@ -354,6 +433,15 @@ describe("AppDetail", () => {
   let root: ReturnType<typeof createRoot>;
 
   beforeEach(() => {
+    popupAssignMock.mockReset();
+    vi.spyOn(window, "open").mockReturnValue({
+      closed: false,
+      location: { assign: popupAssignMock, href: "about:blank" },
+      focus: vi.fn(),
+      close: vi.fn(),
+      sessionStorage: window.sessionStorage,
+    } as unknown as Window);
+
     sessionStorage.clear();
     container = document.createElement("div");
     document.body.appendChild(container);
@@ -363,9 +451,19 @@ describe("AppDetail", () => {
     getConnectionMock.mockResolvedValue(connection());
     listAggregatorAppsMock.mockResolvedValue(aggregatorApps());
     syncAggregatorAppsMock.mockResolvedValue(aggregatorApps());
-    getConnectionInstallsMock.mockResolvedValue({ connectionId: "conn-1", installs: [] });
+    getConnectionInstallsMock.mockResolvedValue({
+      connectionId: "conn-1",
+      installs: [],
+    });
     listApplicationsMock.mockResolvedValue({
-      applications: [{ id: "app-1", applicationKey: "github", name: "GitHub", status: "active" }],
+      applications: [
+        {
+          id: "app-1",
+          applicationKey: "github",
+          name: "GitHub",
+          status: "active",
+        },
+      ],
     });
     listConnectionsMock.mockResolvedValue({ connections: [] });
     listConnectionGrantsMock.mockResolvedValue({
@@ -382,9 +480,13 @@ describe("AppDetail", () => {
           name: "GitHub",
           logoUrl: "https://example.com/github.png",
           tagline: "GitHub tagline",
-          description: "Give agents a governed way to inspect repositories and pull requests.",
+          description:
+            "Give agents a governed way to inspect repositories and pull requests.",
           authKind: "api_key",
-          transportTemplate: { transport: "mcp_remote", url: "https://github.example/mcp" },
+          transportTemplate: {
+            transport: "mcp_remote",
+            url: "https://github.example/mcp",
+          },
           credentialFields: [],
           recommendedDefaults: {},
           urlPatterns: [],
@@ -410,7 +512,7 @@ describe("AppDetail", () => {
         }),
       ],
     });
-    listProfilesMock.mockResolvedValue({
+    listConnectionProfileConfigurationMock.mockResolvedValue({
       profiles: [
         {
           profileKey: "app:conn-1",
@@ -435,16 +537,30 @@ describe("AppDetail", () => {
         },
       ],
     });
-    listConnectionActivityMock.mockResolvedValue({ events: [], issues: {}, actionRequests: {} });
+    listConnectionActivityMock.mockResolvedValue({
+      events: [],
+      issues: {},
+      actionRequests: {},
+    });
     listActionRequestsMock.mockResolvedValue({ actionRequests: [] });
     listTestAgentsMock.mockResolvedValue({ agents: [] });
     updateConnectionMock.mockResolvedValue(connection({ enabled: false }));
     finishAppMock.mockResolvedValue({});
     deleteProfileMock.mockResolvedValue({ deleted: true });
     finalizeOAuthAccessMock.mockResolvedValue({});
-    putConnectionInstallsMock.mockResolvedValue({ connectionId: "conn-1", installs: [] });
-    checkConnectionHealthMock.mockResolvedValue({ connection: connection(), healthStatus: "ok" });
-    refreshCatalogMock.mockResolvedValue({ discoveredCount: 0, quarantinedCount: 0, catalog: [] });
+    putConnectionInstallsMock.mockResolvedValue({
+      connectionId: "conn-1",
+      installs: [],
+    });
+    checkConnectionHealthMock.mockResolvedValue({
+      connection: connection(),
+      healthStatus: "ok",
+    });
+    refreshCatalogMock.mockResolvedValue({
+      discoveredCount: 0,
+      quarantinedCount: 0,
+      catalog: [],
+    });
     startOAuthMock.mockResolvedValue({
       connectionId: "conn-1",
       provider: "smoke_lab",
@@ -472,7 +588,9 @@ describe("AppDetail", () => {
   });
 
   async function renderAppDetail() {
-    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
     root = createRoot(container);
     await act(async () => {
       root.render(
@@ -486,8 +604,12 @@ describe("AppDetail", () => {
   }
 
   it("refreshes breadcrumb copy on a locale switch without changing the raw connection name or route", async () => {
-    await act(async () => { await i18n.changeLanguage("en"); });
-    getConnectionMock.mockResolvedValue(connection({ name: "Raw Connection Ω" }));
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+    getConnectionMock.mockResolvedValue(
+      connection({ name: "Raw Connection Ω" }),
+    );
     listGalleryMock.mockResolvedValue({ apps: [] });
 
     try {
@@ -498,7 +620,9 @@ describe("AppDetail", () => {
         { label: "Permissions" },
       ]);
 
-      await act(async () => { await i18n.changeLanguage("zh-CN"); });
+      await act(async () => {
+        await i18n.changeLanguage("zh-CN");
+      });
       await flushReact();
 
       expect(setBreadcrumbsMock).toHaveBeenLastCalledWith([
@@ -507,37 +631,79 @@ describe("AppDetail", () => {
         { label: "权限" },
       ]);
     } finally {
-      await act(async () => { await i18n.changeLanguage("en"); });
+      await act(async () => {
+        await i18n.changeLanguage("en");
+      });
     }
   });
 
   function useComposioConnection() {
-    getConnectionMock.mockResolvedValue(connection({ name: "Composio", authKind: "oauth",
-      config: { sourceTemplateKey: "composio", connectionMethodKey: "mcp" } }));
-    listApplicationsMock.mockResolvedValue({ applications: [{ id: "app-1", applicationKey: "composio", name: "Composio", metadata: { sourceTemplateKey: "composio" } }] });
+    getConnectionMock.mockResolvedValue(
+      connection({
+        name: "Composio",
+        authKind: "oauth",
+        config: { sourceTemplateKey: "composio", connectionMethodKey: "mcp" },
+      }),
+    );
+    listApplicationsMock.mockResolvedValue({
+      applications: [
+        {
+          id: "app-1",
+          applicationKey: "composio",
+          name: "Composio",
+          metadata: { sourceTemplateKey: "composio" },
+        },
+      ],
+    });
   }
 
   it("refreshes connected apps on first load, shows progress, and exposes the completed inventory", async () => {
     useComposioConnection();
     const prior = aggregatorApps([observedApp("airtable", "Airtable")]);
-    const completed = aggregatorApps([observedApp("circleback-mcp", "Circleback")]);
+    const completed = aggregatorApps([
+      observedApp("circleback-mcp", "Circleback"),
+    ]);
     listAggregatorAppsMock.mockResolvedValue(prior);
-    syncAggregatorAppsMock.mockResolvedValue({ ...prior, sync: { ...prior.sync, status: "syncing", checked: 0 } });
+    syncAggregatorAppsMock.mockResolvedValue({
+      ...prior,
+      sync: { ...prior.sync, status: "syncing", checked: 0 },
+    });
     const client = await renderAppDetail();
-    await vi.waitFor(() => expect(container.textContent).toContain("Refreshing apps… 0 of 2"));
+    await vi.waitFor(() =>
+      expect(container.textContent).toContain("Refreshing apps… 0 of 2"),
+    );
     expect(syncAggregatorAppsMock).toHaveBeenCalledTimes(1);
     expect(syncAggregatorAppsMock).toHaveBeenCalledWith("conn-1", true);
-    expect(container.querySelector<HTMLButtonElement>('button[aria-label="Refresh Composio"]')?.disabled).toBe(true);
-    expect(container.textContent).not.toContain("Provider permissions come from your last sign-in");
-    expect(container.textContent).not.toContain("Reconnect to update permissions");
+    expect(
+      container.querySelector<HTMLButtonElement>(
+        'button[aria-label="Refresh Composio"]',
+      )?.disabled,
+    ).toBe(true);
+    expect(container.textContent).not.toContain(
+      "Provider permissions come from your last sign-in",
+    );
+    expect(container.textContent).not.toContain(
+      "Reconnect to update permissions",
+    );
     listAggregatorAppsMock.mockResolvedValue(completed);
-    await act(async () => { await client.refetchQueries({ queryKey: queryKeys.tools.aggregatorApps("conn-1", "user-1"), exact: true }); });
+    await act(async () => {
+      await client.refetchQueries({
+        queryKey: queryKeys.tools.aggregatorApps("conn-1", "user-1"),
+        exact: true,
+      });
+    });
     await flushReact();
-    const list = container.querySelector('ul[aria-label="Connected Composio apps"]')!;
+    const list = container.querySelector(
+      'ul[aria-label="Connected Composio apps"]',
+    )!;
     expect(list.textContent).toContain("Circleback");
     expect(list.textContent).not.toContain("Airtable");
     expect(container.textContent).toContain("Apps refreshed.");
-    expect(container.querySelector<HTMLButtonElement>('button[aria-label="Refresh Composio"]')?.disabled).toBe(false);
+    expect(
+      container.querySelector<HTMLButtonElement>(
+        'button[aria-label="Refresh Composio"]',
+      )?.disabled,
+    ).toBe(false);
     expect(syncAggregatorAppsMock).toHaveBeenCalledTimes(1);
   });
 
@@ -547,14 +713,38 @@ describe("AppDetail", () => {
     listAggregatorAppsMock.mockResolvedValue(observed);
     syncAggregatorAppsMock.mockResolvedValue(observed);
     await renderAppDetail();
-    await vi.waitFor(() => expect(container.textContent).toContain("Apps refreshed."));
-    expect(container.querySelector<HTMLButtonElement>('button[aria-label="Refresh Composio"]')?.disabled).toBe(false);
-    syncAggregatorAppsMock.mockRejectedValueOnce(new Error("Authorization expired"));
-    await act(async () => container.querySelector<HTMLButtonElement>('button[aria-label="Refresh Composio"]')!.click());
+    await vi.waitFor(() =>
+      expect(container.textContent).toContain("Apps refreshed."),
+    );
+    expect(
+      container.querySelector<HTMLButtonElement>(
+        'button[aria-label="Refresh Composio"]',
+      )?.disabled,
+    ).toBe(false);
+    syncAggregatorAppsMock.mockRejectedValueOnce(
+      new Error("Authorization expired"),
+    );
+    await act(async () =>
+      container
+        .querySelector<HTMLButtonElement>(
+          'button[aria-label="Refresh Composio"]',
+        )!
+        .click(),
+    );
     await flushReact();
-    await vi.waitFor(() => expect(container.querySelector('[role="alert"]')?.textContent).toContain("Last known apps are shown."));
-    expect(container.querySelector('ul[aria-label="Connected Composio apps"]')?.textContent).toContain("NotionNot verified");
-    expect(syncAggregatorAppsMock.mock.calls).toEqual([["conn-1", true], ["conn-1", true]]);
+    await vi.waitFor(() =>
+      expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+        "Last known apps are shown.",
+      ),
+    );
+    expect(
+      container.querySelector('ul[aria-label="Connected Composio apps"]')
+        ?.textContent,
+    ).toContain("NotionNot verified");
+    expect(syncAggregatorAppsMock.mock.calls).toEqual([
+      ["conn-1", true],
+      ["conn-1", true],
+    ]);
     expect(finishAppMock).not.toHaveBeenCalled();
     expect(startOAuthMock).not.toHaveBeenCalled();
   });
@@ -562,15 +752,27 @@ describe("AppDetail", () => {
   it("groups provider variants and displays sign-in status without treating unseen apps as connected", async () => {
     useComposioConnection();
     const observed = aggregatorApps([
-      observedApp("notion", "Notion"), observedApp("notion_mcp", "Notion", { appSlug: "notion" }),
-      observedApp("slack", "Slack", { accounts: [{ id: "expired", alias: null, status: "EXPIRED", isDefault: false }] }),
-      observedApp("github", "GitHub", { status: "not_connected", accounts: [] }),
+      observedApp("notion", "Notion"),
+      observedApp("notion_mcp", "Notion", { appSlug: "notion" }),
+      observedApp("slack", "Slack", {
+        accounts: [
+          { id: "expired", alias: null, status: "EXPIRED", isDefault: false },
+        ],
+      }),
+      observedApp("github", "GitHub", {
+        status: "not_connected",
+        accounts: [],
+      }),
     ]);
     listAggregatorAppsMock.mockResolvedValue(observed);
     syncAggregatorAppsMock.mockResolvedValue(observed);
     await renderAppDetail();
-    await vi.waitFor(() => expect(container.textContent).toContain("Apps refreshed."));
-    const list = container.querySelector('ul[aria-label="Connected Composio apps"]')!;
+    await vi.waitFor(() =>
+      expect(container.textContent).toContain("Apps refreshed."),
+    );
+    const list = container.querySelector(
+      'ul[aria-label="Connected Composio apps"]',
+    )!;
     expect(list.querySelectorAll("li")).toHaveLength(2);
     expect(list.textContent).toContain("Notion2 accountsConnected");
     expect(list.textContent).toContain("SlackNeeds sign-in");
@@ -579,11 +781,23 @@ describe("AppDetail", () => {
 
   it("keeps unavailable discovery explicit without automatically retrying unsupported gateways", async () => {
     useComposioConnection();
-    listAggregatorAppsMock.mockResolvedValue({ ...aggregatorApps(), discovery: { availability: "unsupported", message: "Account discovery unavailable." } });
+    listAggregatorAppsMock.mockResolvedValue({
+      ...aggregatorApps(),
+      discovery: {
+        availability: "unsupported",
+        message: "Account discovery unavailable.",
+      },
+    });
     await renderAppDetail();
-    await vi.waitFor(() => expect(container.textContent).toContain("Account discovery unavailable."));
+    await vi.waitFor(() =>
+      expect(container.textContent).toContain("Account discovery unavailable."),
+    );
     expect(syncAggregatorAppsMock).not.toHaveBeenCalled();
-    expect(container.querySelector<HTMLButtonElement>('button[aria-label="Refresh Composio"]')?.disabled).toBe(true);
+    expect(
+      container.querySelector<HTMLButtonElement>(
+        'button[aria-label="Refresh Composio"]',
+      )?.disabled,
+    ).toBe(true);
   });
 
   it.each([
@@ -592,19 +806,31 @@ describe("AppDetail", () => {
     ["EXPIRED", "Needs sign-in"],
   ])("shows %s provider health as %s", async (status, label) => {
     useComposioConnection();
-    const observed = aggregatorApps([observedApp("notion", "Notion", {
-      accounts: [{ id: "account", alias: null, status, isDefault: false }],
-    })]);
+    const observed = aggregatorApps([
+      observedApp("notion", "Notion", {
+        accounts: [{ id: "account", alias: null, status, isDefault: false }],
+      }),
+    ]);
     listAggregatorAppsMock.mockResolvedValue(observed);
     syncAggregatorAppsMock.mockResolvedValue(observed);
     await renderAppDetail();
-    await vi.waitFor(() => expect(container.textContent).toContain("Apps refreshed."));
-    expect(container.querySelector('ul[aria-label="Connected Composio apps"]')?.textContent).toBe(`Notion${label}`);
+    await vi.waitFor(() =>
+      expect(container.textContent).toContain("Apps refreshed."),
+    );
+    expect(
+      container.querySelector('ul[aria-label="Connected Composio apps"]')
+        ?.textContent,
+    ).toBe(`Notion${label}`);
   });
 
   it("does not request manager-only account inventory without configuration access", async () => {
     useComposioConnection();
-    listConnectionGrantsMock.mockResolvedValue({ grants: [], capabilities: fullCapabilities({ canConfigure: false }), currentUserId: "user-1", members: [] });
+    listConnectionGrantsMock.mockResolvedValue({
+      grants: [],
+      capabilities: fullCapabilities({ canConfigure: false }),
+      currentUserId: "user-1",
+      members: [],
+    });
     await renderAppDetail();
     expect(listAggregatorAppsMock).not.toHaveBeenCalled();
     expect(syncAggregatorAppsMock).not.toHaveBeenCalled();
@@ -612,54 +838,90 @@ describe("AppDetail", () => {
   });
 
   it.each([
-    { transport: "rest_api", config: { sourceTemplateKey: "composio", connectionMethodKey: "api-key" } },
-    { transport: "mcp_remote", config: { provider: "composio", parentConnectionId: "old-parent", toolkitSlug: "github" } },
-  ])("shows replacement and explicit removal for a retired Composio record", async (legacy) => {
-    getConnectionMock.mockResolvedValue(connection({ ...legacy, enabled: false, healthStatus: "error" }));
-    await renderAppDetail();
-    expect(container.textContent).toContain("Connection retired");
-    expect(container.textContent).toContain("Remove each obsolete connection separately");
-    expect(container.textContent).not.toContain("Paused");
-    expect(container.textContent).not.toContain("Refresh actions");
-    const replacement = Array.from(container.querySelectorAll("button")).find((b) => b.textContent === "Add Composio MCP connection")!;
-    await act(async () => replacement.click());
-    expect(mockNavigate).toHaveBeenCalledWith("/apps/connect?source=composio");
-    const danger = Array.from(container.querySelectorAll("button")).find((b) => b.textContent?.includes("Danger zone"))!;
-    await act(async () => danger.click());
-    expect(container.textContent).toContain("Remove app");
-    expect(Array.from(container.querySelectorAll("button")).some((b) => b.textContent === "Reconnect")).toBe(false);
-  });
+    {
+      transport: "rest_api",
+      config: { sourceTemplateKey: "composio", connectionMethodKey: "api-key" },
+    },
+    {
+      transport: "mcp_remote",
+      config: {
+        provider: "composio",
+        parentConnectionId: "old-parent",
+        toolkitSlug: "github",
+      },
+    },
+  ])(
+    "shows replacement and explicit removal for a retired Composio record",
+    async (legacy) => {
+      getConnectionMock.mockResolvedValue(
+        connection({ ...legacy, enabled: false, healthStatus: "error" }),
+      );
+      await renderAppDetail();
+      expect(container.textContent).toContain("Connection retired");
+      expect(container.textContent).toContain(
+        "Remove each obsolete connection separately",
+      );
+      expect(container.textContent).not.toContain("Paused");
+      expect(container.textContent).not.toContain("Refresh actions");
+      const replacement = Array.from(container.querySelectorAll("button")).find(
+        (b) => b.textContent === "Add Composio MCP connection",
+      )!;
+      await act(async () => replacement.click());
+      expect(mockNavigate).toHaveBeenCalledWith(
+        "/apps/connect?source=composio",
+      );
+      const danger = Array.from(container.querySelectorAll("button")).find(
+        (b) => b.textContent?.includes("Danger zone"),
+      )!;
+      await act(async () => danger.click());
+      expect(container.textContent).toContain("Remove app");
+      expect(
+        Array.from(container.querySelectorAll("button")).some(
+          (b) => b.textContent === "Reconnect",
+        ),
+      ).toBe(false);
+    },
+  );
 
   it("uses Permissions as the primary connection page and has no Setup tab", () => {
-    expect(APP_TABS.map((tab) => tab.key)).toEqual([
-      "permissions",
-      "review",
-    ]);
+    expect(APP_TABS.map((tab) => tab.key)).toEqual(["permissions", "review"]);
   });
 
   it("allows the gallery logo fallback after application identity lookup fails", async () => {
-    listApplicationsMock.mockRejectedValueOnce(new Error("Application lookup unavailable"));
+    listApplicationsMock.mockRejectedValueOnce(
+      new Error("Application lookup unavailable"),
+    );
 
     await renderAppDetail();
 
-    expect(container.querySelector("[data-app-logo]")?.getAttribute("data-allow-remote-fallback")).toBe("true");
+    expect(
+      container
+        .querySelector("[data-app-logo]")
+        ?.getAttribute("data-allow-remote-fallback"),
+    ).toBe("true");
   });
 
   it("keeps a customized connection logo after application identity lookup fails", async () => {
-    getConnectionMock.mockResolvedValue(connection({
-      name: "Dotta's source control",
-      config: {
-        url: "https://github.example/mcp",
-        sourceTemplateKey: "github",
-      },
-    }));
-    listApplicationsMock.mockRejectedValueOnce(new Error("Application lookup unavailable"));
+    getConnectionMock.mockResolvedValue(
+      connection({
+        name: "Dotta's source control",
+        config: {
+          url: "https://github.example/mcp",
+          sourceTemplateKey: "github",
+        },
+      }),
+    );
+    listApplicationsMock.mockRejectedValueOnce(
+      new Error("Application lookup unavailable"),
+    );
 
     await renderAppDetail();
 
     const logo = container.querySelector("[data-app-logo]");
     expect(logo?.getAttribute("data-brand-key")).toBe("github");
-    expect(logo?.getAttribute("data-logo-url")).toBe("https://example.com/github.png");
+    expect(logo?.getAttribute("data-logo-url")).toBe(
+      "https://example.com/github.png",
+    );
     expect(logo?.getAttribute("data-allow-remote-fallback")).toBe("true");
   });
 
@@ -685,7 +947,10 @@ describe("AppDetail", () => {
 
     await renderAppDetail();
 
-    expect(navigateComponentMock).toHaveBeenCalledWith({ to: "/apps/conn-1/permissions", replace: true });
+    expect(navigateComponentMock).toHaveBeenCalledWith({
+      to: "/apps/conn-1/permissions",
+      replace: true,
+    });
   });
 
   it.each([
@@ -708,9 +973,21 @@ describe("AppDetail", () => {
     listCatalogMock.mockResolvedValue({
       catalog: [
         catalogEntry(),
-        catalogEntry({ id: "catalog-disabled", toolName: "disabled_action", status: "disabled" }),
-        catalogEntry({ id: "catalog-quarantined", toolName: "pending_action", status: "quarantined" }),
-        catalogEntry({ id: "catalog-removed", toolName: "removed_action", status: "removed" }),
+        catalogEntry({
+          id: "catalog-disabled",
+          toolName: "disabled_action",
+          status: "disabled",
+        }),
+        catalogEntry({
+          id: "catalog-quarantined",
+          toolName: "pending_action",
+          status: "quarantined",
+        }),
+        catalogEntry({
+          id: "catalog-removed",
+          toolName: "removed_action",
+          status: "removed",
+        }),
       ],
     });
 
@@ -720,16 +997,19 @@ describe("AppDetail", () => {
     expect(container.textContent).not.toContain("2 actions available");
   });
 
-  it.each(["setup", "advanced"])("redirects the retired %s route to Permissions", async (tab) => {
-    mockParams.tab = tab;
+  it.each(["setup", "advanced"])(
+    "redirects the retired %s route to Permissions",
+    async (tab) => {
+      mockParams.tab = tab;
 
-    await renderAppDetail();
+      await renderAppDetail();
 
-    expect(navigateComponentMock).toHaveBeenCalledWith({
-      to: "/apps/conn-1/permissions",
-      replace: true,
-    });
-  });
+      expect(navigateComponentMock).toHaveBeenCalledWith({
+        to: "/apps/conn-1/permissions",
+        replace: true,
+      });
+    },
+  );
 
   it("shows an explicit lazy-loading state while a tool tab discovers actions", async () => {
     mockParams.tab = "permissions";
@@ -742,12 +1022,98 @@ describe("AppDetail", () => {
     expect(container.textContent).not.toContain("Action permissions");
   });
 
+  it("keeps the loaded connection visible when a refetch fails transiently", async () => {
+    mockParams.tab = "permissions";
+    const client = await renderAppDetail();
+    expect(container.textContent).toContain(
+      "Which agents can use this connection?",
+    );
+
+    getConnectionMock.mockRejectedValue(
+      new ApiError("Paperclip is restarting.", 503, {
+        error: "tenant_app_unavailable",
+      }),
+    );
+    await act(async () => {
+      await client.invalidateQueries({
+        queryKey: queryKeys.tools.connection("conn-1"),
+      });
+    });
+    await flushReact();
+
+    expect(container.textContent).toContain("GitHub");
+    expect(container.textContent).toContain(
+      "Which agents can use this connection?",
+    );
+    expect(container.querySelector('[data-query-view="error"]')).toBeNull();
+    expect(container.textContent).not.toContain("Paperclip is restarting.");
+    expect(container.textContent).not.toContain("tenant_app_unavailable");
+  });
+
+  it("shows readable copy and a Retry for a real connection failure", async () => {
+    mockParams.tab = "permissions";
+    getConnectionMock.mockRejectedValueOnce(
+      new ApiError("Boom", 500, { error: "Boom" }),
+    );
+
+    await renderAppDetail();
+
+    const errorView = container.querySelector('[data-query-view="error"]');
+    expect(errorView?.textContent).toContain("Couldn't load the connection");
+    expect(container.textContent).not.toContain(
+      "Which agents can use this connection?",
+    );
+    const retry = Array.from(container.querySelectorAll("button")).find(
+      (button) => button.textContent?.trim() === "Retry",
+    );
+    expect(retry).toBeTruthy();
+    await act(async () => retry!.click());
+    await flushReact();
+
+    expect(container.querySelector('[data-query-view="error"]')).toBeNull();
+    expect(container.textContent).toContain(
+      "Which agents can use this connection?",
+    );
+  });
+
+  it.each([false, true])(
+    "replaces a cached connection with not-found after deletion (router: %s)",
+    async (router) => {
+      if (router)
+        getConnectionMock.mockResolvedValue(
+          connection({ config: { aiRouter: { pluginKey: "test-router" } } }),
+        );
+      const client = await renderAppDetail();
+      const controls = router
+        ? "Connection pool controls"
+        : "Which agents can use this connection?";
+      expect(container.textContent).toContain(controls);
+      getConnectionMock.mockRejectedValue(new ApiError("not_found", 404, null));
+      await act(async () => {
+        await client.invalidateQueries({
+          queryKey: queryKeys.tools.connection("conn-1"),
+        });
+      });
+      await flushReact();
+      expect(
+        client.getQueryData(queryKeys.tools.connection("conn-1")),
+      ).toBeDefined();
+      expect(container.textContent).toContain("We couldn't find that app.");
+      expect(container.textContent).toContain("Back to connectors");
+      expect(container.textContent).not.toContain(controls);
+      expect(container.textContent).not.toContain("not_found");
+    },
+  );
+
   it("redirects the retired Test tab into Permissions", async () => {
     mockParams.tab = "test";
 
     await renderAppDetail();
 
-    expect(navigateComponentMock).toHaveBeenCalledWith({ to: "/apps/conn-1/permissions", replace: true });
+    expect(navigateComponentMock).toHaveBeenCalledWith({
+      to: "/apps/conn-1/permissions",
+      replace: true,
+    });
   });
 
   it("confirms a successful connection on Permissions and clears the one-time URL flag", async () => {
@@ -761,7 +1127,9 @@ describe("AppDetail", () => {
       body: "The connection is ready. Review permissions or test an action below.",
       tone: "success",
     });
-    expect(mockNavigate).toHaveBeenCalledWith("/apps/conn-1/permissions", { replace: true });
+    expect(mockNavigate).toHaveBeenCalledWith("/apps/conn-1/permissions", {
+      replace: true,
+    });
   });
 
   it.each([
@@ -769,24 +1137,40 @@ describe("AppDetail", () => {
     ["other-company", "github", "active", false],
     ["company-1", "notion", "active", false],
     ["company-1", "github", "pending", false],
-  ])("resumes a skill import only for its company's active GitHub callback (%s, %s, %s)", async (companyId, provider, status, returns) => {
-    rememberSkillSourceReturn("company-1", "new");
-    mockSearchParams.value = new URLSearchParams("success=1");
-    getConnectionMock.mockResolvedValue(connection({ companyId, status, config: { sourceTemplateKey: provider } }));
-    await renderAppDetail();
-    expect(mockNavigate).toHaveBeenCalledWith(returns ? "/skills/sources/new" : "/apps/conn-1/permissions", { replace: true });
-    expect(skillSourceReturnPath("company-1")).toBe(returns ? null : "/skills/sources/new");
-  });
+  ])(
+    "resumes a skill import only for its company's active GitHub callback (%s, %s, %s)",
+    async (companyId, provider, status, returns) => {
+      rememberSkillSourceReturn("company-1", "new");
+      mockSearchParams.value = new URLSearchParams("success=1");
+      getConnectionMock.mockResolvedValue(
+        connection({
+          companyId,
+          status,
+          config: { sourceTemplateKey: provider },
+        }),
+      );
+      await renderAppDetail();
+      expect(mockNavigate).toHaveBeenCalledWith(
+        returns ? "/skills/sources/new" : "/apps/conn-1/permissions",
+        { replace: true },
+      );
+      expect(skillSourceReturnPath("company-1")).toBe(
+        returns ? null : "/skills/sources/new",
+      );
+    },
+  );
 
   it("normalizes the retired post-OAuth Setup URL into Permissions", async () => {
     mockParams.tab = "setup";
     mockSearchParams.value = new URLSearchParams("oauth=choose-access");
-    getConnectionMock.mockResolvedValue(connection({
-      name: "Notion",
-      authKind: "oauth",
-      credentialPolicy: "per_user",
-      config: { sourceTemplateKey: "notion" },
-    }));
+    getConnectionMock.mockResolvedValue(
+      connection({
+        name: "Notion",
+        authKind: "oauth",
+        credentialPolicy: "per_user",
+        config: { sourceTemplateKey: "notion" },
+      }),
+    );
 
     await renderAppDetail();
 
@@ -830,7 +1214,9 @@ describe("AppDetail", () => {
     expect(container.textContent).toContain("Review 2 new actions");
     expect(container.textContent).toContain("Delete repo");
     expect(container.textContent).toContain("Archive repo");
-    expect(container.textContent).not.toContain("Nothing is waiting for your OK right now.");
+    expect(container.textContent).not.toContain(
+      "Nothing is waiting for your OK right now.",
+    );
 
     const allowToggle = container.querySelector<HTMLButtonElement>(
       'button[role="switch"][aria-label="Delete repo allowed"]',
@@ -861,75 +1247,95 @@ describe("AppDetail", () => {
       ]),
       access: "all_agents",
     });
-    const finishInput = finishAppMock.mock.calls.at(-1)?.[2] as { enabledCatalogEntryIds: string[] };
-    expect(finishInput.enabledCatalogEntryIds).not.toContain("catalog-quarantined-block");
+    const finishInput = finishAppMock.mock.calls.at(-1)?.[2] as {
+      enabledCatalogEntryIds: string[];
+    };
+    expect(finishInput.enabledCatalogEntryIds).not.toContain(
+      "catalog-quarantined-block",
+    );
   });
 
   it("shows the Smoke OAuth connection action for the installed HTTP fixture", async () => {
-    getConnectionMock.mockResolvedValue(connection({
-      name: "Smoke Lab HTTP MCP fixture",
-      config: {
-        smokeLabFixture: "oauth-http",
-        oauth: {
-          provider: "smoke_lab",
-          smokeLabFixture: true,
-          scopes: ["smoke:openid"],
+    getConnectionMock.mockResolvedValue(
+      connection({
+        name: "Smoke Lab HTTP MCP fixture",
+        config: {
+          smokeLabFixture: "oauth-http",
+          oauth: {
+            provider: "smoke_lab",
+            smokeLabFixture: true,
+            scopes: ["smoke:openid"],
+          },
         },
-      },
-    }));
+      }),
+    );
 
     await renderAppDetail();
 
     // The old generic "Connect with <provider>" block is gone: the connection's
     // fixed identity type is explicit even before that identity is connected.
-    expect(container.textContent).toContain("Which humans can use this credential?");
-    expect(container.textContent).toContain("Anyone in your company can use this connection");
+    expect(container.textContent).toContain(
+      "Which humans can use this credential?",
+    );
+    expect(container.textContent).toContain(
+      "Anyone in your company can use this connection",
+    );
     expect(container.textContent).toContain("Organization identity");
     expect(container.textContent).toContain("Not connected");
     expect(
       Array.from(container.querySelectorAll("button")).some(
-        (button) => button.textContent?.trim() === "Connect organization identity",
+        (button) =>
+          button.textContent?.trim() === "Connect organization identity",
       ),
     ).toBe(true);
   });
 
   it("keeps reconnect off a healthy Notion permissions page", async () => {
-    getConnectionMock.mockResolvedValue(connection({
-      name: "Notion",
-      createdByUserId: "user-1",
-      config: {
-        sourceTemplateKey: "notion",
-        oauth: {
-          provider: "notion",
-          connectedAt: "2026-08-06T20:00:00.000Z",
-        },
-      },
-    }));
-    listGalleryMock.mockResolvedValue({
-      apps: [{
-        key: "notion",
+    getConnectionMock.mockResolvedValue(
+      connection({
         name: "Notion",
-        logoUrl: "https://example.com/notion.png",
-        tagline: "Search and update your Notion workspace.",
-        description: "Give agents governed access to Notion.",
-        authKind: "oauth",
-        transportTemplate: { transport: "mcp_remote", url: "https://mcp.notion.com/mcp" },
-        credentialFields: [],
-        recommendedDefaults: {},
-        urlPatterns: [],
-      }],
+        createdByUserId: "user-1",
+        config: {
+          sourceTemplateKey: "notion",
+          oauth: {
+            provider: "notion",
+            connectedAt: "2026-08-06T20:00:00.000Z",
+          },
+        },
+      }),
+    );
+    listGalleryMock.mockResolvedValue({
+      apps: [
+        {
+          key: "notion",
+          name: "Notion",
+          logoUrl: "https://example.com/notion.png",
+          tagline: "Search and update your Notion workspace.",
+          description: "Give agents governed access to Notion.",
+          authKind: "oauth",
+          transportTemplate: {
+            transport: "mcp_remote",
+            url: "https://mcp.notion.com/mcp",
+          },
+          credentialFields: [],
+          recommendedDefaults: {},
+          urlPatterns: [],
+        },
+      ],
     });
     listUserDirectoryMock.mockResolvedValue({
-      users: [{
-        principalId: "user-1",
-        status: "active",
-        user: {
-          id: "user-1",
-          name: "Dotta",
-          email: "dotta@example.com",
-          image: "https://example.com/dotta.png",
+      users: [
+        {
+          principalId: "user-1",
+          status: "active",
+          user: {
+            id: "user-1",
+            name: "Dotta",
+            email: "dotta@example.com",
+            image: "https://example.com/dotta.png",
+          },
         },
-      }],
+      ],
     });
     listConnectionGrantsMock.mockResolvedValue({
       connection: { id: "conn-1", uid: "conn-1" },
@@ -943,7 +1349,9 @@ describe("AppDetail", () => {
 
     expect(container.textContent).toContain("Dotta’s Notion");
     expect(container.textContent).not.toContain("Connected by");
-    expect(container.textContent).toContain("Anyone in your company can use this connection");
+    expect(container.textContent).toContain(
+      "Anyone in your company can use this connection",
+    );
     expect(container.textContent).not.toContain("workspace authorization");
     expect(findButton("Reconnect")).toBeUndefined();
     expect(findButton("Danger zone")).toBeUndefined();
@@ -954,7 +1362,9 @@ describe("AppDetail", () => {
 
     await renderAppDetail();
 
-    expect(container.textContent).toContain("Which agents can use this connection?");
+    expect(container.textContent).toContain(
+      "Which agents can use this connection?",
+    );
     expect(container.textContent).not.toContain("Always installed");
     expect(putConnectionInstallsMock).not.toHaveBeenCalled();
     expect(container.textContent).toContain("Read (1)");
@@ -962,11 +1372,29 @@ describe("AppDetail", () => {
     expect(container.textContent).toContain("Read repo");
     expect(container.textContent).toContain("Write issue");
     expect(container.textContent).toContain("Review 1 new action");
-    expect(container.querySelector<HTMLInputElement>('input[aria-label="Find an action"]')).toBeTruthy();
-    expect(container.querySelector('button[aria-label="Read repo: Allowed"]')?.getAttribute("aria-checked")).toBe("true");
-    expect(container.querySelector('button[aria-label="Write issue: Ask first"]')?.getAttribute("aria-checked")).toBe("true");
-    expect(Array.from(container.querySelectorAll("button")).filter((button) => button.textContent?.trim() === "Test")).toHaveLength(2);
-    expect(container.textContent).not.toContain("Views data without changing it.");
+    expect(
+      container.querySelector<HTMLInputElement>(
+        'input[aria-label="Find an action"]',
+      ),
+    ).toBeTruthy();
+    expect(
+      container
+        .querySelector('button[aria-label="Read repo: Allowed"]')
+        ?.getAttribute("aria-checked"),
+    ).toBe("true");
+    expect(
+      container
+        .querySelector('button[aria-label="Write issue: Ask first"]')
+        ?.getAttribute("aria-checked"),
+    ).toBe("true");
+    expect(
+      Array.from(container.querySelectorAll("button")).filter(
+        (button) => button.textContent?.trim() === "Test",
+      ),
+    ).toHaveLength(2);
+    expect(container.textContent).not.toContain(
+      "Views data without changing it.",
+    );
     expect(container.textContent).not.toContain("Creates or changes data.");
     expect(container.querySelector("section.bg-card")).toBeNull();
   });
@@ -974,14 +1402,16 @@ describe("AppDetail", () => {
   it("opens an action test modal with agent selection, inputs, and result-ready chrome", async () => {
     mockParams.tab = "permissions";
     listTestAgentsMock.mockResolvedValue({
-      agents: [{
-        id: "agent-1",
-        name: "Coder",
-        role: "engineer",
-        title: "Engineer",
-        status: "active",
-        orgDepth: 1,
-      }],
+      agents: [
+        {
+          id: "agent-1",
+          name: "Coder",
+          role: "engineer",
+          title: "Engineer",
+          status: "active",
+          orgDepth: 1,
+        },
+      ],
     });
     getTestAgentAccessMock.mockResolvedValue({
       access: {
@@ -1008,8 +1438,9 @@ describe("AppDetail", () => {
     });
 
     await renderAppDetail();
-    const testButton = Array.from(container.querySelectorAll("button"))
-      .find((button) => button.textContent?.trim() === "Test");
+    const testButton = Array.from(container.querySelectorAll("button")).find(
+      (button) => button.textContent?.trim() === "Test",
+    );
     await act(async () => {
       testButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
@@ -1028,7 +1459,9 @@ describe("AppDetail", () => {
 
     await renderAppDetail();
 
-    const askFirst = container.querySelector<HTMLButtonElement>('button[aria-label="Read repo: Ask first"]');
+    const askFirst = container.querySelector<HTMLButtonElement>(
+      'button[aria-label="Read repo: Ask first"]',
+    );
     expect(askFirst).toBeTruthy();
     await act(async () => {
       askFirst!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -1036,8 +1469,14 @@ describe("AppDetail", () => {
     await flushReact();
 
     expect(finishAppMock).toHaveBeenCalledWith("company-1", "conn-1", {
-      enabledCatalogEntryIds: expect.arrayContaining(["catalog-read", "catalog-write"]),
-      askFirstCatalogEntryIds: expect.arrayContaining(["catalog-read", "catalog-write"]),
+      enabledCatalogEntryIds: expect.arrayContaining([
+        "catalog-read",
+        "catalog-write",
+      ]),
+      askFirstCatalogEntryIds: expect.arrayContaining([
+        "catalog-read",
+        "catalog-write",
+      ]),
       access: "all_agents",
     });
   });
@@ -1047,7 +1486,9 @@ describe("AppDetail", () => {
 
     await renderAppDetail();
 
-    const off = container.querySelector<HTMLButtonElement>('button[aria-label="Write issue: Off"]');
+    const off = container.querySelector<HTMLButtonElement>(
+      'button[aria-label="Write issue: Off"]',
+    );
     expect(off).toBeTruthy();
     await act(async () => {
       off!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -1061,24 +1502,60 @@ describe("AppDetail", () => {
     });
   });
 
+  it("fetches the connection configuration under a distinct child of the profiles cache", async () => {
+    await renderAppDetail();
+    expect(listConnectionProfileConfigurationMock).toHaveBeenCalledWith(
+      "conn-1",
+    );
+    expect(
+      queryKeys.tools
+        .connectionProfileConfiguration("company-1", "conn-1")
+        .slice(0, 3),
+    ).toEqual(queryKeys.tools.profiles("company-1"));
+    expect(
+      queryKeys.tools.connectionProfileConfiguration("company-1", "conn-1"),
+    ).not.toEqual(
+      queryKeys.tools.connectionProfileConfiguration("company-1", "conn-2"),
+    );
+  });
+
   it("shows and removes task-granted access without changing the connection's default permissions", async () => {
     const grant = {
-      id: "task-grant", status: "active", profileKey: "connection-intent:conn-1:agent-1",
-      metadata: { source: "connection_intent", connectionId: "conn-1", agentId: "agent-1" },
+      id: "task-grant",
+      status: "active",
+      profileKey: "connection-intent:conn-1:agent-1",
+      metadata: {
+        source: "connection_intent",
+        connectionId: "conn-1",
+        agentId: "agent-1",
+      },
       bindings: [{ targetType: "agent", targetId: "agent-1" }],
       entries: [{ effect: "include", catalogEntryId: "catalog-write" }],
     };
-    listProfilesMock.mockResolvedValue({ profiles: [grant] });
-    listPoliciesMock.mockResolvedValue({ policies: [{
-      enabled: true, policyType: "require_approval",
-      selectors: { catalogEntryId: "catalog-write" },
-      config: { source: "connection_intent", connectionId: "conn-1", agentId: "agent-1" },
-    }] });
+    listConnectionProfileConfigurationMock.mockResolvedValue({
+      profiles: [grant],
+    });
+    listPoliciesMock.mockResolvedValue({
+      policies: [
+        {
+          enabled: true,
+          policyType: "require_approval",
+          selectors: { catalogEntryId: "catalog-write" },
+          config: {
+            source: "connection_intent",
+            connectionId: "conn-1",
+            agentId: "agent-1",
+          },
+        },
+      ],
+    });
     await renderAppDetail();
-    const section = Array.from(container.querySelectorAll("section")).find(section => section.textContent?.includes("Additional agent access"))!;
+    const section = Array.from(container.querySelectorAll("section")).find(
+      (section) => section.textContent?.includes("Additional agent access"),
+    )!;
     expect(section.textContent).toContain("Write issue");
     expect(section.textContent).toContain("Ask first");
-    listProfilesMock.mockResolvedValue({ profiles: [] });
+    listConnectionProfileConfigurationMock.mockResolvedValue({ profiles: [] });
     await act(async () => section.querySelector("button")!.click());
     await flushReact();
     expect(deleteProfileMock).toHaveBeenCalledWith("task-grant");
@@ -1088,39 +1565,60 @@ describe("AppDetail", () => {
   });
 
   it("keeps the task grant visible when removal fails", async () => {
-    listProfilesMock.mockResolvedValue({ profiles: [{
-      id: "task-grant", status: "active", profileKey: "connection-intent:conn-1:agent-1",
-      metadata: { source: "connection_intent", connectionId: "conn-1", agentId: "agent-1" },
-      bindings: [{ targetType: "agent", targetId: "agent-1" }],
-      entries: [{ effect: "include", catalogEntryId: "catalog-read" }],
-    }] });
-    deleteProfileMock.mockRejectedValue(new Error("Connection access changed. Reload and try again."));
+    listConnectionProfileConfigurationMock.mockResolvedValue({
+      profiles: [
+        {
+          id: "task-grant",
+          status: "active",
+          profileKey: "connection-intent:conn-1:agent-1",
+          metadata: {
+            source: "connection_intent",
+            connectionId: "conn-1",
+            agentId: "agent-1",
+          },
+          bindings: [{ targetType: "agent", targetId: "agent-1" }],
+          entries: [{ effect: "include", catalogEntryId: "catalog-read" }],
+        },
+      ],
+    });
+    deleteProfileMock.mockRejectedValue(
+      new Error("Connection access changed. Reload and try again."),
+    );
     await renderAppDetail();
-    const button = Array.from(container.querySelectorAll("button")).find(button => button.textContent === "Remove grant")!;
+    const button = Array.from(container.querySelectorAll("button")).find(
+      (button) => button.textContent === "Remove grant",
+    )!;
     await act(async () => button.click());
     await flushReact();
-    expect(container.querySelector('[role="alert"]')?.textContent).toContain("Connection access changed");
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      "Connection access changed",
+    );
     expect(button.disabled).toBe(false);
   });
 
   it("persists agent access independently from always-installed agents", async () => {
     mockParams.tab = "permissions";
-    listProfilesMock.mockResolvedValue({
-      profiles: [{
-        profileKey: "app:conn-1",
-        entries: [
-          { effect: "include", catalogEntryId: "catalog-read" },
-          { effect: "include", catalogEntryId: "catalog-write" },
-        ],
-        bindings: [{ targetType: "agent", targetId: "agent-1" }],
-      }],
+    listConnectionProfileConfigurationMock.mockResolvedValue({
+      profiles: [
+        {
+          profileKey: "app:conn-1",
+          entries: [
+            { effect: "include", catalogEntryId: "catalog-read" },
+            { effect: "include", catalogEntryId: "catalog-write" },
+          ],
+          bindings: [{ targetType: "agent", targetId: "agent-1" }],
+        },
+      ],
     });
 
     await renderAppDetail();
 
-    const accessGroup = container.querySelector('[role="radiogroup"][aria-label="Which agents can use this connection"]');
-    const anyAgent = Array.from(accessGroup?.querySelectorAll('[role="radio"]') ?? [])
-      .find((radio) => radio.textContent?.includes("Any agent"));
+    const accessGroup = container.querySelector(
+      '[role="radiogroup"][aria-label="Which agents can use this connection"]',
+    );
+    const anyAgent = Array.from(
+      accessGroup?.querySelectorAll('[role="radio"]') ?? [],
+    ).find((radio) => radio.textContent?.includes("Any agent"));
     expect(anyAgent).toBeTruthy();
 
     await act(async () => {
@@ -1140,23 +1638,28 @@ describe("AppDetail", () => {
     mockParams.tab = "permissions";
     getConnectionInstallsMock.mockResolvedValue({
       connectionId: "conn-1",
-      installs: [{
-        id: "install-agent-1",
-        companyId: "company-1",
-        connectionId: "conn-1",
-        targetType: "agent",
-        targetId: "agent-1",
-        createdByAgentId: null,
-        createdByUserId: "user-1",
-        createdAt: new Date(),
-      }],
+      installs: [
+        {
+          id: "install-agent-1",
+          companyId: "company-1",
+          connectionId: "conn-1",
+          targetType: "agent",
+          targetId: "agent-1",
+          createdByAgentId: null,
+          createdByUserId: "user-1",
+          createdAt: new Date(),
+        },
+      ],
     });
 
     await renderAppDetail();
 
-    const accessGroup = container.querySelector('[role="radiogroup"][aria-label="Which agents can use this connection"]');
-    const pickedAgents = Array.from(accessGroup?.querySelectorAll('[role="radio"]') ?? [])
-      .find((radio) => radio.textContent?.includes("Just agents I pick"));
+    const accessGroup = container.querySelector(
+      '[role="radiogroup"][aria-label="Which agents can use this connection"]',
+    );
+    const pickedAgents = Array.from(
+      accessGroup?.querySelectorAll('[role="radio"]') ?? [],
+    ).find((radio) => radio.textContent?.includes("Just agents I pick"));
     await act(async () => {
       pickedAgents?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
@@ -1171,24 +1674,30 @@ describe("AppDetail", () => {
 
   it("uses the setup-style agent access question without install terminology", async () => {
     mockParams.tab = "permissions";
-    listProfilesMock.mockResolvedValue({
-      profiles: [{
-        profileKey: "app:conn-1",
-        entries: [
-          { effect: "include", catalogEntryId: "catalog-read" },
-          { effect: "include", catalogEntryId: "catalog-write" },
-        ],
-        bindings: [{ targetType: "agent", targetId: "agent-1" }],
-      }],
+    listConnectionProfileConfigurationMock.mockResolvedValue({
+      profiles: [
+        {
+          profileKey: "app:conn-1",
+          entries: [
+            { effect: "include", catalogEntryId: "catalog-read" },
+            { effect: "include", catalogEntryId: "catalog-write" },
+          ],
+          bindings: [{ targetType: "agent", targetId: "agent-1" }],
+        },
+      ],
     });
 
     await renderAppDetail();
 
-    expect(container.textContent).toContain("Which agents can use this connection?");
+    expect(container.textContent).toContain(
+      "Which agents can use this connection?",
+    );
     expect(container.textContent).toContain("Just agents I pick");
     expect(container.textContent).toContain("Any agent");
     expect(container.textContent).not.toContain("Always installed");
-    expect(container.querySelector('button[aria-label="Remove Coder access"]')).toBeNull();
+    expect(
+      container.querySelector('button[aria-label="Remove Coder access"]'),
+    ).toBeNull();
     expect(
       Array.from(container.querySelectorAll("button")).filter(
         (button) => button.textContent?.trim() === "Change",
@@ -1220,16 +1729,33 @@ describe("AppDetail", () => {
     await renderAppDetail();
 
     // State is still legible.
-    expect(container.textContent).toContain("Which agents can use this connection?");
+    expect(container.textContent).toContain(
+      "Which agents can use this connection?",
+    );
     expect(container.textContent).toContain("Actions");
     expect(container.textContent).toContain("Read repo");
 
     // Nothing to mutate: no radios, no permission selects, no refresh, no save.
-    expect(container.querySelector('[role="radiogroup"][aria-label="Which agents can use this connection"]')).toBeNull();
-    expect(container.querySelector('[role="radiogroup"][aria-label="Read repo permission"]')).toBeNull();
+    expect(
+      container.querySelector(
+        '[role="radiogroup"][aria-label="Which agents can use this connection"]',
+      ),
+    ).toBeNull();
+    expect(
+      container.querySelector(
+        '[role="radiogroup"][aria-label="Read repo permission"]',
+      ),
+    ).toBeNull();
     expect(container.querySelectorAll("select").length).toBe(0);
-    const labels = Array.from(container.querySelectorAll("button")).map((b) => b.textContent?.trim());
-    for (const forbidden of ["Change", "Save", "Refresh actions", "Choose agents"]) {
+    const labels = Array.from(container.querySelectorAll("button")).map((b) =>
+      b.textContent?.trim(),
+    );
+    for (const forbidden of [
+      "Change",
+      "Save",
+      "Refresh actions",
+      "Choose agents",
+    ]) {
       expect(labels).not.toContain(forbidden);
     }
   });
@@ -1260,7 +1786,10 @@ describe("AppDetail", () => {
         },
       ],
       issues: {
-        "issue-1": { identifier: "PAP-10912", title: "Fix app connection copy" },
+        "issue-1": {
+          identifier: "PAP-10912",
+          title: "Fix app connection copy",
+        },
       },
       actionRequests: {
         "request-1": {
@@ -1383,10 +1912,12 @@ describe("AppDetail", () => {
 
   it("keeps the header and reconnect banner across tabs", async () => {
     mockParams.tab = "permissions";
-    getConnectionMock.mockResolvedValue(connection({
-      healthStatus: "degraded",
-      healthMessage: "Token expired.",
-    }));
+    getConnectionMock.mockResolvedValue(
+      connection({
+        healthStatus: "degraded",
+        healthMessage: "Token expired.",
+      }),
+    );
 
     await renderAppDetail();
 
@@ -1394,82 +1925,211 @@ describe("AppDetail", () => {
     expect(container.textContent).toContain("Needs attention");
     expect(container.textContent).toContain("This app needs reconnecting");
     expect(container.textContent).toContain("Token expired.");
-    expect(container.textContent).toContain("Which agents can use this connection?");
+    expect(container.textContent).toContain(
+      "Which agents can use this connection?",
+    );
   });
 
   it.each([
-    { name: "remote.url", placement: "url", key: "url", prefix: null, label: "MCP server URL", value: "https://example.com/mcp?token=fresh", path: "remote.url" },
-    { name: "headers.X-Api-Key", placement: "header", key: "X-Api-Key", prefix: null, label: "X-Api-Key", value: "fresh-key", path: "headers.X-Api-Key" },
-    { name: "authorization", placement: "header", key: "Authorization", prefix: "Bearer ", label: "App key", value: "fresh-token", path: "credentials.authorization" },
-  ])("reconnects a generic $label using its stored credential placement", async (fixture) => {
-    listGalleryMock.mockResolvedValue({ apps: [] });
-    listApplicationsMock.mockResolvedValue({ applications: [] });
-    getConnectionMock.mockResolvedValue(connection({
-      authKind: "api_key",
-      healthStatus: "missing_secret",
-      credentialRefs: [{ ...fixture, secretId: "old-secret", version: "latest" }],
-    }));
-    reconnectConnectionMock.mockResolvedValue({ connection: connection({ healthStatus: "ok" }) });
-    await renderAppDetail();
+    {
+      name: "remote.url",
+      placement: "url",
+      key: "url",
+      prefix: null,
+      label: "MCP server URL",
+      value: "https://example.com/mcp?token=fresh",
+      path: "remote.url",
+    },
+    {
+      name: "headers.X-Api-Key",
+      placement: "header",
+      key: "X-Api-Key",
+      prefix: null,
+      label: "X-Api-Key",
+      value: "fresh-key",
+      path: "headers.X-Api-Key",
+    },
+    {
+      name: "authorization",
+      placement: "header",
+      key: "Authorization",
+      prefix: "Bearer ",
+      label: "App key",
+      value: "fresh-token",
+      path: "credentials.authorization",
+    },
+  ])(
+    "reconnects a generic $label using its stored credential placement",
+    async (fixture) => {
+      listGalleryMock.mockResolvedValue({ apps: [] });
+      listApplicationsMock.mockResolvedValue({ applications: [] });
+      getConnectionMock.mockResolvedValue(
+        connection({
+          authKind: "api_key",
+          healthStatus: "missing_secret",
+          credentialRefs: [
+            { ...fixture, secretId: "old-secret", version: "latest" },
+          ],
+        }),
+      );
+      reconnectConnectionMock.mockResolvedValue({
+        connection: connection({ healthStatus: "ok" }),
+      });
+      await renderAppDetail();
 
-    const field = container.querySelector<HTMLInputElement>(`input[aria-label="${fixture.label}"]`);
-    expect(field).not.toBeNull();
-    await act(() => setInputValue(field!, fixture.value));
-    await act(() => findButton("Check & reconnect")!.click());
-    await flushReact();
+      const field = container.querySelector<HTMLInputElement>(
+        `input[aria-label="${fixture.label}"]`,
+      );
+      expect(field).not.toBeNull();
+      await act(() => setInputValue(field!, fixture.value));
+      await act(() => findButton("Check & reconnect")!.click());
+      await flushReact();
 
-    expect(reconnectConnectionMock).toHaveBeenCalledWith("conn-1", { [fixture.path]: fixture.value });
-    expect(pushToastMock).toHaveBeenCalledWith(expect.objectContaining({ title: "Reconnected" }));
-  });
+      expect(reconnectConnectionMock).toHaveBeenCalledWith("conn-1", {
+        [fixture.path]: fixture.value,
+      });
+      expect(pushToastMock).toHaveBeenCalledWith(
+        expect.objectContaining({ title: "Reconnected" }),
+      );
+    },
+  );
 
-  it.each(["permissions", "review"])("offers a supported replacement for an obsolete Anthropic connection on %s", async (tab) => {
-    mockParams.tab = tab;
-    listApplicationsMock.mockResolvedValue({ applications: [] });
-    listGalleryMock.mockResolvedValue({ apps: [getAppStoreDefinition("anthropic")!] });
-    getConnectionMock.mockResolvedValue(connection({
-      name: "Anthropic",
-      transport: "rest_api",
-      authKind: "api_key",
-      config: { sourceTemplateKey: "anthropic", connectionMethodKey: "api-key" },
-      healthStatus: "error",
-      healthMessage: "This connection has no supported tool integration.",
-    }));
+  it.each(["permissions", "review"])(
+    "offers a supported replacement for an obsolete Anthropic connection on %s",
+    async (tab) => {
+      mockParams.tab = tab;
+      listApplicationsMock.mockResolvedValue({ applications: [] });
+      listGalleryMock.mockResolvedValue({
+        apps: [getAppStoreDefinition("anthropic")!],
+      });
+      getConnectionMock.mockResolvedValue(
+        connection({
+          name: "Anthropic",
+          transport: "rest_api",
+          authKind: "api_key",
+          config: {
+            sourceTemplateKey: "anthropic",
+            connectionMethodKey: "api-key",
+          },
+          healthStatus: "error",
+          healthMessage: "This connection has no supported tool integration.",
+        }),
+      );
 
-    await renderAppDetail();
+      await renderAppDetail();
 
-    expect(container.querySelector('input[type="password"]')).toBeNull();
-    expect(findButton("Check & reconnect")).toBeUndefined();
-    expect(findButton("Reconnect")).toBeUndefined();
-    expect(container.textContent).toContain("Connection no longer supported");
-    expect(container.textContent).toContain("then remove this connection");
-    expect(container.querySelector('a[href="/apps/connect?source=anthropic"]')?.textContent)
-      .toBe("Add supported connection");
-  });
+      expect(container.querySelector('input[type="password"]')).toBeNull();
+      expect(findButton("Check & reconnect")).toBeUndefined();
+      expect(findButton("Reconnect")).toBeUndefined();
+      expect(container.textContent).toContain("Connection no longer supported");
+      expect(container.textContent).toContain("then remove this connection");
+      expect(
+        container.querySelector('a[href="/apps/connect?source=anthropic"]')
+          ?.textContent,
+      ).toBe("Add supported connection");
+    },
+  );
 
   it("offers retry for a transient GitHub error without asking for another login", async () => {
     mockParams.tab = "permissions";
-    getConnectionMock.mockResolvedValue(connection({
-      authKind: "oauth", healthStatus: "error", requiresReauthorization: false,
-      healthMessage: "GitHub access changed during refresh. Try again.",
-    }));
+    getConnectionMock.mockResolvedValue(
+      connection({
+        authKind: "oauth",
+        healthStatus: "error",
+        requiresReauthorization: false,
+        healthMessage: "GitHub access changed during refresh. Try again.",
+      }),
+    );
     await renderAppDetail();
     expect(container.textContent).toContain("Retry access");
     expect(container.textContent).not.toContain("Reconnect required");
   });
 
+  it("links a failed GitHub refresh to the suspended installation's settings", async () => {
+    mockParams.tab = "permissions";
+    const message =
+      "The Paperclip GitHub installation is suspended. Unsuspend it on GitHub before refreshing access.";
+    getConnectionMock.mockResolvedValue(
+      connection({
+        authKind: "oauth",
+        healthStatus: "error",
+        requiresReauthorization: false,
+        healthMessage: message,
+      }),
+    );
+    checkConnectionHealthMock.mockRejectedValue(
+      new ApiError(message, 422, {
+        error: message,
+        code: "github_installation_required",
+        details: {
+          code: "github_installation_required",
+          managementUrl:
+            "https://github.com/organizations/paperclipai/settings/installations/101",
+        },
+      }),
+    );
+    const client = await renderAppDetail();
+    await act(async () => {
+      Array.from(container.querySelectorAll("button"))
+        .find((button) => button.textContent?.trim() === "Retry access")
+        ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    await flushReact();
+
+    expect(checkConnectionHealthMock).toHaveBeenCalledWith("conn-1");
+    expect(
+      container.querySelector(
+        'a[href="https://github.com/organizations/paperclipai/settings/installations/101"]',
+      )?.textContent,
+    ).toBe("Open installation settings on GitHub");
+
+    // An already-cached connection that also needs attention must not inherit that link.
+    const other = connection({
+      id: "conn-2",
+      authKind: "oauth",
+      healthStatus: "error",
+      requiresReauthorization: false,
+      healthMessage: message,
+    });
+    getConnectionMock.mockResolvedValue(other);
+    client.setQueryData(queryKeys.tools.connection("conn-2"), other);
+    mockParams.connectionId = "conn-2";
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={client}>
+          <AppDetail />
+        </QueryClientProvider>,
+      );
+    });
+    await flushReact();
+
+    expect(container.textContent).toContain("Retry access");
+    expect(
+      container.querySelector(
+        'a[href="https://github.com/organizations/paperclipai/settings/installations/101"]',
+      ),
+    ).toBeNull();
+  });
+
   it("shows terminal OAuth failures as reconnect-required sign-in", async () => {
     mockParams.tab = "permissions";
-    getConnectionMock.mockResolvedValue(connection({
-      authKind: "oauth",
-      healthStatus: "failed",
-      healthMessage: "Authorization expired (invalid_grant).",
-    }));
+    getConnectionMock.mockResolvedValue(
+      connection({
+        authKind: "oauth",
+        healthStatus: "failed",
+        healthMessage: "Authorization expired (invalid_grant).",
+      }),
+    );
 
     await renderAppDetail();
 
     expect(container.textContent).toContain("Reconnect required");
-    expect(container.textContent).toContain("Authorization expired (invalid_grant).");
-    expect(container.querySelector('input[placeholder="Paste your new key"]')).toBeNull();
+    expect(container.textContent).toContain(
+      "Authorization expired (invalid_grant).",
+    );
+    expect(
+      container.querySelector('input[placeholder="Paste your new key"]'),
+    ).toBeNull();
 
     await act(async () => {
       Array.from(container.querySelectorAll("button"))
@@ -1479,18 +2139,20 @@ describe("AppDetail", () => {
     await flushReact();
 
     expect(startOAuthMock).toHaveBeenCalledWith("conn-1");
-    expect(navigateTopLevelMock).toHaveBeenCalledWith("https://example.test/oauth");
+    expect(popupAssignMock).toHaveBeenCalledWith("https://example.test/oauth");
   });
 
   it("reconnects an OAuth warning through the connection's existing personal identity", async () => {
     mockParams.tab = "permissions";
-    getConnectionMock.mockResolvedValue(connection({
-      authKind: "oauth",
-      credentialPolicy: "per_user",
-      createdByUserId: "user-1",
-      healthStatus: "failed",
-      healthMessage: "Authorization expired (invalid_grant).",
-    }));
+    getConnectionMock.mockResolvedValue(
+      connection({
+        authKind: "oauth",
+        credentialPolicy: "per_user",
+        createdByUserId: "user-1",
+        healthStatus: "failed",
+        healthMessage: "Authorization expired (invalid_grant).",
+      }),
+    );
 
     await renderAppDetail();
     await act(async () => {
@@ -1500,59 +2162,75 @@ describe("AppDetail", () => {
     });
     await flushReact();
 
-    expect(startOAuthMock).toHaveBeenCalledWith("conn-1", { asCurrentUser: true });
-    expect(navigateTopLevelMock).toHaveBeenCalledWith("https://example.test/oauth");
+    expect(startOAuthMock).toHaveBeenCalledWith("conn-1", {
+      asCurrentUser: true,
+    });
+    expect(popupAssignMock).toHaveBeenCalledWith("https://example.test/oauth");
   });
 
   it("does not offer a personal reconnect to someone other than its fixed owner", async () => {
     mockParams.tab = "permissions";
-    getConnectionMock.mockResolvedValue(connection({
-      authKind: "oauth",
-      credentialPolicy: "per_user",
-      createdByUserId: "user-2",
-      healthStatus: "failed",
-      healthMessage: "Authorization expired (invalid_grant).",
-    }));
+    getConnectionMock.mockResolvedValue(
+      connection({
+        authKind: "oauth",
+        credentialPolicy: "per_user",
+        createdByUserId: "user-2",
+        healthStatus: "failed",
+        healthMessage: "Authorization expired (invalid_grant).",
+      }),
+    );
     listConnectionGrantsMock.mockResolvedValue({
       connection: { id: "conn-1", uid: "conn-1" },
       grants: [personalGrant({ id: "grant-other", subjectUserId: "user-2" })],
       capabilities: fullCapabilities({ canViewOtherPersonalIdentities: true }),
       currentUserId: "user-1",
-      members: [{ userId: "user-2", name: "Carol", email: "carol@example.com" }],
+      members: [
+        { userId: "user-2", name: "Carol", email: "carol@example.com" },
+      ],
     });
 
     await renderAppDetail();
 
     expect(container.textContent).toContain("Reconnect required");
-    expect(container.textContent).toContain("The person this connection belongs to must reconnect it.");
+    expect(container.textContent).toContain(
+      "The person this connection belongs to must reconnect it.",
+    );
     expect(findButton("Reconnect")).toBeUndefined();
     expect(startOAuthMock).not.toHaveBeenCalled();
   });
 
   it("does not offer personal key replacement to someone other than its fixed owner", async () => {
     mockParams.tab = "permissions";
-    getConnectionMock.mockResolvedValue(connection({
-      authKind: "api_key",
-      credentialPolicy: "per_user",
-      createdByUserId: "user-2",
-      healthStatus: "failed",
-      healthMessage: "The key was rejected.",
-    }));
+    getConnectionMock.mockResolvedValue(
+      connection({
+        authKind: "api_key",
+        credentialPolicy: "per_user",
+        createdByUserId: "user-2",
+        healthStatus: "failed",
+        healthMessage: "The key was rejected.",
+      }),
+    );
     listConnectionGrantsMock.mockResolvedValue({
       connection: { id: "conn-1", uid: "conn-1" },
       grants: [personalGrant({ id: "grant-other", subjectUserId: "user-2" })],
       capabilities: fullCapabilities({ canViewOtherPersonalIdentities: true }),
       currentUserId: "user-1",
-      members: [{ userId: "user-2", name: "Carol", email: "carol@example.com" }],
+      members: [
+        { userId: "user-2", name: "Carol", email: "carol@example.com" },
+      ],
     });
 
     await renderAppDetail();
 
     expect(container.textContent).toContain("This app needs reconnecting");
-    expect(container.textContent).toContain("The person this connection belongs to must reconnect it.");
-    expect(Array.from(container.querySelectorAll("button")).filter(
-      (button) => button.textContent?.trim() === "Reconnect",
-    )).toHaveLength(0);
+    expect(container.textContent).toContain(
+      "The person this connection belongs to must reconnect it.",
+    );
+    expect(
+      Array.from(container.querySelectorAll("button")).filter(
+        (button) => button.textContent?.trim() === "Reconnect",
+      ),
+    ).toHaveLength(0);
   });
 
   /**
@@ -1566,35 +2244,42 @@ describe("AppDetail", () => {
     ["file:", "file:///etc/passwd"],
     ["plaintext http", "http://evil.test/authorize"],
     ["credentials", "https://accounts.example.test@evil.test/authorize"],
-  ])("never navigates to a %s authorization url", async (_label, authorizationUrl) => {
-    mockParams.tab = "permissions";
-    getConnectionMock.mockResolvedValue(connection({
-      authKind: "oauth",
-      healthStatus: "failed",
-      healthMessage: "Authorization expired (invalid_grant).",
-    }));
-    startOAuthMock.mockResolvedValue({
-      connectionId: "conn-1",
-      provider: "generic",
-      authorizationUrl,
-      expiresAt: "2026-07-10T00:00:00.000Z",
-    });
+  ])(
+    "never navigates to a %s authorization url",
+    async (_label, authorizationUrl) => {
+      mockParams.tab = "permissions";
+      getConnectionMock.mockResolvedValue(
+        connection({
+          authKind: "oauth",
+          healthStatus: "failed",
+          healthMessage: "Authorization expired (invalid_grant).",
+        }),
+      );
+      startOAuthMock.mockResolvedValue({
+        connectionId: "conn-1",
+        provider: "generic",
+        authorizationUrl,
+        expiresAt: "2026-07-10T00:00:00.000Z",
+      });
 
-    await renderAppDetail();
-    await act(async () => {
-      Array.from(container.querySelectorAll("button"))
-        .find((button) => button.textContent?.trim() === "Reconnect")
-        ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-    await flushReact();
+      await renderAppDetail();
+      await act(async () => {
+        Array.from(container.querySelectorAll("button"))
+          .find((button) => button.textContent?.trim() === "Reconnect")
+          ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      });
+      await flushReact();
 
-    expect(navigateTopLevelMock).not.toHaveBeenCalled();
-    expect(pushToastMock).toHaveBeenCalledWith(expect.objectContaining({ tone: "error" }));
-    // The refusal explains itself without echoing the hostile URL back into the DOM.
-    const body = String(pushToastMock.mock.calls.at(-1)?.[0]?.body ?? "");
-    expect(body.length).toBeGreaterThan(0);
-    expect(body).not.toContain(authorizationUrl);
-  });
+      expect(navigateTopLevelMock).not.toHaveBeenCalled();
+      expect(pushToastMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tone: "error" }),
+      );
+      // The refusal explains itself without echoing the hostile URL back into the DOM.
+      const body = String(pushToastMock.mock.calls.at(-1)?.[0]?.body ?? "");
+      expect(body.length).toBeGreaterThan(0);
+      expect(body).not.toContain(authorizationUrl);
+    },
+  );
 
   // -------------------------------------------------------------------------
   // Personal connection identity (PAP-17835). These cover the permission
@@ -1603,17 +2288,35 @@ describe("AppDetail", () => {
   // -------------------------------------------------------------------------
 
   function perUserConnection(overrides: Record<string, unknown> = {}) {
-    return connection({ credentialPolicy: "per_user", authKind: "oauth", ...overrides });
+    return connection({
+      credentialPolicy: "per_user",
+      authKind: "oauth",
+      ...overrides,
+    });
   }
 
   function findButton(label: string) {
-    return Array.from(container.querySelectorAll("button"))
-      .find((button) => button.textContent?.trim() === label);
+    return Array.from(container.querySelectorAll("button")).find(
+      (button) => button.textContent?.trim() === label,
+    );
   }
 
   it("does not label a revoked AI credential as Connected", async () => {
-    getConnectionMock.mockResolvedValue(connection({ connectionPurpose: "ai", transport: "runtime_auth", healthStatus: "ok", config: { provider: "openai", method: "api_key" } }));
-    listConnectionGrantsMock.mockResolvedValue({ connection: { id: "conn-1" }, grants: [organizationGrant({ status: "revoked" })], capabilities: fullCapabilities(), currentUserId: "user-1", members: [] });
+    getConnectionMock.mockResolvedValue(
+      connection({
+        connectionPurpose: "ai",
+        transport: "runtime_auth",
+        healthStatus: "ok",
+        config: { provider: "openai", method: "api_key" },
+      }),
+    );
+    listConnectionGrantsMock.mockResolvedValue({
+      connection: { id: "conn-1" },
+      grants: [organizationGrant({ status: "revoked" })],
+      capabilities: fullCapabilities(),
+      currentUserId: "user-1",
+      members: [],
+    });
     await renderAppDetail();
     expect(container.textContent).toContain("Revoked");
     expect(container.textContent).not.toContain("Connected");
@@ -1626,19 +2329,25 @@ describe("AppDetail", () => {
     await renderAppDetail();
 
     expect(container.textContent).toContain("Connected");
-    expect(container.textContent).not.toContain("This connection is for one person.");
+    expect(container.textContent).not.toContain(
+      "This connection is for one person.",
+    );
     expect(container.textContent).not.toContain("Connected by");
   });
 
   it("lets a regular member connect their own identity and never someone else's", async () => {
     mockParams.tab = "permissions";
     getConnectionMock.mockResolvedValue(perUserConnection());
-    startPersonalAuthorizationMock.mockResolvedValue({ url: "https://accounts.example.test/authorize" });
+    startPersonalAuthorizationMock.mockResolvedValue({
+      url: "https://accounts.example.test/authorize",
+    });
 
     await renderAppDetail();
 
     // Missing personal identity is explicit, never a silent fallback.
-    expect(container.textContent).toContain("Which humans can use this credential?");
+    expect(container.textContent).toContain(
+      "Which humans can use this credential?",
+    );
     expect(container.textContent).toContain("Only you can use this connection");
     expect(container.textContent).toContain("Personal account");
     expect(container.textContent).toContain("Not connected");
@@ -1646,24 +2355,35 @@ describe("AppDetail", () => {
     expect(findButton("Connect organization identity")).toBeUndefined();
 
     await act(async () => {
-      findButton("Connect as me")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      findButton("Connect as me")?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true }),
+      );
     });
     await flushReact();
 
     // The subject is the signed-in user, so there is no path here to start
     // consent on a coworker's behalf.
-    expect(startPersonalAuthorizationMock).toHaveBeenCalledWith("company-1", "conn-1", {
-      subjectUserId: "user-1",
-      returnTo: "/apps/conn-1/permissions",
-    });
-    expect(navigateTopLevelMock).toHaveBeenCalledWith("https://accounts.example.test/authorize");
+    expect(startPersonalAuthorizationMock).toHaveBeenCalledWith(
+      "company-1",
+      "conn-1",
+      {
+        subjectUserId: "user-1",
+        returnTo: "/apps/conn-1/permissions",
+      },
+    );
+    expect(popupAssignMock).toHaveBeenCalledWith(
+      "https://accounts.example.test/authorize",
+    );
   });
 
   it("keeps personal managed authorization in the tenant until the provider is ready", async () => {
     const session = "personal_background_session_1234";
-    const request = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({
-      authorizationUrl: "https://provider.example.test/authorize?state=personal",
-    }));
+    const request = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      Response.json({
+        authorizationUrl:
+          "https://provider.example.test/authorize?state=personal",
+      }),
+    );
     mockParams.tab = "permissions";
     getConnectionMock.mockResolvedValue(perUserConnection());
     startPersonalAuthorizationMock.mockResolvedValue({
@@ -1673,28 +2393,41 @@ describe("AppDetail", () => {
 
     await renderAppDetail();
     await act(async () => {
-      findButton("Connect as me")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      findButton("Connect as me")?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true }),
+      );
     });
     await flushReact();
 
-    expect(request).toHaveBeenCalledWith("/cloud/connections/handoff", expect.objectContaining({
-      method: "POST",
-      body: JSON.stringify({ session }),
-    }));
+    expect(request).toHaveBeenCalledWith(
+      "/cloud/connections/handoff",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ session }),
+      }),
+    );
     await vi.waitFor(() => {
-      expect(navigateTopLevelMock).toHaveBeenCalledWith(
+      expect(popupAssignMock).toHaveBeenCalledWith(
         "https://provider.example.test/authorize?state=personal",
       );
     });
-    expect(navigateTopLevelMock).not.toHaveBeenCalledWith(expect.stringContaining("/connections/confirm"));
+    expect(navigateTopLevelMock).not.toHaveBeenCalledWith(
+      expect.stringContaining("/connections/confirm"),
+    );
   });
 
   it("keeps a viewer read-only across identities and installs", async () => {
     mockParams.tab = "permissions";
-    getConnectionMock.mockResolvedValue(connection({ credentialPolicy: "shared" }));
+    getConnectionMock.mockResolvedValue(
+      connection({ credentialPolicy: "shared" }),
+    );
     listConnectionGrantsMock.mockResolvedValue({
       connection: { id: "conn-1", uid: "conn-1" },
-      grants: [organizationGrant({ capabilities: { canRevoke: false, canEditAudience: false } })],
+      grants: [
+        organizationGrant({
+          capabilities: { canRevoke: false, canEditAudience: false },
+        }),
+      ],
       capabilities: {
         canConfigure: false,
         canCreateOrganizationGrant: false,
@@ -1710,10 +2443,14 @@ describe("AppDetail", () => {
 
     await renderAppDetail();
 
-    expect(container.textContent).toContain("Anyone in your company can use this connection");
+    expect(container.textContent).toContain(
+      "Anyone in your company can use this connection",
+    );
 
     // State stays legible...
-    expect(container.textContent).toContain("Anyone in your company can use this connection");
+    expect(container.textContent).toContain(
+      "Anyone in your company can use this connection",
+    );
     expect(container.textContent).not.toContain("Personal account");
     // ...and every mutation control is absent rather than disabled.
     expect(findButton("Connect as me")).toBeUndefined();
@@ -1724,8 +2461,13 @@ describe("AppDetail", () => {
 
   it("shows one fixed personal identity without an organization switch", async () => {
     mockParams.tab = "permissions";
-    getConnectionMock.mockResolvedValue(perUserConnection({ createdByUserId: "user-2" }));
-    revokeConnectionGrantMock.mockResolvedValue({ id: "grant-other", kind: "user" });
+    getConnectionMock.mockResolvedValue(
+      perUserConnection({ createdByUserId: "user-2" }),
+    );
+    revokeConnectionGrantMock.mockResolvedValue({
+      id: "grant-other",
+      kind: "user",
+    });
     listConnectionGrantsMock.mockResolvedValue({
       connection: { id: "conn-1", uid: "conn-1" },
       grants: [
@@ -1758,88 +2500,205 @@ describe("AppDetail", () => {
     getConnectionMock.mockResolvedValue(perUserConnection());
     listConnectionGrantsMock.mockResolvedValue({
       connection: { id: "conn-1", uid: "conn-1" },
-      grants: [dedicatedGitHubGrant({ kind: "user", subjectAgentId: null, subjectUserId: "user-1" }, {
-        repositoryCount: 2,
-        repositories: [
-          { id: "1", fullName: "paperclipai/first", installationId: "456", private: true },
-          { id: "2", fullName: "paperclipai/second", installationId: "456", private: false },
-        ],
-      })],
-      capabilities: fullCapabilities(), currentUserId: "user-1", members: [],
+      grants: [
+        dedicatedGitHubGrant(
+          { kind: "user", subjectAgentId: null, subjectUserId: "user-1" },
+          {
+            repositoryCount: 2,
+            repositories: [
+              {
+                id: "1",
+                fullName: "paperclipai/first",
+                installationId: "456",
+                private: true,
+              },
+              {
+                id: "2",
+                fullName: "paperclipai/second",
+                installationId: "456",
+                private: false,
+              },
+            ],
+          },
+        ),
+      ],
+      capabilities: fullCapabilities(),
+      currentUserId: "user-1",
+      members: [],
     });
     await renderAppDetail();
     expect(container.textContent).toContain("@dottabot");
     expect(container.textContent).toContain("2 selected repositories");
-    expect(container.querySelectorAll('ul[aria-label="Accessible GitHub repositories"] li')).toHaveLength(2);
+    expect(
+      container.querySelectorAll(
+        'ul[aria-label="Accessible GitHub repositories"] li',
+      ),
+    ).toHaveLength(2);
     expect(container.textContent).toContain("paperclipai/first");
     expect(container.textContent).toContain("paperclipai/second");
-    expect(container.querySelector('a[href="https://github.com/paperclipai/first"] [aria-label="Private repository"]')).toBeTruthy();
-    expect(container.querySelector('a[href="https://github.com/paperclipai/second"] [aria-label="Private repository"]')).toBeNull();
-    const configureHint = [...container.querySelectorAll("p a")].find((link) => link.textContent === "Configure access on GitHub");
-    expect(configureHint?.getAttribute("href")).toBe("https://github.com/apps/paperclip-test/installations/new");
+    expect(
+      container.querySelector(
+        'a[href="https://github.com/paperclipai/first"] [aria-label="Private repository"]',
+      ),
+    ).toBeTruthy();
+    expect(
+      container.querySelector(
+        'a[href="https://github.com/paperclipai/second"] [aria-label="Private repository"]',
+      ),
+    ).toBeNull();
+    const configureHint = [...container.querySelectorAll("p a")].find(
+      (link) => link.textContent === "Configure access on GitHub",
+    );
+    expect(configureHint?.getAttribute("href")).toBe(
+      "https://github.com/apps/paperclip-test/installations/new",
+    );
   });
 
-  it.each([undefined, "https://github.com/settings/installations"])("loads missing GitHub app configuration instead of linking legacy settings (%s)", async (installationUrl) => {
-    mockParams.tab = "permissions";
-    getConnectionMock.mockResolvedValue(perUserConnection());
-    listConnectionGrantsMock.mockResolvedValue({
-      connection: { id: "conn-1", uid: "conn-1" },
-      grants: [dedicatedGitHubGrant({ kind: "user", subjectAgentId: null, subjectUserId: "user-1" }, { installationUrl })],
-      capabilities: fullCapabilities(), currentUserId: "user-1", members: [],
-    });
-    await renderAppDetail();
-    expect(findButton("Load GitHub configuration")).toBeTruthy();
-    expect(container.querySelector('a[href="https://github.com/settings/installations/456"]')).toBeNull();
-    expect(container.querySelector('a[href="https://github.com/settings/installations"]')).toBeNull();
-    listConnectionGrantsMock.mockResolvedValue({
-      connection: { id: "conn-1", uid: "conn-1" },
-      grants: [dedicatedGitHubGrant({ kind: "user", subjectAgentId: null, subjectUserId: "user-1" }, {
-        appSlug: "paperclip-staging", installationUrl: "https://github.com/apps/paperclip-staging/installations/new",
-      })],
-      capabilities: fullCapabilities(), currentUserId: "user-1", members: [],
-    });
-    await act(async () => { findButton("Load GitHub configuration")!.click(); });
-    await flushReact();
-    expect(checkConnectionHealthMock).toHaveBeenCalledWith("conn-1");
-    expect(container.querySelector('a[href="https://github.com/apps/paperclip-staging/installations/new"]')?.textContent).toBe("Add More Repos on GitHub");
-    expect(findButton("Load GitHub configuration")).toBeUndefined();
-  });
-
-  it.each([false, true])("shows repositories across accounts without filter controls (empty: %s)", async (empty) => {
-    mockParams.tab = "permissions";
-    getConnectionMock.mockResolvedValue(perUserConnection());
-    listConnectionGrantsMock.mockResolvedValue({
-      connection: { id: "conn-1", uid: "conn-1" },
-      grants: [dedicatedGitHubGrant({ kind: "user", subjectAgentId: null, subjectUserId: "user-1" }, {
-        repositoryCount: empty ? 0 : 3,
-        installationOwnerLogins: ["paperclipai", "dottabot", "empty-org"],
-        repositories: empty ? [] : [
-          { id: "1", fullName: "paperclipai/first", installationId: "456" },
-          { id: "2", fullName: "paperclipai/second", installationId: "456" },
-          { id: "3", fullName: "dottabot/first", installationId: "789" },
+  it.each([undefined, "https://github.com/settings/installations"])(
+    "loads missing GitHub app configuration instead of linking legacy settings (%s)",
+    async (installationUrl) => {
+      mockParams.tab = "permissions";
+      getConnectionMock.mockResolvedValue(perUserConnection());
+      listConnectionGrantsMock.mockResolvedValue({
+        connection: { id: "conn-1", uid: "conn-1" },
+        grants: [
+          dedicatedGitHubGrant(
+            { kind: "user", subjectAgentId: null, subjectUserId: "user-1" },
+            { installationUrl },
+          ),
         ],
-      })],
-      capabilities: fullCapabilities(), currentUserId: "user-1", members: [],
-    });
-    await renderAppDetail();
-    const repositoryNames = () => [...container.querySelectorAll('ul[aria-label="Accessible GitHub repositories"] a')].map((link) => link.textContent);
-    expect(repositoryNames()).toEqual(empty ? [] : ["paperclipai/first", "paperclipai/second", "dottabot/first"]);
-    if (empty) {
-      expect(container.querySelector('p[role="status"]')?.textContent?.trim()).toBe("No accessible repositories.");
-      expect(container.textContent).not.toContain("Refresh access to load the current repository list.");
-    }
-    expect(container.querySelector('[aria-label="Filter repositories by account or organization"]')).toBeNull();
-    expect(container.querySelector('input[aria-label="Search GitHub repositories"]')).toBeNull();
-    expect(container.querySelector('a[href="https://github.com/apps/paperclip-test/installations/new"]')?.textContent).toBe("Add More Repos on GitHub");
-    expect(updateConnectionMock).not.toHaveBeenCalled();
-  });
+        capabilities: fullCapabilities(),
+        currentUserId: "user-1",
+        members: [],
+      });
+      await renderAppDetail();
+      expect(findButton("Load GitHub configuration")).toBeTruthy();
+      expect(
+        container.querySelector(
+          'a[href="https://github.com/settings/installations/456"]',
+        ),
+      ).toBeNull();
+      expect(
+        container.querySelector(
+          'a[href="https://github.com/settings/installations"]',
+        ),
+      ).toBeNull();
+      listConnectionGrantsMock.mockResolvedValue({
+        connection: { id: "conn-1", uid: "conn-1" },
+        grants: [
+          dedicatedGitHubGrant(
+            { kind: "user", subjectAgentId: null, subjectUserId: "user-1" },
+            {
+              appSlug: "paperclip-staging",
+              installationUrl:
+                "https://github.com/apps/paperclip-staging/installations/new",
+            },
+          ),
+        ],
+        capabilities: fullCapabilities(),
+        currentUserId: "user-1",
+        members: [],
+      });
+      await act(async () => {
+        findButton("Load GitHub configuration")!.click();
+      });
+      await flushReact();
+      expect(checkConnectionHealthMock).toHaveBeenCalledWith("conn-1");
+      expect(
+        container.querySelector(
+          'a[href="https://github.com/apps/paperclip-staging/installations/new"]',
+        )?.textContent,
+      ).toBe("Add More Repos on GitHub");
+      expect(findButton("Load GitHub configuration")).toBeUndefined();
+    },
+  );
+
+  it.each([false, true])(
+    "shows repositories across accounts without filter controls (empty: %s)",
+    async (empty) => {
+      mockParams.tab = "permissions";
+      getConnectionMock.mockResolvedValue(perUserConnection());
+      listConnectionGrantsMock.mockResolvedValue({
+        connection: { id: "conn-1", uid: "conn-1" },
+        grants: [
+          dedicatedGitHubGrant(
+            { kind: "user", subjectAgentId: null, subjectUserId: "user-1" },
+            {
+              repositoryCount: empty ? 0 : 3,
+              installationOwnerLogins: ["paperclipai", "dottabot", "empty-org"],
+              repositories: empty
+                ? []
+                : [
+                    {
+                      id: "1",
+                      fullName: "paperclipai/first",
+                      installationId: "456",
+                    },
+                    {
+                      id: "2",
+                      fullName: "paperclipai/second",
+                      installationId: "456",
+                    },
+                    {
+                      id: "3",
+                      fullName: "dottabot/first",
+                      installationId: "789",
+                    },
+                  ],
+            },
+          ),
+        ],
+        capabilities: fullCapabilities(),
+        currentUserId: "user-1",
+        members: [],
+      });
+      await renderAppDetail();
+      const repositoryNames = () =>
+        [
+          ...container.querySelectorAll(
+            'ul[aria-label="Accessible GitHub repositories"] a',
+          ),
+        ].map((link) => link.textContent);
+      expect(repositoryNames()).toEqual(
+        empty
+          ? []
+          : ["paperclipai/first", "paperclipai/second", "dottabot/first"],
+      );
+      if (empty) {
+        expect(
+          container.querySelector('p[role="status"]')?.textContent?.trim(),
+        ).toBe("No accessible repositories.");
+        expect(container.textContent).not.toContain(
+          "Refresh access to load the current repository list.",
+        );
+      }
+      expect(
+        container.querySelector(
+          '[aria-label="Filter repositories by account or organization"]',
+        ),
+      ).toBeNull();
+      expect(
+        container.querySelector(
+          'input[aria-label="Search GitHub repositories"]',
+        ),
+      ).toBeNull();
+      expect(
+        container.querySelector(
+          'a[href="https://github.com/apps/paperclip-test/installations/new"]',
+        )?.textContent,
+      ).toBe("Add More Repos on GitHub");
+      expect(updateConnectionMock).not.toHaveBeenCalled();
+    },
+  );
 
   it("shows dedicated GitHub access as compact action rows and links to the agent", async () => {
     mockParams.tab = "permissions";
-    getConnectionMock.mockResolvedValue(connection({
-      credentialPolicy: "per_agent",
-      authKind: "oauth",
-    }));
+    getConnectionMock.mockResolvedValue(
+      connection({
+        credentialPolicy: "per_agent",
+        authKind: "oauth",
+      }),
+    );
     listConnectionGrantsMock.mockResolvedValue({
       connection: { id: "conn-1", uid: "conn-1" },
       grants: [dedicatedGitHubGrant()],
@@ -1850,23 +2709,40 @@ describe("AppDetail", () => {
 
     await renderAppDetail();
 
-    expect(container.querySelector('a[href="/agents/coder"]')?.textContent).toContain("Used only by Coder");
+    expect(
+      container.querySelector('a[href="/agents/coder"]')?.textContent,
+    ).toContain("Used only by Coder");
     expect(container.textContent).toContain("Repositories");
     expect(container.textContent).toContain("1 selected repository");
-    expect(container.querySelector('a[href="https://github.com/dottabot"]')?.textContent).toBe("@dottabot");
-    expect(container.querySelector('a[href="https://github.com/paperclipai/test-repo"]')?.textContent).toBe("paperclipai/test-repo");
-    expect(container.querySelector(
-      'a[href="https://github.com/apps/paperclip-test/installations/new"]',
-    )?.textContent).toBe("Add More Repos on GitHub");
-    expect(container.querySelector('button[aria-label="Refresh access"]')).toBeTruthy();
+    expect(
+      container.querySelector('a[href="https://github.com/dottabot"]')
+        ?.textContent,
+    ).toBe("@dottabot");
+    expect(
+      container.querySelector(
+        'a[href="https://github.com/paperclipai/test-repo"]',
+      )?.textContent,
+    ).toBe("paperclipai/test-repo");
+    expect(
+      container.querySelector(
+        'a[href="https://github.com/apps/paperclip-test/installations/new"]',
+      )?.textContent,
+    ).toBe("Add More Repos on GitHub");
+    expect(
+      container.querySelector('button[aria-label="Refresh access"]'),
+    ).toBeTruthy();
     expect(container.textContent).not.toContain("Installation");
     expect(container.textContent).not.toContain("Token continuity");
     expect(container.textContent).not.toContain("Webhook health");
     expect(container.textContent).not.toContain("Last event");
     expect(container.textContent).not.toContain("Last access refresh");
-    expect(container.textContent).not.toContain("Shell Git and gh use this account");
+    expect(container.textContent).not.toContain(
+      "Shell Git and gh use this account",
+    );
 
-    const askFirst = container.querySelector<HTMLButtonElement>('button[aria-label="Read repo: Ask first"]');
+    const askFirst = container.querySelector<HTMLButtonElement>(
+      'button[aria-label="Read repo: Ask first"]',
+    );
     expect(askFirst).toBeTruthy();
     await act(async () => {
       askFirst!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -1880,16 +2756,23 @@ describe("AppDetail", () => {
 
   it("warns about all-repository GitHub access within the repository row", async () => {
     mockParams.tab = "permissions";
-    getConnectionMock.mockResolvedValue(connection({
-      credentialPolicy: "per_agent",
-      authKind: "oauth",
-    }));
+    getConnectionMock.mockResolvedValue(
+      connection({
+        credentialPolicy: "per_agent",
+        authKind: "oauth",
+      }),
+    );
     listConnectionGrantsMock.mockResolvedValue({
       connection: { id: "conn-1", uid: "conn-1" },
-      grants: [dedicatedGitHubGrant({}, {
-        repositoryCount: 0,
-        repositorySelection: "all",
-      })],
+      grants: [
+        dedicatedGitHubGrant(
+          {},
+          {
+            repositoryCount: 0,
+            repositorySelection: "all",
+          },
+        ),
+      ],
       capabilities: fullCapabilities(),
       currentUserId: "user-1",
       members: [],
@@ -1897,45 +2780,72 @@ describe("AppDetail", () => {
 
     await renderAppDetail();
 
-    expect(container.textContent).toContain("All current and future repositories");
+    expect(container.textContent).toContain(
+      "All current and future repositories",
+    );
     expect(container.textContent).not.toContain("selected repositories");
   });
 
   it.each([
     ["mixed", "Mixed access; scope varies by installation"],
     ["none", "No repositories selected"],
-  ] as const)("labels %s GitHub repository access explicitly", async (repositorySelection, expected) => {
-    mockParams.tab = "permissions";
-    getConnectionMock.mockResolvedValue(connection({
-      credentialPolicy: "per_agent",
-      authKind: "oauth",
-    }));
-    listConnectionGrantsMock.mockResolvedValue({
-      connection: { id: "conn-1", uid: "conn-1" },
-      grants: [dedicatedGitHubGrant({}, {
-        repositoryCount: 0,
-        repositorySelection,
-      })],
-      capabilities: fullCapabilities(),
-      currentUserId: "user-1",
-      members: [],
-    });
+  ] as const)(
+    "labels %s GitHub repository access explicitly",
+    async (repositorySelection, expected) => {
+      mockParams.tab = "permissions";
+      getConnectionMock.mockResolvedValue(
+        connection({
+          credentialPolicy: "per_agent",
+          authKind: "oauth",
+        }),
+      );
+      listConnectionGrantsMock.mockResolvedValue({
+        connection: { id: "conn-1", uid: "conn-1" },
+        grants: [
+          dedicatedGitHubGrant(
+            {},
+            {
+              repositoryCount: 0,
+              repositorySelection,
+            },
+          ),
+        ],
+        capabilities: fullCapabilities(),
+        currentUserId: "user-1",
+        members: [],
+      });
 
-    await renderAppDetail();
+      await renderAppDetail();
 
-    expect(container.textContent).toContain(expected);
-    expect(container.textContent).not.toContain("selected repositories");
-  });
+      expect(container.textContent).toContain(expected);
+      expect(container.textContent).not.toContain("selected repositories");
+    },
+  );
 
   it("persists an empty audience as all organization members", async () => {
     mockParams.tab = "permissions";
-    getConnectionMock.mockResolvedValue(connection({ createdByUserId: "user-1" }));
-    replaceConnectionGrantMembersMock.mockResolvedValue(organizationGrant({ members: [] }));
+    getConnectionMock.mockResolvedValue(
+      connection({ createdByUserId: "user-1" }),
+    );
+    replaceConnectionGrantMembersMock.mockResolvedValue(
+      organizationGrant({ members: [] }),
+    );
     listConnectionGrantsMock.mockResolvedValue({
       connection: { id: "conn-1", uid: "conn-1" },
-      grants: [organizationGrant({
-        members: [{ id: "m-1", companyId: "company-1", grantId: "grant-org", subjectType: "user", subjectId: "user-2", createdAt: new Date() }],
-      })],
+      grants: [
+        organizationGrant({
+          members: [
+            {
+              id: "m-1",
+              companyId: "company-1",
+              grantId: "grant-org",
+              subjectType: "user",
+              subjectId: "user-2",
+              createdAt: new Date(),
+            },
+          ],
+        }),
+      ],
       capabilities: fullCapabilities(),
       currentUserId: "user-1",
       members: [
@@ -1946,16 +2856,22 @@ describe("AppDetail", () => {
 
     await renderAppDetail();
 
-    expect(container.textContent).toContain("Anyone in your company can use this connection");
+    expect(container.textContent).toContain(
+      "Anyone in your company can use this connection",
+    );
 
     await act(async () => {
-      findButton("Manage access")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      findButton("Manage access")?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true }),
+      );
     });
     await flushReact();
 
     await act(async () => {
       Array.from(document.body.querySelectorAll('[role="radio"]'))
-        .find((option) => option.textContent?.includes("All organization members"))
+        .find((option) =>
+          option.textContent?.includes("All organization members"),
+        )
         ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
     await flushReact();
@@ -1968,12 +2884,18 @@ describe("AppDetail", () => {
     await flushReact();
 
     // "All members" is the empty set on the wire; the UI never says "empty".
-    expect(replaceConnectionGrantMembersMock).toHaveBeenCalledWith("conn-1", "grant-org", []);
+    expect(replaceConnectionGrantMembersMock).toHaveBeenCalledWith(
+      "conn-1",
+      "grant-org",
+      [],
+    );
   });
 
   it("persists a selected audience and keeps the dialog open when the server refuses", async () => {
     mockParams.tab = "permissions";
-    getConnectionMock.mockResolvedValue(connection({ createdByUserId: "user-1" }));
+    getConnectionMock.mockResolvedValue(
+      connection({ createdByUserId: "user-1" }),
+    );
     replaceConnectionGrantMembersMock.mockRejectedValue(
       new Error("Every audience member must be an active company member"),
     );
@@ -1991,7 +2913,9 @@ describe("AppDetail", () => {
     await renderAppDetail();
 
     await act(async () => {
-      findButton("Manage access")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      findButton("Manage access")?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true }),
+      );
     });
     await flushReact();
 
@@ -2010,7 +2934,8 @@ describe("AppDetail", () => {
     await flushReact();
 
     await act(async () => {
-      document.body.querySelector<HTMLElement>('[aria-label="Allow Carol"]')
+      document.body
+        .querySelector<HTMLElement>('[aria-label="Allow Carol"]')
         ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
     await flushReact();
@@ -2022,11 +2947,17 @@ describe("AppDetail", () => {
     });
     await flushReact();
 
-    expect(replaceConnectionGrantMembersMock).toHaveBeenCalledWith("conn-1", "grant-org", ["user-2"]);
+    expect(replaceConnectionGrantMembersMock).toHaveBeenCalledWith(
+      "conn-1",
+      "grant-org",
+      ["user-2"],
+    );
     // A denial keeps the dialog open with the selection intact and explains
     // itself inline, rather than dropping the work into a toast.
     const dialogText = document.body.textContent ?? "";
     expect(dialogText).toContain("Who can use this identity");
-    expect(dialogText).toContain("Every audience member must be an active company member");
+    expect(dialogText).toContain(
+      "Every audience member must be an active company member",
+    );
   });
 });

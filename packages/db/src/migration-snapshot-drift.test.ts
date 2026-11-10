@@ -1,7 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { generateDrizzleJson, generateMigration } from "drizzle-kit/api";
 
 // The newest snapshot in `src/migrations/meta` is the state `drizzle-kit
@@ -15,19 +15,13 @@ import { generateDrizzleJson, generateMigration } from "drizzle-kit/api";
 const migrationsDir = fileURLToPath(new URL("./migrations", import.meta.url));
 const schemaDir = fileURLToPath(new URL("./schema", import.meta.url));
 
-type JournalEntry = { idx: number; tag: string };
-
 async function readNewestSnapshot(): Promise<{ file: string; snapshot: Record<string, unknown> }> {
-  const journal = JSON.parse(
-    await readFile(path.join(migrationsDir, "meta", "_journal.json"), "utf8"),
-  ) as { entries: JournalEntry[] };
-  const newest = journal.entries.at(-1);
-  if (!newest) throw new Error("migration journal has no entries");
-  const file = `${String(newest.idx).padStart(4, "0")}_snapshot.json`;
-  const snapshot = JSON.parse(await readFile(path.join(migrationsDir, "meta", file), "utf8")) as Record<
-    string,
-    unknown
-  >;
+  // SQL-only migrations can advance the journal without changing the schema snapshot.
+  const files = (await readdir(path.join(migrationsDir, "meta")))
+    .filter(file => /^\d+_snapshot\.json$/.test(file)).sort();
+  const file = files.at(-1);
+  if (!file) throw new Error("migration metadata has no schema snapshots");
+  const snapshot = JSON.parse(await readFile(path.join(migrationsDir, "meta", file), "utf8")) as Record<string, unknown>;
   return { file, snapshot };
 }
 
@@ -58,17 +52,27 @@ async function importSchemaModules(): Promise<Record<string, unknown>> {
 }
 
 describe("migration snapshot drift", () => {
-  it("keeps the newest snapshot in sync with the drizzle schema", async () => {
+  let statements: Awaited<ReturnType<typeof generateMigration>>;
+  let snapshotFile: string;
+
+  // Importing every schema module and initializing Drizzle's generator is cold
+  // work that can exceed Vitest's default five-second *test* budget on Windows.
+  // Keep it in a bounded setup hook; the assertion below retains the normal
+  // timeout and still proves the generated diff is empty.
+  beforeAll(async () => {
     const { file, snapshot } = await readNewestSnapshot();
+    snapshotFile = file;
     const current = generateDrizzleJson(await importSchemaModules(), snapshot.id as string);
-    const statements = await generateMigration(
+    statements = await generateMigration(
       snapshot as Parameters<typeof generateMigration>[0],
       current as Parameters<typeof generateMigration>[1],
     );
+  }, 30_000);
 
+  it("keeps the newest snapshot in sync with the drizzle schema", async () => {
     expect(
       statements,
-      `${file} no longer matches src/schema. Run \`pnpm --filter @penclipai/db generate\` and commit the migration it emits; do not hand-edit the snapshot.`,
+      `${snapshotFile} no longer matches src/schema. Run \`pnpm --filter @penclipai/db generate\` and commit the migration it emits; do not hand-edit the snapshot.`,
     ).toEqual([]);
   });
 });

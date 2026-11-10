@@ -13,6 +13,7 @@ function fakeReader(dueRuns: DueRetryRun[] = []): ScheduledRetryReader & { evalu
   const evaluateCalls: unknown[] = [];
   return {
     evaluateCalls,
+    async nextScheduledRetryAt() { return null; },
     async evaluateScheduledRetryGate(input) {
       evaluateCalls.push(input);
       return { allowed: true };

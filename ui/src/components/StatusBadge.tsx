@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
+import { resolveTaskStatusPresentation, type TaskStatusPresentationInput } from "../lib/task-status-presentation";
 import { cn } from "../lib/utils";
 import {
   statusBadge,
@@ -94,20 +95,21 @@ export function AgentStatusCapsule({ status }: { status: string }) {
  * Distinct from the generic {@link StatusBadge} so run/goal/approval badges are
  * unaffected.
  */
-export function IssueStatusBadge({ status: taskStatus, externalConversationState }: { status: string; externalConversationState?: "active" | "waiting" | null }) {
-  const { t } = useTranslation();
-  const status = taskStatus === "in_review" && externalConversationState === "waiting" ? "idle" : taskStatus;
-  const cssVar = taskStatusVar[status] ?? taskStatusVarDefault;
+export function IssueStatusBadge(props: TaskStatusPresentationInput) {
+  useTranslation();
+  const { glyphStatus, label, ariaLabel } = resolveTaskStatusPresentation(props);
+  const cssVar = taskStatusVar[glyphStatus] ?? taskStatusVarDefault;
   return (
     <span
       className={cn(
         "status-chip inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-normal leading-none whitespace-nowrap shrink-0",
-        status === "cancelled" && "line-through"
+        glyphStatus === "cancelled" && "line-through"
       )}
       style={scStyle(cssVar)}
+      title={ariaLabel === label ? undefined : ariaLabel}
     >
-      <StatusGlyph status={status} size="sm" />
-      {t(`status.${statusKey(status)}`, { defaultValue: statusFallback(status) })}
+      <StatusGlyph status={glyphStatus} size="sm" />
+      {label}
     </span>
   );
 }

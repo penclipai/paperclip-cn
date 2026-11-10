@@ -26,7 +26,7 @@
   },
   "costDataQuality.missingModel.description": {
     "en": "Token usage was recorded without a model, so Paperclip cannot estimate its cost. Select an explicit model in the agent’s configuration for future runs. Changing settings will not reprice this past run.",
-    "zh-CN": "已记录 Token 用量，但未提供模型，因此 Paperclip CN 无法估算成本。后续运行请在智能体配置中选择明确的模型。更改设置不会重新计算此历史运行的价格。",
+      "zh-CN": "已记录词元用量，但未提供模型，因此 Paperclip CN 无法估算成本。后续运行请在智能体配置中选择明确的模型。更改设置不会重新计算此历史运行的价格。",
     "reviewedEnglishHash": "8a2f92f815d7e8a463d28ce190442345163aead211d78ea7cbf52c9563223b35"
   },
   "costDataQuality.missingModel.label": {

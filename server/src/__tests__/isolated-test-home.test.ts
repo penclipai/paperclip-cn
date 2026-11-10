@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
+import { pathToFileURL } from "node:url";
 import { createRequire } from "node:module";
 import { afterEach, expect, it, vi } from "vitest";
 import { createIsolatedTestHome } from "./helpers/isolated-test-home.js";
@@ -10,8 +10,8 @@ import { createIsolatedTestHome } from "./helpers/isolated-test-home.js";
 afterEach(() => vi.restoreAllMocks());
 
 it("removes immutable cache directories at process exit even after filesystem spies change", () => {
-  const helper = fileURLToPath(new URL("./helpers/isolated-test-home.ts", import.meta.url));
-  const result = execFileSync(process.execPath, ["--import", createRequire(import.meta.url).resolve("tsx"), "--input-type=module", "-e", `
+  const helper = new URL("./helpers/isolated-test-home.ts", import.meta.url).href;
+  const result = execFileSync(process.execPath, ["--import", pathToFileURL(createRequire(import.meta.url).resolve("tsx")).href, "--input-type=module", "-e", `
     import fs from 'node:fs';
     import path from 'node:path';
     const { createIsolatedTestHome } = await import(process.argv[1]);
@@ -36,11 +36,13 @@ it("never follows links from an owned home into another directory", () => {
   try {
     fs.writeFileSync(path.join(outside, "private"), "retained");
     fs.chmodSync(outside, 0o555);
-    fs.symlinkSync(outside, path.join(owned.home, "external"));
+    const outsideMode = fs.statSync(outside).mode & 0o777;
+    fs.symlinkSync(outside, path.join(owned.home, "external"), "dir");
     owned.cleanup();
     expect(fs.existsSync(owned.home)).toBe(false);
     expect(fs.readFileSync(path.join(outside, "private"), "utf8")).toBe("retained");
-    expect(fs.statSync(outside).mode & 0o777).toBe(0o555);
+    expect(fs.statSync(outside).mode & 0o777).toBe(outsideMode);
+    if (process.platform !== "win32") expect(outsideMode).toBe(0o555);
   } finally {
     fs.chmodSync(outside, 0o700);
     fs.rmSync(outside, { recursive: true, force: true });
@@ -51,7 +53,7 @@ it("refuses a replaced home instead of deleting its replacement", () => {
   const owned = createIsolatedTestHome();
   const retained = `${owned.home}-retained`;
   fs.renameSync(owned.home, retained);
-  fs.symlinkSync(retained, owned.home);
+  fs.symlinkSync(retained, owned.home, "dir");
   try {
     expect(owned.cleanup).toThrow("Refusing to clean a replaced isolated test home");
     expect(fs.statSync(retained).isDirectory()).toBe(true);

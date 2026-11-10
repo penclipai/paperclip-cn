@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/context/ToastContext";
 import { queryKeys } from "@/lib/queryKeys";
+import { allowedToolsLabel } from "./gateway-helpers";
+import { describeError } from "@/api/errors";
 
 export const gatewaysQueryKey = (companyId: string) => ["tools", "gateways", companyId] as const;
 
@@ -80,7 +82,7 @@ export function NewGatewayDialog({
         title: t("apps.gateways.newGateway.toast.createFailedTitle", {
           defaultValue: "Gateway was not created",
         }),
-        body: error instanceof Error ? error.message : String(error),
+        body: describeError(error).body,
         tone: "error",
       });
     },

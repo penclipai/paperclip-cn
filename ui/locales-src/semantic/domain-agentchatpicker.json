@@ -59,6 +59,16 @@
     "zh-CN": "按名称或角色搜索…",
     "reviewedEnglishHash": "ada757655c29db18ff9912d63cff148d8f987be79835da00a0e370d8c92354e8"
   },
+  "agentChatPicker.switchAgent": {
+    "en": "Switch agent",
+    "zh-CN": "切换智能体",
+    "reviewedEnglishHash": "a31fc91f231bf551b6e92472c81f7e9ff6a8eaf1de5dc6b26f8dbe9edca6b842"
+  },
+  "agentChatPicker.switchAgentCurrent": {
+    "en": "Switch agent. Currently {{name}}",
+    "zh-CN": "切换智能体，当前为 {{name}}",
+    "reviewedEnglishHash": "905cb2992099c01e92b0bfca724bb24528c70d74ef1c871544f1f5f3eb3dcce4"
+  },
   "agentChatPicker.title": {
     "en": "Chat with an agent",
     "zh-CN": "与智能体聊天",
@@ -68,5 +78,15 @@
     "en": "Try another name or role.",
     "zh-CN": "请尝试其他名称或角色。",
     "reviewedEnglishHash": "ec1f4d9dde9c1c2c705a809bc1e1a5b1d9b9a4a323c5408f910620c6498f7add"
+  },
+  "agentChatPicker.unreadFrom_one": {
+    "en": "{{count}} unread message from {{agentName}}",
+    "zh-CN": "来自 {{agentName}} 的 {{count}} 条未读消息",
+    "reviewedEnglishHash": "1571d1280f9c1154c99e1e5713823dbe2941b1aa47e59535cff0a75eac030bfe"
+  },
+  "agentChatPicker.unreadFrom_other": {
+    "en": "{{count}} unread messages from {{agentName}}",
+    "zh-CN": "来自 {{agentName}} 的 {{count}} 条未读消息",
+    "reviewedEnglishHash": "9a7d8e25f4637aa926f760ee32b9c5e5432b1243787ce4b5b259cef8631b19b0"
   }
 }

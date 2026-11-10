@@ -95,6 +95,7 @@ vi.mock("../context/CompanyContext", () => ({
 }));
 
 vi.mock("../i18n", () => ({
+  getCurrentLocale: () => "zh-CN",
   translateInstant: (key: string, options?: Record<string, unknown>) => translations[key] ?? String(options?.defaultValue ?? key),
 }));
 

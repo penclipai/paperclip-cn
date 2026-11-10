@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { UserPlus2 } from "lucide-react";
 import { accessApi } from "@/api/access";
-import { ApiError } from "@/api/client";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -19,19 +19,29 @@ export function JoinRequestQueue() {
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToast();
   const queryClient = useQueryClient();
-  const [status, setStatus] = useState<"pending_approval" | "approved" | "rejected">("pending_approval");
-  const [requestType, setRequestType] = useState<"all" | "human" | "agent">("all");
+  const [status, setStatus] = useState<
+    "pending_approval" | "approved" | "rejected"
+  >("pending_approval");
+  const [requestType, setRequestType] = useState<"all" | "human" | "agent">(
+    "all",
+  );
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? translateInstant("Organization"), href: "/dashboard" },
+      {
+        label: selectedCompany?.name ?? translateInstant("Organization"),
+        href: "/dashboard",
+      },
       { label: translateInstant("Inbox"), href: "/inbox" },
       { label: translateInstant("Join Requests") },
     ]);
   }, [selectedCompany?.name, setBreadcrumbs]);
 
   const requestsQuery = useQuery({
-    queryKey: queryKeys.access.joinRequests(selectedCompanyId ?? "", `${status}:${requestType}`),
+    queryKey: queryKeys.access.joinRequests(
+      selectedCompanyId ?? "",
+      `${status}:${requestType}`,
+    ),
     queryFn: () =>
       accessApi.listJoinRequests(
         selectedCompanyId!,
@@ -40,41 +50,82 @@ export function JoinRequestQueue() {
       ),
     enabled: !!selectedCompanyId,
   });
+  const requestsView = useQueryView(requestsQuery);
 
   const approveMutation = useMutation({
-    mutationFn: (requestId: string) => accessApi.approveJoinRequest(selectedCompanyId!, requestId),
+    mutationFn: (requestId: string) =>
+      accessApi.approveJoinRequest(selectedCompanyId!, requestId),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.access.joinRequests(selectedCompanyId!, `${status}:${requestType}`) });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.access.companyMembers(selectedCompanyId!) });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.access.companyUserDirectory(selectedCompanyId!) });
-      pushToast({ title: translateInstant("Join request approved"), tone: "success" });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.access.joinRequests(
+          selectedCompanyId!,
+          `${status}:${requestType}`,
+        ),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.access.companyMembers(selectedCompanyId!),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.access.companyUserDirectory(selectedCompanyId!),
+      });
+      pushToast({
+        title: translateInstant("Join request approved"),
+        tone: "success",
+      });
     },
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (requestId: string) => accessApi.rejectJoinRequest(selectedCompanyId!, requestId),
+    mutationFn: (requestId: string) =>
+      accessApi.rejectJoinRequest(selectedCompanyId!, requestId),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.access.joinRequests(selectedCompanyId!, `${status}:${requestType}`) });
-      pushToast({ title: translateInstant("Join request rejected"), tone: "success" });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.access.joinRequests(
+          selectedCompanyId!,
+          `${status}:${requestType}`,
+        ),
+      });
+      pushToast({
+        title: translateInstant("Join request rejected"),
+        tone: "success",
+      });
     },
   });
 
   if (!selectedCompanyId) {
-    return <div className="text-sm text-muted-foreground">{translateInstant("Select an organization to review join requests.")}</div>;
+    return (
+      <div className="text-sm text-muted-foreground">
+        {translateInstant("Select an organization to review join requests.")}
+      </div>
+    );
   }
 
-  if (requestsQuery.isLoading) {
-    return <div className="text-sm text-muted-foreground">{translateInstant("Loading join requests…")}</div>;
+  if (requestsQuery.isLoading || requestsView.kind === "reconnecting") {
+    return (
+      <div className="text-sm text-muted-foreground">
+        {translateInstant("Loading join requests…")}
+      </div>
+    );
   }
 
-  if (requestsQuery.error) {
-    const message =
-      requestsQuery.error instanceof ApiError && requestsQuery.error.status === 403
-        ? "You do not have permission to review join requests for this organization."
-        : requestsQuery.error instanceof Error
-          ? requestsQuery.error.message
-          : "Failed to load join requests.";
-    return <div className="text-sm text-destructive">{message}</div>;
+  if (requestsView.kind === "error") {
+    if (requestsView.errorKind === "forbidden") {
+      return (
+        <div className="text-sm text-destructive">
+          You do not have permission to review join requests for this
+          organization.
+        </div>
+      );
+    }
+    return (
+      <QueryErrorState
+        size="page"
+        error={requestsQuery.error}
+        action="load join requests"
+        onRetry={requestsView.retry}
+        retrying={requestsView.isFetching}
+      />
+    );
   }
 
   return (
@@ -82,10 +133,15 @@ export function JoinRequestQueue() {
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <UserPlus2 className="h-5 w-5 text-muted-foreground" />
-          <h1 className="text-lg font-semibold">{translateInstant("Join Request Queue")}</h1>
+          <h1 className="text-lg font-semibold">
+            {translateInstant("Join Request Queue")}
+          </h1>
         </div>
         <p className="max-w-3xl text-sm text-muted-foreground">
-          {translateInstant("Review human and agent join requests outside the mixed inbox feed. This queue uses the same approval mutations as the inline inbox cards.")}</p>
+          {translateInstant(
+            "Review human and agent join requests outside the mixed inbox feed. This queue uses the same approval mutations as the inline inbox cards.",
+          )}
+        </p>
       </div>
 
       <Card className="flex-row flex-wrap gap-3 p-4">
@@ -95,16 +151,25 @@ export function JoinRequestQueue() {
             className="rounded-md border border-border bg-background px-3 py-2"
             value={status}
             onChange={(event) =>
-              setStatus(event.target.value as "pending_approval" | "approved" | "rejected")
+              setStatus(
+                event.target.value as
+                  | "pending_approval"
+                  | "approved"
+                  | "rejected",
+              )
             }
           >
-            <option value="pending_approval">{translateInstant("Pending approval")}</option>
+            <option value="pending_approval">
+              {translateInstant("Pending approval")}
+            </option>
             <option value="approved">{translateInstant("Approved")}</option>
             <option value="rejected">{translateInstant("Rejected")}</option>
           </select>
         </label>
         <label className="space-y-2 text-sm">
-          <span className="font-medium">{translateInstant("Request type")}</span>
+          <span className="font-medium">
+            {translateInstant("Request type")}
+          </span>
           <select
             className="rounded-md border border-border bg-background px-3 py-2"
             value={requestType}
@@ -122,28 +187,45 @@ export function JoinRequestQueue() {
       <div className="space-y-4">
         {(requestsQuery.data ?? []).length === 0 ? (
           <div className="rounded-xl border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
-            {translateInstant("No join requests match the current filters.")}</div>
+            {translateInstant("No join requests match the current filters.")}
+          </div>
         ) : (
           requestsQuery.data!.map((request) => (
             <Card key={request.id} className="block p-4">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={request.status === "pending_approval" ? "secondary" : request.status === "approved" ? "outline" : "destructive"}>
+                    <Badge
+                      variant={
+                        request.status === "pending_approval"
+                          ? "secondary"
+                          : request.status === "approved"
+                            ? "outline"
+                            : "destructive"
+                      }
+                    >
                       {request.status.replace("_", " ")}
                     </Badge>
                     <Badge variant="outline">{request.requestType}</Badge>
-                    {request.adapterType ? <Badge variant="outline">{request.adapterType}</Badge> : null}
+                    {request.adapterType ? (
+                      <Badge variant="outline">{request.adapterType}</Badge>
+                    ) : null}
                   </div>
                   <div>
                     <div className="text-base font-medium">
                       {request.requestType === "human"
-                        ? request.requesterUser?.name || request.requestEmailSnapshot || request.requestingUserId || translateInstant("Unknown human requester")
-                        : request.agentName || translateInstant("Unknown agent requester")}
+                        ? request.requesterUser?.name ||
+                          request.requestEmailSnapshot ||
+                          request.requestingUserId ||
+                          translateInstant("Unknown human requester")
+                        : request.agentName ||
+                          translateInstant("Unknown agent requester")}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {request.requestType === "human"
-                        ? request.requesterUser?.email || request.requestEmailSnapshot || request.requestingUserId
+                        ? request.requesterUser?.email ||
+                          request.requestEmailSnapshot ||
+                          request.requestingUserId
                         : request.capabilities || request.requestIp}
                     </div>
                   </div>
@@ -156,33 +238,48 @@ export function JoinRequestQueue() {
                       onClick={() => rejectMutation.mutate(request.id)}
                       disabled={rejectMutation.isPending}
                     >
-                      {translateInstant("Reject")}</Button>
+                      {translateInstant("Reject")}
+                    </Button>
                     <Button
                       onClick={() => approveMutation.mutate(request.id)}
                       disabled={approveMutation.isPending}
                     >
-                      {translateInstant("Approve")}</Button>
+                      {translateInstant("Approve")}
+                    </Button>
                   </div>
                 ) : null}
               </div>
 
               <div className="mt-4 grid gap-3 text-sm text-muted-foreground md:grid-cols-2">
                 <div className="rounded-lg border border-border bg-background px-3 py-2">
-                  <div className="text-xs font-medium uppercase tracking-wide">{translateInstant("Invite context")}</div>
+                  <div className="text-xs font-medium uppercase tracking-wide">
+                    {translateInstant("Invite context")}
+                  </div>
                   <div className="mt-2">
                     {request.invite
                       ? `${request.invite.allowedJoinTypes} join invite${request.invite.humanRole ? ` • default role ${request.invite.humanRole}` : ""}`
                       : translateInstant("Invite metadata unavailable")}
                   </div>
                   {request.invite?.inviteMessage ? (
-                    <div className="mt-2 text-foreground">{request.invite.inviteMessage}</div>
+                    <div className="mt-2 text-foreground">
+                      {request.invite.inviteMessage}
+                    </div>
                   ) : null}
                 </div>
                 <div className="rounded-lg border border-border bg-background px-3 py-2">
-                  <div className="text-xs font-medium uppercase tracking-wide">{translateInstant("Request details")}</div>
-                  <div className="mt-2">{translateInstant("Submitted")}{" "}{new Date(request.createdAt).toLocaleString()}</div>
-                  <div>{translateInstant("Source IP")}{" "}{request.requestIp}</div>
-                  {request.requestType === "agent" && request.capabilities ? <div>{request.capabilities}</div> : null}
+                  <div className="text-xs font-medium uppercase tracking-wide">
+                    {translateInstant("Request details")}
+                  </div>
+                  <div className="mt-2">
+                    {translateInstant("Submitted")}{" "}
+                    {new Date(request.createdAt).toLocaleString()}
+                  </div>
+                  <div>
+                    {translateInstant("Source IP")} {request.requestIp}
+                  </div>
+                  {request.requestType === "agent" && request.capabilities ? (
+                    <div>{request.capabilities}</div>
+                  ) : null}
                 </div>
               </div>
             </Card>

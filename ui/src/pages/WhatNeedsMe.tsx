@@ -1,7 +1,17 @@
 import { useTranslation } from "react-i18next";
 import { translateInstant } from "@/i18n";
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useCoordinatorWorkspaceEnabled } from "../hooks/useCoordinatorWorkspaceEnabled";
+import { CoordinatorNeedsYou } from "../components/coordinator/CoordinatorNeedsYou";
 import { CheckCircle2, Inbox } from "lucide-react";
 import type { Agent, AttentionItem, AttentionSubject } from "@penclipai/shared";
 import { useNavigate, useSearchParams } from "@/lib/router";
@@ -40,13 +50,20 @@ import {
   type AttentionGroupBy,
   type AttentionSortOrder,
 } from "../lib/attention";
-import { hasBlockingShortcutDialog, resolveAttentionQueueKeyAction } from "../lib/keyboardShortcuts";
+import {
+  hasBlockingShortcutDialog,
+  resolveAttentionQueueKeyAction,
+} from "../lib/keyboardShortcuts";
 import { PageSkeleton } from "../components/PageSkeleton";
+import { QueryErrorState, useQueryView } from "../components/QueryView";
 import { AttentionQueueRow } from "../components/AttentionQueueRow";
 import { DecisionsToolbar } from "../components/DecisionsToolbar";
 import { Curtain, AgingItemRow } from "../components/DecisionShelf";
 import { DecisionQueueRail } from "../components/DecisionQueueRail";
-import { DecisionDateChips, type AttentionCustomRange } from "../components/DecisionDateChips";
+import {
+  DecisionDateChips,
+  type AttentionCustomRange,
+} from "../components/DecisionDateChips";
 import { DecisionResolver } from "../components/DecisionResolver";
 import { IssueGroupHeader } from "../components/IssueGroupHeader";
 
@@ -64,21 +81,34 @@ const ATTENTION_SCROLL_LOAD_THRESHOLD_PX = 480;
 const DECISION_HISTORY_VISIBLE_LIMIT = 50;
 const DECISION_HISTORY_QUERY_LIMIT = DECISION_HISTORY_VISIBLE_LIMIT + 1;
 
-export function decisionHistoryQueryEnabled(companyId: string | null | undefined, open: boolean) {
+export function decisionHistoryQueryEnabled(
+  companyId: string | null | undefined,
+  open: boolean,
+) {
   return Boolean(companyId && open);
 }
 
 export function decisionHistoryCount(count: number | undefined) {
   if (count == null) return undefined;
-  return count > DECISION_HISTORY_VISIBLE_LIMIT ? `${DECISION_HISTORY_VISIBLE_LIMIT}+` : count;
+  return count > DECISION_HISTORY_VISIBLE_LIMIT
+    ? `${DECISION_HISTORY_VISIBLE_LIMIT}+`
+    : count;
 }
 
 function findScrollContainer(element: HTMLElement | null): HTMLElement | null {
   if (!element || typeof window === "undefined") return null;
   let current = element.parentElement;
-  while (current && current !== document.body && current !== document.documentElement) {
+  while (
+    current &&
+    current !== document.body &&
+    current !== document.documentElement
+  ) {
     const overflowY = window.getComputedStyle(current).overflowY;
-    if (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") {
+    if (
+      overflowY === "auto" ||
+      overflowY === "scroll" ||
+      overflowY === "overlay"
+    ) {
       return current;
     }
     current = current.parentElement;
@@ -87,11 +117,18 @@ function findScrollContainer(element: HTMLElement | null): HTMLElement | null {
 }
 
 export function WhatNeedsMe() {
+  const { enabled } = useCoordinatorWorkspaceEnabled();
+  return enabled ? <CoordinatorNeedsYou /> : <ClassicWhatNeedsMe />;
+}
+
+function ClassicWhatNeedsMe() {
   const { i18n } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [selectedAttentionId, setSelectedAttentionId] = useState<string | null>(null);
+  const [selectedAttentionId, setSelectedAttentionId] = useState<string | null>(
+    null,
+  );
   // How the current selection was made. The selection ring is the keyboard
   // cursor — it marks the row that j/k, e, x and s will act on — so it is drawn
   // only for a keyboard-driven selection. Clicking used to set it too, which
@@ -104,10 +141,18 @@ export function WhatNeedsMe() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Toolbar preferences (persisted to localStorage, Inbox pattern).
-  const [groupBy, setGroupBy] = useState<AttentionGroupBy>(() => loadAttentionGroupBy());
-  const [sortOrder, setSortOrder] = useState<AttentionSortOrder>(() => loadAttentionSortOrder());
-  const [filters, setFilters] = useState<AttentionFilterState>(() => defaultAttentionFilterState);
-  const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<Set<string>>(() => new Set());
+  const [groupBy, setGroupBy] = useState<AttentionGroupBy>(() =>
+    loadAttentionGroupBy(),
+  );
+  const [sortOrder, setSortOrder] = useState<AttentionSortOrder>(() =>
+    loadAttentionSortOrder(),
+  );
+  const [filters, setFilters] = useState<AttentionFilterState>(
+    () => defaultAttentionFilterState,
+  );
+  const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [snoozedOpen, setSnoozedOpen] = useState(false);
   const [dismissedOpen, setDismissedOpen] = useState(false);
   const [agingOpen, setAgingOpen] = useState(false);
@@ -116,7 +161,10 @@ export function WhatNeedsMe() {
 
   // Date-range chips (PAP-16032 §4.2) — resolve to server-side activity bounds.
   const [dateRange, setDateRange] = useState<AttentionDateRangeId>("all");
-  const [customRange, setCustomRange] = useState<AttentionCustomRange>({ from: null, to: null });
+  const [customRange, setCustomRange] = useState<AttentionCustomRange>({
+    from: null,
+    to: null,
+  });
 
   // `?decisionId=` deep link (PAP-16032 §4.7) — focus/expand the referenced card.
   const [searchParams, setSearchParams] = useSearchParams();
@@ -125,7 +173,9 @@ export function WhatNeedsMe() {
 
   // Optimistic hide/restore. Reset whenever a fresh feed lands (server truth).
   const [pendingHide, setPendingHide] = useState<Set<string>>(() => new Set());
-  const [pendingRestore, setPendingRestore] = useState<Set<string>>(() => new Set());
+  const [pendingRestore, setPendingRestore] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   const { dismiss, snooze, restore } = useInboxDismissals(selectedCompanyId);
   const { pushToast } = useToastActions();
@@ -149,11 +199,7 @@ export function WhatNeedsMe() {
     setCollapsedGroupKeys(loadCollapsedAttentionGroupKeys(selectedCompanyId));
   }, [selectedCompanyId]);
 
-  const {
-    data: feed,
-    isLoading,
-    error,
-  } = useQuery({
+  const feedQuery = useQuery({
     // Distinct from the sidebar badge's `queryKeys.attention` so dismissed rows
     // (needed for the curtains) never inflate the badge count. Invalidating the
     // `["attention", companyId]` prefix still cascades to this query.
@@ -163,14 +209,17 @@ export function WhatNeedsMe() {
       activityBounds.activitySince ?? null,
       activityBounds.activityUntil ?? null,
     ],
-    queryFn: () => attentionApi.list(selectedCompanyId!, {
-      includeDismissed: true,
-      all: true,
-      ...activityBounds,
-    }),
+    queryFn: () =>
+      attentionApi.list(selectedCompanyId!, {
+        includeDismissed: true,
+        all: true,
+        ...activityBounds,
+      }),
     enabled: !!selectedCompanyId,
     refetchOnWindowFocus: true,
   });
+  const { data: feed, isLoading } = feedQuery;
+  const feedView = useQueryView(feedQuery);
 
   const { data: agents } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
@@ -180,16 +229,26 @@ export function WhatNeedsMe() {
 
   // Decision history — decided / expired decisions leave the open attention
   // feed (entryRule = open only), so we fetch them directly for the curtains.
-  const { data: decidedDecisions, isLoading: decidedDecisionsLoading } = useQuery({
-    queryKey: queryKeys.decisions.list(selectedCompanyId!, "decided"),
-    queryFn: () => decisionsApi.list(selectedCompanyId!, { status: "decided", limit: DECISION_HISTORY_QUERY_LIMIT }),
-    enabled: decisionHistoryQueryEnabled(selectedCompanyId, decidedOpen),
-  });
-  const { data: expiredDecisions, isLoading: expiredDecisionsLoading } = useQuery({
-    queryKey: queryKeys.decisions.list(selectedCompanyId!, "expired"),
-    queryFn: () => decisionsApi.list(selectedCompanyId!, { status: "expired", limit: DECISION_HISTORY_QUERY_LIMIT }),
-    enabled: decisionHistoryQueryEnabled(selectedCompanyId, expiredOpen),
-  });
+  const { data: decidedDecisions, isLoading: decidedDecisionsLoading } =
+    useQuery({
+      queryKey: queryKeys.decisions.list(selectedCompanyId!, "decided"),
+      queryFn: () =>
+        decisionsApi.list(selectedCompanyId!, {
+          status: "decided",
+          limit: DECISION_HISTORY_QUERY_LIMIT,
+        }),
+      enabled: decisionHistoryQueryEnabled(selectedCompanyId, decidedOpen),
+    });
+  const { data: expiredDecisions, isLoading: expiredDecisionsLoading } =
+    useQuery({
+      queryKey: queryKeys.decisions.list(selectedCompanyId!, "expired"),
+      queryFn: () =>
+        decisionsApi.list(selectedCompanyId!, {
+          status: "expired",
+          limit: DECISION_HISTORY_QUERY_LIMIT,
+        }),
+      enabled: decisionHistoryQueryEnabled(selectedCompanyId, expiredOpen),
+    });
 
   const { data: session } = useQuery({
     queryKey: queryKeys.auth.session,
@@ -211,12 +270,15 @@ export function WhatNeedsMe() {
 
   const allItems = useMemo(() => feed?.items ?? [], [feed]);
 
-  const isServerHidden = (item: AttentionItem) => item.dismissal != null && item.dismissal.isActive;
+  const isServerHidden = (item: AttentionItem) =>
+    item.dismissal != null && item.dismissal.isActive;
 
   const activeItems = useMemo(
     () =>
       allItems.filter(
-        (item) => (!isServerHidden(item) || pendingRestore.has(item.id)) && !pendingHide.has(item.id),
+        (item) =>
+          (!isServerHidden(item) || pendingRestore.has(item.id)) &&
+          !pendingHide.has(item.id),
       ),
     [allItems, pendingHide, pendingRestore],
   );
@@ -225,19 +287,28 @@ export function WhatNeedsMe() {
   // the aging idle labels so they match `deskBadgeCount` and the sidebar badge
   // exactly, and stay stable across renders (Date.now() only as a pre-load fallback).
   const now = useMemo(
-    () => (feed?.generatedAt ? new Date(feed.generatedAt).getTime() : Date.now()),
+    () =>
+      feed?.generatedAt ? new Date(feed.generatedAt).getTime() : Date.now(),
     [feed?.generatedAt],
   );
 
   // Aging shelf (§4.4): items the server flags as idle past retention leave the
   // live desk for their own curtain, so today's desk shows only fresh decisions.
-  const agingItems = useMemo(() => activeItems.filter(attentionIsAging), [activeItems]);
-  const deskItems = useMemo(() => activeItems.filter((item) => !attentionIsAging(item)), [activeItems]);
+  const agingItems = useMemo(
+    () => activeItems.filter(attentionIsAging),
+    [activeItems],
+  );
+  const deskItems = useMemo(
+    () => activeItems.filter((item) => !attentionIsAging(item)),
+    [activeItems],
+  );
   const snoozedItems = useMemo(
     () =>
       allItems.filter(
         (item) =>
-          item.dismissal?.kind === "snooze" && item.dismissal.isActive && !pendingRestore.has(item.id),
+          item.dismissal?.kind === "snooze" &&
+          item.dismissal.isActive &&
+          !pendingRestore.has(item.id),
       ),
     [allItems, pendingRestore],
   );
@@ -245,12 +316,17 @@ export function WhatNeedsMe() {
     () =>
       allItems.filter(
         (item) =>
-          item.dismissal?.kind === "dismiss" && item.dismissal.isActive && !pendingRestore.has(item.id),
+          item.dismissal?.kind === "dismiss" &&
+          item.dismissal.isActive &&
+          !pendingRestore.has(item.id),
       ),
     [allItems, pendingRestore],
   );
 
-  const filterOptions = useMemo(() => buildAttentionFilterOptions(deskItems), [deskItems, i18n.language]);
+  const filterOptions = useMemo(
+    () => buildAttentionFilterOptions(deskItems),
+    [deskItems, i18n.language],
+  );
 
   // Filter → sort → group, all client-side so switching re-buckets without a
   // refetch. In the default (ungrouped) view the desk groups by arrival —
@@ -266,15 +342,25 @@ export function WhatNeedsMe() {
     return groupAttentionItems(sorted, groupBy);
   }, [deskItems, filters, sortOrder, groupBy, now, i18n.language]);
 
-  const visibleCount = useMemo(() => groups.reduce((sum, group) => sum + group.items.length, 0), [groups]);
+  const visibleCount = useMemo(
+    () => groups.reduce((sum, group) => sum + group.items.length, 0),
+    [groups],
+  );
   const keyboardItems = useMemo(
-    () => groups.filter((group) => group.label === null || !collapsedGroupKeys.has(group.key)).flatMap((group) => group.items),
+    () =>
+      groups
+        .filter(
+          (group) => group.label === null || !collapsedGroupKeys.has(group.key),
+        )
+        .flatMap((group) => group.items),
     [collapsedGroupKeys, groups],
   );
 
   // Rendered-row budget: only ratchets up (a hard reset mid-scroll would yank
   // the DOM out from under the user), and resets when the company changes.
-  const [renderedRowLimit, setRenderedRowLimit] = useState(INITIAL_ATTENTION_ROW_RENDER_LIMIT);
+  const [renderedRowLimit, setRenderedRowLimit] = useState(
+    INITIAL_ATTENTION_ROW_RENDER_LIMIT,
+  );
   const rootRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     setRenderedRowLimit(INITIAL_ATTENTION_ROW_RENDER_LIMIT);
@@ -322,7 +408,9 @@ export function WhatNeedsMe() {
       if (animationFrameId !== null) return;
       animationFrameId = window.requestAnimationFrame(() => {
         animationFrameId = null;
-        const scrollHeight = scrollContainer?.scrollHeight ?? document.documentElement.scrollHeight;
+        const scrollHeight =
+          scrollContainer?.scrollHeight ??
+          document.documentElement.scrollHeight;
         if (scrollHeight === 0) return;
         const scrollBottom = scrollContainer
           ? scrollContainer.scrollTop + scrollContainer.clientHeight
@@ -333,7 +421,9 @@ export function WhatNeedsMe() {
       });
     };
 
-    scrollTarget.addEventListener("scroll", checkScrollPosition, { passive: true });
+    scrollTarget.addEventListener("scroll", checkScrollPosition, {
+      passive: true,
+    });
     window.addEventListener("resize", checkScrollPosition);
     // Initial check: a tall viewport (or an opened curtain) may need more rows
     // than the current budget before any scrolling happens.
@@ -342,12 +432,16 @@ export function WhatNeedsMe() {
     return () => {
       scrollTarget.removeEventListener("scroll", checkScrollPosition);
       window.removeEventListener("resize", checkScrollPosition);
-      if (animationFrameId !== null) window.cancelAnimationFrame(animationFrameId);
+      if (animationFrameId !== null)
+        window.cancelAnimationFrame(animationFrameId);
     };
   }, [loadMoreRows, renderPlan.hasMoreRows, renderedRowLimit]);
 
   useEffect(() => {
-    if (selectedAttentionId && !keyboardItems.some((item) => item.id === selectedAttentionId)) {
+    if (
+      selectedAttentionId &&
+      !keyboardItems.some((item) => item.id === selectedAttentionId)
+    ) {
       setSelectedAttentionId(null);
       setSelectionFromKeyboard(false);
     }
@@ -355,16 +449,21 @@ export function WhatNeedsMe() {
 
   useEffect(() => {
     if (!selectedAttentionId) return;
-    document.getElementById(`attention-row-${selectedAttentionId}`)?.scrollIntoView({ block: "nearest" });
+    document
+      .getElementById(`attention-row-${selectedAttentionId}`)
+      ?.scrollIntoView({ block: "nearest" });
   }, [selectedAttentionId]);
 
   // `?decisionId=` deep link (§4.7): focus and expand the referenced decision
   // card once the feed lands, then drop the param so a later manual collapse is
   // not re-forced on the next refetch. Wins over the generic auto-expand below.
   useEffect(() => {
-    if (deepLinkConsumed || !deepLinkDecisionId || allItems.length === 0) return;
+    if (deepLinkConsumed || !deepLinkDecisionId || allItems.length === 0)
+      return;
     const target = allItems.find(
-      (item) => item.sourceKind === "decision" && item.subject.id === deepLinkDecisionId,
+      (item) =>
+        item.sourceKind === "decision" &&
+        item.subject.id === deepLinkDecisionId,
     );
     setDeepLinkConsumed(true);
     setAutoExpandDone(true);
@@ -441,7 +540,10 @@ export function WhatNeedsMe() {
         body: item.subject.title ?? undefined,
         tone: "info",
         ttlMs: 8000,
-        action: { label: translateInstant("whatNeedsMe.toast.undo"), onClick: () => handleUndoDismiss(item) },
+        action: {
+          label: translateInstant("whatNeedsMe.toast.undo"),
+          onClick: () => handleUndoDismiss(item),
+        },
       });
     },
     [dismiss, handleUndoDismiss, pushToast],
@@ -482,26 +584,34 @@ export function WhatNeedsMe() {
 
       if (action === "next" || action === "previous") {
         event.preventDefault();
-        const currentIndex = selectedAttentionId ? keyboardItems.findIndex((item) => item.id === selectedAttentionId) : -1;
+        const currentIndex = selectedAttentionId
+          ? keyboardItems.findIndex((item) => item.id === selectedAttentionId)
+          : -1;
         const offset = action === "next" ? 1 : -1;
-        const nextIndex = currentIndex < 0
-          ? action === "next"
-            ? 0
-            : keyboardItems.length - 1
-          : (currentIndex + offset + keyboardItems.length) % keyboardItems.length;
+        const nextIndex =
+          currentIndex < 0
+            ? action === "next"
+              ? 0
+              : keyboardItems.length - 1
+            : (currentIndex + offset + keyboardItems.length) %
+              keyboardItems.length;
         setSelectedAttentionId(keyboardItems[nextIndex]?.id ?? null);
         setSelectionFromKeyboard(true);
         return;
       }
 
-      const selectedItem = keyboardItems.find((item) => item.id === selectedAttentionId);
+      const selectedItem = keyboardItems.find(
+        (item) => item.id === selectedAttentionId,
+      );
       if (!selectedItem) return;
       event.preventDefault();
 
       if (action === "dismiss") {
         handleDismiss(selectedItem);
       } else if (isInlineResolvable(selectedItem)) {
-        setExpandedId((previous) => (previous === selectedItem.id ? null : selectedItem.id));
+        setExpandedId((previous) =>
+          previous === selectedItem.id ? null : selectedItem.id,
+        );
       } else if (selectedItem.subject.href) {
         navigate(selectedItem.subject.href);
       }
@@ -512,19 +622,41 @@ export function WhatNeedsMe() {
   }, [handleDismiss, keyboardItems, navigate, selectedAttentionId]);
 
   if (!selectedCompanyId) {
-    return <p className="text-sm text-muted-foreground">{translateInstant("Select an organization first.")}</p>;
+    return (
+      <p className="text-sm text-muted-foreground">
+        {translateInstant("Select an organization first.")}
+      </p>
+    );
   }
 
-  if (isLoading) {
+  // Keep a loaded feed on screen through a failed refetch; only a real
+  // failure, or an outage before the first load, replaces the page.
+  if (isLoading || feedView.kind === "reconnecting") {
     return <PageSkeleton variant="approvals" />;
   }
+  if (feedView.kind === "error") {
+    return (
+      <QueryErrorState
+        size="page"
+        error={feedView.error}
+        action="load your decisions"
+        onRetry={feedView.retry}
+        retrying={feedView.isFetching}
+      />
+    );
+  }
 
-  const hasAnything = activeItems.length > 0 || snoozedItems.length > 0 || dismissedItems.length > 0;
+  const hasAnything =
+    activeItems.length > 0 ||
+    snoozedItems.length > 0 ||
+    dismissedItems.length > 0;
 
   return (
     <div ref={rootRef} className="max-w-3xl space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl font-bold">{translateInstant("whatNeedsMe.title")}</h1>
+        <h1 className="text-xl font-bold">
+          {translateInstant("whatNeedsMe.title")}
+        </h1>
         <DecisionsToolbar
           query={searchQuery}
           onQueryChange={setSearchQuery}
@@ -542,7 +674,10 @@ export function WhatNeedsMe() {
       {/* Queue quicklinks + date-range chips (§4.1–§4.2). The rail self-hides
           when the company has no queues; the chips filter the desk server-side. */}
       <div className="space-y-2">
-        <DecisionQueueRail companyId={selectedCompanyId} activeQueueKey={null} />
+        <DecisionQueueRail
+          companyId={selectedCompanyId}
+          activeQueueKey={null}
+        />
         <DecisionDateChips
           value={dateRange}
           custom={customRange}
@@ -553,8 +688,6 @@ export function WhatNeedsMe() {
         />
       </div>
 
-      {error && <p className="text-sm text-destructive">{(error as Error).message}</p>}
-
       {!hasAnything ? (
         <ZeroState />
       ) : (
@@ -564,75 +697,104 @@ export function WhatNeedsMe() {
           ) : (
             <>
               {groups.map((group) => {
-              const groupLabel = group.label;
-              const collapsed = groupLabel !== null && collapsedGroupKeys.has(group.key);
-              return (
-                <section key={group.key} className="space-y-2">
-                  {groupLabel !== null && (
-                    <IssueGroupHeader
-                      label={groupLabel}
-                      collapsible
-                      collapsed={collapsed}
-                      onToggle={() => toggleGroupCollapse(group.key)}
-                      trailing={
-                        <span className="text-xs tabular-nums text-muted-foreground">{group.items.length}</span>
-                      }
-                    />
-                  )}
-                  {!collapsed && (
-                    <div className="space-y-4">
-                      {(() => {
-                        const rows = renderPlan.groupRows.get(group.key) ?? [];
-                        const seenBundles = new Set<string>();
-                        return rows.map((item) => {
-                          const bundleId =
-                            item.sourceKind === "decision"
-                              ? ((item.subject.metadata?.bundleId as string | null | undefined) ?? null)
-                              : null;
-                          let header: ReactNode = null;
-                          if (bundleId && !seenBundles.has(bundleId)) {
-                            seenBundles.add(bundleId);
-                            const bundleRows = rows.filter(
-                              (row) =>
-                                row.sourceKind === "decision" &&
-                                ((row.subject.metadata?.bundleId as string | null | undefined) ?? null) === bundleId,
-                            );
-                            const first = bundleRows[0];
-                            header = (
-                              <DecisionBundleHeader
-                                agentName={agentMap.get(first?.subject.metadata?.originAgentId as string)?.name ?? null}
-                                title={(first?.subject.metadata?.bundleTitle as string | null | undefined) ?? null}
-                                originIssue={first?.relatedIssue ?? null}
-                                count={bundleRows.length}
-                              />
-                            );
-                          }
-                          return (
-                            <Fragment key={item.id}>
-                              {header}
-                              <div className={bundleId ? "border-l-2 border-violet-500/40 pl-3" : undefined}>
-                                <AttentionQueueRow
-                                  item={item}
-                                  companyId={selectedCompanyId}
-                                  expanded={expandedId === item.id}
-                                  onToggleExpand={handleToggleExpand}
-                                  onDismiss={handleDismiss}
-                                  onSnooze={handleSnooze}
-                                  agentMap={agentMap}
-                                  agents={agents}
-                                  showTriage
-                                  currentUserId={currentUserId}
-                                  selected={selectionFromKeyboard && selectedAttentionId === item.id}
+                const groupLabel = group.label;
+                const collapsed =
+                  groupLabel !== null && collapsedGroupKeys.has(group.key);
+                return (
+                  <section key={group.key} className="space-y-2">
+                    {groupLabel !== null && (
+                      <IssueGroupHeader
+                        label={groupLabel}
+                        collapsible
+                        collapsed={collapsed}
+                        onToggle={() => toggleGroupCollapse(group.key)}
+                        trailing={
+                          <span className="text-xs tabular-nums text-muted-foreground">
+                            {group.items.length}
+                          </span>
+                        }
+                      />
+                    )}
+                    {!collapsed && (
+                      <div className="space-y-4">
+                        {(() => {
+                          const rows =
+                            renderPlan.groupRows.get(group.key) ?? [];
+                          const seenBundles = new Set<string>();
+                          return rows.map((item) => {
+                            const bundleId =
+                              item.sourceKind === "decision"
+                                ? ((item.subject.metadata?.bundleId as
+                                    | string
+                                    | null
+                                    | undefined) ?? null)
+                                : null;
+                            let header: ReactNode = null;
+                            if (bundleId && !seenBundles.has(bundleId)) {
+                              seenBundles.add(bundleId);
+                              const bundleRows = rows.filter(
+                                (row) =>
+                                  row.sourceKind === "decision" &&
+                                  ((row.subject.metadata?.bundleId as
+                                    | string
+                                    | null
+                                    | undefined) ?? null) === bundleId,
+                              );
+                              const first = bundleRows[0];
+                              header = (
+                                <DecisionBundleHeader
+                                  agentName={
+                                    agentMap.get(
+                                      first?.subject.metadata
+                                        ?.originAgentId as string,
+                                    )?.name ?? null
+                                  }
+                                  title={
+                                    (first?.subject.metadata?.bundleTitle as
+                                      | string
+                                      | null
+                                      | undefined) ?? null
+                                  }
+                                  originIssue={first?.relatedIssue ?? null}
+                                  count={bundleRows.length}
                                 />
-                              </div>
-                            </Fragment>
-                          );
-                        });
-                      })()}
-                    </div>
-                  )}
-                </section>
-              );
+                              );
+                            }
+                            return (
+                              <Fragment key={item.id}>
+                                {header}
+                                <div
+                                  className={
+                                    bundleId
+                                      ? "border-l-2 border-violet-500/40 pl-3"
+                                      : undefined
+                                  }
+                                >
+                                  <AttentionQueueRow
+                                    item={item}
+                                    companyId={selectedCompanyId}
+                                    expanded={expandedId === item.id}
+                                    onToggleExpand={handleToggleExpand}
+                                    onDismiss={handleDismiss}
+                                    onSnooze={handleSnooze}
+                                    agentMap={agentMap}
+                                    agents={agents}
+                                    showTriage
+                                    currentUserId={currentUserId}
+                                    selected={
+                                      selectionFromKeyboard &&
+                                      selectedAttentionId === item.id
+                                    }
+                                  />
+                                </div>
+                              </Fragment>
+                            );
+                          });
+                        })()}
+                      </div>
+                    )}
+                  </section>
+                );
               })}
             </>
           )}
@@ -693,7 +855,11 @@ export function WhatNeedsMe() {
               onToggle={() => setAgingOpen((prev) => !prev)}
             >
               <p className="text-xs text-muted-foreground">
-                {translateInstant("Idle past")}{" "}{ATTENTION_AGING_DAYS} {translateInstant("days — kept off the desk. Keep any you still want surfaced.")}</p>
+                {translateInstant("Idle past")} {ATTENTION_AGING_DAYS}{" "}
+                {translateInstant(
+                  "days — kept off the desk. Keep any you still want surfaced.",
+                )}
+              </p>
               {agingItems.map((item) => (
                 <AgingItemRow
                   key={item.id}
@@ -711,7 +877,6 @@ export function WhatNeedsMe() {
               ))}
             </Curtain>
           )}
-
         </div>
       )}
 
@@ -723,19 +888,28 @@ export function WhatNeedsMe() {
           onToggle={() => setDecidedOpen((prev) => !prev)}
         >
           {decidedDecisionsLoading ? (
-            <p className="text-xs text-muted-foreground">{translateInstant("whatNeedsMe.loadingDecided")}</p>
+            <p className="text-xs text-muted-foreground">
+              {translateInstant("whatNeedsMe.loadingDecided")}
+            </p>
           ) : (decidedDecisions?.length ?? 0) > 0 ? (
-            decidedDecisions!.slice(0, DECISION_HISTORY_VISIBLE_LIMIT).map((decision) => (
-              <DecisionResolver
-                key={decision.id}
-                companyId={selectedCompanyId}
-                decisionId={decision.id}
-                agentMap={agentMap}
-                initialDecision={{ ...decision, executions: decision.executions ?? [] }}
-              />
-            ))
+            decidedDecisions!
+              .slice(0, DECISION_HISTORY_VISIBLE_LIMIT)
+              .map((decision) => (
+                <DecisionResolver
+                  key={decision.id}
+                  companyId={selectedCompanyId}
+                  decisionId={decision.id}
+                  agentMap={agentMap}
+                  initialDecision={{
+                    ...decision,
+                    executions: decision.executions ?? [],
+                  }}
+                />
+              ))
           ) : (
-            <p className="text-xs text-muted-foreground">{translateInstant("whatNeedsMe.noDecided")}</p>
+            <p className="text-xs text-muted-foreground">
+              {translateInstant("whatNeedsMe.noDecided")}
+            </p>
           )}
         </Curtain>
 
@@ -746,19 +920,28 @@ export function WhatNeedsMe() {
           onToggle={() => setExpiredOpen((prev) => !prev)}
         >
           {expiredDecisionsLoading ? (
-            <p className="text-xs text-muted-foreground">{translateInstant("whatNeedsMe.loadingExpired")}</p>
+            <p className="text-xs text-muted-foreground">
+              {translateInstant("whatNeedsMe.loadingExpired")}
+            </p>
           ) : (expiredDecisions?.length ?? 0) > 0 ? (
-            expiredDecisions!.slice(0, DECISION_HISTORY_VISIBLE_LIMIT).map((decision) => (
-              <DecisionResolver
-                key={decision.id}
-                companyId={selectedCompanyId}
-                decisionId={decision.id}
-                agentMap={agentMap}
-                initialDecision={{ ...decision, executions: decision.executions ?? [] }}
-              />
-            ))
+            expiredDecisions!
+              .slice(0, DECISION_HISTORY_VISIBLE_LIMIT)
+              .map((decision) => (
+                <DecisionResolver
+                  key={decision.id}
+                  companyId={selectedCompanyId}
+                  decisionId={decision.id}
+                  agentMap={agentMap}
+                  initialDecision={{
+                    ...decision,
+                    executions: decision.executions ?? [],
+                  }}
+                />
+              ))
           ) : (
-            <p className="text-xs text-muted-foreground">{translateInstant("whatNeedsMe.noExpired")}</p>
+            <p className="text-xs text-muted-foreground">
+              {translateInstant("whatNeedsMe.noExpired")}
+            </p>
           )}
         </Curtain>
       </div>
@@ -787,7 +970,8 @@ export function DecisionBundleHeader({
   return (
     <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 rounded-sm border-l-2 border-violet-500/60 bg-violet-500/5 px-3 py-1.5 text-xs">
       <span className="font-semibold text-violet-800 dark:text-violet-200">
-        {agentName ?? translateInstant("whatNeedsMe.bundle.agent")} {translateInstant("whatNeedsMe.proposed")}{" "}{count} {noun}
+        {agentName ?? translateInstant("whatNeedsMe.bundle.agent")}{" "}
+        {translateInstant("whatNeedsMe.proposed")} {count} {noun}
       </span>
       {originIssue && (originIssue.identifier || originIssue.title) && (
         <span className="text-muted-foreground">
@@ -797,12 +981,14 @@ export function DecisionBundleHeader({
               {originIssue.identifier ?? originIssue.title}
             </a>
           ) : (
-            originIssue.identifier ?? originIssue.title
+            (originIssue.identifier ?? originIssue.title)
           )}
         </span>
       )}
       {title && <span className="text-muted-foreground">· {title}</span>}
-      <span className="text-muted-foreground">· {count} {translateInstant("runStatus.pending")}</span>
+      <span className="text-muted-foreground">
+        · {count} {translateInstant("runStatus.pending")}
+      </span>
     </div>
   );
 }
@@ -812,10 +998,14 @@ function CaughtUpNote({ filtered }: { filtered: boolean }) {
   return (
     <div className="rounded-xl border border-dashed border-border py-10 text-center">
       <p className="text-sm font-medium text-foreground">
-        {filtered ? translateInstant("whatNeedsMe.empty.noMatches") : translateInstant("whatNeedsMe.empty.caughtUpSentence")}
+        {filtered
+          ? translateInstant("whatNeedsMe.empty.noMatches")
+          : translateInstant("whatNeedsMe.empty.caughtUpSentence")}
       </p>
       {filtered && (
-        <p className="mt-1 text-xs text-muted-foreground">{translateInstant("whatNeedsMe.empty.filteredHelp")}</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {translateInstant("whatNeedsMe.empty.filteredHelp")}
+        </p>
       )}
     </div>
   );
@@ -828,10 +1018,13 @@ function ZeroState() {
       <div className="mb-4 rounded-full bg-green-500/10 p-4">
         <CheckCircle2 className="h-10 w-10 text-green-500" />
       </div>
-      <p className="text-lg font-semibold text-foreground">{translateInstant("whatNeedsMe.empty.caughtUp")}</p>
+      <p className="text-lg font-semibold text-foreground">
+        {translateInstant("whatNeedsMe.empty.caughtUp")}
+      </p>
       <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
         <Inbox className="h-4 w-4" />
-        {translateInstant("whatNeedsMe.empty.nothingNeedsDecision")}</p>
+        {translateInstant("whatNeedsMe.empty.nothingNeedsDecision")}
+      </p>
     </div>
   );
 }

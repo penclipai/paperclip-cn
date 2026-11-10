@@ -1,6 +1,6 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { agents, companies, createDb, heartbeatRuns } from "@penclipai/db";
-import { createDatabaseResponseCapture, installDatabaseResponseCapture } from "@penclipai/db/response-capture";
+import { createFullDatabaseResponseCapture, installDatabaseResponseCapture } from "../../../__tests__/helpers/full-database-response-capture.js";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "../../../__tests__/helpers/embedded-postgres.js";
@@ -40,7 +40,7 @@ describe.skipIf(!support.supported)("wake release run reads", () => {
     const scope = { companyId, runId: before.id };
     const events: Array<Record<string, unknown>> = [];
     const now = Date.now();
-    const capture = createDatabaseResponseCapture({ start: now - 100, end: now + 59_000 }, event => events.push(event));
+    const capture = createFullDatabaseResponseCapture({ start: now - 100, end: now + 59_000 }, event => events.push(event));
     installDatabaseResponseCapture(db, { heartbeatRuns }, capture);
     try {
       const native = await db.transaction(tx => readReleaseRun(tx as unknown as typeof db, scope));
@@ -51,7 +51,7 @@ describe.skipIf(!support.supported)("wake release run reads", () => {
       expect(native.run).not.toHaveProperty("stdoutExcerpt");
       expect(native.run).not.toHaveProperty("stderrExcerpt");
     } finally { capture.flush(); }
-    const summary = events.find(event => event.event === "paperclip.db_response_capture.summary.v1")!;
+    const summary = events.find(event => event.event === "paperclip.test_db_response_capture.summary.v1")!;
     expect(summary.completedQueries).toBe(1);
     expect(summary.responseValueBytes).toBeLessThan(8192);
     expect((await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, before.id)))[0]).toEqual(before);
@@ -69,6 +69,55 @@ describe.skipIf(!support.supported)("wake release run reads", () => {
       const [run] = await db.insert(heartbeatRuns).values({ companyId, agentId, runtimeMode: "native",
         resultJson: result as Record<string, unknown> | null }).returning();
       expect((await readReleaseRun(db, { companyId, runId: run.id })).run?.resultJson).toEqual(result);
+    },
+  );
+
+  it("keeps launch text in storage while releasing native runs with their control context", async () => {
+    const bulk = randomBytes(128 * 1024).toString("base64");
+    const context = {
+      issueId: randomUUID(), taskId: randomUUID(), taskKey: "saved-task",
+      retryReason: "execution_review_participant_recovery", wakeReason: "issue_commented",
+      explicitUserContinuation: true,
+      interactionId: randomUUID(), interactionKind: "review", interactionStatus: "resolved",
+      wakeCommentIds: [randomUUID()], queuedCommentSourceWakeIds: [randomUUID()],
+      chatConversationId: randomUUID(), executionPolicy: { requireApproval: true },
+      opaqueFutureContext: { retained: [null, false, "input"] },
+    };
+    const launch = {
+      executionContinuation: { instruction: bulk, state: "saved" },
+      paperclipWake: { savedTask: bulk }, paperclipWakeComment: bulk, paperclipTaskMarkdown: bulk,
+      paperclipTaskMarkdownCompact: bulk, paperclipTaskMarkdownAssignment: bulk,
+      paperclipTaskMarkdownAssignmentCompact: bulk, paperclipWorkspace: { files: bulk },
+      paperclipEnvironment: { input: bulk }, paperclipContinuationSummary: bulk,
+    };
+    const evidence = { nativeCancellation: { schema: "paperclip.native-cancellation.v1", dispatched: true },
+      executionCancellation: { state: "acknowledged" }, workspaceRestoreRecovery: { leaseIds: [randomUUID()] },
+      configurationIncomplete: { reason: "secret_binding_missing" }, unknownFutureReceipt: { retained: true } };
+    const [before] = await db.insert(heartbeatRuns).values({ companyId, agentId, runtimeMode: "native",
+      contextSnapshot: { ...context, ...launch }, resultJson: evidence }).returning();
+    const events: Array<Record<string, unknown>> = [];
+    const now = Date.now();
+    const capture = createFullDatabaseResponseCapture({ start: now - 100, end: now + 59_000 }, event => events.push(event));
+    installDatabaseResponseCapture(db, { heartbeatRuns }, capture);
+    let selected: Awaited<ReturnType<typeof readReleaseRun>>;
+    try { selected = await db.transaction(tx => readReleaseRun(tx as unknown as typeof db, { companyId, runId: before.id })); }
+    finally { capture.flush(); }
+    const summary = events.find(event => event.event === "paperclip.test_db_response_capture.summary.v1")!;
+    expect(summary.completedQueries).toBe(1);
+    expect(summary.responseValueBytes).toBeLessThan(8192);
+    expect(selected!.run?.contextSnapshot).toEqual(context);
+    expect(selected!.run?.resultJson).toEqual(evidence);
+    expect(JSON.stringify(events)).not.toContain(bulk.slice(0, 64));
+    expect((await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, before.id)))[0]).toEqual(before);
+    await db.update(heartbeatRuns).set({ runtimeMode: "legacy" }).where(eq(heartbeatRuns.id, before.id));
+    expect((await readReleaseRun(db, { companyId, runId: before.id })).run?.contextSnapshot).toEqual(before.contextSnapshot);
+  });
+
+  it.each([null, ["paperclipWake", { savedInput: "keep" }], "scalar", 42].map(context => ({ context })))(
+    "preserves non-object native context $context", async ({ context }) => {
+      const [run] = await db.insert(heartbeatRuns).values({ companyId, agentId, runtimeMode: "native",
+        contextSnapshot: context as Record<string, unknown> | null }).returning();
+      expect((await readReleaseRun(db, { companyId, runId: run.id })).run?.contextSnapshot).toEqual(context);
     },
   );
 });

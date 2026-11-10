@@ -1,5 +1,6 @@
 import type { Db } from "@penclipai/db";
 import { heartbeatRuns } from "@penclipai/db";
+import { instanceGeneralSettingsSchema } from "@penclipai/shared";
 import { eq } from "drizzle-orm";
 import { vi, type Mock, type Mocked } from "vitest";
 import { createRunDispatch } from "../../modules/run-dispatch/index.js";
@@ -38,12 +39,15 @@ export function createHeartbeatQueueTestDependencies(db: Db): QueueTestDependenc
     issuesSvc: {
       getDependencyReadiness: vi.fn<HeartbeatQueueDependencies["issuesSvc"]["getDependencyReadiness"]>(),
       listDependencyReadiness: vi.fn(async () => new Map()),
+      updateForCompany: vi.fn<HeartbeatQueueDependencies["issuesSvc"]["updateForCompany"]>(async () => {
+        throw new Error("Unexpected task reopen");
+      }),
     },
     treeControlSvc: { getActivePauseHoldGate: vi.fn(async () => null) },
     budgets: { getInvocationBlock: vi.fn(async () => null) },
     instanceSettings: {
       getExperimental: vi.fn<HeartbeatQueueDependencies["instanceSettings"]["getExperimental"]>(),
-      getGeneral: vi.fn<HeartbeatQueueDependencies["instanceSettings"]["getGeneral"]>(),
+      getGeneral: vi.fn<HeartbeatQueueDependencies["instanceSettings"]["getGeneral"]>(async () => instanceGeneralSettingsSchema.parse({})),
     },
     runDispatch: createRunDispatch(db),
     wakeQueue: {

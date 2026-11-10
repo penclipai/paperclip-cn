@@ -111,9 +111,14 @@ describe("CLI adapter accounting on timeout", () => {
         expect(failed).toMatchObject({ usage: undefined, usageComplete: false, costStatus: "unpriced", costUsd: null });
         expect(onUsage.mock.calls.at(-1)![0]).toMatchObject({ usage: undefined, complete: false, costStatus: "unpriced", costUsd: null });
       }
+      // These routes deliberately clear OPENAI_API_KEY to exercise managed
+      // routing attribution. Give Codex a fixture-only auth source so its
+      // launch gate does not prevent this test from reaching the accounting
+      // checkpoint behavior under test.
+      await writeFile(join(dir, "auth.json"), JSON.stringify({ OPENAI_API_KEY: "fixture-only-key" }), { mode: 0o600 });
       for (const [kind, auth, biller] of [["openrouter", "api_key", "openrouter"], ["custom", "api_key", "unknown"], ["local", "none", "unknown"]]) {
         const routed = await execute({ ...context, config: { ...context.config,
-          managedAiRouting: { kind, auth }, env: { ...(context.config.env as object), OPENAI_API_KEY: "", PAPERCLIP_AI_PROVIDER_KEY: auth === "none" ? "" : "fixture" },
+          managedAiRouting: { kind, auth }, env: { ...(context.config.env as object), CODEX_HOME: dir, OPENAI_API_KEY: "", PAPERCLIP_AI_PROVIDER_KEY: auth === "none" ? "" : "fixture" },
         } });
         expect(routed).toMatchObject({ billingType: "api", biller, costUsd: null });
         expect(onUsage.mock.calls.at(-1)![0]).toMatchObject({ billingType: "api", biller, costUsd: null });

@@ -16,7 +16,7 @@
   },
   "access.inviteRoles.viewerAccess": {
     "en": "View-only organization membership.",
-    "zh-CN": "仅可查看组织内容。",
+    "zh-CN": "仅拥有组织内容的查看权限。",
     "reviewedEnglishHash": "f5ae52ac73578bc8160dd12258d6461c55783da4f85daa302c57ade60a551c03"
   },
   "access.inviteRoles.viewerDescription": {

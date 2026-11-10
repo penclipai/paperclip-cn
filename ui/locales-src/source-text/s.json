@@ -81,7 +81,7 @@
   },
   "Save &amp; finish later": {
     "en": "Save & finish later",
-    "zh-CN": "保存 & 稍后完成",
+    "zh-CN": "保存并稍后完成",
     "reviewedEnglishHash": "f875883047bdadd17dfecbe375f3ce47f9876ed7843fee13f42532179b129a2b"
   },
   "Save Changes": {
@@ -201,7 +201,7 @@
   },
   "Save the agent, then return here to pair your Dot.": {
     "en": "Save the agent, then return here to pair your Dot.",
-    "zh-CN": "保存智能体，然后返回此处配对您的点。",
+    "zh-CN": "保存智能体，然后返回此处配对您的 Dot。",
     "reviewedEnglishHash": "bafe2125317f88ecac66a5aa41265d54ece4fc4796c20988b55233a65886e51d"
   },
   "Save this now. Paperclip CN will not show the secret value again.": {
@@ -371,7 +371,7 @@
   },
   "Search assignees": {
     "en": "Search assignees",
-    "zh-CN": "搜索受让人",
+    "zh-CN": "搜索负责人",
     "reviewedEnglishHash": "15966cf215ba4f3ddded3cc5802b59d3b981d7575be492ae7bcddb57aca11ba0"
   },
   "Search assignees...": {
@@ -381,7 +381,7 @@
   },
   "Search assignees…": {
     "en": "Search assignees…",
-    "zh-CN": "搜索受让人...",
+    "zh-CN": "搜索负责人…",
     "reviewedEnglishHash": "12019555b7b48d70bd691fcde6b1c11d853a43e5b31ee4c914711b3c3974d777"
   },
   "Search by name or email": {
@@ -406,7 +406,7 @@
   },
   "Search connections": {
     "en": "Search connections",
-    "zh-CN": "搜索联系人",
+    "zh-CN": "搜索连接",
     "reviewedEnglishHash": "b8826956a24d2179754b43ab719fc7c67e86cf2b7b46fa24a6918f468b3e5ac2"
   },
   "Search connections…": {
@@ -586,7 +586,7 @@
   },
   "Secret version": {
     "en": "Secret version",
-    "zh-CN": "秘密版",
+    "zh-CN": "密钥版本",
     "reviewedEnglishHash": "46f110b486c57831080ef7ee553b642a451243de0f6fbad9600dd9a5fc0d61c5"
   },
   "Secrets": {
@@ -631,7 +631,7 @@
   },
   "Select": {
     "en": "Select",
-    "zh-CN": "选择器",
+    "zh-CN": "选择",
     "reviewedEnglishHash": "2a78025de6aae5e7ff88e5a951bb3a78ddd67388913529cf9e2dd9653e62b02d"
   },
   "Select Cursor's session mode. Permissions and company approval rules still apply.": {
@@ -851,7 +851,7 @@
   },
   "Select an organization to edit pipeline settings.": {
     "en": "Select an organization to edit pipeline settings.",
-    "zh-CN": "请选择一个组织来编辑流水线设置。",
+    "zh-CN": "请选择一个组织来编辑管道设置。",
     "reviewedEnglishHash": "eb177e3b750586c59dae166209549cc80d5b201f7a4a89caee8ef7ec71c7dd19"
   },
   "Select an organization to export.": {
@@ -971,7 +971,7 @@
   },
   "Select an organization to view pipelines.": {
     "en": "Select an organization to view pipelines.",
-    "zh-CN": "请选择一个组织来查看流水线。",
+    "zh-CN": "请选择一个组织来查看管道。",
     "reviewedEnglishHash": "fb644ace7f17f0c217bedf16acd724e007d69abfd622dd6f79eac223c64162a7"
   },
   "Select an organization to view projects.": {
@@ -1011,7 +1011,7 @@
   },
   "Select assignee": {
     "en": "Select assignee",
-    "zh-CN": "选择受让人",
+    "zh-CN": "选择负责人",
     "reviewedEnglishHash": "4e3f961ccccd0888252fe62a13e181b62c4cdc72151ff678f4d09538c31d827b"
   },
   "Select color {{color}}": {
@@ -1156,7 +1156,7 @@
   },
   "Send an event from": {
     "en": "Send an event from",
-    "zh-CN": "发送事件来自",
+    "zh-CN": "从以下位置发送事件",
     "reviewedEnglishHash": "af0f9889db034fbead9c459355bbe4477b7fe32f5b92eef866129535d8665c20"
   },
   "Send and read messages in your channels.": {
@@ -1241,7 +1241,7 @@
   },
   "Session key": {
     "en": "Session key",
-    "zh-CN": "会话键",
+    "zh-CN": "会话密钥",
     "reviewedEnglishHash": "2319ec27475054a2fefa35a75f017ad906db6cb99dff1d2d60b293eee5fa5754"
   },
   "Session spend ceiling (USD)": {
@@ -1261,7 +1261,7 @@
   },
   "Set as my primary": {
     "en": "Set as my primary",
-    "zh-CN": "设置为我的主要",
+    "zh-CN": "设为我的主要智能体",
     "reviewedEnglishHash": "56fa4288bf77a597f060bbd1085722cf90565ea15bddd2a22e5524915ef88008"
   },
   "Set budget": {
@@ -1326,7 +1326,7 @@
   },
   "Setting": {
     "en": "Setting",
-    "zh-CN": "环境",
+    "zh-CN": "设置",
     "reviewedEnglishHash": "818cd8d91aea3a1689455f009f49e87fe7fa647fa2c4b9f09072dd1c33d52ca5"
   },
   "Settings": {
@@ -1756,7 +1756,7 @@
   },
   "Size follows another viewer": {
     "en": "Size follows another viewer",
-    "zh-CN": "尺寸跟随另一个观看者",
+    "zh-CN": "尺寸跟随另一个查看器",
     "reviewedEnglishHash": "a9be4d07588f62f4a608233452de00a3f9e28b2a540f8266af46f4037c69d226"
   },
   "Sizes": {
@@ -1961,7 +1961,7 @@
   },
   "Soft alert at": {
     "en": "Soft alert at",
-    "zh-CN": "软警报在",
+    "zh-CN": "预警阈值",
     "reviewedEnglishHash": "bca8c0591cb0b6b9c9010035d85e46978212b77f82d45ceb629481784819fbba"
   },
   "Soft alert at {{percent}}%": {
@@ -2016,7 +2016,7 @@
   },
   "Some steps won't run yet —": {
     "en": "Some steps won't run yet —",
-    "zh-CN": "有些步骤尚未运行—",
+    "zh-CN": "有些步骤暂时不会运行—",
     "reviewedEnglishHash": "d0a319250e06789f3e858c0680bf3071e99f8e49c8fccd79460d710a1344b2ba"
   },
   "Some subscription usage has no recorded account. It is included in the subscription token total.": {
@@ -2146,7 +2146,7 @@
   },
   "Started {{time}}": {
     "en": "Started {{time}}",
-    "zh-CN": "{{time}} 前开始",
+    "zh-CN": "开始于 {{time}}",
     "reviewedEnglishHash": "2b5386c62e630800f957e3191120519f05a65ac341eb7bc37357f033d26c546b"
   },
   "Starting branch": {
@@ -2201,7 +2201,7 @@
   },
   "Steer": {
     "en": "Steer",
-    "zh-CN": "转向",
+    "zh-CN": "引导",
     "reviewedEnglishHash": "1cf39ed452541de41e0b1688ef67a1eb19c8823d8de23e2a05a5e9b95192901b"
   },
   "Step automation re-run started": {
@@ -2261,7 +2261,7 @@
   },
   "Store as secret…": {
     "en": "Store as secret…",
-    "zh-CN": "存储为秘密...",
+    "zh-CN": "存储为密钥...",
     "reviewedEnglishHash": "06c8495c8dea5924adbdf9fff218cc95fee99d850862a2eaf44593e1baaaadc9"
   },
   "Stored explicitly for this member.": {
@@ -2476,7 +2476,7 @@
   },
   "Surface": {
     "en": "Surface",
-    "zh-CN": "表面",
+    "zh-CN": "界面",
     "reviewedEnglishHash": "0905f7f59021c2a85f1c0a50d7c252a3e6c6ee006514f01d7264097f1fd4337a"
   },
   "Suspended": {
@@ -2581,7 +2581,7 @@
   },
   "server-redacted by default": {
     "en": "server-redacted by default",
-    "zh-CN": "默认情况下经过服务器编辑",
+    "zh-CN": "默认由服务器脱敏",
     "reviewedEnglishHash": "4b8ddeed55c6a4aba49857e662eeda631a733ac463d60f7b0702a1883af25b3f"
   },
   "services": {
@@ -2751,7 +2751,7 @@
   },
   "· set by": {
     "en": "· set by",
-    "zh-CN": "设定由",
+    "zh-CN": "· 由",
     "reviewedEnglishHash": "a84bdbadb40999fb201979975ea266d5f4a9463b8e12b1c387048478538cf5b9"
   },
   "’s avatar so your team recognizes the agent": {

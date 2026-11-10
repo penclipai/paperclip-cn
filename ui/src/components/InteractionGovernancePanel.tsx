@@ -1,5 +1,5 @@
 import { translateInstant } from "@/i18n";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { Fragment } from "react";
 import {
   ISSUE_THREAD_INTERACTION_KINDS,
@@ -254,11 +254,16 @@ export function InteractionGovernancePanel({
         {translateInstant("interactionGovernance.title")}</div>
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          {translateInstant("Thread interactions are open by default:")}{" "}
-          <span className="font-medium text-foreground">{translateInstant("Anyone")}</span> {translateInstant("in the organization — the board or any agent, including the one that asked — can respond. Narrow a kind only when you need to.")}{" "}
-          <span className="font-medium text-foreground">{translateInstant("interactionGovernance.column.defaultPolicy")}</span> {translateInstant("is the audience new cards get when the requester does not ask for one;")}{" "}
-          <span className="font-medium text-foreground">{translateInstant("interactionGovernance.column.cap")}</span> {translateInstant("narrows every request of that kind and can never widen one. Tool-approval confirmations always stay")}{" "}
-          <span className="font-medium text-foreground">{translateInstant("interactionResolver.human_only")}</span>{translateInstant(".")}</p>
+          <Trans
+            i18nKey="interactionGovernance.description"
+            components={{
+              audience: <span className="font-medium text-foreground" />,
+              defaults: <span className="font-medium text-foreground" />,
+              cap: <span className="font-medium text-foreground" />,
+              human: <span className="font-medium text-foreground" />,
+            }}
+          />
+        </p>
         {/*
          * Responsive: below `sm` the row collapses to a single column so the
          * two 170px selects never force horizontal overflow on a ~390px

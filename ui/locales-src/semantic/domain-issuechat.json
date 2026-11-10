@@ -31,7 +31,7 @@
   },
   "issueChat.attachFile": {
     "en": "Attach file",
-    "zh-CN": "附加文件",
+    "zh-CN": "添加文件",
     "reviewedEnglishHash": "87fbe4fb79b1d700fa6166d7a503779c005919d2fa3c25988aa944aab751d17a"
   },
   "issueChat.attachedToIssue": {
@@ -146,7 +146,7 @@
   },
   "issueChat.emptyConversation": {
     "en": "This task conversation is empty. Start with a message below.",
-    "zh-CN": "这个任务对话还是空的。请从下面发送第一条消息。",
+    "zh-CN": "此任务暂无对话。请在下方发送第一条消息。",
     "reviewedEnglishHash": "a9ce9840a62c100d96161ba092ee940bf026581ca4146ce3a338ab5058cf3a8e"
   },
   "issueChat.emptyRunOutput": {

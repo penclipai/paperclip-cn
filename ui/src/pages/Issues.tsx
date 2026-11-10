@@ -1,12 +1,15 @@
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { useShowAgentCreatedTasks } from "../hooks/useShowAgentCreatedTasks";
+import { useCoordinatorWorkspaceEnabled } from "../hooks/useCoordinatorWorkspaceEnabled";
+import { CoordinatorTaskViews } from "./CoordinatorTaskViews";
 import { useDesignSandbox } from "../context/DesignSandboxContext";
 import { DesignSandboxTasks } from "./DesignSandboxTasks";
 import { useEffect, useMemo, useCallback, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useLocation, useNavigate, useSearchParams } from "@/lib/router";
-import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { issuesApi } from "../api/issues";
 import { agentsApi } from "../api/agents";
 import { projectsApi } from "../api/projects";
@@ -14,11 +17,15 @@ import { heartbeatsApi } from "../api/heartbeats";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { collectLiveIssueIds } from "../lib/liveIssueIds";
-import { usePublishSharedQueryData, useSharedPollingQuery } from "@/hooks/useSharedPolling";
+import {
+  usePublishSharedQueryData,
+  useSharedPollingQuery,
+} from "@/hooks/useSharedPolling";
 import { queryKeys } from "../lib/queryKeys";
 import { createIssueDetailLocationState } from "../lib/issueDetailBreadcrumb";
 import { EmptyState } from "../components/EmptyState";
 import { IssuesList } from "../components/IssuesList";
+import { readIssueSortParams, type IssueSort } from "../lib/issue-sort";
 import { TaskViewsMenu } from "../components/TaskViewsMenu";
 import { Button } from "@/components/ui/button";
 import { CircleDot, Plus } from "lucide-react";
@@ -38,6 +45,7 @@ import {
   taskView,
   type TaskViewKey,
 } from "../lib/task-views";
+import { useUpdateIssueMutation } from "../hooks/useUpdateIssueMutation";
 
 const WORKSPACE_FILTER_ISSUE_LIMIT = 1000;
 const ISSUES_PAGE_SIZE = 100;
@@ -46,8 +54,14 @@ export const ISSUES_TOOLBAR_PRESENTATION = "collection" as const;
 
 export function resolveIssuesPresentation(streamlinedUiEnabled: boolean) {
   return streamlinedUiEnabled
-    ? { rowPresentation: ISSUES_ROW_PRESENTATION, toolbarPresentation: ISSUES_TOOLBAR_PRESENTATION }
-    : { rowPresentation: "legacy" as const, toolbarPresentation: "legacy" as const };
+    ? {
+        rowPresentation: ISSUES_ROW_PRESENTATION,
+        toolbarPresentation: ISSUES_TOOLBAR_PRESENTATION,
+      }
+    : {
+        rowPresentation: "legacy" as const,
+        toolbarPresentation: "legacy" as const,
+      };
 }
 
 export function getNextIssuesPageOffset(
@@ -58,7 +72,9 @@ export function getNextIssuesPageOffset(
   return loadedPageSize >= pageSize ? currentOffset + pageSize : undefined;
 }
 
-export function mergeIssuePagesStable<T extends { id: string }>(pages: T[][]): T[] {
+export function mergeIssuePagesStable<T extends { id: string }>(
+  pages: T[][],
+): T[] {
   const seenIssueIds = new Set<string>();
   const merged: T[] = [];
 
@@ -73,7 +89,10 @@ export function mergeIssuePagesStable<T extends { id: string }>(pages: T[][]): T
   return merged;
 }
 
-export function buildIssuesSearchUrl(currentHref: string, search: string): string | null {
+export function buildIssuesSearchUrl(
+  currentHref: string,
+  search: string,
+): string | null {
   const url = new URL(currentHref);
   const currentSearch = url.searchParams.get("q") ?? "";
   if (currentSearch === search) return null;
@@ -98,9 +117,18 @@ export function Issues() {
   const designSandbox = useDesignSandbox();
   const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const { enabled: combinedInboxTasksEnabled } = useCombinedInboxTasksEnabled();
+  const { enabled: coordinatorEnabled } = useCoordinatorWorkspaceEnabled();
   // The merged surface is Combined Inbox + Task List only. With the flag off, and always in
   // the legacy shell, Tasks is the plain task list and Inbox keeps its pages.
-  return designSandbox ? <DesignSandboxTasks /> : streamlinedUiEnabled && combinedInboxTasksEnabled ? <StreamlinedTasks /> : <OrganizationIssues />;
+  return designSandbox ? (
+    <DesignSandboxTasks />
+  ) : coordinatorEnabled ? (
+    <CoordinatorTaskViews />
+  ) : streamlinedUiEnabled && combinedInboxTasksEnabled ? (
+    <StreamlinedTasks />
+  ) : (
+    <OrganizationIssues />
+  );
 }
 
 function StreamlinedTasks() {
@@ -118,7 +146,11 @@ function StreamlinedTasks() {
   // Read the stored view once per mount so a later write can't yank the view
   // out from under the user mid-session.
   const [lastUsedView] = useState<TaskViewKey>(() => loadLastTaskView());
-  const view = resolveInitialTaskView(requestedView, hasOrganizationScopedParam, lastUsedView);
+  const view = resolveInitialTaskView(
+    requestedView,
+    hasOrganizationScopedParam,
+    lastUsedView,
+  );
   const definition = taskView(view);
 
   // Make the resolved view addressable without dropping the params that
@@ -126,22 +158,32 @@ function StreamlinedTasks() {
   // (an inbox view carrying an organization filter opens All tasks).
   useEffect(() => {
     if (normalizeTaskViewKey(requestedView) === view) return;
-    setSearchParams((current) => {
-      const next = new URLSearchParams(current);
-      next.set(TASK_VIEW_PARAM, view);
-      return next;
-    }, { replace: true });
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.set(TASK_VIEW_PARAM, view);
+        return next;
+      },
+      { replace: true },
+    );
   }, [requestedView, view, setSearchParams]);
 
-  const selectView = useCallback((next: TaskViewKey) => {
-    saveLastTaskView(next);
-    // A view switch starts clean: the previous view's search and filters are
-    // its own, not the new view's.
-    navigate(`/issues?${TASK_VIEW_PARAM}=${next}`);
-  }, [navigate]);
+  const selectView = useCallback(
+    (next: TaskViewKey) => {
+      saveLastTaskView(next);
+      // A view switch starts clean: the previous view's search and filters are
+      // its own, not the new view's.
+      navigate(`/issues?${TASK_VIEW_PARAM}=${next}`);
+    },
+    [navigate],
+  );
 
   const viewsMenu = (
-    <TaskViewsMenu value={view} onChange={selectView} badgeCount={inboxBadge.inbox} />
+    <TaskViewsMenu
+      value={view}
+      onChange={selectView}
+      badgeCount={inboxBadge.inbox}
+    />
   );
 
   if (definition.surface === "inbox") {
@@ -149,20 +191,32 @@ function StreamlinedTasks() {
       <Inbox
         tab={definition.inboxTab}
         surfaceLabel="Tasks"
-        toolbarContext={(
+        toolbarContext={
           <div className="flex min-w-0 items-center gap-2">
             {viewsMenu}
-            <Button size="sm" variant="outline" aria-label={translateInstant("sidebar.newTask")} onClick={() => openNewIssue()}>
+            <Button
+              size="sm"
+              variant="outline"
+              aria-label={translateInstant("sidebar.newTask")}
+              onClick={() => openNewIssue()}
+            >
               <Plus className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline">{translateInstant("sidebar.newTask")}</span>
+              <span className="hidden sm:inline">
+                {translateInstant("sidebar.newTask")}
+              </span>
             </Button>
           </div>
-        )}
+        }
       />
     );
   }
 
-  return <OrganizationIssues toolbarContext={viewsMenu} initialStatuses={definition.statuses} />;
+  return (
+    <OrganizationIssues
+      toolbarContext={viewsMenu}
+      initialStatuses={definition.statuses}
+    />
+  );
 }
 
 function OrganizationIssues({
@@ -175,22 +229,77 @@ function OrganizationIssues({
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
-  const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
   const fetchNextPageInFlightRef = useRef(false);
 
   const urlSearch = searchParams.get("q") ?? "";
-  const [searchOverride, setSearchOverride] = useState<{ search: string; locationSearch: string } | null>(null);
+  const [searchOverride, setSearchOverride] = useState<{
+    search: string;
+    locationSearch: string;
+  } | null>(null);
   const syncedSearch = useMemo(() => {
-    if (typeof window !== "undefined" && searchOverride?.locationSearch === window.location.search) {
+    if (
+      typeof window !== "undefined" &&
+      searchOverride?.locationSearch === window.location.search
+    ) {
       return searchOverride.search;
     }
     return urlSearch;
   }, [searchOverride, urlSearch, location.search]);
-  const showAgentCreatedTasks = useShowAgentCreatedTasks(selectedCompanyId, "paperclip:issues-view");
-  const participantAgentId = searchParams.get("participantAgentId") ?? undefined;
-  const initialWorkspaces = searchParams.getAll("workspace").filter((workspaceId) => workspaceId.length > 0);
-  const workspaceIdFilter = initialWorkspaces.length === 1 ? initialWorkspaces[0] : undefined;
+  const showAgentCreatedTasks = useShowAgentCreatedTasks(
+    selectedCompanyId,
+    "paperclip:issues-view",
+  );
+  const sort = useMemo(() => readIssueSortParams(searchParams), [searchParams]);
+  const includeBlockedBy = sort?.sortField === "workflow";
+  const serverSortField = sort?.sortField === "created" ? "created" : "updated";
+  const serverSortDir =
+    sort?.sortField === "created" || sort?.sortField === "updated"
+      ? sort.sortDir
+      : "desc";
+  const handleSortChange = useCallback(
+    (nextSort: IssueSort) => {
+      setSearchParams(
+        (current) => {
+          const next = new URLSearchParams(current);
+          if (syncedSearch) next.set("q", syncedSearch);
+          else next.delete("q");
+          next.set("sortField", nextSort.sortField);
+          next.set("sortDir", nextSort.sortDir);
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams, syncedSearch],
+  );
+  const routineTasksOnly =
+    searchParams.get("originKind") === "routine_execution";
+  const includeAgentCreatedTasks = showAgentCreatedTasks || routineTasksOnly;
+  const originKind = routineTasksOnly ? "routine_execution" : undefined;
+  const handleRoutineTasksOnlyChange = useCallback(
+    (checked: boolean) => {
+      setSearchParams(
+        (current) => {
+          const next = new URLSearchParams(current);
+          if (syncedSearch) next.set("q", syncedSearch);
+          else next.delete("q");
+          if (checked) next.set("originKind", "routine_execution");
+          else next.delete("originKind");
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams, syncedSearch],
+  );
+  const participantAgentId =
+    searchParams.get("participantAgentId") ?? undefined;
+  const initialWorkspaces = searchParams
+    .getAll("workspace")
+    .filter((workspaceId) => workspaceId.length > 0);
+  const workspaceIdFilter =
+    initialWorkspaces.length === 1 ? initialWorkspaces[0] : undefined;
   const handleSearchChange = useCallback((search: string) => {
     const nextUrl = buildIssuesSearchUrl(window.location.href, search);
     if (!nextUrl) {
@@ -208,8 +317,11 @@ function OrganizationIssues({
   });
 
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId!, { includeArchived: true }),
-    queryFn: () => projectsApi.list(selectedCompanyId!, { includeArchived: true }),
+    queryKey: queryKeys.projects.list(selectedCompanyId!, {
+      includeArchived: true,
+    }),
+    queryFn: () =>
+      projectsApi.list(selectedCompanyId!, { includeArchived: true }),
     enabled: !!selectedCompanyId,
   });
 
@@ -245,38 +357,45 @@ function OrganizationIssues({
     setBreadcrumbs([{ label: translateInstant("sidebar.issues") }]);
   }, [setBreadcrumbs]);
 
-  const issuePageSize = workspaceIdFilter ? WORKSPACE_FILTER_ISSUE_LIMIT : ISSUES_PAGE_SIZE;
+  const issuePageSize = workspaceIdFilter
+    ? WORKSPACE_FILTER_ISSUE_LIMIT
+    : ISSUES_PAGE_SIZE;
 
-  const {
-    data: issuePages,
-    isLoading,
-    isFetchingNextPage,
-    error,
-    hasNextPage,
-    fetchNextPage,
-  } = useInfiniteQuery({
+  const issuesQuery = useInfiniteQuery({
     queryKey: [
       ...queryKeys.issues.list(selectedCompanyId!),
       "participant-agent",
       participantAgentId ?? "__all__",
       "workspace",
       workspaceIdFilter ?? "__all__",
-      "compact",
+      streamlinedUiEnabled ? "index" : "compact",
       "with-routine-executions",
-      showAgentCreatedTasks,
+      includeAgentCreatedTasks,
+      originKind,
       "infinite",
       issuePageSize,
+      serverSortField,
+      serverSortDir,
+      includeBlockedBy,
     ],
-    queryFn: ({ pageParam, signal }) => issuesApi.listCompact(selectedCompanyId!, {
-      participantAgentId,
-      workspaceId: workspaceIdFilter,
-      includeRoutineExecutions: true,
-      includeAgentCreatedTasks: showAgentCreatedTasks,
-      limit: issuePageSize,
-      offset: pageParam,
-      sortField: "updated",
-      sortDir: "desc",
-    }, { signal }),
+    queryFn: ({ pageParam, signal }) =>
+      issuesApi.listCompact(
+        selectedCompanyId!,
+        {
+          projection: streamlinedUiEnabled ? "index" : undefined,
+          participantAgentId,
+          workspaceId: workspaceIdFilter,
+          includeRoutineExecutions: true,
+          includeAgentCreatedTasks,
+          originKind,
+          limit: issuePageSize,
+          offset: pageParam,
+          sortField: serverSortField,
+          sortDir: serverSortDir,
+          includeBlockedBy: includeBlockedBy || undefined,
+        },
+        { signal },
+      ),
     initialPageParam: 0,
     getNextPageParam: (lastPage, _allPages, lastPageParam) =>
       getNextIssuesPageOffset(lastPage.length, lastPageParam, issuePageSize),
@@ -284,43 +403,66 @@ function OrganizationIssues({
     placeholderData: (previousData) => previousData,
   });
 
-  const issues = useMemo(() => mergeIssuePagesStable(issuePages?.pages ?? []) as Issue[], [issuePages]);
-  const liveIssueIds = useMemo(() => collectLiveIssueIds(liveRuns, issues), [issues, liveRuns]);
-  const hasMoreServerIssues = syncedSearch.trim().length === 0
-    && hasNextPage === true;
+  const {
+    data: issuePages,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = issuesQuery;
+  const issuesView = useQueryView(issuesQuery);
+  const issues = useMemo(
+    () => mergeIssuePagesStable(issuePages?.pages ?? []) as Issue[],
+    [issuePages],
+  );
+  const liveIssueIds = useMemo(
+    () => collectLiveIssueIds(liveRuns, issues),
+    [issues, liveRuns],
+  );
+  const hasMoreServerIssues =
+    syncedSearch.trim().length === 0 && hasNextPage === true;
   const loadMoreServerIssues = useCallback(() => {
-    if (!hasNextPage || isFetchingNextPage || fetchNextPageInFlightRef.current) return;
+    if (!hasNextPage || isFetchingNextPage || fetchNextPageInFlightRef.current)
+      return;
     fetchNextPageInFlightRef.current = true;
     void fetchNextPage({ cancelRefetch: false }).finally(() => {
       fetchNextPageInFlightRef.current = false;
     });
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  const updateIssue = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
-      issuesApi.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(selectedCompanyId!) });
-    },
-  });
+  // Optimistic, rolls back with a readable toast, and resends after an outage.
+  const updateIssue = useUpdateIssueMutation({ companyId: selectedCompanyId });
 
   if (!selectedCompanyId) {
     return (
       <EmptyState
         icon={CircleDot}
-        message={streamlinedUiEnabled
-          ? "Select an organization to view tasks."
-          : "Select a company to view tasks."}
+        message={
+          streamlinedUiEnabled
+            ? "Select an organization to view tasks."
+            : "Select a company to view tasks."
+        }
       />
     );
   }
 
+  if (issuesView.kind === "error")
+    return (
+      <QueryErrorState
+        size="page"
+        error={issuesView.error}
+        action="load tasks"
+        onRetry={issuesView.retry}
+        retrying={issuesView.isFetching}
+      />
+    );
+
   return (
     <IssuesList
       issues={issues ?? []}
-      isLoading={isLoading}
+      isLoading={
+        issuesView.kind === "loading" || issuesView.kind === "reconnecting"
+      }
       isLoadingMoreIssues={isFetchingNextPage}
-      error={error as Error | null}
       agents={agents}
       projects={projects}
       liveIssueIds={liveIssueIds}
@@ -328,17 +470,39 @@ function OrganizationIssues({
       rowPresentation={issuesPresentation.rowPresentation}
       toolbarPresentation={issuesPresentation.toolbarPresentation}
       issueLinkState={issueLinkState}
-      initialAssignees={searchParams.get("assignee") ? [searchParams.get("assignee")!] : undefined}
-      initialWorkspaces={initialWorkspaces.length > 0 ? initialWorkspaces : undefined}
+      initialAssignees={
+        searchParams.get("assignee")
+          ? [searchParams.get("assignee")!]
+          : undefined
+      }
+      initialWorkspaces={
+        initialWorkspaces.length > 0 ? initialWorkspaces : undefined
+      }
       initialStatuses={initialStatuses}
       toolbarContext={toolbarContext}
       initialSearch={syncedSearch}
       onSearchChange={handleSearchChange}
       enableAgentCreatedVisibilityFilter
+      routineTasksOnly={routineTasksOnly}
+      onRoutineTasksOnlyChange={handleRoutineTasksOnlyChange}
+      sort={sort}
+      onSortChange={handleSortChange}
       hasMoreIssues={hasMoreServerIssues}
       onLoadMoreIssues={loadMoreServerIssues}
       onUpdateIssue={(id, data) => updateIssue.mutate({ id, data })}
-      searchFilters={participantAgentId || workspaceIdFilter ? { participantAgentId, workspaceId: workspaceIdFilter } : undefined}
+      searchFilters={
+        participantAgentId ||
+        workspaceIdFilter ||
+        originKind ||
+        includeBlockedBy
+          ? {
+              participantAgentId,
+              workspaceId: workspaceIdFilter,
+              originKind,
+              ...(includeBlockedBy ? { includeBlockedBy: true } : {}),
+            }
+          : undefined
+      }
     />
   );
 }

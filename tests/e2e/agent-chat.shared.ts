@@ -1,5 +1,5 @@
 import path from "node:path";
-import { createLocalAgentJwt } from "../../server/src/agent-auth-jwt";
+import { createLocalAgentJwt } from "../../server/src/agent-auth-jwt.js";
 import {
   test,
   expect,

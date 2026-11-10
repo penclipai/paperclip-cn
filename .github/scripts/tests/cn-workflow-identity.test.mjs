@@ -3,6 +3,8 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { verifyWorkflowSourceUpdate } from "../cn-workflow-source-guard.mjs";
+import { workflowReviewBase } from "../cn-workflow-review-context.mjs";
 
 const read = (name) =>
   readFileSync(
@@ -10,45 +12,53 @@ const read = (name) =>
     "utf8",
   ).replaceAll("\r\n", "\n");
 const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
-const pinnedSha = read("pr.yml").match(
-  /uses: penclipai\/paperclip-cn\/\.github\/workflows\/pr-trusted\.yml@([0-9a-f]{40})\s*$/m,
-)?.[1];
-assert.ok(
-  pinnedSha,
-  "pr.yml must pin the trusted fork workflow to a full commit SHA",
-);
-const pinned = spawnSync(
-  "git",
-  ["show", `${pinnedSha}:.github/workflows/pr-trusted.yml`],
-  { cwd: repoRoot, encoding: "utf8" },
-);
-assert.equal(
-  pinned.status,
-  0,
-  `Cannot read pinned trusted workflow ${pinnedSha}: ${pinned.stderr}`,
-);
-const trusted = pinned.stdout.replaceAll("\r\n", "\n");
-assert.equal(
-  trusted,
-  read("pr-trusted.yml"),
-  "The pinned workflow must match the proposed trusted workflow source",
-);
+const gitResult = (...args) => spawnSync("git", args, {
+  cwd: repoRoot, encoding: "utf8", windowsHide: true, timeout: 30_000, maxBuffer: 2 * 1024 * 1024,
+});
+const git = (...args) => {
+  const result = gitResult(...args);
+  assert.equal(result.status, 0, `Cannot verify workflow review Git ${args[0]}`);
+  return result.stdout;
+};
+const isAncestor = (ancestor, descendant) => {
+  const result = gitResult("merge-base", "--is-ancestor", ancestor, descendant);
+  assert.ok(result.status === 0 || result.status === 1, "Cannot verify workflow source ancestry");
+  return result.status === 0;
+};
+const readAt = (sha, path) => git("show", `${sha}:${path}`);
+const ci = process.env.GITHUB_ACTIONS === "true";
+let event;
+if (ci) {
+  assert.ok(process.env.GITHUB_EVENT_PATH, "Missing GitHub event context for workflow review");
+  try { event = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, "utf8")); }
+  catch { throw new Error("Cannot read GitHub event context for workflow review"); }
+}
+const localForkBase = () => {
+  const remotes = git("remote").trim().split(/\s+/).filter(Boolean).filter(remote =>
+    /^(?:https:\/\/github\.com\/|git@github\.com:)penclipai\/paperclip-cn(?:\.git)?$/i.test(git("remote", "get-url", remote).trim()));
+  assert.ok(remotes.length, "Workflow review needs an explicit fork remote");
+  const bases = new Set(remotes.map(remote => git("rev-parse", "--verify", `refs/remotes/${remote}/master`).trim()));
+  assert.equal(bases.size, 1, "Fetch fork master before workflow review; local fork refs disagree");
+  return [...bases][0];
+};
+const checkoutSha = git("rev-parse", "HEAD").trim();
+const baseSha = workflowReviewBase({
+  env: process.env, event, checkoutSha, isAncestor,
+  parents: ci ? git("show", "-s", "--format=%P", checkoutSha).trim().split(/\s+/) : undefined,
+  localBase: ci ? undefined : localForkBase(),
+});
+const reviewPaths = [
+  ".github/workflows/pr-trusted.yml", ".github/workflows/ci-routing.yml",
+  ".github/scripts/cn-workflow-source-guard.mjs", ".github/scripts/tests/cn-workflow-source-guard.test.mjs",
+  ".github/scripts/cn-workflow-review-context.mjs", ".github/scripts/tests/cn-workflow-review-context.test.mjs",
+  ".github/scripts/tests/cn-workflow-identity.test.mjs",
+];
+const sourceReview = verifyWorkflowSourceUpdate({
+  baseSha, baseCaller: readAt(baseSha, ".github/workflows/pr.yml"), caller: read("pr.yml"), isAncestor, readAt,
+  currentFiles: Object.fromEntries(reviewPaths.map(path => [path, readFileSync(new URL(`../../../${path}`, import.meta.url), "utf8")])),
+});
+const trusted = read("pr-trusted.yml");
 const routing = read("ci-routing.yml");
-const pinnedRouting = spawnSync(
-  "git",
-  ["show", `${pinnedSha}:.github/workflows/ci-routing.yml`],
-  { cwd: repoRoot, encoding: "utf8" },
-);
-assert.equal(
-  pinnedRouting.status,
-  0,
-  `Cannot read pinned routing workflow ${pinnedSha}: ${pinnedRouting.stderr}`,
-);
-assert.equal(
-  pinnedRouting.stdout.replaceAll("\r\n", "\n"),
-  routing,
-  "The pinned routing workflow must match the proposed routing workflow source",
-);
 const release = read("release.yml");
 const job = (source, name) => {
   const match = source.match(
@@ -62,12 +72,19 @@ const job = (source, name) => {
 };
 
 test("CN PR workflows keep read-only permissions and the fork runner trust boundary", () => {
-  for (const source of [read("pr.yml"), trusted]) {
+  for (const source of [read("pr.yml"), sourceReview.activeTrusted, trusted]) {
     assert.match(
       source,
       /permissions:\n  actions: read\n  contents: read\n  pull-requests: read/,
     );
     assert.doesNotMatch(source, /id-token: write|secrets: inherit/);
+  }
+  for (const source of [sourceReview.activeRouting, routing].filter(Boolean)) {
+    assert.match(source, /permissions:\n  actions: read\n  contents: read\n  pull-requests: read/);
+    assert.doesNotMatch(source, /id-token: write|secrets: inherit/);
+    assert.match(source, /penclipai\/paperclip-cn/);
+    assert.match(source, /1192887762/);
+    assert.doesNotMatch(source, /paperclipai\/paperclip|1170821064/);
   }
   assert.match(
     read("pr.yml"),
@@ -90,11 +107,17 @@ test("CN PR workflows keep read-only permissions and the fork runner trust bound
   assert.match(routing, /fail_closed\(\) \{\n\s+echo "runner=\$github_runner"/);
 });
 
-test("upstream sync policy admits its generated lockfile and CN workspace filters", () => {
-  assert.match(
-    job(trusted, "policy"),
-    /!startsWith\(github.head_ref, 'codex\/upstream-sync-'\)/,
-  );
+test("CN workflows retain the trusted lockfile policy and workspace filters", () => {
+  for (const source of [sourceReview.activeTrusted, trusted]) {
+    const policy = job(source, "policy");
+    if (policy.includes("Block untrusted lockfile edits")) {
+      assert.ok(policy.includes('git show "$trusted_base:.github/scripts/lockfile-trust.mjs"'));
+      assert.ok(policy.includes('BASE_SHA="$trusted_base" node "$policy" pr'));
+      assert.ok(policy.includes("lockfile-trust.mjs did not report a lockfile writer"));
+    } else {
+      assert.match(policy, /!startsWith\(github.head_ref, 'codex\/upstream-sync-'\)/);
+    }
+  }
   assert.match(trusted, /pnpm --filter @penclipai\/paperclip-runner/);
   assert.doesNotMatch(trusted, /pnpm --filter @paperclipai\//);
 });

@@ -135,6 +135,11 @@
     "publishFromCi": true
   },
   {
+    "dir": "packages/plugins/sandbox-providers/boxd",
+    "name": "@penclipai/plugin-boxd",
+    "publishFromCi": true
+  },
+  {
     "dir": "packages/plugins/sandbox-providers/cloudflare",
     "name": "@penclipai/plugin-cloudflare-sandbox",
     "publishFromCi": true

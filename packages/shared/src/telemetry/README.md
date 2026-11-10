@@ -65,6 +65,24 @@ provider-supplied error name that may contain a credential. This is a privacy
 boundary, not enum canonicalization. Test the value reaching the telemetry
 helper as well as the separate crash-reporting and local logging sinks.
 
+## Server Startup Privacy
+
+The startup helper emits the raw Node.js operating system family once when an
+enabled server telemetry client initializes. It omits OS versions, CPU
+architecture, hostnames, and other machine details. The usual telemetry opt-out
+and CI suppression apply before client initialization. If state storage fails
+at startup, the server disables telemetry for that process and continues to run.
+The warning contains no storage path or underlying error. Container and WSL servers
+report their runtime platform; this does not identify the underlying physical
+host's OS. Count distinct installation identifiers by platform to compare
+installations, since restart event counts also reflect restart frequency.
+
+Contract syncs may also register existing proposals. Remove each adopted
+proposal marker and update its helper and transport tests in the same change.
+The connector helpers preserve raw enum values and send only catalog connector
+keys and the approved lifecycle and invocation dimensions. Connection names,
+credentials, tool arguments, and tool results stay out of those events.
+
 ## Interaction Resolver Events
 
 `interaction.created` records the interaction kind and whether the create
@@ -96,12 +114,11 @@ they call `hashPrivateRef()` before queueing an event. The wire field names stay
 unchanged. The same agent correlates within one installation, while different
 installation salts produce different values.
 
-Company import refs are hashed unless the caller identifies a verified public
-catalog entry with `sourceType: "catalog"` and `isPrivate: false`. GitHub URLs
-are always hashed because the transport does not prove repository visibility.
-Userinfo in parseable URLs is removed before hashing, and credential-bearing catalog URLs
-are also hashed. CLI imports provide no public catalog verification and always
-mark their sources private. `source_ref_hashed` describes the emitted value.
+Company import refs are always hashed. The telemetry transport has no verified
+public-catalog boundary, so `sourceType` and `isPrivate` never permit a raw ref
+to be emitted. Userinfo in parseable URLs is removed before hashing. The
+`isPrivate` helper input remains only for API compatibility; `source_ref_hashed`
+is always `true` when a company import ref is emitted.
 
 ## Agent Task Run Events
 

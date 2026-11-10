@@ -1,5 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { access, readFile } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { access, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { promisify } from "node:util";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as ssh from "./ssh.js";
 import * as serverUtils from "./server-utils.js";
@@ -8,11 +11,16 @@ import {
   prepareGitHubOperationLaunchers,
   adapterExecutionTargetUsesManagedHome,
   ensureAdapterExecutionTargetRuntimeCommandInstalled,
+  ensureAdapterExecutionTargetDirectory,
+  ensureAdapterExecutionTargetCommandResolvable,
+  isAdapterExecutionTargetUnavailableError,
   resolveAdapterExecutionTargetCwd,
   runAdapterExecutionTargetProcess,
   runAdapterExecutionTargetShellCommand,
   type AdapterSshExecutionTarget,
 } from "./execution-target.js";
+
+const exec = promisify(execFile);
 
 function sshExecutionTarget(): AdapterSshExecutionTarget {
   return {
@@ -31,6 +39,58 @@ function sshExecutionTarget(): AdapterSshExecutionTarget {
     },
   };
 }
+
+describe("execution target validation failures", () => {
+  afterEach(() => vi.restoreAllMocks());
+  const result = { exitCode: 0, signal: null, timedOut: false, stdout: "", stderr: "", pid: null, startedAt: "" };
+
+  it.each(["directory", "command"] as const)("preserves temporary %s probe failures", async check => {
+    for (const failure of ["timeout", "transport", "interrupted"] as const) {
+      const target = { kind: "remote" as const, transport: "sandbox" as const, remoteCwd: "/workspace", runner: {
+        execute: vi.fn(async () => {
+          if (failure === "transport") throw Object.assign(new Error("private transport detail"), { code: "ECONNRESET" });
+          return { ...result, exitCode: null, timedOut: failure === "timeout", signal: failure === "interrupted" ? "SIGTERM" : null };
+        }),
+      } };
+      const work = check === "directory"
+        ? ensureAdapterExecutionTargetDirectory("test", target, "/workspace", { cwd: "/workspace", env: {} })
+        : ensureAdapterExecutionTargetCommandResolvable("opencode", target, "/workspace", {});
+      const error = await work.catch(error => error);
+      expect(isAdapterExecutionTargetUnavailableError(error)).toBe(true);
+    }
+  });
+
+  it("preserves SSH disconnections instead of reporting a missing directory", async () => {
+    vi.spyOn(ssh, "runSshCommand").mockRejectedValue(Object.assign(new Error("private SSH detail"), { code: 255 }));
+    const error = await ensureAdapterExecutionTargetDirectory("test", sshExecutionTarget(), "/workspace", {
+      cwd: "/workspace", env: {},
+    }).catch(error => error);
+    expect(isAdapterExecutionTargetUnavailableError(error)).toBe(true);
+  });
+
+  it.each(["directory", "command"] as const)("retains a confirmed missing %s as a configuration failure", async check => {
+    const target = { kind: "remote" as const, transport: "sandbox" as const, remoteCwd: "/workspace", runner: {
+      execute: vi.fn(async () => ({ ...result, exitCode: 1 })),
+    } };
+    const error = await (check === "directory"
+      ? ensureAdapterExecutionTargetDirectory("test", target, "/workspace", { cwd: "/workspace", env: {} })
+      : ensureAdapterExecutionTargetCommandResolvable("opencode", target, "/workspace", {})).catch(error => error);
+    expect(error).toBeInstanceOf(Error);
+    expect(isAdapterExecutionTargetUnavailableError(error)).toBe(false);
+  });
+
+  it("does not turn an installation timeout into a permanent missing command", async () => {
+    const execute = vi.fn().mockResolvedValueOnce({ ...result, exitCode: 1 })
+      .mockResolvedValueOnce({ ...result, exitCode: null, timedOut: true })
+      .mockResolvedValueOnce({ ...result, exitCode: 1 });
+    const target = { kind: "remote" as const, transport: "sandbox" as const, remoteCwd: "/workspace", runner: { execute } };
+    const error = await ensureAdapterExecutionTargetCommandResolvable("opencode", target, "/workspace", {}, {
+      installCommand: "install-fixture",
+    }).catch(error => error);
+    expect(execute).toHaveBeenCalledTimes(3);
+    expect(isAdapterExecutionTargetUnavailableError(error)).toBe(true);
+  });
+});
 
 describe("runAdapterExecutionTargetShellCommand", () => {
   afterEach(() => {
@@ -394,6 +454,60 @@ describe("resolveAdapterExecutionTargetCwd", () => {
 
 
 describe("GitHub launcher lifecycle", () => {
+  it.skipIf(process.platform !== "win32")("runs local managed launchers through the fixed Node executable, not PATH", async () => {
+    const run = { runId: randomUUID(), target: null };
+    const fakeBin = path.join(process.env.TEMP ?? process.cwd(), `paperclip-github-wrapper-${randomUUID()}`);
+    const recordedInvocation = path.join(fakeBin, "invocation.json");
+    const injectionMarker = path.join(fakeBin, "cmd-injection-marker");
+    const expansionMarker = "cmd-expansion-must-not-reach-downstream";
+    const brokerTokenMarker = "broker-token-must-not-reach-downstream";
+    await mkdir(fakeBin, { recursive: true });
+    try {
+      const env = await prepareGitHubOperationLaunchers({ ...run, cwd: process.cwd(), env: { PATH: fakeBin } });
+      await writeFile(path.join(fakeBin, "node.cmd"), "@echo fake-node-selected\r\nexit /b 97\r\n", "utf8");
+      await writeFile(path.join(fakeBin, "git.cjs"), `require("node:fs").writeFileSync(${JSON.stringify(recordedInvocation)}, JSON.stringify({ args: process.argv.slice(2), brokerToken: process.env.PAPERCLIP_GITHUB_BROKER_TOKEN ?? null }));\n`, "utf8");
+      await writeFile(path.join(fakeBin, "git.cmd"), `@echo off\r\n"${process.execPath}" "%~dp0git.cjs" %*\r\n`, "utf8");
+      const commandEnv = {
+        ...process.env,
+        ...env,
+        PAPERCLIP_CMD_EXPANSION_SENTINEL: expansionMarker,
+        PAPERCLIP_CMD_INJECTION_MARKER: injectionMarker,
+        PAPERCLIP_GITHUB_BROKER_TOKEN: brokerTokenMarker,
+      };
+      const invoke = (command: string) => exec(process.env.ComSpec ?? "cmd.exe", ["/d", "/s", "/c", command], {
+        env: commandEnv, encoding: "utf8",
+      });
+      const result = await invoke("git --version");
+      expect(result.stdout).toBe("");
+      expect(result.stdout).not.toContain("fake-node-selected");
+      expect(JSON.parse(await readFile(recordedInvocation, "utf8"))).toEqual({ args: ["--version"], brokerToken: null });
+
+      for (const command of [
+        "git \"%PAPERCLIP_CMD_EXPANSION_SENTINEL%\"",
+        'git "!"',
+        'git "&"',
+        'git "|"',
+        'git "<"',
+        'git ">"',
+        'git "^"',
+        'git "\"\""',
+        'git "& echo injected > %PAPERCLIP_CMD_INJECTION_MARKER%"',
+      ]) {
+        await expect(invoke(command)).rejects.toMatchObject({
+          code: 126,
+          stderr: expect.stringContaining("cannot safely start through a Windows batch launcher"),
+        });
+        expect(JSON.parse(await readFile(recordedInvocation, "utf8"))).toEqual({ args: ["--version"], brokerToken: null });
+        await expect(access(injectionMarker)).rejects.toMatchObject({ code: "ENOENT" });
+      }
+      await expect(readFile(path.join(env.PAPERCLIP_GITHUB_LAUNCHER_DIR, "git.cmd"), "utf8"))
+        .resolves.toContain("DisableDelayedExpansion");
+    } finally {
+      await cleanupGitHubOperationLaunchers(run);
+      await rm(fakeBin, { recursive: true, force: true });
+    }
+  });
+
   it("removes only the completed run's launchers and leaves concurrent runs usable", async () => {
     const first = { runId: randomUUID(), target: null };
     const second = { runId: randomUUID(), target: null };

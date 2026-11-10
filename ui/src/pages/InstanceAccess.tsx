@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Shield, ShieldCheck } from "lucide-react";
 import { accessApi } from "@/api/access";
-import { ApiError } from "@/api/client";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
@@ -35,11 +35,13 @@ export function InstanceAccess() {
     queryKey: queryKeys.access.adminUsers(search),
     queryFn: () => accessApi.searchAdminUsers(search),
   });
+  const usersView = useQueryView(usersQuery);
 
   const companiesQuery = useQuery({
     ...companyDirectoryQueryOptions(accountUserId),
     enabled: accountSettled && usersQuery.isSuccess,
   });
+  const companiesView = useQueryView(companiesQuery);
   const companies = companiesQuery.data ?? [];
 
   const selectedUser = useMemo(
@@ -52,6 +54,7 @@ export function InstanceAccess() {
     queryFn: () => accessApi.getUserCompanyAccess(selectedUserId!),
     enabled: !!selectedUserId,
   });
+  const userAccessView = useQueryView(userAccessQuery);
 
   useEffect(() => {
     if (!selectedUserId && usersQuery.data?.[0]) {
@@ -99,22 +102,30 @@ export function InstanceAccess() {
     return <div className="text-sm text-muted-foreground">{translateInstant("Loading instance access…")}</div>;
   }
 
-  if (usersQuery.error) {
-    const message =
-      usersQuery.error instanceof ApiError && usersQuery.error.status === 403
-        ? "Instance admin access is required to manage users."
-        : usersQuery.error instanceof Error
-          ? usersQuery.error.message
-          : "Failed to load users.";
-    return <div className="text-sm text-destructive">{message}</div>;
+  if (usersView.kind === "error") {
+    if (usersView.errorKind === "forbidden") {
+      return <div className="text-sm text-destructive">Instance admin access is required to manage users.</div>;
+    }
+    return (
+      <QueryErrorState
+        size="page"
+        error={usersQuery.error}
+        action="load users"
+        onRetry={usersView.retry}
+        retrying={usersView.isFetching}
+      />
+    );
   }
 
-  if (companiesQuery.error) {
+  if (companiesView.kind === "error") {
     return (
-      <div className="space-y-3">
-        <p className="text-sm text-destructive">{translateInstant("Failed to load organizations. Try again before changing access.")}</p>
-        <Button onClick={() => void companiesQuery.refetch()}>{translateInstant("Try again")}</Button>
-      </div>
+      <QueryErrorState
+        size="page"
+        error={companiesQuery.error}
+        action="load organizations"
+        onRetry={companiesView.retry}
+        retrying={companiesView.isFetching}
+      />
     );
   }
 
@@ -171,12 +182,15 @@ export function InstanceAccess() {
         <Card className="block space-y-4 p-5">
           {!selectedUserId ? (
             <div className="text-sm text-muted-foreground">{translateInstant("Select a user to inspect instance access.")}</div>
-          ) : userAccessQuery.isLoading ? (
+          ) : userAccessQuery.isLoading || userAccessView.kind === "reconnecting" ? (
             <div className="text-sm text-muted-foreground">{translateInstant("Loading user access…")}</div>
-          ) : userAccessQuery.error ? (
-            <div className="text-sm text-destructive">
-              {userAccessQuery.error instanceof Error ? userAccessQuery.error.message : translateInstant("Failed to load user access.")}
-            </div>
+          ) : userAccessView.kind === "error" ? (
+            <QueryErrorState
+              error={userAccessQuery.error}
+              action="load user access"
+              onRetry={userAccessView.retry}
+              retrying={userAccessView.isFetching}
+            />
           ) : (
             <>
               <div className="flex flex-wrap items-start justify-between gap-4">

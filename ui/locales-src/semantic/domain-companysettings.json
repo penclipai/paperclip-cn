@@ -581,7 +581,7 @@
   },
   "companySettings.governance.capAria": {
     "en": "Resolver cap for {{kind}}",
-    "zh-CN": "{{kind}} 的处理上限",
+    "zh-CN": "{{kind}}的回复范围上限",
     "reviewedEnglishHash": "dcbc4b6635aa04ad960bcfe981a8586d0aa68cff204a56f8ed854dfa77618c50"
   },
   "companySettings.governance.defaultPolicy": {
@@ -591,7 +591,7 @@
   },
   "companySettings.governance.defaultPolicyAria": {
     "en": "Default resolver policy for {{kind}}",
-    "zh-CN": "{{kind}} 的默认处理策略",
+    "zh-CN": "{{kind}}的默认策略",
     "reviewedEnglishHash": "e76bb878f4df8432254aa5a8936676b79ff25b03d2da51c2c480c16546138a4e"
   },
   "companySettings.governance.kind": {

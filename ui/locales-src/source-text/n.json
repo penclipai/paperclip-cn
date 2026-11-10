@@ -181,7 +181,7 @@
   },
   "New file in this bundle": {
     "en": "New file in this bundle",
-    "zh-CN": "此说明文件包中的新文件",
+    "zh-CN": "此包中的新文件",
     "reviewedEnglishHash": "3eb813e1c60f3c6e4657bd800a016de3c83f94126380c95f2efd72521ad50694"
   },
   "New folder inside…": {
@@ -246,7 +246,7 @@
   },
   "New runs using this account will be blocked. Existing runs may retain credentials already issued to them. No other account will be selected automatically.": {
     "en": "New runs using this account will be blocked. Existing runs may retain credentials already issued to them. No other account will be selected automatically.",
-    "zh-CN": "使用此账户的新运行将被阻止。现有运行可能会保留已颁发给他们的凭据。不会自动选择其他账户。",
+    "zh-CN": "使用此账户的新运行会被阻止。现有运行可能仍会保留已获发的凭据。不会自动选择其他账户。",
     "reviewedEnglishHash": "103d4019f362a97aac0aa5deee08b48877da8b3926b50feecc731b85725e5f35"
   },
   "New runs will not start until the agent is resumed.": {
@@ -291,12 +291,12 @@
   },
   "New webhook URL": {
     "en": "New webhook URL",
-    "zh-CN": "新的网络钩子 URL",
+    "zh-CN": "新的 Webhook URL",
     "reviewedEnglishHash": "48f3ada274f26d787c9feabc7c0a6c2c05e64b624f79ba7e82c907b53eefef5d"
   },
   "New webhook secret": {
     "en": "New webhook secret",
-    "zh-CN": "新的 webhook 秘密",
+    "zh-CN": "新的 Webhook 密钥",
     "reviewedEnglishHash": "2c422ebf28420ddc12b24ecca68ec60487714cfd1bcebcdd528446ede1a5981d"
   },
   "New {{label}}": {
@@ -796,7 +796,7 @@
   },
   "No finance events yet. Add account-level charges once biller invoices or credits land.": {
     "en": "No finance events yet. Add account-level charges once biller invoices or credits land.",
-    "zh-CN": "还没有账务事件。待结算方账单或额度返还入账后，这里会自动显示。",
+    "zh-CN": "尚无账务事件。结算方账单或额度返还入账后，请添加账户级费用。",
     "reviewedEnglishHash": "f10b41dac20c00d9dd0ebba2554c52d1eef2156d6690a52db01f3ef4ca74525f"
   },
   "No financial events in this period.": {
@@ -1166,7 +1166,7 @@
   },
   "No responsible —": {
     "en": "No responsible —",
-    "zh-CN": "不负任何责任——",
+    "zh-CN": "无负责人——",
     "reviewedEnglishHash": "e364c2d1efaa0a8e4f06a76e546e894a849cc2560f9390574a0e9db87de04ae4"
   },
   "No results for &ldquo;": {
@@ -1256,7 +1256,7 @@
   },
   "No runs yet. Run the routine now or wait for its schedule.": {
     "en": "No runs yet. Run the routine now or wait for its schedule.",
-    "zh-CN": "还没有运行。立即运行例程或等待其时间表。",
+    "zh-CN": "还没有运行。立即运行例行任务或等待其计划。",
     "reviewedEnglishHash": "1d0eb00e615cb5871f06b23e2cd19103272a21510b7b3a7f6706d81fecbdac2d"
   },
   "No saved profiles.": {
@@ -1351,7 +1351,7 @@
   },
   "No tasks created": {
     "en": "No tasks created",
-    "zh-CN": "没有创建任务",
+    "zh-CN": "尚未创建任务",
     "reviewedEnglishHash": "d64524ab96397d3e30a0df680f250f2ed2be446f3ef7270302b78848ca496489"
   },
   "No timeline entries yet.": {
@@ -1451,7 +1451,7 @@
   },
   "No {{name}} input": {
     "en": "No {{name}} input",
-    "zh-CN": "{{name}} 没有输入",
+    "zh-CN": "未提供 {{name}} 输入",
     "reviewedEnglishHash": "23ab41c0af7cb42bacbf13c3642f917b91d93d83573e783ca3b368c789a563d3"
   },
   "None": {
@@ -1526,7 +1526,7 @@
   },
   "Not scheduled": {
     "en": "Not scheduled",
-    "zh-CN": "未计划",
+    "zh-CN": "未安排",
     "reviewedEnglishHash": "b3e24789bf8dc89bfbf7652e09b94488310916306db5db24ac24bf19c87e8768"
   },
   "Not verified": {

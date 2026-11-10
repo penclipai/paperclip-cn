@@ -26,12 +26,12 @@
   },
   "costs.otherBillingUsage": {
     "en": "Other billing usage: {{tokens}} tokens{{recordedCharges}}, included in the inference ledger.",
-    "zh-CN": "其他计费用量：{{tokens}} 个 Token{{recordedCharges}}，已包含在推理账本中。",
+    "zh-CN": "其他计费用量：{{tokens}} 个词元{{recordedCharges}}，已包含在推理账本中。",
     "reviewedEnglishHash": "51130e8332c002bab71a3349a257f156e81fcd2a069ffaf7b05526f487d0970a"
   },
   "costs.providerApiCostReport": {
     "en": "Provider API cost reports: {{amount}}. Report totals overlap invoices and run estimates and are shown separately from recorded charges.",
-    "zh-CN": "提供商 API 费用报告：{{amount}}。报告总额与发票和运行估算存在重叠，并与已记录费用分开显示。",
+    "zh-CN": "提供方 API 费用报告：{{amount}}。报告总额与发票和运行估算存在重叠，并与已记录费用分开显示。",
     "reviewedEnglishHash": "3172bc736d3267e8d95eba94d2b9736471b2eec02edb0be7381851089fa747ec"
   },
   "costs.recordedCharges": {

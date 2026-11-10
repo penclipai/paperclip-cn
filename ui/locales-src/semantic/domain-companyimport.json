@@ -26,7 +26,7 @@
   },
   "companyImport.activateImported": {
     "en": "Activate imported agents and routines",
-    "zh-CN": "启用导入的智能体和例程",
+    "zh-CN": "启用已导入的智能体和例行任务",
     "reviewedEnglishHash": "2c27dd18687833415062a97344c4b08b478ccc257aef65b3bf9b684d5a0cf26f"
   },
   "companyImport.activateSelected": {
@@ -61,7 +61,7 @@
   },
   "companyImport.activationKind.routine": {
     "en": "routine",
-    "zh-CN": "例程",
+    "zh-CN": "例行任务",
     "reviewedEnglishHash": "fde55b36ec36cbcd2832b6b9f8f59ea0cf6d942c528053ca1171c063069a74cf"
   },
   "companyImport.activationPartialFailureBody_one": {
@@ -586,7 +586,7 @@
   },
   "companyImport.startPaused": {
     "en": "Start imported agents and routines paused",
-    "zh-CN": "导入后保持智能体和例程暂停",
+    "zh-CN": "导入后让智能体和例行任务保持暂停",
     "reviewedEnglishHash": "1289f896671a7ac1e240bb19159fede3b1daa36e6afbece86662f6dd29a060d1"
   },
   "companyImport.statusUnavailable": {
@@ -621,12 +621,12 @@
   },
   "companyImport.summary.routines_one": {
     "en": "{{count}} routine",
-    "zh-CN": "{{count}} 个例程",
+    "zh-CN": "{{count}} 个例行任务",
     "reviewedEnglishHash": "eb6bb92719189a7d75d80acc400e7f66a718d1d74e257338f40a516a203b20a6"
   },
   "companyImport.summary.routines_other": {
     "en": "{{count}} routines",
-    "zh-CN": "{{count}} 个例程",
+    "zh-CN": "{{count}} 个例行任务",
     "reviewedEnglishHash": "2482cb25b7d84a60909f567603292306cfbf9a4a50f8edddc2aa9d10ec11c733"
   },
   "companyImport.summary.skills_one": {

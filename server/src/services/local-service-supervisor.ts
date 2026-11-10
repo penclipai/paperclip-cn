@@ -2,10 +2,12 @@ import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import fsSync from "node:fs";
 import fs from "node:fs/promises";
+import net from "node:net";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { promisify } from "node:util";
 import { resolvePaperclipInstanceRoot } from "../home-paths.js";
+import { processExists } from "./controller-process-identity.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -14,6 +16,11 @@ const execFileAsync = promisify(execFile);
 // for normal process-table contention without consuming the five-second
 // readiness window when that evidence is unavailable.
 const WINDOWS_LOCAL_SERVICE_QUERY_TIMEOUT_MS = 2_000;
+// `netstat` is the fast path, but virtualized Windows hosts can omit a
+// process-local loopback listener from its table. The fallback has a larger
+// total budget because Get-NetTCPConnection needs to enumerate the host table.
+// An explicit caller timeout remains a deadline for the complete query.
+const WINDOWS_LOCAL_SERVICE_FALLBACK_QUERY_TIMEOUT_MS = 5_000;
 
 /**
  * Windows cannot infer service ownership without querying the OS process and
@@ -265,24 +272,16 @@ export async function findLocalServiceRegistryRecordByRuntimeServiceId(input: {
   return candidate;
 }
 
+/** EPERM means the process exists under another user, so it is alive. */
 export function isPidAlive(pid: number) {
   if (!Number.isInteger(pid) || pid <= 0) return false;
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch {
-    return false;
-  }
+  return processExists(pid);
 }
 
 export function isProcessGroupAlive(processGroupId: number | null | undefined) {
   if (process.platform === "win32") return false;
   if (typeof processGroupId !== "number" || !Number.isInteger(processGroupId) || processGroupId <= 0) return false;
-  try {
-    process.kill(-processGroupId, 0);
-  } catch {
-    return false;
-  }
+  if (!processExists(-processGroupId)) return false;
 
   if (process.platform === "linux") {
     const liveMember = readLinuxProcessGroupActivity(processGroupId);
@@ -599,6 +598,111 @@ async function forceKillWindowsProcessTree(pid: number) {
   });
 }
 
+/**
+ * `netstat` normally identifies every Windows listener. Some virtualized
+ * Windows environments do not expose a process-local listener in that table,
+ * though the listener remains reachable from the process that is stopping the
+ * service. A successful loopback connection is still proof that the port is
+ * occupied; it never authorizes terminating that owner.
+ */
+async function isLocalServicePortReachable(port: number, timeoutMs = 250) {
+  return await new Promise<boolean>((resolve) => {
+    const socket = net.createConnection({ host: "127.0.0.1", port });
+    let settled = false;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+
+    const finish = (reachable: boolean) => {
+      if (settled) return;
+      settled = true;
+      if (timeout) clearTimeout(timeout);
+      socket.destroy();
+      resolve(reachable);
+    };
+
+    socket.once("connect", () => finish(true));
+    socket.once("error", () => finish(false));
+    timeout = setTimeout(() => finish(false), Math.max(1, timeoutMs));
+    timeout.unref();
+  });
+}
+
+type WindowsTcpConnectionRow = {
+  LocalPort: unknown;
+  RemotePort: unknown;
+  LocalAddress: unknown;
+  RemoteAddress: unknown;
+  State: unknown;
+  OwningProcess: unknown;
+};
+
+function readWindowsListenerOwnerFromJson(stdout: string, port: number) {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(stdout) as unknown;
+  } catch {
+    throw new Error("Windows local service ownership fallback returned invalid JSON");
+  }
+
+  const rows = Array.isArray(parsed) ? parsed : [parsed];
+  if (rows.length === 0 || rows.some((row) => !row || typeof row !== "object" || Array.isArray(row))) {
+    throw new Error("Windows local service ownership fallback returned an invalid row shape");
+  }
+
+  const connections = rows as WindowsTcpConnectionRow[];
+  const ownerPids = new Set<number>();
+  let listenerRows = 0;
+  for (const row of connections) {
+    if (
+      typeof row.LocalPort !== "number"
+      || !Number.isInteger(row.LocalPort)
+      || row.LocalPort !== port
+      || typeof row.RemotePort !== "number"
+      || !Number.isInteger(row.RemotePort)
+      || typeof row.LocalAddress !== "string"
+      || !row.LocalAddress
+      || typeof row.RemoteAddress !== "string"
+      || typeof row.OwningProcess !== "number"
+      || !Number.isInteger(row.OwningProcess)
+      || row.OwningProcess <= 0
+    ) {
+      throw new Error("Windows local service ownership fallback returned an invalid connection row");
+    }
+    ownerPids.add(row.OwningProcess as number);
+    if (
+      row.RemotePort === 0
+      && ["0.0.0.0", "[::]", "::", "*"].includes(row.RemoteAddress)
+    ) {
+      listenerRows += 1;
+    }
+  }
+
+  if (listenerRows === 0) {
+    throw new Error("Windows local service ownership fallback found no listener-shaped row");
+  }
+  if (ownerPids.size !== 1) {
+    throw new Error("Windows local service ownership fallback returned ambiguous listener owners");
+  }
+  return [...ownerPids][0]!;
+}
+
+async function readWindowsLocalServicePortOwnerFallback(port: number, timeoutMs: number) {
+  const script = [
+    "$ErrorActionPreference = 'Stop'",
+    `$rows = @(Get-NetTCPConnection -LocalPort ${port} -ErrorAction Stop | Select-Object -Property LocalPort,RemotePort,LocalAddress,RemoteAddress,State,OwningProcess)`,
+    "$rows | ConvertTo-Json -Compress",
+  ].join("; ");
+  const { stdout } = await execFileAsync("powershell.exe", [
+    "-NoProfile",
+    "-NonInteractive",
+    "-Command",
+    script,
+  ], {
+    timeout: timeoutMs,
+    windowsHide: true,
+  });
+  return readWindowsListenerOwnerFromJson(stdout, port);
+}
+
 export async function terminateLocalService(
   record: Pick<LocalServiceRegistryRecord, "pid" | "processGroupId"> &
     Partial<Pick<LocalServiceRegistryRecord, "port">>,
@@ -621,7 +725,12 @@ export async function terminateLocalService(
         ? { throwOnError: true, timeoutMs: Math.max(1, remainingMs ?? 1) }
         : undefined,
     );
-    if (!portOwnerPid) return true;
+    if (!portOwnerPid) {
+      // Do not treat an unobserved Windows listener as absent. This preserves
+      // the no-unrelated-owner invariant even where netstat cannot map a
+      // process-local listener to a PID.
+      return !isWindows || !(await isLocalServicePortReachable(record.port));
+    }
     // Once the recorded root has exited, Windows must show no listener for
     // the recorded port. A replacement listener is not evidence that it is
     // safe to delete the service state, and it is never terminated here.
@@ -690,23 +799,53 @@ export async function readLocalServicePortOwner(
   if (!Number.isInteger(port) || port <= 0) return null;
   try {
     if (process.platform === "win32") {
+      const deadline = Date.now() + Math.max(
+        1,
+        opts?.timeoutMs ?? WINDOWS_LOCAL_SERVICE_FALLBACK_QUERY_TIMEOUT_MS,
+      );
+      const remainingTimeout = (maximumMs: number) => {
+        const remainingMs = deadline - Date.now();
+        if (remainingMs <= 0) {
+          throw new Error("Windows local service ownership query timed out");
+        }
+        return Math.max(1, Math.min(maximumMs, remainingMs));
+      };
       const { stdout } = await execFileAsync("netstat", ["-ano", "-p", "tcp"], {
-        timeout: opts?.timeoutMs ?? WINDOWS_LOCAL_SERVICE_QUERY_TIMEOUT_MS,
+        timeout: remainingTimeout(WINDOWS_LOCAL_SERVICE_QUERY_TIMEOUT_MS),
         windowsHide: true,
       });
       for (const line of stdout.split(/\r?\n/)) {
         const columns = line.trim().split(/\s+/);
         if (columns.length < 5 || columns[0]?.toUpperCase() !== "TCP") continue;
         const localAddress = columns[1] ?? "";
+        const remoteAddress = columns[2] ?? "";
         const separatorIndex = localAddress.lastIndexOf(":");
         const localPort = Number.parseInt(localAddress.slice(separatorIndex + 1), 10);
         const state = columns.at(-2)?.toUpperCase();
         const pid = Number.parseInt(columns.at(-1) ?? "", 10);
-        if (localPort === port && state === "LISTENING" && Number.isInteger(pid) && pid > 0) {
+        // `netstat` localizes its connection-state label on some Windows
+        // installations. A TCP listener is still unambiguously represented by
+        // the wildcard remote endpoint, so retain the state check where it is
+        // available but do not turn an observed listener into "absent" just
+        // because its localized label is not the English `LISTENING` string.
+        const hasListenerRemoteEndpoint = remoteAddress === "0.0.0.0:0"
+          || remoteAddress === "[::]:0"
+          || remoteAddress === "*:*";
+        if (
+          localPort === port
+          && (state === "LISTENING" || hasListenerRemoteEndpoint)
+          && Number.isInteger(pid)
+          && pid > 0
+        ) {
           return pid;
         }
       }
-      return null;
+      // Reaching a port only gates the fallback; it is not ownership evidence.
+      // The fallback independently requires a listener-shaped OS row and one
+      // unambiguous positive PID. This is only an OS observation; callers
+      // retain their existing service-identity policy.
+      if (!(await isLocalServicePortReachable(port, remainingTimeout(250)))) return null;
+      return await readWindowsLocalServicePortOwnerFallback(port, remainingTimeout(Number.MAX_SAFE_INTEGER));
     }
     const { stdout } = await execFileAsync("lsof", ["-nP", `-iTCP:${port}`, "-sTCP:LISTEN", "-t"], {
       ...(opts?.timeoutMs !== undefined ? { timeout: opts.timeoutMs } : {}),

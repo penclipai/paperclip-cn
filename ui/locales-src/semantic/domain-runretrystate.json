@@ -6,7 +6,7 @@
   },
   "runRetryState.continuationExhausted": {
     "en": "Continuation exhausted",
-    "zh-CN": "Continuation 已耗尽",
+    "zh-CN": "续跑次数已耗尽",
     "reviewedEnglishHash": "f6423f8a55a0e3bdf09b2dd49369bc5f10e66d9fa046b95b39c167d740029e96"
   },
   "runRetryState.continuedRun": {
@@ -21,12 +21,12 @@
   },
   "runRetryState.nextContinuationAt": {
     "en": "Next continuation {{date}}",
-    "zh-CN": "下次 continuation {{date}}",
+    "zh-CN": "下次续跑 {{date}}",
     "reviewedEnglishHash": "a92e78a46671b22e26c32dd6b16d72d5602cec7311e8f47872c42f388a3bac7f"
   },
   "runRetryState.nextContinuationPending": {
     "en": "Next continuation pending schedule",
-    "zh-CN": "下次 continuation 等待计划",
+    "zh-CN": "下次续跑等待排期",
     "reviewedEnglishHash": "7c29cb61202b6ed6773a742dada954f1046c7b8d17016f2925f0d2fa311a58fd"
   },
   "runRetryState.nextRetryAt": {
@@ -46,12 +46,12 @@
   },
   "runRetryState.reason.issueContinuationNeeded": {
     "en": "Continuation needed",
-    "zh-CN": "需要 continuation",
+    "zh-CN": "需要续跑",
     "reviewedEnglishHash": "1ce15e046a01251cbf09c6fc243c6e4a29d9a236deecff44f229aafab594b201"
   },
   "runRetryState.reason.maxTurnsContinuation": {
     "en": "Max-turn continuation",
-    "zh-CN": "最大轮次 continuation",
+    "zh-CN": "达到最大轮次后续跑",
     "reviewedEnglishHash": "89ed52f09aa4f83cd068b0ef510dbf4e4082dcffcde05d6eb2692f10d06c33f9"
   },
   "runRetryState.reason.missingIssueComment": {

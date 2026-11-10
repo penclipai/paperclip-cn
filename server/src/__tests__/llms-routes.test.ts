@@ -27,10 +27,7 @@ function registerModuleMocks() {
 }
 
 async function createApp(actor: Record<string, unknown>) {
-  const [{ llmRoutes }, { errorHandler }] = await Promise.all([
-    vi.importActual<typeof import("../routes/llms.js")>("../routes/llms.js"),
-    vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js"),
-  ]);
+  const { llmRoutes } = await vi.importActual<typeof import("../routes/llms.js")>("../routes/llms.js");
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
@@ -38,7 +35,6 @@ async function createApp(actor: Record<string, unknown>) {
     next();
   });
   app.use("/api", llmRoutes({} as never));
-  app.use(errorHandler);
   return app;
 }
 
@@ -46,7 +42,6 @@ describe("llm routes", () => {
   beforeEach(() => {
     vi.resetModules();
     vi.doUnmock("../routes/llms.js");
-    vi.doUnmock("../middleware/index.js");
     registerModuleMocks();
     vi.clearAllMocks();
     mockListServerAdapters.mockReturnValue([

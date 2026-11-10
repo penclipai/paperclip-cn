@@ -1,12 +1,12 @@
 {
   "interactionGovernance.column.cap": {
     "en": "Cap",
-    "zh-CN": "上限",
+    "zh-CN": "范围上限",
     "reviewedEnglishHash": "1257ac04471db97becf0cd70818dbd6e4437f11afefd321065f199a14d986cb9"
   },
   "interactionGovernance.column.defaultPolicy": {
     "en": "Default policy",
-    "zh-CN": "默认政策",
+    "zh-CN": "默认策略",
     "reviewedEnglishHash": "8cca8b216a06c5f70be1bfc63e97ef2b793fdf5772a2b2c818a408b00f12d7e1"
   },
   "interactionGovernance.column.kind": {
@@ -15,9 +15,9 @@
     "reviewedEnglishHash": "f5387f9bb6ed70315a77fdcb9335facc27a9bf241f35955bd2755c55e0c016c7"
   },
   "interactionGovernance.description": {
-    "en": "Thread interactions are open by default: anyone in the company — the board or any agent, including the one that asked — can respond. Narrow a kind only when you need to. Default policy is the audience new cards get when the requester does not ask for one; cap narrows every request of that kind and can never widen one. Tool-approval confirmations always stay human only.",
-    "zh-CN": "线程交互默认开放：公司中的任何人都可以响应，包括看板、任意智能体以及发起交互的智能体。仅在需要时缩小某类交互的范围。默认政策是在请求者未指定时新卡片采用的受众；上限会缩小该类交互的每个请求，且绝不会放宽。工具审批确认始终仅限人工处理。",
-    "reviewedEnglishHash": "38e2cc061bd0d5934915b19a5365f879832c29983daa510c1013ca7a161d8c0f"
+    "en": "Thread interactions are open by default: <audience>Anyone</audience> in the organization — the board or any agent, including the one that asked — can respond. Narrow a kind only when you need to. <defaults>Default policy</defaults> is the audience new cards get when the requester does not ask for one; <cap>Cap</cap> narrows every request of that kind and can never widen one. Tool-approval confirmations always stay <human>Human only</human>.",
+    "zh-CN": "默认情况下，组织内的<audience>任何人</audience>都能回复对话中的交互请求，包括董事会成员和所有智能体，也包括发起请求的智能体。仅在需要时限制某类交互的回复范围。<defaults>默认策略</defaults>决定请求者未指定回复对象时，新卡片采用的范围；<cap>范围上限</cap>只能收紧每条此类请求的回复范围，不能放宽范围。工具操作审批始终<human>仅限人工</human>。",
+    "reviewedEnglishHash": "182642faa6ac49fbbe6002fb084051c756c7553d2e771b2095e6f0b5ccc4c07d"
   },
   "interactionGovernance.effect.humanOnlyCap": {
     "en": "Every request is human only.",

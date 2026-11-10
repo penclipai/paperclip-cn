@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import type { Issue } from "@penclipai/shared";
+import { describeError } from "../api/errors";
 import { issuesApi } from "../api/issues";
 import { queryKeys } from "../lib/queryKeys";
 import { cn } from "../lib/utils";
@@ -23,12 +24,14 @@ import {
   type StoppedAgeLabels,
 } from "../lib/blockedInbox";
 import { BlockedReasonChip } from "./BlockedReasonChip";
+import { useQueryView } from "./QueryView";
 import { IssueGroupHeader } from "./IssueGroupHeader";
 import { IssueRow, type IssueRowPresentation } from "./IssueRow";
 import { Identity } from "./Identity";
 import { StatusIcon } from "./StatusIcon";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { taskStatusIconProps } from "@/lib/task-status-presentation";
 
 interface BlockedInboxViewProps {
   companyId: string;
@@ -123,13 +126,7 @@ export function BlockedInboxView({
   const { t } = useTranslation();
   const [collapsedVariants, setCollapsedVariants] = useState<Set<string>>(() => new Set());
 
-  const {
-    data: issues = [] as Issue[],
-    isLoading,
-    isFetching,
-    error,
-    refetch,
-  } = useQuery({
+  const blockedQuery = useQuery({
     queryKey: [...queryKeys.issues.listBlockedAttention(companyId), "live-descendant-summary", issueFilters.showAgentCreatedTasks],
     queryFn: () =>
       issuesApi.list(companyId, {
@@ -143,6 +140,11 @@ export function BlockedInboxView({
         limit: BLOCKED_LIST_LIMIT,
       }),
   });
+  const {
+    data: issues = [] as Issue[],
+    isLoading,
+  } = blockedQuery;
+  const blockedView = useQueryView(blockedQuery);
 
   const allRows = useMemo(() => buildBlockedInboxRows(issues), [issues]);
   const filteredRows = useMemo(
@@ -177,7 +179,9 @@ export function BlockedInboxView({
     });
   };
 
-  if (isLoading) {
+  // A loaded list stays on screen through a failed refetch; an outage before
+  // the first load shows the skeleton, and only a real failure shows copy.
+  if (isLoading || blockedView.kind === "reconnecting") {
     return (
       <div data-testid="blocked-inbox-loading" className="space-y-3" aria-busy="true">
         {Array.from({ length: 3 }).map((_, groupIdx) => (
@@ -204,9 +208,7 @@ export function BlockedInboxView({
     );
   }
 
-  if (error) {
-    const message =
-      error instanceof Error ? error.message : "Couldn't load the Blocked tab.";
+  if (blockedView.kind === "error") {
     return (
       <div
         data-testid="blocked-inbox-error"
@@ -220,10 +222,7 @@ export function BlockedInboxView({
               {t("blockedInbox.errorTitle", { defaultValue: "Couldn't load the Blocked tab." })}
             </p>
             <p className="text-xs opacity-80">
-              {t("blockedInbox.errorBody", {
-                defaultValue: "Other Inbox tabs still work. {{message}}",
-                message,
-              })}
+              {t("blockedInbox.errorBody", { defaultValue: "Other Inbox tabs still work. {{message}}", message: describeError(blockedView.error, { action: "load the Blocked tab" }).body })}
             </p>
           </div>
           <Button
@@ -231,12 +230,10 @@ export function BlockedInboxView({
             variant="outline"
             size="sm"
             className="h-7 shrink-0 border-amber-400/70 bg-white/40 text-amber-900 hover:bg-white/70 dark:bg-amber-500/20 dark:text-amber-100"
-            onClick={() => void refetch()}
-            disabled={isFetching}
+            onClick={blockedView.retry}
+            disabled={blockedView.isFetching}
           >
-            {isFetching
-              ? t("blockedInbox.trying", { defaultValue: "Trying..." })
-              : t("Try again", { defaultValue: "Try again" })}
+            {blockedView.isFetching ? t("blockedInbox.trying", { defaultValue: "Trying..." }) : t("Try again", { defaultValue: "Try again" })}
           </Button>
         </div>
       </div>
@@ -454,7 +451,7 @@ function BlockedInboxRow({
       showDivider={presentation === "legacy"}
       statusSlot={presentation === "task"
         ? showStatusColumn
-          ? <StatusIcon status={row.issue.status} blockerAttention={blockerAttention} />
+          ? <StatusIcon {...taskStatusIconProps(row.issue)} blockerAttention={blockerAttention} />
           : <span className="inline-flex size-4" aria-hidden="true" />
         : undefined}
       showIdentifier={presentation === "task" ? showIdentifierColumn : undefined}
@@ -468,7 +465,7 @@ function BlockedInboxRow({
       ) : undefined}
       mobileLeading={
         <span className="flex shrink-0 items-center gap-1.5 pt-px">
-          <StatusIcon status={row.issue.status} blockerAttention={blockerAttention} />
+          <StatusIcon {...taskStatusIconProps(row.issue)} blockerAttention={blockerAttention} />
         </span>
       }
       titleSuffix={
@@ -503,7 +500,7 @@ function BlockedRowDesktopMeta({
   const identifier = row.issue.identifier ?? row.issue.id.slice(0, 8);
   return (
     <span className="hidden shrink-0 items-center gap-2 sm:inline-flex">
-      {showStatusColumn ? <StatusIcon status={row.issue.status} blockerAttention={blockerAttention} /> : null}
+      {showStatusColumn ? <StatusIcon {...taskStatusIconProps(row.issue)} blockerAttention={blockerAttention} /> : null}
       {showIdentifierColumn ? <span className="font-mono text-xs text-muted-foreground">{identifier}</span> : null}
     </span>
   );

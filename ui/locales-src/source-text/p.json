@@ -41,7 +41,7 @@
   },
   "PRP event": {
     "en": "PRP event",
-    "zh-CN": "富血小板血浆事件",
+    "zh-CN": "PRP 事件",
     "reviewedEnglishHash": "4f8bd49a37fc18b6aadf45521c3d061f3ebbad64875f8a959de878945e0c6fa5"
   },
   "PRP events": {
@@ -326,7 +326,7 @@
   },
   "Parsed frames are redacted on the server. Exact reveals and downloads are administrator-only, warned, audited, and automatically expire.": {
     "en": "Parsed frames are redacted on the server. Exact reveals and downloads are administrator-only, warned, audited, and automatically expire.",
-    "zh-CN": "解析后的帧在服务器上进行编辑。确切的显示和下载仅供管理员使用、警告、审核并自动过期。",
+    "zh-CN": "解析后的帧会在服务器端脱敏。只有管理员能查看或下载未脱敏的完整内容；操作会显示警告并留下审计记录，临时访问到期后自动失效。",
     "reviewedEnglishHash": "c56d5c392c780f70c2420de3a9dfdaef7854f96c0199d6896f2dfe5dbce856fe"
   },
   "Partial state is not rolled back. Review the organization activity log before retrying.": {
@@ -411,7 +411,7 @@
   },
   "Paste this into your agent to connect this webhook to your routine.": {
     "en": "Paste this into your agent to connect this webhook to your routine.",
-    "zh-CN": "将其粘贴到您的智能体中，以将此 Webhook 连接到您的例程。",
+    "zh-CN": "将此内容粘贴给你的智能体，即可把此 Webhook 关联到你的例行任务。",
     "reviewedEnglishHash": "9c0e1f1b08d16c00dfe41bfa24919d5c2383875b1988dc837c3766a38ecfb022"
   },
   "Paste this into your agent to continue from this handoff.": {
@@ -596,7 +596,7 @@
   },
   "People": {
     "en": "People",
-    "zh-CN": "人物",
+    "zh-CN": "成员",
     "reviewedEnglishHash": "7db20897053bb2780b9b706e5505227b005de80c236e4a4836aab37a3a7bb298"
   },
   "People in": {
@@ -626,7 +626,7 @@
   },
   "Permission": {
     "en": "Permission",
-    "zh-CN": "允许",
+    "zh-CN": "权限",
     "reviewedEnglishHash": "229efc8f526335f103d962810fe99f785811ad8ed36b9437a4a215a44c7152fe"
   },
   "Permission mode": {
@@ -931,7 +931,7 @@
   },
   "Preview truncated by the runner.": {
     "en": "Preview truncated by the runner.",
-    "zh-CN": "预览被跑步者截断。",
+    "zh-CN": "预览已被运行器截断。",
     "reviewedEnglishHash": "c8a44a1ed087a82cfbc1cd19fffc8b32e5fd7f4139163654e97185c583674d73"
   },
   "Preview unavailable for a package that failed validation.": {
@@ -1196,7 +1196,7 @@
   },
   "Project-owned defaults for isolated task checkouts and execution workspace behavior.": {
     "en": "Project-owned defaults for isolated task checkouts and execution workspace behavior.",
-    "zh-CN": "项目拥有的独立任务签出和执行工作区行为的默认值。",
+    "zh-CN": "项目级默认设置，用于隔离任务签出和执行工作区行为。",
     "reviewedEnglishHash": "266252475a6f545fb0932339a23399e0855c713a4017c4a60f99ee2bef3daff6"
   },
   "Projects": {
@@ -1406,7 +1406,7 @@
   },
   "Pull request review comment": {
     "en": "Pull request review comment",
-    "zh-CN": "拉取请求审查评论",
+    "zh-CN": "拉取请求审核评论",
     "reviewedEnglishHash": "a480a0e12be358e149f61d83919963f0584ce915ff9858469885f55b89d849dc"
   },
   "Pull requests": {

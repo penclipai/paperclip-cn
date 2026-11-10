@@ -26,7 +26,7 @@
   },
   "Keep monitor": {
     "en": "Keep monitor",
-    "zh-CN": "保留监视器",
+    "zh-CN": "保留监控",
     "reviewedEnglishHash": "a498617d740334fe5df2b6c306e8fa824947230413b2e75ea71bce49c76bcca4"
   },
   "Keep my draft": {
@@ -101,7 +101,7 @@
   },
   "Kimi API protocol": {
     "en": "Kimi API protocol",
-    "zh-CN": "Kimi API协议",
+    "zh-CN": "Kimi API 协议",
     "reviewedEnglishHash": "2fd46541e58944c0780a6cf1d7c7895535666e00f5242f772560db3556164164"
   },
   "Kind": {
@@ -126,7 +126,7 @@
   },
   "kind": {
     "en": "kind",
-    "zh-CN": "味",
+    "zh-CN": "类型",
     "reviewedEnglishHash": "0b27c158feb36ab18a10ff687909ec730ece6280581dd407e2672359be7725dd"
   },
   "known tools.": {

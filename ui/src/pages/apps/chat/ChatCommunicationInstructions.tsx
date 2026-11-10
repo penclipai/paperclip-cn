@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { describeError } from "@/api/errors";
 
 export function ChatCommunicationInstructions({ value, onSave }: {
   value: string;
@@ -28,7 +29,7 @@ export function ChatCommunicationInstructions({ value, onSave }: {
         setDraft(null);
         setSaved(true);
       } catch (cause) {
-        setError(cause instanceof Error ? cause.message : "Couldn’t save instructions. Try again.");
+        setError(describeError(cause).body);
       } finally {
         setPending(false);
       }

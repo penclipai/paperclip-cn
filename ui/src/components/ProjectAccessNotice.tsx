@@ -1,3 +1,4 @@
+import { describeError } from "@/api/errors";
 import { ShieldCheck, ShieldX, ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "./ui/button";

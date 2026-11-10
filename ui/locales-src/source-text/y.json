@@ -11,7 +11,7 @@
   },
   "Yes, get started!": {
     "en": "Yes, get started!",
-    "zh-CN": "是的，让我们一起启程吧",
+    "zh-CN": "是，开始吧！",
     "reviewedEnglishHash": "75735cbed3416e65cedd7e9e0b6e37a946d241e0951850566e78709a67b25186"
   },
   "You": {
@@ -76,7 +76,7 @@
   },
   "You have a saved Claude login. Use it to bind this agent, or log in again to replace the stored token.": {
     "en": "You have a saved Claude login. Use it to bind this agent, or log in again to replace the stored token.",
-    "zh-CN": "您已保存Claude登录信息。使用它绑定此智能体，或重新登录以替换存储的令牌。",
+    "zh-CN": "您已保存 Claude 登录信息。使用它绑定此智能体，或重新登录以替换已存储的令牌。",
     "reviewedEnglishHash": "723f9ebe631e5d5ef9ac6f6c28f0bb2a57d7ddadc99f4b668674ce9055fbe07c"
   },
   "You have edited this skill after installing. Updates from the catalog will overwrite your changes.": {
@@ -86,7 +86,7 @@
   },
   "You have no default account for this provider. Connect an account or choose another connection.": {
     "en": "You have no default account for this provider. Connect an account or choose another connection.",
-    "zh-CN": "您没有该提供商的默认账户。连接账户或选择其他连接。",
+    "zh-CN": "您没有该提供方的默认账户。请连接账户或选择其他连接。",
     "reviewedEnglishHash": "64b439c88af784f14820c53158f35f1c892a12e34daf6022b74bba240cab7285"
   },
   "You joined the organization": {
@@ -166,7 +166,7 @@
   },
   "Your exact draft and request identity are kept. Retry safely to learn the authoritative publication state without creating a duplicate.": {
     "en": "Your exact draft and request identity are kept. Retry safely to learn the authoritative publication state without creating a duplicate.",
-    "zh-CN": "您的确切草稿和请求身份将被保留。安全地重试以了解权威发布状态，而无需创建重复项。",
+    "zh-CN": "您的完整草稿和请求身份会被保留。可安全重试以确认实际发布状态，而不会创建重复项。",
     "reviewedEnglishHash": "876c543e376c9e541f28c218f425f7d76aa0998b991b7e3a46457730b2fee54a"
   },
   "Your existing connection still works. In": {

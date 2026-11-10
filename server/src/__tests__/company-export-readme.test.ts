@@ -1,29 +1,31 @@
 import { describe, expect, it } from "vitest";
-import { generateReadme } from "../services/company-export-readme";
+import { generateReadme } from "../services/company-export-readme.js";
 
 describe("company export readme", () => {
   it("uses an external CLI entrypoint in getting started instructions", () => {
     const readme = generateReadme(
       {
-        version: "1",
+        schemaVersion: 1,
+        generatedAt: "2026-11-10T00:00:00.000Z",
+        source: null,
+        includes: { company: true, agents: true, projects: true, issues: true, skills: true },
+        sidebar: null,
         company: {
-          slug: "paperclip-cn",
+          path: "COMPANY.md",
           name: "Paperclip CN",
-          issuePrefix: "PAP",
           description: null,
-          purpose: null,
+          logoPath: null,
+          requireBoardApprovalForNewAgents: true,
+          feedbackDataSharingEnabled: false,
+          feedbackDataSharingConsentAt: null,
+          feedbackDataSharingConsentByUserId: null,
+          feedbackDataSharingTermsVersion: null,
         },
         agents: [],
         projects: [],
-        goals: [],
         issues: [],
-        comments: [],
-        documents: [],
         skills: [],
-        knowledgeAssets: [],
-        plugins: [],
-        routines: [],
-        workspaces: [],
+        envInputs: [],
       },
       {
         companyName: "Paperclip CN",

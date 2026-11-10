@@ -101,7 +101,7 @@
   },
   "taskChat.forDuration": {
     "en": "for {{duration}}",
-    "zh-CN": "持续 {{duration}}",
+    "zh-CN": "用时 {{duration}}",
     "reviewedEnglishHash": "f25e2940477b1892a44a0b586a17ec646284dd5bb9e6342c95a12ca149b7b925"
   },
   "taskChat.continuedAfterSteering": {
@@ -163,5 +163,45 @@
     "en": "Working",
     "zh-CN": "正在工作",
     "reviewedEnglishHash": "a92f0449a9f7235bf69dc2e8ff7070bfae3f00ec8f8f26e5457a9beac53466ac"
+  },
+  "taskChat.blocker.nowRunning": {
+    "en": "Now running",
+    "zh-CN": "正在运行",
+    "reviewedEnglishHash": "44cdf35701cdac026f9b24306b9b9ad70bb9c45413aba514cec6fa79fd6f54c6"
+  },
+  "taskChat.history.loadFailed": {
+    "en": "Earlier messages couldn’t load.",
+    "zh-CN": "无法加载更早的消息。",
+    "reviewedEnglishHash": "11aa16c5ba93b4f791773fb28eaa791bd289f40d81fb98003843432df6169536"
+  },
+  "taskChat.interaction.unansweredQuestion": {
+    "en": "Unanswered question",
+    "zh-CN": "待回答问题",
+    "reviewedEnglishHash": "a36c3c6b4b6b799623b5131974e7e2e14c6cb95e7382f8bb72ccc981b4f87d1b"
+  },
+  "taskChat.open": {
+    "en": "Open",
+    "zh-CN": "打开",
+    "reviewedEnglishHash": "ed077f3d8125d60dca1979c7133601bd187d47c73ed9975028f677e49e709942"
+  },
+  "taskChat.plan.inSidebar": {
+    "en": " in the sidebar",
+    "zh-CN": "（在侧栏中）",
+    "reviewedEnglishHash": "7dff00fa5d5676e751bc3063c832094a202cfd822c7ff6cbb408a2b4f8b41571"
+  },
+  "taskChat.plan.writing": {
+    "en": "Writing plan",
+    "zh-CN": "正在编写计划",
+    "reviewedEnglishHash": "64c92e65a10a2d16b8908144ccfcdc3cc5e70725e0b06d231ea1bfabf18f9872"
+  },
+  "taskChat.showFewer": {
+    "en": "Show fewer",
+    "zh-CN": "收起部分内容",
+    "reviewedEnglishHash": "255beb6510e7827d37ec1cd22d080f910888ae00f29374dd9545c8b3d1fce43a"
+  },
+  "taskChat.tool.changed": {
+    "en": "Changed",
+    "zh-CN": "已更改",
+    "reviewedEnglishHash": "2a6141e43be0c2125e3b5d9f74b4ff1261a0b320ff927c83d4d9b1b65585bad7"
   }
 }

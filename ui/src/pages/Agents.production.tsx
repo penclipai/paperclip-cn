@@ -2,6 +2,7 @@ import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { PrimaryAgentIndicator } from "@/components/primary-agent/PrimaryAgentPresentation";
 import { AgentBulkRoster } from "@/components/agents/AgentBulkRoster";
+import { AgentRosterFilters, useAgentRosterFilters } from "@/components/agents/AgentRosterFilters";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { Link, useNavigate, useLocation } from "@/lib/router";
@@ -22,6 +23,7 @@ import { EntityRow } from "../components/EntityRow";
 import { BuiltInLifecycleChip } from "../components/BuiltInAgentBadges";
 import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
+import { QueryErrorState, useQueryView } from "../components/QueryView";
 import { relativeTime, cn, agentRouteRef, agentUrl } from "../lib/utils";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Bot, Plus, List, GitBranch } from "lucide-react";
@@ -153,10 +155,10 @@ function resolveAgentEnvironment(
     : describeMissingEnvironment(environmentId);
 }
 
-function filterOrgTree(nodes: OrgNode[], tab: FilterTab, builtInAgentIds: Set<string>): OrgNode[] {
+function filterOrgTree(nodes: OrgNode[], tab: FilterTab, builtInAgentIds: Set<string>, matchingIds?: Set<string>): OrgNode[] {
   return nodes
     .reduce<OrgNode[]>((acc, node) => {
-      const filteredReports = filterOrgTree(node.reports, tab, builtInAgentIds);
+      const filteredReports = filterOrgTree(node.reports, tab, builtInAgentIds, matchingIds);
       // Hidden agents (terminated / pending_approval) never render as a row, but
       // any visible reports are promoted so the tree doesn't lose live agents.
       if (HIDDEN_AGENT_STATUSES.has(node.status)) {
@@ -166,7 +168,7 @@ function filterOrgTree(nodes: OrgNode[], tab: FilterTab, builtInAgentIds: Set<st
       const nodeMatches = tab === "builtin"
         ? builtInAgentIds.has(node.id)
         : matchesFilter(node.status, tab);
-      if (nodeMatches || filteredReports.length > 0) {
+      if ((nodeMatches && (!matchingIds || matchingIds.has(node.id))) || filteredReports.length > 0) {
         acc.push({ ...node, reports: filteredReports });
       }
       return acc;
@@ -211,11 +213,14 @@ export function Agents() {
   const builtInAgentIds = useMemo(() => new Set(builtInByAgentId.keys()), [builtInByAgentId]);
   const [configureState, setConfigureState] = useState<BuiltInAgentState | null>(null);
 
-  const { data: agents, isLoading, error } = useQuery({
+  const agentsQuery = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
     queryFn: () => agentsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
+  const { data: agents, isLoading } = agentsQuery;
+  const rosterFilters = useAgentRosterFilters(selectedCompanyId, agents);
+  const agentsView = useQueryView(agentsQuery);
 
   const { data: orgTree } = useQuery({
     queryKey: queryKeys.org(selectedCompanyId!),
@@ -311,12 +316,25 @@ export function Agents() {
     return <EmptyState icon={Bot} message={translateInstant("Select a company to view agents.")} />;
   }
 
-  if (isLoading) {
+  // Keep a loaded list on screen through a failed refetch; only a real
+  // failure, or an outage before the first load, replaces the page.
+  if (isLoading || agentsView.kind === "reconnecting") {
     return <PageSkeleton variant="list" />;
   }
+  if (agentsView.kind === "error") {
+    return (
+      <QueryErrorState
+        size="page"
+        error={agentsView.error}
+        action="load agents"
+        onRetry={agentsView.retry}
+        retrying={agentsView.isFetching}
+      />
+    );
+  }
 
-  const filtered = filterAgents(agents ?? [], tab, builtInAgentIds);
-  const filteredOrg = filterOrgTree(orgTree ?? [], tab, builtInAgentIds);
+  const filtered = filterAgents(agents ?? [], tab, builtInAgentIds).filter(rosterFilters.matches);
+  const filteredOrg = filterOrgTree(orgTree ?? [], tab, builtInAgentIds, rosterFilters.activeCount ? new Set(filtered.map(agent => agent.id)) : undefined);
   const environmentDataLoading = environmentsEnabled && environments === undefined;
   const showEnvironmentColumn = environmentsEnabled && (environments === undefined || environments.length > 1);
   const resolveRenderedEnvironment = (agentId: string) => (
@@ -368,7 +386,7 @@ export function Agents() {
         subtitleClassName="whitespace-normal break-words xl:truncate xl:whitespace-nowrap"
         subtitle={`${translateInstant(`agentRole.${agent.role}`, { defaultValue: roleLabels[agent.role] ?? agent.role })}${agent.title ? ` - ${agent.title}` : ""}`}
         to={agentUrl(agent)}
-        className="group"
+        className="agent-roster-identity group py-3"
         leading={hasInvalidOrgChain ? (
           <AlertTriangle className="h-3.5 w-3.5 text-amber-500" aria-label={translateInstant("agents.invalidReportingChain")} />
         ) : (
@@ -377,7 +395,6 @@ export function Agents() {
         secondaryRowClassName={cn("pl-11", !builtInCluster && !showEnvironmentColumn && !agent.lastHeartbeatAt && "sm:hidden")}
         secondaryRow={(agent.status === "paused" || builtInCluster || showEnvironmentColumn || agent.lastHeartbeatAt) && (
           <div className="flex flex-wrap items-center gap-2">
-            {agent.status === "paused" && <span className="sm:hidden"><AgentStatusBadge status={agent.status} /></span>}
             {builtInCluster}
             {showEnvironmentColumn && <span className="text-xs text-muted-foreground" title={resolveRenderedEnvironment(agent.id).title}>
               {resolveRenderedEnvironment(agent.id).label} · {resolveRenderedEnvironment(agent.id).detail}
@@ -385,25 +402,22 @@ export function Agents() {
             {agent.lastHeartbeatAt && <span className="text-xs text-muted-foreground" title="Last heartbeat">{relativeTime(agent.lastHeartbeatAt)}</span>}
           </div>
         )}
-        trailing={
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-3">
-              {liveRunByAgent.has(agent.id) && (
-                <LiveRunIndicator
-                  agentRef={agentRouteRef(agent)}
-                  runId={liveRunByAgent.get(agent.id)!.runId}
-                  liveCount={liveRunByAgent.get(agent.id)!.liveCount}
-                />
-              )}
-              <span className="w-20 flex justify-end">
-                <AgentStatusBadge status={agent.status} />
-              </span>
-            </div>
-          </div>
-        }
       />
     );
   };
+
+  const renderAgentStatus = (agent: Agent) => (
+    <div className="flex items-center gap-3">
+      {liveRunByAgent.has(agent.id) && (
+        <LiveRunIndicator
+          agentRef={agentRouteRef(agent)}
+          runId={liveRunByAgent.get(agent.id)!.runId}
+          liveCount={liveRunByAgent.get(agent.id)!.liveCount}
+        />
+      )}
+      <AgentStatusBadge status={agent.status} />
+    </div>
+  );
 
   return (
     <div className="space-y-4">
@@ -444,11 +458,7 @@ export function Agents() {
         </div>
       </div>
 
-      {filtered.length > 0 && (
-        <p className="text-xs text-muted-foreground">{filtered.length} {translateInstant("agent")}{filtered.length !== 1 ? "s" : ""}</p>
-      )}
-
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
+      <AgentRosterFilters {...rosterFilters} count={filtered.length} />
 
       {agents && agents.length === 0 && (
         <EmptyState
@@ -462,8 +472,8 @@ export function Agents() {
       {/* List view */}
       {effectiveView === "list" && agents && agents.length > 0 && (
         <AgentBulkRoster key={selectedCompanyId} companyId={selectedCompanyId}
-          agents={agents.filter(agent => !HIDDEN_AGENT_STATUSES.has(agent.status))}
-          visibleAgents={filtered} renderAgent={renderAgentRow} />
+          agents={agents}
+          visibleAgents={filtered} renderAgent={renderAgentRow} renderStatus={renderAgentStatus} />
       )}
 
       {effectiveView === "list" && agents && agents.length > 0 && filtered.length === 0 && (
@@ -493,7 +503,8 @@ export function Agents() {
 
       {effectiveView === "org" && orgTree && orgTree.length > 0 && filteredOrg.length === 0 && (
         <p className="text-sm text-muted-foreground text-center py-8">
-          {translateInstant("agents.noStatusMatches")}</p>
+          {translateInstant("agents.noFilterMatches")}
+        </p>
       )}
 
       {effectiveView === "org" && orgTree && orgTree.length === 0 && (

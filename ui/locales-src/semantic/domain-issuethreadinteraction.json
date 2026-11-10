@@ -61,7 +61,7 @@
   },
   "issueThreadInteraction.approvedBy": {
     "en": "Approved by",
-    "zh-CN": "批准人",
+    "zh-CN": "审批人",
     "reviewedEnglishHash": "8e838c460986340d7b2bdeea53d75148770598789f763f5f36861efe45420a28"
   },
   "issueThreadInteraction.approvedResumeFailed": {
@@ -156,7 +156,7 @@
   },
   "issueThreadInteraction.created": {
     "en": "Created",
-    "zh-CN": "创建时间",
+    "zh-CN": "已创建",
     "reviewedEnglishHash": "d70b9e24bca26b409b9458ceca6c9e5c2b5c3171c37ff050c6f6a0d7a4420d2a"
   },
   "issueThreadInteraction.createdAllDrafts": {
@@ -221,7 +221,7 @@
   },
   "issueThreadInteraction.executedApprovedBy": {
     "en": "Executed · approved by",
-    "zh-CN": "已执行 · 批准人",
+    "zh-CN": "已执行 · 审批人",
     "reviewedEnglishHash": "06a2da80929920ab7b0398fc04ba0c78d5149b921b5d25ee08f9def5e1c17218"
   },
   "issueThreadInteraction.expiredByComment": {
@@ -241,7 +241,7 @@
   },
   "issueThreadInteraction.failedApprovedBy": {
     "en": "Failed · approved by",
-    "zh-CN": "失败 · 批准人",
+    "zh-CN": "失败 · 审批人",
     "reviewedEnglishHash": "9d631b69ad461f595a82b1cc1480a1ac2ec1ce2e5a8822e6b47830a38dc20f9e"
   },
   "issueThreadInteraction.forAgent": {
@@ -306,7 +306,7 @@
   },
   "issueThreadInteraction.moreHidden": {
     "en": "+{{count}} more",
-    "zh-CN": "+{{count}} 个更多",
+    "zh-CN": "另有 {{count}} 项",
     "reviewedEnglishHash": "48380badf7a45c74d3fac6b89d19d777585cb9052d135d1ec482b932bc99e98a"
   },
   "issueThreadInteraction.noAnswerRecorded": {
@@ -551,12 +551,12 @@
   },
   "issueThreadInteraction.resolvedByAgentGovernance": {
     "en": "Resolved by an agent under the company's interaction governance policy — audit-distinct from a human board resolution.",
-    "zh-CN": "已由智能体依据公司的交互治理策略处理——审计上与人工看板处理明确区分。",
+    "zh-CN": "已由智能体依据公司的交互治理策略解决；审计记录会将其与董事会成员作出的决议区分。",
     "reviewedEnglishHash": "a0e1f9782b1ff32a1dc9e302e4dc4c143ddead78276da206b4d81e4f17ec11ea"
   },
   "issueThreadInteraction.resolvedOn": {
     "en": " on {{date}}",
-    "zh-CN": "，日期 {{date}}",
+    "zh-CN": "，于 {{date}}",
     "reviewedEnglishHash": "b2bbd93060ec7a36406113c30913ca6de2c787116636acc438940f7cec208aa6"
   },
   "issueThreadInteraction.resumeFailedTitle": {
@@ -691,7 +691,7 @@
   },
   "issueThreadInteraction.secretBinding.failedBody": {
     "en": "The request was accepted, but execution failed closed. No secret value was exposed.",
-    "zh-CN": "请求已接受，但执行已安全失败关闭，未暴露任何密钥值。",
+    "zh-CN": "请求已接受，但执行以失败关闭方式结束，未暴露任何密钥值。",
     "reviewedEnglishHash": "2b88620383f3113d153c110633ab56b48e97332d0885847621bb627455af868a"
   },
   "issueThreadInteraction.secretBinding.failedStatus": {
@@ -936,7 +936,7 @@
   },
   "issueThreadInteraction.toolAction.declinedBody": {
     "en": "The action did not run. {{requestedBy}} was resumed with your reason and told not to retry the same call.",
-    "zh-CN": "操作未运行。已使用你的原因恢复 {{requestedBy}}，并告知其不要重试同一调用。",
+    "zh-CN": "操作未执行。已将你的原因告知 {{requestedBy}} 并恢复其运行，同时要求它不要重试同一调用。",
     "reviewedEnglishHash": "1bc9af0069525f412b581e77cafe29b66e6928d3764b0b275e6c3e764dfd7914"
   },
   "issueThreadInteraction.toolAction.declinedTitle": {
@@ -986,7 +986,7 @@
   },
   "issueThreadInteraction.toolAction.failedBody": {
     "en": "You approved it and it ran, but the connector returned an error. {{requestedBy}} was resumed with this error.",
-    "zh-CN": "你已批准并运行此操作，但连接器返回了错误。已使用此错误恢复 {{requestedBy}}。",
+    "zh-CN": "你已批准该操作，且它已执行，但连接器返回了错误。已将此错误告知 {{requestedBy}} 并恢复其运行。",
     "reviewedEnglishHash": "3544f5ce954270bc12cc9f235fd32033251839a293d91a4b31ce786b785b2441"
   },
   "issueThreadInteraction.toolAction.failedTitle": {
@@ -998,6 +998,11 @@
     "en": "Failed · approved by {{who}} at {{when}}",
     "zh-CN": "失败 · {{who}} 于 {{when}} 批准",
     "reviewedEnglishHash": "282a7a12f4d6f28258f815b8ada16fad98b17ce9fef2ea964d6c97a6f95c861e"
+  },
+  "issueThreadInteraction.toolAction.reconnectApp": {
+    "en": "Reconnect {{appName}}",
+    "zh-CN": "重新连接 {{appName}}",
+    "reviewedEnglishHash": "aab24524b51f8e54f9bc7028e1b870ac7c66a2329d829fad825945427877a6b2"
   },
   "issueThreadInteraction.toolAction.resumedWithResult": {
     "en": "{{requestedBy}} was resumed with this result.",
@@ -1016,7 +1021,7 @@
   },
   "issueThreadInteraction.toolAction.runningBody": {
     "en": "The action is executing server-side with the exact arguments you approved.",
-    "zh-CN": "操作正在服务端使用你批准的确切参数执行。",
+    "zh-CN": "服务端正严格按你批准的参数执行操作。",
     "reviewedEnglishHash": "aa584f2888d4aea4e53153b94dee1144006833a13787705d39606978aac5c1f7"
   },
   "issueThreadInteraction.toolAction.runningTitle": {
@@ -1073,6 +1078,16 @@
     "en": "View result",
     "zh-CN": "查看结果",
     "reviewedEnglishHash": "fdb7eafd12ba788ba6968cba011cc8e496abe85ae77678e98d036f8916485363"
+  },
+  "issueThreadInteraction.toolAction.waitingConnection": {
+    "en": "Approved · Sign-in needed",
+    "zh-CN": "已批准 · 需要登录",
+    "reviewedEnglishHash": "a7637ad6d78d1cff41e16b99e0fd1e94cad2d4a35b348c34610630a4a549be27"
+  },
+  "issueThreadInteraction.toolAction.waitingConnectionBody": {
+    "en": "Your approval is saved. Reconnect the app to continue. Paperclip will check the account and action again before it runs.",
+    "zh-CN": "审批已保存。请重新连接应用后继续；系统会在运行前再次检查账户和操作。",
+    "reviewedEnglishHash": "cabd5e3bd0cd70600a35f449e971b514ff1cb77638feca0c0717d22499f2c1cd"
   },
   "issueThreadInteraction.toolApprovalRequested": {
     "en": "Tool approval requested",
@@ -1226,12 +1241,12 @@
   },
   "issueThreadInteraction.verdict.expiredAppliedSummary_one": {
     "en": "{{count}} item was already applied and cannot be reverted. Remaining items were cancelled.",
-    "zh-CN": "已有 {{count}} 个项目应用且无法撤销；其余项目已取消。",
+    "zh-CN": "已有 {{count}} 个项目已应用且无法撤销；其余项目已取消。",
     "reviewedEnglishHash": "524d23bda534bfacd916d93b804a51be8e92a6ba573be8042b05f706d8e68a6b"
   },
   "issueThreadInteraction.verdict.expiredAppliedSummary_other": {
     "en": "{{count}} items were already applied and cannot be reverted. Remaining items were cancelled.",
-    "zh-CN": "已有 {{count}} 个项目应用且无法撤销；其余项目已取消。",
+    "zh-CN": "已有 {{count}} 个项目已应用且无法撤销；其余项目已取消。",
     "reviewedEnglishHash": "98e89bd9c24eef1e552c11d57e6187c93512ed713d7a059796e4846a56bd6a1e"
   },
   "issueThreadInteraction.verdict.itemActionAria": {

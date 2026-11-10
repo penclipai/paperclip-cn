@@ -15,8 +15,8 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
  *    applies translateTime to a known epoch under different TZ values.
  */
 
-const mockTransport = vi.hoisted(() => vi.fn(() => ({ write: vi.fn() })));
-const mockDestination = vi.hoisted(() => vi.fn(() => ({ write: vi.fn() })));
+const mockDestination = vi.hoisted(() => vi.fn());
+const mockTransport = vi.hoisted(() => vi.fn((_options: { target: string; options: Record<string, unknown> }) => ({ write: vi.fn() })));
 const mockPino = vi.hoisted(() => {
   const fn = vi.fn(() => ({
     info: vi.fn(),
@@ -62,10 +62,7 @@ describe("logger translateTime respects TZ environment variable", () => {
     await import("../middleware/logger.js");
 
     expect(mockTransport).toHaveBeenCalledOnce();
-    const transport = mockTransport.mock.calls[0][0] as {
-      target: string;
-      options: Record<string, unknown>;
-    };
+    const transport = mockTransport.mock.calls[0]![0];
     expect(transport.target).toBe("pino-pretty");
     expect(transport.options.translateTime).toBe("SYS:HH:MM:ss");
   });

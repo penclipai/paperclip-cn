@@ -120,6 +120,11 @@ async function completeRead(state, text, query, evidenceRef) {
 async function execute(state) {
   ensureActive(state);
   const { threadId, turnId, currentObjective, emitCeoLineage, declined } = state.context;
+  if (state.context.helloProbe) {
+    emit(state, { method: 'item/completed', params: { threadId, turnId, item: { id: `answer-${turnId}`, type: 'agentMessage', phase: 'final_answer', text: 'hello' } } });
+    terminal(state, 'completed');
+    return;
+  }
   if (process.argv.includes('--task-retry-fixture')) {
     const text = 'The saved result is confirmed. No external publication was repeated.';
     await call(state, 'report_progress', { idempotencyKey: 'saved-result-confirmation', body: text });
@@ -132,6 +137,8 @@ async function execute(state) {
     // Report completion before a deliberately slow final answer. The real
     // runner and control plane must keep listening after the tool succeeds.
     await finish(state, 'The fixture work is complete.', 'fixture:STREAM-42');
+    emit(state, { method: 'item/completed', params: { threadId, turnId,
+      item: { id: `waiting-${turnId}`, type: 'agentMessage', phase: 'commentary', text: 'STREAM-42: waiting for the final answer.' } } });
     // Exceed both former completion deadlines: cold (5s) and reusable (30s).
     await delay(31_000, undefined, { signal: state.controller.signal });
     const itemId = `answer-${turnId}`;
@@ -257,7 +264,8 @@ createInterface({ input: process.stdin }).on('line', (line) => {
     if (method === 'thread/resume' && message.params?.threadId) threadId = message.params.threadId;
     else if (method === 'thread/start' && threads.has(threadId)) threadId = `fixture-${randomUUID()}`;
     threads.set(threadId, normalizeContract(message.params?.completionContract ?? threads.get(threadId)));
-    send({ id, result: { model: 'in-feed-fixture', modelProvider: 'fixture', thread: { id: threadId, sessionId: threadId } } });
+    const model = process.argv.includes('--completion-stream-fixture') ? message.params?.model ?? 'in-feed-fixture' : 'in-feed-fixture';
+    send({ id, result: { model, modelProvider: 'fixture', thread: { id: threadId, sessionId: threadId } } });
   }
   else if (method === 'thread/read' || method === 'thread/turns/list') {
     const requestedThreadId = message.params?.threadId ?? threadId;
@@ -276,6 +284,8 @@ createInterface({ input: process.stdin }).on('line', (line) => {
     let completionContract = threads.get(currentThreadId) ?? normalizeContract();
     const emitCeoLineage = JSON.stringify(message.params).includes('CEO descendant fixture');
     const declined = /connection_intent/.test(JSON.stringify(message.params)) && /rejected/.test(JSON.stringify(message.params));
+    const helloProbe = process.argv.includes('--completion-stream-fixture')
+      && JSON.stringify(message.params?.input).includes('Respond only with hello. Do not use tools or inspect files.');
     for (const part of message.params?.input ?? []) {
       try {
         const outer = JSON.parse(part.text);
@@ -291,7 +301,7 @@ createInterface({ input: process.stdin }).on('line', (line) => {
     }
     interrupt(activeTurns.get(currentThreadId));
     const turnId = randomUUID();
-    const state = { context: Object.freeze({ threadId: currentThreadId, turnId, currentObjective, completionContract, emitCeoLineage, declined,
+    const state = { context: Object.freeze({ threadId: currentThreadId, turnId, currentObjective, completionContract, emitCeoLineage, declined, helloProbe,
       recordedToolResult: recordedResultFromPrompt(currentPrompt, currentObjective) }), controller: new AbortController(), gateway: null, startTimer: null };
     activeTurns.set(currentThreadId, state);
     send({ id, result: { turn: { id: turnId, status: 'inProgress' } } });
