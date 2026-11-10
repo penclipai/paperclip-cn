@@ -38,10 +38,11 @@ const nodeSuites = [
   "scripts/__tests__/pnpm-invocation.test.mjs",
   "scripts/__tests__/vitest-collection-batches.test.mjs",
   "scripts/__tests__/vitest-invocation.test.mjs",
+  "scripts/__tests__/storybook-glob-compat.test.mjs",
 ];
 const nodeResult = spawnSync(process.execPath, ["--test", ...nodeSuites], { stdio: "inherit", shell: false });
 if (nodeResult.error || nodeResult.status !== 0) {
-  console.error("[upstream-merge-harness] command invocation checks failed", nodeResult.error?.message ?? nodeResult.status);
+  console.error("[upstream-merge-harness] Node infrastructure checks failed", nodeResult.error?.message ?? nodeResult.status);
   process.exit(nodeResult.status ?? 1);
 }
 
