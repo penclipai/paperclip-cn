@@ -1009,6 +1009,9 @@ describe("IssueProperties", () => {
           <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
             <IssueProperties
               issue={createIssue({
+                // Scheduled checks advance only while the task is active; a todo task correctly
+                // renders its paused state instead of a countdown.
+                status: "in_progress",
                 executionPolicy: createExecutionPolicy({ monitor: {
                   nextCheckAt: monitor.nextCheckAt!,
                   notes: monitor.notes,
@@ -1045,7 +1048,7 @@ describe("IssueProperties", () => {
 
     renderMonitor({ ...scheduledMonitor, nextCheckAt: at(0), attemptCount: 0 });
     await flush();
-    expect(container.querySelector('[data-testid="monitor-row-trigger"]')?.textContent).toContain("即将检查…");
+    expect(container.querySelector('[data-testid="monitor-row-trigger"]')?.textContent).toContain("正在检查…");
     await act(async () => { await i18n.changeLanguage("en"); });
     expect(container.textContent).toContain("Work");
     expect(container.querySelector('[data-testid="monitor-row-trigger"]')?.textContent).toContain("checking momentarily…");

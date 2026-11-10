@@ -86,12 +86,12 @@
   },
   "Raw provider capture was off for this run.": {
     "en": "Raw provider capture was off for this run.",
-    "zh-CN": "本次运行的原始提供程序捕获已关闭。",
+    "zh-CN": "本次运行的原始提供方捕获已关闭。",
     "reviewedEnglishHash": "0c24d8868eb1f2d6fa0b5fbf5f7231c7c07487a536d84cf8054fbd63f6165404"
   },
   "Raw provider traces require an instance administrator.": {
     "en": "Raw provider traces require an instance administrator.",
-    "zh-CN": "原始提供程序跟踪需要实例管理员。",
+    "zh-CN": "原始提供方追踪需要实例管理员。",
     "reviewedEnglishHash": "f26cd36ac504c74c469753f3c2b0296196335bc9f41cd355663942a94de3c9f0"
   },
   "Raw tracing is on for future runs. Paperclip keeps at most 64 MiB per run and automatically deletes it after 24 hours.": {
@@ -121,7 +121,7 @@
   },
   "Re-run with provider trace": {
     "en": "Re-run with provider trace",
-    "zh-CN": "使用提供者跟踪重新运行",
+    "zh-CN": "使用提供方追踪重新运行",
     "reviewedEnglishHash": "296d058ec7a02ee70e4b18da2d43cdbaed046fdc60488131124ea89cf7ea9284"
   },
   "Re-running from an earlier step affects more downstream items.": {
@@ -391,7 +391,7 @@
   },
   "Recent runs": {
     "en": "Recent runs",
-    "zh-CN": "最近的跑步",
+    "zh-CN": "最近运行",
     "reviewedEnglishHash": "237112b89b77be8e2772378d1a09a3bc2dcb7d907698757cc2170107ee3026eb"
   },
   "Recent tasks": {
@@ -511,7 +511,7 @@
   },
   "Recovery asked the assigned agent to record an outcome or a next step. Retrying keeps the same task and agent, and checks the task’s current controls before continuing.": {
     "en": "Recovery asked the assigned agent to record an outcome or a next step. Retrying keeps the same task and agent, and checks the task’s current controls before continuing.",
-    "zh-CN": "Recovery要求指定的智能体记录结果或下一步。重试将保留相同的任务和智能体，并在继续之前检查任务的当前控件。",
+    "zh-CN": "恢复处理要求指定的智能体记录结果或下一步。重试将保留相同的任务和智能体，并在继续之前检查任务的当前控制项。",
     "reviewedEnglishHash": "4970e64938b4e842e2dcb705589747bcf5d863baccbe85ad1ed12c07eef9231d"
   },
   "Recovery needed.": {
@@ -551,7 +551,7 @@
   },
   "Referenced": {
     "en": "Referenced",
-    "zh-CN": "参考",
+    "zh-CN": "被引用",
     "reviewedEnglishHash": "e1ea8a5e413c7eb3b889f1e84b90cad9a15891a19fbdcea6b7232865aa847489"
   },
   "Refresh": {
@@ -856,7 +856,7 @@
   },
   "Removing an assigned agent stops receiving and sending from its inbox.": {
     "en": "Removing an assigned agent stops receiving and sending from its inbox.",
-    "zh-CN": "删除分配的座席将停止其收件箱的接收和发送。",
+    "zh-CN": "移除已分配的智能体会停止其收件箱的接收和发送。",
     "reviewedEnglishHash": "e816d5d69a2438dbcfac62aa2d25ba576b75f0ea5c8f87538952deb920622a15"
   },
   "Removing the key stops new Paperclip connections. Also remove its public key from Railway.": {
@@ -1071,7 +1071,7 @@
   },
   "Requested branch": {
     "en": "Requested branch",
-    "zh-CN": "请求的分行",
+    "zh-CN": "请求的分支",
     "reviewedEnglishHash": "8e1a0b318e868b540ce8400923916709b19752dfa7cd240669744198ea435e44"
   },
   "Requested by": {
@@ -1236,7 +1236,7 @@
   },
   "Resolve delivery after checking AgentMail": {
     "en": "Resolve delivery after checking AgentMail",
-    "zh-CN": "检查AgentMail后解决传递",
+    "zh-CN": "检查 AgentMail 后处理投递",
     "reviewedEnglishHash": "457318724b32f2efcfe27e3f02bff6297501ca6c1b7089bea6a85e6bddab17ea"
   },
   "Resolve hard stops here by raising the budget or explicitly keeping the scope paused.": {
@@ -1276,7 +1276,7 @@
   },
   "Resolved by an agent under the organization's interaction governance policy — audit-distinct from a human board resolution.": {
     "en": "Resolved by an agent under the organization's interaction governance policy — audit-distinct from a human board resolution.",
-    "zh-CN": "由智能体根据组织的交互治理策略解决-审计—与人力董事会决议区分开来。",
+    "zh-CN": "由智能体依照组织的交互治理策略解决；审计记录会将其与董事会成员作出的决议区分。",
     "reviewedEnglishHash": "a511fb1064bcb2a08bd1de0b5414fe821a55369c90561f307ddc8c9da808d033"
   },
   "Resolved final response decision": {
@@ -1316,7 +1316,7 @@
   },
   "Responsible user’s default": {
     "en": "Responsible user’s default",
-    "zh-CN": "负责任的用户的默认值",
+    "zh-CN": "负责人的默认值",
     "reviewedEnglishHash": "0519da875297067a20f30ac7beaa99c13771fa0e6de31502b89a0be2795f0398"
   },
   "Restore": {
@@ -1651,7 +1651,7 @@
   },
   "Reveal exact frame": {
     "en": "Reveal exact frame",
-    "zh-CN": "显示精确的框架",
+    "zh-CN": "显示未脱敏的完整帧",
     "reviewedEnglishHash": "2a05878d478445b5ce256c664d7cec6ca1b8a6cba99282ecd94d9390d9ccbef8"
   },
   "Reverted to text —": {
@@ -1861,7 +1861,7 @@
   },
   "Reviews": {
     "en": "Reviews",
-    "zh-CN": "评论",
+    "zh-CN": "审核",
     "reviewedEnglishHash": "84cb7871b741c32eb14f0a65e5e7e4db53ffae1a952ea8e2f1c2c48b1d134a9b"
   },
   "Reviews requested by @mention bypass these scheduling filters. Repository access and ignored files still apply.": {
@@ -2016,7 +2016,7 @@
   },
   "Routine navigation": {
     "en": "Routine navigation",
-    "zh-CN": "日常导航",
+    "zh-CN": "例行任务导航",
     "reviewedEnglishHash": "906a9d167c535d0b7bd231fc53bc2854b33c0b0ceb904b7dd35a7aa9cba7187e"
   },
   "Routine not found": {
@@ -2191,7 +2191,7 @@
   },
   "Run this routine on a schedule or when another app sends a webhook.": {
     "en": "Run this routine on a schedule or when another app sends a webhook.",
-    "zh-CN": "按计划或在其他应用程序发送 Webhook 时运行此例程。",
+    "zh-CN": "按计划或在其他应用发送 Webhook 时运行此例行任务。",
     "reviewedEnglishHash": "98d55cd11071aae5d02fce00f495e2fd44a5d236023785febca8280eeed7c54f"
   },
   "Run timed out": {
@@ -2201,7 +2201,7 @@
   },
   "Run with provider trace": {
     "en": "Run with provider trace",
-    "zh-CN": "使用提供商追踪运行",
+    "zh-CN": "使用提供方追踪运行",
     "reviewedEnglishHash": "8de1dcba151de20b59af5313083615498b9fb761c0ef589bbfecfdb922edf07b"
   },
   "Run {{id}} · completed {{date}}": {
@@ -2221,17 +2221,17 @@
   },
   "Runner": {
     "en": "Runner",
-    "zh-CN": "跑步者",
+    "zh-CN": "Runner",
     "reviewedEnglishHash": "2184a4e3f4ce0f213448243fb42d24df4b7763ce99f5fedd2e73b45194774678"
   },
   "Runner Inspector": {
     "en": "Runner Inspector",
-    "zh-CN": "跑步者检查员",
+    "zh-CN": "Runner Inspector",
     "reviewedEnglishHash": "02dc44081dcf42258c98b2c01cd4953a400a16d4031668d509818c12e8fbc28f"
   },
   "Runner inspector views": {
     "en": "Runner inspector views",
-    "zh-CN": "跑步者检查员意见",
+    "zh-CN": "Runner Inspector 视图",
     "reviewedEnglishHash": "fb8d8dd6496b9ae0516764d06d89cb88c5d5f5088373eb66b19b82784a0a1d76"
   },
   "Runner lifecycle": {
@@ -2291,7 +2291,7 @@
   },
   "Runtime Dashboard": {
     "en": "Runtime Dashboard",
-    "zh-CN": "运行时面板",
+    "zh-CN": "运行时仪表盘",
     "reviewedEnglishHash": "3c4eb769e2e922fb3c64731ebe1ce1cac249b4322d52796cc387afa53a7763d7"
   },
   "Runtime diagnostics are unavailable right now.": {
@@ -2616,7 +2616,7 @@
   },
   "· rev": {
     "en": "· rev",
-    "zh-CN": "· 转速",
+    "zh-CN": "· 修订",
     "reviewedEnglishHash": "be114ca95c6fced742aa20f96e17e460a9c5e8b0f37b4fb8eeded94b7e85191f"
   },
   "— Run is parked in Review for your OK.": {

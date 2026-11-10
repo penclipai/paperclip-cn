@@ -23,7 +23,6 @@ import { queryKeys } from "@/lib/queryKeys";
 import { RemoteMcpConnectionSetup } from "./RemoteMcpConnectionSetup";
 import { remoteMcpProviders, type RemoteMcpProviderId } from "./providers";
 import type { RemoteMcpSetupActions, RemoteMcpSetupState } from "./types";
-import { describeError } from "@/api/errors";
 
 type RemoteMcpNoticeKey = "savedCredentials" | "signInUnavailable" | "connectionFailed" | "headersIncomplete" | "invalidManagementUrl";
 type RemoteMcpChoiceErrorKey = "choiceFailed";
@@ -323,7 +322,6 @@ export function RemoteMcpProductionSetup({ providerId, connection, host = "page"
         edit({ connectStatus: "idle", notice: null });
         setNoticeKey("connectionFailed");
       }
-      edit({ connectStatus: "idle", notice: describeError(error).body });
     } finally { busy.current = false; }
   };
   const actions: RemoteMcpSetupActions = {
@@ -354,10 +352,7 @@ export function RemoteMcpProductionSetup({ providerId, connection, host = "page"
     onCancel={onCancel} onConnectNew={() => setShowChoices(false)} onSelect={(id) => {
       setChoicePending(id); setChoiceError(null); setChoiceErrorKey(null);
       void onUseExisting(id).catch((error) => { if (error instanceof Error) setChoiceError(error.message); else setChoiceErrorKey("choiceFailed"); setChoicePending(null); });
-      setChoicePending(id); setChoiceError(null);
-      void onUseExisting(id).catch((error) => { setChoiceError(describeError(error).body); setChoicePending(null); });
     }} />;
-  if (connection && !installs.data) return <div className="space-y-3 p-8"><p>{installs.isError ? t("remoteMcp.savedAccessFailed") : t("remoteMcp.loadingSavedAccess")}</p>{installs.isError && <button type="button" className="text-primary underline" onClick={() => void installs.refetch()}>{translateInstant("Try again")}</button>}</div>;
   // Saved access already loaded stays in place through a transient refetch failure.
   if (connection && !installs.data) return <div className="space-y-3 p-8">{installsView.kind === "error"
     ? <QueryErrorState error={installs.error} action="load saved access" onRetry={installsView.retry} retrying={installsView.isFetching} />

@@ -8,7 +8,8 @@ import { Card } from "@/components/ui/card";
 import { accessApi } from "../api/access";
 import { ApiError } from "../api/client";
 import { authApi } from "../api/auth";
-import { useQueryView } from "../components/QueryView";
+import { describeError } from "../api/errors";
+import { QueryErrorState, useQueryView } from "../components/QueryView";
 import { queryKeys } from "../lib/queryKeys";
 
 function cliAuthRetryDelay(error: unknown): number {
@@ -87,10 +88,13 @@ export function CliAuthPage() {
     return (
       <div className="mx-auto max-w-xl py-10">
         <Card className="block p-6">
-          <h1 className="text-lg font-semibold">{translateInstant("cliAuth.unavailableTitle")}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {challengeQuery.error instanceof Error ? challengeQuery.error.message : translateInstant("cliAuth.unavailableBody")}
-          </p>
+          <QueryErrorState
+            size="panel"
+            error={challengeQuery.error}
+            action="load the CLI auth challenge"
+            onRetry={challengeView.retry}
+            retrying={challengeView.isFetching}
+          />
         </Card>
       </div>
     );
@@ -177,9 +181,7 @@ export function CliAuthPage() {
 
         {(approveMutation.error || cancelMutation.error) && (
           <p className="mt-4 text-sm text-destructive">
-            {(approveMutation.error ?? cancelMutation.error) instanceof Error
-              ? ((approveMutation.error ?? cancelMutation.error) as Error).message
-              : translateInstant("cliAuth.updateFailed")}
+            {describeError(approveMutation.error ?? cancelMutation.error).body}
           </p>
         )}
 

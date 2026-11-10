@@ -33,6 +33,10 @@ it.each([14_000, 16_000])("separates transfer and probe budgets (probe duration 
     await writeFile(path.join(source, "saved.txt"), "base\n");
     await git(source, ["add", "."]); await git(source, ["commit", "-m", "base"]);
     await git(root, ["clone", source, host]);
+    // A host-global core.autocrlf must not rewrite the fixture bytes that this
+    // transfer-budget test inspects after the import.
+    await git(host, ["config", "core.autocrlf", "false"]);
+    await git(host, ["reset", "--hard"]);
     await writeFile(path.join(source, "saved.txt"), "completed\n");
     await git(source, ["commit", "-am", "completed"]);
     const head = await git(source, ["rev-parse", "HEAD"]);

@@ -42,7 +42,7 @@ import {
   isCompletedOnboardingHandoffWake,
 } from "../chat-completion-delivery.js";
 import { hasWorkspaceRestoreFailure } from "@penclipai/shared";
-import { readQueuedInteractionResponse } from "../queued-interaction-response.js";
+import { isVerifiedDependencyInteractionResponse, readQueuedInteractionResponse } from "../queued-interaction-response.js";
 import {
   isConversation,
   isConversationReset,
@@ -1111,6 +1111,8 @@ export function createHeartbeatQueue(db: Db, dependencies: HeartbeatQueueDepende
           context,
           ISSUE_TREE_CONTROL_INTERACTION_WAKE_REASONS,
           blockerStallVerified,
+          await isVerifiedDependencyInteractionResponse(db, { companyId: run.companyId,
+            issueId, agentId: run.agentId, context }),
         )
       ) {
         await cancelQueuedRunForBlockedDependencies(
@@ -3131,7 +3133,7 @@ export function createHeartbeatQueue(db: Db, dependencies: HeartbeatQueueDepende
               // so the task explains it and a new click can replace this intent.
               const declineRetry = async (reason: string, message: string) => {
                 await writeDeferredExecutionWait(tx as unknown as Db, { companyId: agent.companyId,
-                  requestId: pending.id }, { reason, message }, { replace: true });
+                  requestId: pending.id }, { reason, message }, { replace: true, publications: issueActivityPublications });
                 logger.warn({ requestId: pending.id, issueId, reason }, "Task Retry could not start");
                 return { kind: "deferred" as const };
               };
@@ -3605,7 +3607,7 @@ export function createHeartbeatQueue(db: Db, dependencies: HeartbeatQueueDepende
             const condition = { recoveryActionId: executionBlocker.recoveryActionId, ...continuationWait };
             if (executionWaitRequestId) {
               await writeDeferredExecutionWait(tx as unknown as Db, { companyId: agent.companyId,
-                requestId: executionWaitRequestId }, condition, { replace: true });
+                requestId: executionWaitRequestId }, condition, { replace: true, publications: issueActivityPublications });
               return { kind: "deferred" as const, admitted: true };
             }
             if (durableRequest || wakeCommentId ||
@@ -4021,6 +4023,8 @@ export function createHeartbeatQueue(db: Db, dependencies: HeartbeatQueueDepende
               ISSUE_TREE_CONTROL_INTERACTION_WAKE_REASONS,
               await verifyBlockerStallWake(tx as unknown as Db, { companyId: issue.companyId, issueId: issue.id,
                 contextSnapshot: enrichedContextSnapshot, requestedByActorType: opts.requestedByActorType }),
+              await isVerifiedDependencyInteractionResponse(tx, { companyId: issue.companyId,
+                issueId: issue.id, agentId, context: enrichedContextSnapshot }),
             );
 
           if (blockedInteractionWake) {

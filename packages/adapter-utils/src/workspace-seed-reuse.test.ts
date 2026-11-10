@@ -10,6 +10,7 @@ import { captureDirectorySnapshot, disposeDirectorySnapshot } from "./workspace-
 import type { GitWorkspaceSnapshot } from "./git-workspace-sync.js";
 import { prepareAdapterExecutionTargetRuntime } from "./execution-target.js";
 import { runChildProcess } from "./server-utils.js";
+import { prepareTestPosixShell } from "./test-fixtures/posix-shell.js";
 
 const exec = promisify(execFile);
 const roots: string[] = [];
@@ -18,6 +19,10 @@ afterEach(async () => {
   await Promise.all(roots.splice(0).map(root => fs.rm(root, { recursive: true, force: true })));
 });
 const git = async (cwd: string, ...args: string[]) => (await exec("git", args, { cwd })).stdout.trim();
+async function runTestPosixShell(command: string): Promise<void> {
+  const shell = prepareTestPosixShell({ command: "sh", args: ["-c", command] });
+  await exec(shell.command, shell.args, { env: shell.env });
+}
 
 function client(): SandboxManagedRuntimeClient {
   const sync = async (operations: SandboxSyncOperation[]) => ({ operations: await Promise.all(operations.map(async operation => {
@@ -31,7 +36,7 @@ function client(): SandboxManagedRuntimeClient {
         bytesTransferred += bytes.length;
       }
     }
-    for (const command of operation.postUploadCommands ?? []) await exec("sh", ["-c", command.command]);
+    for (const command of operation.postUploadCommands ?? []) await runTestPosixShell(command.command);
     return { operationId: operation.operationId, filesTransferred: operation.files.length, bytesTransferred };
   })) });
   return {
@@ -40,7 +45,7 @@ function client(): SandboxManagedRuntimeClient {
     readFile: file => fs.readFile(file),
     listFiles: async directory => (await fs.readdir(directory, { withFileTypes: true })).filter(entry => entry.isFile()).map(entry => entry.name),
     remove: file => fs.rm(file, { recursive: true, force: true }),
-    run: command => exec("sh", ["-c", command]).then(() => {}),
+    run: command => runTestPosixShell(command),
     syncIn: sync,
     syncOut: sync,
   };
@@ -52,9 +57,10 @@ it.each([
   { nested: false, secondBranch: null },
   { nested: true, secondBranch: null },
 ])("reuses company seed content and restores branch identity ($nested, $secondBranch)", async ({ nested, secondBranch }) => {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-shared seed-'"));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "v-paperclip-shared-seed-"));
   roots.push(root);
   vi.stubEnv("PAPERCLIP_HOME", path.join(root, "home"));
+  if (process.platform === "win32") vi.stubEnv("MSYS", "winsymlinks:nativestrict");
   const source = path.join(root, "source");
   const repositories = nested ? ["", ".paperclip-repositories/backend"] : [""];
   for (const relative of repositories) {
@@ -87,7 +93,8 @@ it.each([
     for (const relative of repositories) {
       const cwd = path.join(host, relative);
       await fs.mkdir(path.dirname(cwd), { recursive: true });
-      await exec("git", ["clone", "--shared", "-q", path.join(source, relative), cwd]);
+      await exec("git", ["clone", "--no-checkout", "--shared", "-q", path.join(source, relative), cwd]);
+      if (process.platform === "win32") await git(cwd, "config", "--local", "core.symlinks", "true");
       await git(cwd, "checkout", "-q", ...(branch ? ["-b", branch] : ["--detach", "HEAD"]));
       await fs.writeFile(path.join(cwd, "tracked.txt"), "working-tree bytes\n");
       await fs.rm(path.join(cwd, "deleted.txt"));
@@ -103,7 +110,7 @@ it.each([
       workspaceSeedCacheScope: "company",
       workspaceSeedCacheDirectory: path.join(companyDirectory, "shared-v1"), workspaceSeedCacheCompanyDirectory: companyDirectory,
       workspaceDurableSeed: { workspaceArchivePath: path.join(durable, "workspace.tar"), gitArchivePath: path.join(durable, "git.tar") },
-      runtimeSpan: async (name, work) => { phases.push(name); return work(); },
+      runtimeSpan: async (phase, work) => { phases.push(phase); return work(); },
     };
     const transport = client();
     const prepared = await prepareAdapterExecutionTargetRuntime({
@@ -112,10 +119,15 @@ it.each([
         kind: "remote", transport: "sandbox", providerKey: "filesystem", remoteCwd: remote,
         runner: {
           syncIn: operations => transport.syncIn!(operations), syncOut: operations => transport.syncOut!(operations),
-          execute: command => runChildProcess(name, command.command, command.args ?? [], {
-            cwd: command.cwd ?? root, env: command.env ?? {}, stdin: command.stdin,
-            timeoutSec: 30, graceSec: 1, onLog: command.onLog ?? (async () => {}),
-          }),
+          execute: command => {
+            const shell = process.platform === "win32"
+              ? prepareTestPosixShell({ command: command.command, args: command.args ?? [], env: command.env ?? {} })
+              : { command: command.command, args: command.args ?? [], env: command.env ?? {} };
+            return runChildProcess(name, shell.command, shell.args, {
+              cwd: command.cwd ?? root, env: shell.env, stdin: command.stdin,
+              timeoutSec: 30, graceSec: 1, onLog: command.onLog ?? (async () => {}),
+            });
+          },
         },
       },
       ...(nested ? { installCommand: "exit 1", detectCommand: "git" } : {}),
@@ -187,7 +199,10 @@ it.each([
     await expect(fs.stat(path.join(cwd, "secret.txt"))).rejects.toMatchObject({ code: "ENOENT" });
   }
   await fallback.prepared.cleanupWorkspaceSnapshot?.();
-}, 30_000);
+// This case runs five full staging paths (including 16 cache prefill entries).
+// Git-for-Windows/NTFS startup costs require a larger outer fixture budget; each
+// staged production command retains its 30-second specification timeout.
+}, process.platform === "win32" ? 90_000 : 30_000);
 
 it("separates shared seeds when file contents, Git head, origin or repository layout differ", async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-seed-identity-"));
@@ -232,9 +247,13 @@ it.each([false, true])("awaits restored-index work before inbound preparation co
       runner: { syncIn: operations => transport.syncIn!(operations), syncOut: operations => transport.syncOut!(operations),
         execute: command => {
           if (refreshing) refreshTimeouts.push(command.timeoutMs);
-          return runChildProcess("index-barrier", refreshing && failure ? "sh" : command.command,
-            refreshing && failure ? ["-c", "exit 7"] : command.args ?? [], {
-              cwd: command.cwd ?? root, env: command.env ?? {}, timeoutSec: (command.timeoutMs ?? 45_000) / 1000,
+          const shell = refreshing && failure
+            ? prepareTestPosixShell({ command: "sh", args: ["-c", "exit 7"] })
+            : process.platform === "win32"
+              ? prepareTestPosixShell({ command: command.command, args: command.args ?? [], env: command.env ?? {} })
+              : { command: command.command, args: command.args ?? [], env: command.env ?? {} };
+          return runChildProcess("index-barrier", shell.command, shell.args, {
+              cwd: command.cwd ?? root, env: shell.env, timeoutSec: (command.timeoutMs ?? 45_000) / 1000,
               graceSec: 1, onLog: async () => {},
             });
         },

@@ -851,8 +851,14 @@ function ProjectSkillBrowser({
         {browseQuery.isLoading || browseView.kind === "reconnecting" ? (
           <div className="flex items-center justify-center gap-2 p-8 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" /> {translateInstant("Loading folder…")}</div>
-        ) : browseQuery.error ? (
-          <div className="p-6 text-sm text-destructive">{readableErrorMessage(browseQuery.error)}</div>
+        ) : browseView.kind === "error" ? (
+          <QueryErrorState
+            className="m-6"
+            error={browseQuery.error}
+            action="load the folder"
+            onRetry={browseView.retry}
+            retrying={browseView.isFetching}
+          />
         ) : result?.entries.length ? (
           <ul className="divide-y divide-border/60">
             {result.entries.map((entry: CompanySkillProjectBrowseEntry) => {

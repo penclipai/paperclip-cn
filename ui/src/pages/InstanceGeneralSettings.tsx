@@ -72,11 +72,13 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
 
   if (generalView.kind === "error") {
     return (
-      <div className="text-sm text-destructive">
-        {generalQuery.error instanceof Error
-          ? generalQuery.error.message
-          : translateInstant("Failed to load general settings.")}
-      </div>
+      <QueryErrorState
+        size={embedded ? "panel" : "page"}
+        error={generalQuery.error}
+        action="load general settings"
+        onRetry={generalView.retry}
+        retrying={generalView.isFetching}
+      />
     );
   }
 

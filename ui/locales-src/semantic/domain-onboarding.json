@@ -6,7 +6,7 @@
   },
   "onboarding.adapterEnvironmentCheckDescription": {
     "en": "Runs a live probe that asks the adapter CLI to respond with hello.",
-    "zh-CN": "运行一次实时探测，请适配器 CLI 回复 hello。",
+    "zh-CN": "运行一次实时探测，要求适配器 CLI 回复 hello。",
     "reviewedEnglishHash": "c6c8414e2036c49efdfb277cf753c1e42ac64d2c974179c6b7a9e604144a1018"
   },
   "onboarding.adapterEnvironmentTestFailed": {

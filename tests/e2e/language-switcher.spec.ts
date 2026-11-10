@@ -95,7 +95,10 @@ test.describe("Language switcher", () => {
 
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page).toHaveTitle(/Dashboard/);
-    await expect(page.getByRole("button", { name: "New Task" })).toBeVisible();
+    // The upstream streamlined sidebar has both a primary action and a
+    // contextual duplicate. Assert the primary navigation action rather than
+    // assuming the accessible name is unique or title-cased.
+    await expect(page.getByRole("button", { name: "New task", exact: true }).first()).toBeVisible();
     await page.reload();
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page).toHaveTitle(/Dashboard/);

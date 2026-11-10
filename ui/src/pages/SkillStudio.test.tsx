@@ -410,6 +410,23 @@ describe("SkillStudio create mode", () => {
   });
 });
 
+describe("SkillStudio detail resilience", () => {
+  it("keeps a failed detail request retryable instead of presenting it as missing", async () => {
+    routeState.pathname = "/skills/studio/source-skill";
+    routeState.skillId = "source-skill";
+    mockCompanySkillsApi.detail.mockRejectedValue(new ApiError("Service unavailable", 503, {}));
+
+    const node = await renderStudio();
+
+    await waitFor(() => expect(node.querySelector('[data-query-view="error"]')).not.toBeNull());
+    expect(node.textContent).not.toContain("Skill not found.");
+    const retry = buttonsNamed(node, "Retry")[0];
+    expect(retry).toBeTruthy();
+    await click(retry!);
+    await waitFor(() => expect(mockCompanySkillsApi.detail).toHaveBeenCalledTimes(2));
+  });
+});
+
 function makeListItem(
   overrides: Partial<CompanySkillListItem> & { id: string },
 ): CompanySkillListItem {

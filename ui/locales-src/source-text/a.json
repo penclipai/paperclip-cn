@@ -36,7 +36,7 @@
   },
   "1. Authorization URL": {
     "en": "1. Authorization URL",
-    "zh-CN": "1.授权URL",
+    "zh-CN": "1. 授权 URL",
     "reviewedEnglishHash": "5dafba3f9041d4dddc20a3a04952eb38f16616764f3f477441313fbeb7866a15"
   },
   "2. Adapter": {
@@ -46,7 +46,7 @@
   },
   "2. Authentication URL": {
     "en": "2. Authentication URL",
-    "zh-CN": "2.身份验证URL",
+    "zh-CN": "2. 身份验证 URL",
     "reviewedEnglishHash": "964992f45ce788f1d9fb82962073682bde4845287d918987703b95da0dda837c"
   },
   "A Paperclip plugin": {
@@ -886,7 +886,7 @@
   },
   "Advanced providers": {
     "en": "Advanced providers",
-    "zh-CN": "先进的供应商",
+    "zh-CN": "高级提供方",
     "reviewedEnglishHash": "2eafb29b251e96d180f4954d0ce62f60b3cbcde79acda8a86970cbc52e9979f3"
   },
   "Advanced settings": {
@@ -921,7 +921,7 @@
   },
   "After authorizing, check the provider's result before using Run again. Paperclip will not repeat the call automatically.": {
     "en": "After authorizing, check the provider's result before using Run again. Paperclip will not repeat the call automatically.",
-    "zh-CN": "授权后，请先检查提供商结果再重新运行。Paperclip 不会自动重复调用。",
+    "zh-CN": "授权后，请先检查提供方结果再重新运行。Paperclip 不会自动重复调用。",
     "reviewedEnglishHash": "fda63e4f955b1acd76ede751f27291ffbb2d4f3c2fd6f35f1feb67539845d56a"
   },
   "After connecting this account, sign in to the app in Composio.": {
@@ -941,7 +941,7 @@
   },
   "After this much inactivity, runnerd checkpoints and suspends the provider session. The maximum is 24 hours.": {
     "en": "After this much inactivity, runnerd checkpoints and suspends the provider session. The maximum is 24 hours.",
-    "zh-CN": "空闲达到此时长后，runnerd 会检查点保存并暂停提供商会话，最长为 24 小时。",
+    "zh-CN": "空闲达到此时长后，runnerd 会创建检查点并暂停提供方会话，最长为 24 小时。",
     "reviewedEnglishHash": "9ab8242407e4ad90ceba5d60c8472f49d692ee29744ce1abfea590aae1055334"
   },
   "Agent": {
@@ -1261,7 +1261,7 @@
   },
   "All providers": {
     "en": "All providers",
-    "zh-CN": "全部服务商",
+    "zh-CN": "全部提供方",
     "reviewedEnglishHash": "20e56db7dfc7e08d5b6eda6c35c92a57881922c0bc29e8536913bcfa85d9c8b7"
   },
   "All reviews": {
@@ -1321,7 +1321,7 @@
   },
   "Allow externally billed provider": {
     "en": "Allow externally billed provider",
-    "zh-CN": "允许外部计费提供商",
+    "zh-CN": "允许外部计费提供方",
     "reviewedEnglishHash": "ffe83aa97b3fae59defbd34d2ef24715b192fcbaf9d0b6a0e1e892e289e9a6d6"
   },
   "Allow group chats": {
@@ -1426,12 +1426,12 @@
   },
   "An estimate held before each run starts. Zero disables the estimate. Actual provider charges may exceed it.": {
     "en": "An estimate held before each run starts. Zero disables the estimate. Actual provider charges may exceed it.",
-    "zh-CN": "每次运行开始前预留的估算金额。设为零可停用估算；实际提供商费用可能更高。",
+    "zh-CN": "每次运行开始前预留的估算金额。设为零可停用估算；实际提供方费用可能更高。",
     "reviewedEnglishHash": "b3958261f08188d9f90c4142f11a8ad14ee74e9d21394e576511749381f55dc2"
   },
   "An existing provider connection is available.": {
     "en": "An existing provider connection is available.",
-    "zh-CN": "现有提供商连接可用。",
+    "zh-CN": "现有提供方连接可用。",
     "reviewedEnglishHash": "e34ff189bffb6e8f947e6b8e0841a9f98317858466cb9a22aac2ee651883c5f5"
   },
   "An existing skill with key": {
@@ -1486,7 +1486,7 @@
   },
   "Anthropic Messages · Claude": {
     "en": "Anthropic Messages · Claude",
-    "zh-CN": "人择信息·克劳德",
+    "zh-CN": "Anthropic Messages · Claude",
     "reviewedEnglishHash": "136a636bf50dcd0b2f896c4827a5a324f9a59766611910d0e3bc76a73734aea3"
   },
   "Anthropic subscription": {

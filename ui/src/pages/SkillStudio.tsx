@@ -367,10 +367,23 @@ export function SkillStudio() {
       />
     );
   }
-  if (detailQuery.isLoading) {
+  if (detailQuery.isLoading || detailView.kind === "reconnecting") {
     return <StudioMessage message={translateInstant("skillStudio.states.loadingSkill")} />;
   }
-  if (detailQuery.isError || !detailQuery.data) {
+  // A missing skill is distinct from an unavailable detail request: only a
+  // real 404 gets the not-found copy; other failures retain the retry path.
+  if (detailView.kind === "error" && detailView.errorKind !== "not_found") {
+    return (
+      <QueryErrorState
+        size="page"
+        error={detailQuery.error}
+        action="load this skill"
+        onRetry={detailView.retry}
+        retrying={detailView.isFetching}
+      />
+    );
+  }
+  if (detailView.kind === "error" || !detailQuery.data) {
     return <StudioMessage message={translateInstant("skillStudio.states.skillNotFound")} />;
   }
 

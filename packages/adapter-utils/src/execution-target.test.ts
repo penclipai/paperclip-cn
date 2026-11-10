@@ -1,5 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { access, readFile } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { access, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { promisify } from "node:util";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as ssh from "./ssh.js";
 import * as serverUtils from "./server-utils.js";
@@ -16,6 +19,8 @@ import {
   runAdapterExecutionTargetShellCommand,
   type AdapterSshExecutionTarget,
 } from "./execution-target.js";
+
+const exec = promisify(execFile);
 
 function sshExecutionTarget(): AdapterSshExecutionTarget {
   return {
@@ -449,6 +454,60 @@ describe("resolveAdapterExecutionTargetCwd", () => {
 
 
 describe("GitHub launcher lifecycle", () => {
+  it.skipIf(process.platform !== "win32")("runs local managed launchers through the fixed Node executable, not PATH", async () => {
+    const run = { runId: randomUUID(), target: null };
+    const fakeBin = path.join(process.env.TEMP ?? process.cwd(), `paperclip-github-wrapper-${randomUUID()}`);
+    const recordedInvocation = path.join(fakeBin, "invocation.json");
+    const injectionMarker = path.join(fakeBin, "cmd-injection-marker");
+    const expansionMarker = "cmd-expansion-must-not-reach-downstream";
+    const brokerTokenMarker = "broker-token-must-not-reach-downstream";
+    await mkdir(fakeBin, { recursive: true });
+    try {
+      const env = await prepareGitHubOperationLaunchers({ ...run, cwd: process.cwd(), env: { PATH: fakeBin } });
+      await writeFile(path.join(fakeBin, "node.cmd"), "@echo fake-node-selected\r\nexit /b 97\r\n", "utf8");
+      await writeFile(path.join(fakeBin, "git.cjs"), `require("node:fs").writeFileSync(${JSON.stringify(recordedInvocation)}, JSON.stringify({ args: process.argv.slice(2), brokerToken: process.env.PAPERCLIP_GITHUB_BROKER_TOKEN ?? null }));\n`, "utf8");
+      await writeFile(path.join(fakeBin, "git.cmd"), `@echo off\r\n"${process.execPath}" "%~dp0git.cjs" %*\r\n`, "utf8");
+      const commandEnv = {
+        ...process.env,
+        ...env,
+        PAPERCLIP_CMD_EXPANSION_SENTINEL: expansionMarker,
+        PAPERCLIP_CMD_INJECTION_MARKER: injectionMarker,
+        PAPERCLIP_GITHUB_BROKER_TOKEN: brokerTokenMarker,
+      };
+      const invoke = (command: string) => exec(process.env.ComSpec ?? "cmd.exe", ["/d", "/s", "/c", command], {
+        env: commandEnv, encoding: "utf8",
+      });
+      const result = await invoke("git --version");
+      expect(result.stdout).toBe("");
+      expect(result.stdout).not.toContain("fake-node-selected");
+      expect(JSON.parse(await readFile(recordedInvocation, "utf8"))).toEqual({ args: ["--version"], brokerToken: null });
+
+      for (const command of [
+        "git \"%PAPERCLIP_CMD_EXPANSION_SENTINEL%\"",
+        'git "!"',
+        'git "&"',
+        'git "|"',
+        'git "<"',
+        'git ">"',
+        'git "^"',
+        'git "\"\""',
+        'git "& echo injected > %PAPERCLIP_CMD_INJECTION_MARKER%"',
+      ]) {
+        await expect(invoke(command)).rejects.toMatchObject({
+          code: 126,
+          stderr: expect.stringContaining("cannot safely start through a Windows batch launcher"),
+        });
+        expect(JSON.parse(await readFile(recordedInvocation, "utf8"))).toEqual({ args: ["--version"], brokerToken: null });
+        await expect(access(injectionMarker)).rejects.toMatchObject({ code: "ENOENT" });
+      }
+      await expect(readFile(path.join(env.PAPERCLIP_GITHUB_LAUNCHER_DIR, "git.cmd"), "utf8"))
+        .resolves.toContain("DisableDelayedExpansion");
+    } finally {
+      await cleanupGitHubOperationLaunchers(run);
+      await rm(fakeBin, { recursive: true, force: true });
+    }
+  });
+
   it("removes only the completed run's launchers and leaves concurrent runs usable", async () => {
     const first = { runId: randomUUID(), target: null };
     const second = { runId: randomUUID(), target: null };

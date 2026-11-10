@@ -56,12 +56,12 @@
   },
   "activityFormat.action.heartbeat.output_stale_recovery_recursion_refused": {
     "en": "Refused recovery-on-recovery escalation",
-    "zh-CN": "拒绝了恢复中的恢复升级",
+    "zh-CN": "拒绝对恢复操作再次升级",
     "reviewedEnglishHash": "344e9249c65454363c437a4e64af292f8e1fd15c037c14d1780b6593598da042"
   },
   "activityFormat.action.heartbeat.output_stale_source_resolved": {
     "en": "System folded a stale run",
-    "zh-CN": "系统折叠了过时运行",
+    "zh-CN": "系统已完成失效运行的收尾",
     "reviewedEnglishHash": "e621cf5c04609cf029463c6d66fceac5bf198d1f4a1dae68605515e70eb29fca"
   },
   "activityFormat.action.issue.accepted_plan_decomposition_updated": {
@@ -86,7 +86,7 @@
   },
   "activityFormat.action.issue.checked_out": {
     "en": "checked out the issue",
-    "zh-CN": "签出了任务",
+    "zh-CN": "认领了任务",
     "reviewedEnglishHash": "6716c0d720ab11b7c248f27ff3fea2cc7c764dde3ae836ef10afea26381995d4"
   },
   "activityFormat.action.issue.comment_added": {
@@ -176,12 +176,12 @@
   },
   "activityFormat.action.issue.monitor_escalated_to_board": {
     "en": "escalated a monitor to the board",
-    "zh-CN": "将监控升级到了面板",
+    "zh-CN": "将监控升级到了看板",
     "reviewedEnglishHash": "d9d7a2b3bea2595732116b0ab644e01e00f78bbb46ee8352f54050e5577eb11e"
   },
   "activityFormat.action.issue.monitor_exhausted": {
     "en": "exhausted a monitor",
-    "zh-CN": "已耗尽监控",
+    "zh-CN": "监控已耗尽",
     "reviewedEnglishHash": "c877954e5ad219a31873ccb9b46e647d8b016ea309d1b498f4c09892516e0d75"
   },
   "activityFormat.action.issue.monitor_recovery_issue_created": {
@@ -236,7 +236,7 @@
   },
   "activityFormat.action.issue.recovery_action_opened": {
     "en": "Opened a source-scoped recovery action",
-    "zh-CN": "打开了源范围恢复操作",
+    "zh-CN": "发起了针对源的恢复操作",
     "reviewedEnglishHash": "f8b3a8a58dd7351a0e50950d384832c480110876ba424531ff115065065f6971"
   },
   "activityFormat.action.issue.recovery_action_resolved": {
@@ -331,7 +331,7 @@
   },
   "activityFormat.board": {
     "en": "Board",
-    "zh-CN": "面板",
+    "zh-CN": "看板",
     "reviewedEnglishHash": "4816cbfd74aa8297b9c9cdaae89e2f0d2ced6041e952dfcd114e01b4c82e9c6d"
   },
   "activityFormat.changedPriorityFrom": {
@@ -726,7 +726,7 @@
   },
   "activityFormat.row.heartbeat.output_stale_source_resolved": {
     "en": "system-folded stale run on",
-    "zh-CN": "系统折叠了过时运行：",
+    "zh-CN": "系统已完成失效运行的收尾：",
     "reviewedEnglishHash": "5ce8c91b621775ba12b5e44331cb406360051fe445deba56e55a58d4fc5371c4"
   },
   "activityFormat.row.instance.settings.experimental_updated": {
@@ -746,7 +746,7 @@
   },
   "activityFormat.row.issue.attachment_added": {
     "en": "attached file to",
-    "zh-CN": "添加了附件到",
+    "zh-CN": "添加了附件：",
     "reviewedEnglishHash": "188d5b2a7fc08041d1e5ecf5312014cdfb8e8de722203b9419ccdb75f1d5acfb"
   },
   "activityFormat.row.issue.attachment_removed": {
@@ -756,7 +756,7 @@
   },
   "activityFormat.row.issue.checked_out": {
     "en": "checked out",
-    "zh-CN": "签出了",
+    "zh-CN": "认领了",
     "reviewedEnglishHash": "7901037f90dc20cb7816205b2662cda19c5540da90d1c4bcae4aed8eb2766c9d"
   },
   "activityFormat.row.issue.comment_added": {
@@ -836,12 +836,12 @@
   },
   "activityFormat.row.issue.monitor_escalated_to_board": {
     "en": "escalated monitor for",
-    "zh-CN": "将监控升级到了面板：",
+    "zh-CN": "将监控升级到了看板：",
     "reviewedEnglishHash": "c9f669fdd5032e0035a615bc55cc6388a57540c020afb6ae015f64724b727734"
   },
   "activityFormat.row.issue.monitor_exhausted": {
     "en": "exhausted monitor on",
-    "zh-CN": "已耗尽监控：",
+    "zh-CN": "监控已耗尽：",
     "reviewedEnglishHash": "563471d4b002d33f30faea38f261d0f0fe046fcccb81152d0b896663880844b5"
   },
   "activityFormat.row.issue.monitor_recovery_issue_created": {
@@ -901,7 +901,7 @@
   },
   "activityFormat.row.issue.recovery_action_opened": {
     "en": "opened a recovery action on",
-    "zh-CN": "打开了恢复操作：",
+    "zh-CN": "发起了恢复操作：",
     "reviewedEnglishHash": "ed7cdf8f35737b6a0794fead900cdd66733c9c65b4268bd2e9979068b6f47e61"
   },
   "activityFormat.row.issue.recovery_action_resolved": {
@@ -921,7 +921,7 @@
   },
   "activityFormat.row.issue.successful_run_handoff_escalated": {
     "en": "escalated missing next step on",
-    "zh-CN": "升级了缺失下一步：",
+    "zh-CN": "升级处理了缺失的下一步：",
     "reviewedEnglishHash": "02f63b699166832ddbb897ef42748e64c9ec0a6a6b2a68a518a96441b2e38d9e"
   },
   "activityFormat.row.issue.successful_run_handoff_required": {

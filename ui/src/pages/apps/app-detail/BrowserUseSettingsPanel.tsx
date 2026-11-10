@@ -98,19 +98,17 @@ function CredentialSettings({
         {profiles.data?.length === 0 && (
           <p className="text-sm text-muted-foreground">{translateInstant("No saved profiles.")}</p>
         )}
-        {profiles.isLoading && (
+        {(profiles.isLoading || profilesView.kind === "reconnecting") && (
           <p className="text-sm text-muted-foreground">{translateInstant("Loading profiles…")}</p>
         )}
-        {profiles.isError && (
-          <p role="alert" className="text-sm text-destructive">
-            {translateInstant("Could not load profiles.")}{" "}
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => void profiles.refetch()}
-            >
-              {translateInstant("Retry")}</Button>
-          </p>
+        {profilesView.kind === "error" && (
+          <QueryErrorState
+            size="inline"
+            error={profiles.error}
+            action="load profiles"
+            onRetry={profilesView.retry}
+            retrying={profilesView.isFetching}
+          />
         )}
       </fieldset>
       {savedView.kind === "error" ? (

@@ -14,22 +14,21 @@ describe("agent detail navigation", () => {
   it("exposes the complete local information architecture", () => {
     expect(AGENT_DETAIL_NAVIGATION.map((section) => section.labelKey)).toEqual([
       "entityType.agent",
-      "agentDetail.runtime",
-      "agentDetail.governance",
+      "auditFeed.title",
     ]);
     expect(AGENT_DETAIL_NAVIGATION.flatMap((section) => section.items.map((item) => item.value))).toEqual([
       "overview",
       "instructions",
-      "skills",
       "runtime",
       "secrets",
-      "tools",
-      "channels",
       "permissions",
-      "api-keys",
-      "revisions",
+      "advanced",
+      "activity",
+      "runs",
+      "costs",
+      "budgets",
     ]);
-    expect(agentDetailViewLabel("instructions")).toBe(translateInstant("agentDetail.instructions"));
+    expect(agentDetailViewLabel("instructions")).toBe(translateInstant("agentConfig.identity"));
   });
 
   it("keeps views that left the nav reachable by URL", () => {

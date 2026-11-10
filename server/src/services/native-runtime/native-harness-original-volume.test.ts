@@ -8,6 +8,8 @@ import { originalHarnessVolumeAnchorPath, verifyOriginalHarnessVolumeSource, ass
 
 vi.mock("../../build-commit.js", () => ({ readBuildCommit: () => "a".repeat(40) }));
 const roots: string[] = [];
+const hasPosixOwnershipProof = process.platform !== "win32" && typeof process.getuid === "function";
+const itWithPosixOwnership = hasPosixOwnershipProof ? it : it.skip;
 afterEach(async () => { vi.unstubAllEnvs(); vi.useRealTimers(); for (const root of roots.splice(0)) await rm(root, { recursive: true, force: true }); });
 async function fixture() {
   const root = await realpath(await mkdtemp(join(tmpdir(), "harness-original-volume-"))); roots.push(root);
@@ -31,7 +33,7 @@ async function fixture() {
   return { root, anchorPath, anchor, witness };
 }
 
-it("requires the positive original-volume anchor and permits a later normal deployment", async () => {
+itWithPosixOwnership("requires the positive original-volume anchor and permits a later normal deployment", async () => {
   const { witness } = await fixture();
   const capability = await verifyOriginalHarnessVolumeSource(witness);
   await expect(assertOriginalHarnessVolumeSource(capability)).resolves.toBeUndefined();
@@ -51,13 +53,13 @@ it.each(["expired", "future", "wrong-deployment", "missing-volume", "wrong-mount
   if (control === "symlink-anchor") { await rm(anchorPath); const other = join(root, "alias.json"); await writeFile(other, "{}"); await symlink(other, anchorPath); }
   await expect(verifyOriginalHarnessVolumeSource(witness)).rejects.toThrow();
 });
-it("revalidates the anchor and current deployment before publication", async () => {
+itWithPosixOwnership("revalidates the anchor and current deployment before publication", async () => {
   const { witness, anchorPath } = await fixture();
   const capability = await verifyOriginalHarnessVolumeSource(witness);
   await writeFile(anchorPath, "{}");
   await expect(assertOriginalHarnessVolumeSource(capability)).rejects.toThrow("native_harness_original_volume_required");
 });
-it("treats creation device/inode as provenance after a provider-confirmed remount", async () => {
+itWithPosixOwnership("treats creation device/inode as provenance after a provider-confirmed remount", async () => {
   const { witness, anchor, anchorPath } = await fixture();
   anchor.mountIdentity = { dev: 1, ino: 2 }; anchor.instanceIdentity = { dev: 1, ino: 3 };
   const bytes = Buffer.from(JSON.stringify(anchor)); await writeFile(anchorPath, bytes);
@@ -65,4 +67,19 @@ it("treats creation device/inode as provenance after a provider-confirmed remoun
   await expect(verifyOriginalHarnessVolumeSource(witness)).resolves.toBeDefined();
   witness.currentMountIdentity.dev++;
   await expect(verifyOriginalHarnessVolumeSource(witness)).rejects.toThrow("native_harness_original_volume_required");
+});
+it.skipIf(process.platform !== "win32")("rejects original-volume authority on Windows without DACL/SID proof", async () => {
+  const { witness } = await fixture();
+  await expect(verifyOriginalHarnessVolumeSource(witness)).rejects.toThrow("native_harness_original_volume_required");
+});
+it("fails closed when POSIX UID proof is unavailable", async () => {
+  const { witness } = await fixture();
+  const descriptor = Object.getOwnPropertyDescriptor(process, "getuid");
+  Object.defineProperty(process, "getuid", { configurable: true, value: undefined });
+  try {
+    await expect(verifyOriginalHarnessVolumeSource(witness)).rejects.toThrow("native_harness_original_volume_required");
+  } finally {
+    if (descriptor) Object.defineProperty(process, "getuid", descriptor);
+    else Reflect.deleteProperty(process, "getuid");
+  }
 });

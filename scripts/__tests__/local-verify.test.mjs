@@ -22,7 +22,8 @@ function fixture(t) {
     cpSync(path.join(repository, directory), path.join(root, directory), { recursive: true });
   }
   for (const file of ["scripts/local-verify.mjs", "scripts/run-vitest-stable.mjs", "scripts/general-server-shard.mjs",
-    "scripts/test-line-shard.mjs", "scripts/ci-profile/record.mjs", "turbo.json", ".github/ci-task-matrix.json"]) {
+    "scripts/test-line-shard.mjs", "scripts/pnpm-invocation.mjs", "scripts/vitest-collection-batches.mjs",
+    "scripts/vitest-invocation.mjs", "scripts/ci-profile/record.mjs", "turbo.json", ".github/ci-task-matrix.json"]) {
     write(file, readFileSync(path.join(repository, file), "utf8"));
   }
   for (const directory of ["server/src/__tests__", "server/scripts"]) mkdirSync(path.join(root, directory), { recursive: true });
@@ -30,9 +31,11 @@ function fixture(t) {
   for (const name of ["vitest", "oxc-parser", ".bin"]) {
     symlinkSync(path.join(repository, "node_modules", name), path.join(root, "node_modules", name), "dir");
   }
-  for (const file of ["node_modules/.modules.yaml", "node_modules/.pnpm/lock.yaml"]) {
-    write(file, readFileSync(path.join(repository, file), "utf8"));
-  }
+  const modules = readFileSync(path.join(repository, "node_modules/.modules.yaml"), "utf8");
+  const virtualStoreDir = modules.match(/^virtualStoreDir: (.+)$/m)?.[1]?.trim();
+  assert.ok(virtualStoreDir, "fixture source must identify its pnpm virtual store");
+  write("node_modules/.modules.yaml", modules);
+  write("node_modules/.pnpm/lock.yaml", readFileSync(path.join(virtualStoreDir, "lock.yaml"), "utf8"));
   write(".gitignore", "node_modules\nnode_modules/\n.turbo/\n.env\n");
   write("package.json", JSON.stringify({ name: "local-verification-fixture", private: true, type: "module", packageManager: "pnpm@9.15.4",
     scripts: { verify: "node scripts/local-verify.mjs", "test:run": "vitest run" } }));
@@ -48,9 +51,24 @@ function fixture(t) {
   const git = (...args) => execFileSync("git", args, { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
   git("init", "-q"); git("add", ".");
   git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qm", "baseline");
+  const bin = path.join(root, "bin");
+  mkdirSync(bin, { recursive: true });
+  write("bin/pnpm-shim.cjs", `
+    const { spawnSync } = require("node:child_process");
+    const path = require("node:path");
+    const args = process.argv.slice(2);
+    if (args[0] === "--version") { console.log("9.15.4"); process.exit(0); }
+    if (args[0] !== "test:run") process.exit(2);
+    const result = spawnSync(process.execPath, [path.join(process.cwd(), "node_modules", "vitest", "vitest.mjs"), "run"], { stdio: "inherit" });
+    process.exit(result.status ?? 1);
+  `);
+  write("bin/pnpm.cmd", `@echo off\r\n@"${process.execPath}" "%~dp0pnpm-shim.cjs" %*\r\n`);
+  git("add", "bin");
+  git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qm", "fixture pnpm shim");
   const base = git("rev-parse", "HEAD");
   write("ui/src/leaf.ts", "export const value = 2;\n");
-  const env = localEnvironment({ ...process.env, FORCE_COLOR: "0" });
+  const env = localEnvironment({ ...process.env, FORCE_COLOR: "0", PATH: `${bin}${path.delimiter}${process.env.PATH}`,
+    PATHEXT: ".COM;.EXE;.BAT;.CMD", npm_execpath: path.join(bin, "pnpm-shim.cjs") });
   delete env.NODE_TEST_CONTEXT;
   delete env.DATABASE_URL;
   delete env.PAPERCLIP_TEST_POSTGRES_ADMIN_URL;
@@ -341,7 +359,10 @@ test("source mutation and interruption do not publish reusable passes", { timeou
     };
     child.stdout.on("data", collect); child.stderr.on("data", collect);
     child.once("error", reject);
-    child.once("close", (code, signal) => { clearTimeout(timer); resolve({ code, signal, text, acted }); });
+    child.once("close", (code, signal) => {
+      clearTimeout(timer);
+      resolve({ code: code ?? (signal === "SIGTERM" ? 143 : null), signal, text, acted });
+    });
   });
   const changed = await runControlled(() => f.write("ui/src/leaf.ts", "export const value = 4;\n"));
   assert.equal(changed.acted, true);

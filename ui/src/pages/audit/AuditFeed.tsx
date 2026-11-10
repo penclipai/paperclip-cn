@@ -744,16 +744,13 @@ export function AuditFeed({
         <Card>
           <CardContent className="py-14 text-center text-sm text-muted-foreground">{translateInstant("tools.common.loading")}</CardContent>
         </Card>
-      ) : feed.error ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
-            <p className="text-sm text-muted-foreground">
-              {feed.error instanceof Error ? feed.error.message : translateInstant("auditFeed.loadFailed")}
-            </p>
-            <Button variant="outline" size="sm" onClick={() => feed.refetch()}>
-              {translateInstant("auditFeed.tryAgain")}</Button>
-          </CardContent>
-        </Card>
+      ) : feedView.kind === "error" ? (
+        <QueryErrorState
+          error={feedView.error}
+          action="load the audit log"
+          onRetry={feedView.retry}
+          retrying={feedView.isFetching}
+        />
       ) : items.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-14 text-center">

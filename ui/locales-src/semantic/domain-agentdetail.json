@@ -131,7 +131,7 @@
   },
   "agentDetail.cachedTokens": {
     "en": "Cached tokens",
-    "zh-CN": "缓存 token",
+    "zh-CN": "缓存词元",
     "reviewedEnglishHash": "3efd7d161de384ad85f35fc004c013544c05e9291517abb0c8a0091c62957dcc"
   },
   "agentDetail.cachedTokensShort": {
@@ -436,7 +436,7 @@
   },
   "agentDetail.inputTokens": {
     "en": "Input tokens",
-    "zh-CN": "输入 token",
+    "zh-CN": "输入词元",
     "reviewedEnglishHash": "dd856eeb50463bae46757d871d833fcb63d29a39356e7db40fea337f6462c947"
   },
   "agentDetail.inputTokensShort": {
@@ -611,12 +611,12 @@
   },
   "agentDetail.moreIssues": {
     "en": "+{{count}} more issues",
-    "zh-CN": "+{{count}} 个更多任务",
+    "zh-CN": "另有 {{count}} 个任务",
     "reviewedEnglishHash": "2e2185e9eb9d5f9bb7c34bc1c868273408f358a0c569f5b6de5221854f41f726"
   },
   "agentDetail.moreTasks": {
     "en": "more tasks",
-    "zh-CN": "个更多任务",
+    "zh-CN": "个任务",
     "reviewedEnglishHash": "e57109ca138964bda3202bdbd3822d39457dc998652a939524b16dd5ba677394"
   },
   "agentDetail.newFileInBundle": {
@@ -691,7 +691,7 @@
   },
   "agentDetail.outputTokens": {
     "en": "Output tokens",
-    "zh-CN": "输出 token",
+    "zh-CN": "输出词元",
     "reviewedEnglishHash": "a9b50ea0c4a7e3469e7ac21e5497c3b11159a5968330807180eba6b5f0f36bfa"
   },
   "agentDetail.outputTokensShort": {

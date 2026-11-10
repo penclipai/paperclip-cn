@@ -91,8 +91,14 @@ describe("crashPoint in a test process", () => {
 
 // Each case starts a child Node process with the tsx loader; allow for a busy host.
 describe("crashPoint armed by the environment", { timeout: 60_000 }, () => {
+  const expectKilled = (result: Pick<ReturnType<typeof spawnSync>, "status" | "signal">) => {
+    // Windows reports self-SIGKILL as TerminateProcess exit 1, without a signal.
+    expect({ status: result.status, signal: result.signal }).toEqual(process.platform === "win32"
+      ? { status: 1, signal: null }
+      : { status: null, signal: "SIGKILL" });
+  };
   const script = (name: string) => [
-    `const { crashPoint } = await import(${JSON.stringify(path.join(import.meta.dirname, "crash-points.ts"))});`,
+    `const { crashPoint } = await import(${JSON.stringify(pathToFileURL(path.join(import.meta.dirname, "crash-points.ts")).href)});`,
     `crashPoint(${JSON.stringify(name)}); process.stdout.write("one\\n");`,
     `crashPoint(${JSON.stringify(name)}); process.stdout.write("two\\n");`,
   ].join("\n");
@@ -117,7 +123,7 @@ describe("crashPoint armed by the environment", { timeout: 60_000 }, () => {
     try {
       const receipt = path.join(dir, "receipt.jsonl");
       const result = runChild({ PAPERCLIP_CRASH_POINT: `${first}:2`, PAPERCLIP_CRASH_POINT_RECEIPT: receipt });
-      expect(result.signal).toBe("SIGKILL");
+      expectKilled(result);
       expect(result.stdout).toBe("one\n");
       expect(result.stderr).toContain(`[crash-point] armed ${first}:2`);
       expect(JSON.parse(readFileSync(receipt, "utf8").trim())).toMatchObject({ point: first, hit: 2, pid: result.pid });
@@ -143,7 +149,7 @@ describe("crashPoint armed by the environment", { timeout: 60_000 }, () => {
       const gate = path.join(dir, "open");
       const receipt = path.join(dir, "receipt.jsonl");
       const source = [
-        `const { crashPoint } = await import(${JSON.stringify(path.join(import.meta.dirname, "crash-points.ts"))});`,
+        `const { crashPoint } = await import(${JSON.stringify(pathToFileURL(path.join(import.meta.dirname, "crash-points.ts")).href)});`,
         `const { writeFileSync } = await import("node:fs");`,
         `crashPoint(${JSON.stringify(first)}); crashPoint(${JSON.stringify(first)}); process.stdout.write("closed\\n");`,
         `writeFileSync(${JSON.stringify(gate)}, "");`,
@@ -152,7 +158,7 @@ describe("crashPoint armed by the environment", { timeout: 60_000 }, () => {
       ].join("\n");
       const result = runChild({ PAPERCLIP_CRASH_POINT: `${first}:2`, PAPERCLIP_CRASH_POINT_GATE: gate,
         PAPERCLIP_CRASH_POINT_RECEIPT: receipt }, source);
-      expect(result.signal).toBe("SIGKILL");
+      expectKilled(result);
       expect(result.stdout).toBe("closed\none\n");
       expect(JSON.parse(readFileSync(receipt, "utf8").trim())).toMatchObject({ point: first, hit: 2 });
     } finally {
@@ -167,7 +173,7 @@ describe("crashPoint armed by the environment", { timeout: 60_000 }, () => {
       const receipt = path.join(dir, "receipt.jsonl");
       const hit = `crashPoint(${JSON.stringify(first)});`;
       const source = [
-        `const { crashPoint } = await import(${JSON.stringify(path.join(import.meta.dirname, "crash-points.ts"))});`,
+        `const { crashPoint } = await import(${JSON.stringify(pathToFileURL(path.join(import.meta.dirname, "crash-points.ts")).href)});`,
         `const { writeFileSync } = await import("node:fs");`,
         `${hit} process.stdout.write("absent\\n");`,
         `writeFileSync(${JSON.stringify(control)}, "t1 ${first}:2\\n");`,
@@ -177,7 +183,7 @@ describe("crashPoint armed by the environment", { timeout: 60_000 }, () => {
         `${hit} process.stdout.write("t2-two\\n");`,
       ].join("\n");
       const result = runChild({ PAPERCLIP_CRASH_POINT_CONTROL: control, PAPERCLIP_CRASH_POINT_RECEIPT: receipt }, source);
-      expect(result.signal).toBe("SIGKILL");
+      expectKilled(result);
       expect(result.stdout).toBe("absent\nt1-one\nt2-one\n");
       expect(JSON.parse(readFileSync(receipt, "utf8").trim())).toMatchObject({ point: first, hit: 2, token: "t2" });
     } finally {

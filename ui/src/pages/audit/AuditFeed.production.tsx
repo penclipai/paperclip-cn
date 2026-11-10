@@ -27,7 +27,7 @@ import { auditApi, type AuditActionRecord, type AuditActionFilters } from "@/api
 import { agentsApi } from "@/api/agents";
 import { accessApi } from "@/api/access";
 import { ApiError } from "@/api/client";
-import { useQueryView } from "@/components/QueryView";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { useToastActions } from "@/context/ToastContext";
 
 const PAGE_SIZE = 50;
@@ -654,16 +654,13 @@ export function AuditFeed({
         <Card>
           <CardContent className="py-14 text-center text-sm text-muted-foreground">{translateInstant("tools.advanced.loading")}</CardContent>
         </Card>
-      ) : feed.error ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
-            <p className="text-sm text-muted-foreground">
-              {feed.error instanceof Error ? feed.error.message : translateInstant("auditFeed.loadFailed")}
-            </p>
-            <Button variant="outline" size="sm" onClick={() => feed.refetch()}>
-              {translateInstant("Try again")}</Button>
-          </CardContent>
-        </Card>
+      ) : feedView.kind === "error" ? (
+        <QueryErrorState
+          error={feedView.error}
+          action="load the audit log"
+          onRetry={feedView.retry}
+          retrying={feedView.isFetching}
+        />
       ) : items.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-14 text-center">

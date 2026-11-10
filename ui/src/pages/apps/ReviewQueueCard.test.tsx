@@ -183,4 +183,16 @@ describe("ReviewQueueCard", () => {
     expect(createTrustRuleFromActionRequestMock).not.toHaveBeenCalled();
     expect(pushToastMock).toHaveBeenCalledWith(expect.objectContaining({ title: "Always allowed" }));
   });
+
+  it("shows the shared retryable query error instead of discarding the retry action", async () => {
+    listActionRequestsMock.mockRejectedValue(new Error("review service unavailable"));
+    await render();
+
+    await vi.waitFor(() => expect(container.querySelector('[data-query-view="error"]')).not.toBeNull());
+    const retry = buttonContaining("Retry");
+    expect(retry).toBeDefined();
+
+    await act(async () => retry?.click());
+    await vi.waitFor(() => expect(listActionRequestsMock).toHaveBeenCalledTimes(2));
+  });
 });

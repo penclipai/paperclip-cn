@@ -76,7 +76,7 @@
   },
   "Background features can charge this connection without a responsible person. These requests appear as Paperclip services.": {
     "en": "Background features can charge this connection without a responsible person. These requests appear as Paperclip services.",
-    "zh-CN": "后台功能可以在没有负责人的情况下对该连接进行充电。这些请求显示为Paperclip CN服务。",
+    "zh-CN": "后台功能可在无需负责人参与的情况下向该连接产生费用。这些请求会显示为 Paperclip CN 服务。",
     "reviewedEnglishHash": "cce8925ebd76ea4a261a876d398639becd02dc6d753645d79388ac0aee16c60a"
   },
   "Backlog": {
@@ -176,7 +176,7 @@
   },
   "Binding": {
     "en": "Binding",
-    "zh-CN": "装订",
+    "zh-CN": "绑定",
     "reviewedEnglishHash": "164c690a353e7b5106d3de3de2d1d1811b7b7c30ab0c4640c15c8a141b226280"
   },
   "Binding created · approved by": {
@@ -191,7 +191,7 @@
   },
   "Block new work when usage has no reliable price": {
     "en": "Block new work when usage has no reliable price",
-    "zh-CN": "当使用没有可靠的价格时阻止新作品",
+    "zh-CN": "当用量缺乏可靠价格时，阻止新工作",
     "reviewedEnglishHash": "483602ab76d764c1b7c6b5a98826d9379d3a95840ef3226a39c8b10f572f3a06"
   },
   "Blocked": {

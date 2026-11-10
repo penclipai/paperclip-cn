@@ -5,8 +5,8 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadShardDurations, selectGeneralServerShard } from "./general-server-shard.mjs";
-import { resolvePnpmInvocation } from "./pnpm-invocation.mjs";
 import { batchVitestCollectionFilters } from "./vitest-collection-batches.mjs";
+import { measurePnpmVitestCommand, resolveVitestInvocation } from "./vitest-invocation.mjs";
 import { invocationEnv } from "./ci-profile/record.mjs";
 import { vitestRetryArgs } from "./ci/vitest-retry.mjs";
 
@@ -179,11 +179,6 @@ const routeTestExcludePatterns = [
 const windowsGeneralServerCommandBudget = 4_000;
 const windowsInvocationTempPrefix = "v-";
 const isolatedTempEnvironmentVariables = ["TEMP", "TMP", "TMPDIR"];
-
-function quoteCmdArg(value) {
-  if (/^[A-Za-z0-9_/:=.,@+\\-]+$/.test(value)) return value;
-  return `"${value.replace(/"/g, '""')}"`;
-}
 
 function walk(dir) {
   const entries = readdirSync(dir);
@@ -430,16 +425,12 @@ function buildGeneralServerExcludePatterns() {
   return [...routeTestExcludePatterns, ...explicitPatterns].sort((a, b) => a.localeCompare(b));
 }
 
-function measurePnpmVitestCommand(args) {
-  return ["pnpm", "exec", "vitest", "run", ...args].map(quoteCmdArg).join(" ").length;
-}
-
 function buildCommandBudgetChunks(files, baseArgs, commandBudget) {
   const chunks = [];
   let current = [];
   for (const file of files) {
     const candidate = [...current, file];
-    if (measurePnpmVitestCommand([...baseArgs, ...candidate]) <= commandBudget) {
+    if (measurePnpmVitestCommand(["run", ...baseArgs, ...candidate]) <= commandBudget) {
       current = candidate;
       continue;
     }
@@ -486,8 +477,8 @@ async function runVitest(args, label, testShard = null, exactFiles = false) {
     const sourceLines = readFileSync(file, "utf8").split("\n");
     const collect = (filters, name) => {
       const output = path.join(testRoot, `${name}.json`);
-      const pnpmInvocation = resolvePnpmInvocation([
-        "exec", "vitest", "list", ...sourceOnlyVitestArgs,
+      const pnpmInvocation = resolveVitestInvocation([
+        "list", ...sourceOnlyVitestArgs,
         ...filters, "--allowOnly=false", "--includeTaskLocation", `--json=${output}`,
       ]);
       const result = spawnSync(pnpmInvocation.command, pnpmInvocation.args, {
@@ -524,8 +515,8 @@ async function runVitest(args, label, testShard = null, exactFiles = false) {
     const runFilters = selected.lines.map((line) => `${chatSuite}:${chatSuiteRunLine(sourceLines, line)}`);
     args = [...args.filter((arg) => arg !== chatSuite), ...runFilters, "--allowOnly=false"];
   }
-  const vitestRunArgs = ["exec", "vitest", "run", ...sourceOnlyVitestArgs, ...vitestRetryArgs(), ...args];
-  const pnpmInvocation = resolvePnpmInvocation(vitestRunArgs);
+  const vitestRunArgs = ["run", ...sourceOnlyVitestArgs, ...vitestRetryArgs(), ...args];
+  const pnpmInvocation = resolveVitestInvocation(vitestRunArgs);
   let completed = false;
   try {
     const command = exactFiles ? process.execPath : pnpmInvocation.command;
@@ -840,7 +831,7 @@ if (options.dryRun) {
                 windowsGeneralServerCommandBudget,
               ).map((files) => ({
                 files,
-                commandLength: measurePnpmVitestCommand([...generalServerBaseArgs, ...files]),
+                commandLength: measurePnpmVitestCommand(["run", ...generalServerBaseArgs, ...files]),
               }))
             : null,
         selectedGeneralServerSuites:

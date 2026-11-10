@@ -614,6 +614,30 @@ export async function copyCloneTree(source: string, target: string): Promise<voi
   }
 }
 
+async function readEffectiveCoreSymlinks(localDir: string): Promise<boolean> {
+  try {
+    const { stdout } = await runLocalGit(localDir, ["config", "--bool", "--get", "core.symlinks"], {
+      timeout: 10_000,
+      maxBuffer: 16 * 1024,
+    });
+    const value = stdout.trim();
+    if (value === "true") return true;
+    if (value === "false") return false;
+    throw new Error(`Git returned an invalid core.symlinks value: ${JSON.stringify(value)}`);
+  } catch (error) {
+    // `git config --get` uses exit status 1 when the key is absent. Git's
+    // documented default is `true`, which must be written explicitly into the
+    // fresh clone: on Windows `git init` can otherwise auto-probe false and
+    // check out mode 120000 entries as ordinary link-text files. Any malformed
+    // or otherwise unreadable source setting must still stop the snapshot.
+    const gitError = error as { code?: number; stderr?: unknown };
+    if (gitError.code === 1 && !/bad boolean config value/i.test(String(gitError.stderr ?? ""))) {
+      return true;
+    }
+    throw error;
+  }
+}
+
 export async function withShallowGitWorkspaceClone<T>(
   input: {
     localDir: string;
@@ -625,6 +649,7 @@ export async function withShallowGitWorkspaceClone<T>(
   const tempRef = `refs/paperclip/git-sync/import/${randomUUID()}`;
   try {
     const originUrl = input.snapshot.originUrl !== undefined ? input.snapshot.originUrl : await readSanitizedOriginRemoteUrl(input.localDir);
+    const sourceCoreSymlinks = await readEffectiveCoreSymlinks(input.localDir);
     await runLocalGit(input.localDir, ["update-ref", tempRef, input.snapshot.headCommit], {
       timeout: 10_000,
       maxBuffer: 16 * 1024,
@@ -641,6 +666,15 @@ export async function withShallowGitWorkspaceClone<T>(
         maxBuffer: 64 * 1024,
       });
     }
+    // A fresh clone does not inherit this local source setting. In particular,
+    // Windows otherwise defaults to link-text checkout when a host has
+    // `core.symlinks=false`, irreversibly losing mode 120000 before the
+    // workspace is archived. Do not force true: a source that selected false
+    // must retain its ordinary Git checkout semantics.
+    await runLocalGit(cloneDir, ["config", "--local", "core.symlinks", String(sourceCoreSymlinks)], {
+      timeout: 10_000,
+      maxBuffer: 64 * 1024,
+    });
     if (originUrl) {
       // The clone is what lands in the sandbox. Without `origin`, the branch
       // there reads as an unpublishable root snapshot even though its head is a

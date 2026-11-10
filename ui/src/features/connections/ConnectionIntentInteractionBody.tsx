@@ -386,6 +386,9 @@ export function ConnectionIntentInteractionBody({
             <span className="shrink-0 text-muted-foreground">{tool.permission === "allowed" ? translateInstant("Allowed") : translateInstant("Ask first")}</span>
           </li>)}
         </ul>
+        {setupView.kind === "error" ? <QueryErrorState size="inline" error={setupQuery.error} action="load this access request" onRetry={setupView.retry} retrying={setupView.isFetching} /> : null}
+        {completeMutation.error || declineMutation.error ? <p role="alert" className="text-sm text-destructive">{describeError(completeMutation.error ?? declineMutation.error).body}</p> : null}
+        {setupQuery.data?.canGrantAccess === false ? <p role="status" className="text-sm text-muted-foreground">Connection manager required.</p> : null}
         <DecisionCardFooter leading={footerSlot}>
           <div className={footerSlot ? "flex flex-wrap items-center justify-end gap-2" : "flex items-center justify-between gap-2"}>
           <Button size="sm" variant="ghost" disabled={busy} onClick={() => declineMutation.mutate()}>{translateInstant("builtInAgents.configure.notNow", { defaultValue: "Not now" })}</Button>

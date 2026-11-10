@@ -527,6 +527,7 @@ function connectionAuthorizationHref(
 
 type ToolActionCardState =
   | "pending"
+  | "waiting_connection"
   | "running"
   | "executed"
   | "failed"
@@ -548,6 +549,8 @@ function toolActionCardState(
   if (interaction.status === "rejected") return "declined";
   if (interaction.status === "cancelled") return "cancelled";
   if (interaction.status === "expired") return "expired";
+  if (execStatus === "approved" && interaction.result?.toolAction?.errorCode === "approved_action_connection_required")
+    return "waiting_connection";
   // Terminal execution outcomes take precedence over the coarse interaction
   // status so a self-resolving "running…" advances to its real result.
   if (execStatus === "executed") return "executed";
@@ -567,6 +570,9 @@ function toolActionStatusClasses(state: ToolActionCardState): {
   dimmed?: boolean;
 } {
   switch (state) {
+    case "waiting_connection":
+      return { shell: "border-2 border-border bg-transparent", badge: "border-border bg-muted text-muted-foreground",
+        label: "Sign-in needed", Icon: Clock };
     case "running":
       return {
         shell: "border-2 border-amber-500/70 bg-transparent",
@@ -2081,6 +2087,7 @@ function ToolActionResolution({
   }
   const labels = {
     pending: "Waiting for approval",
+    waiting_connection: "Approved · Sign-in needed",
     running: "Approved · Running…",
     executed: "Succeeded",
     failed: "Execution failed",
@@ -2104,6 +2111,27 @@ function ToolActionResolution({
       : state === "declined"
         ? interaction.result?.reason?.trim()
         : null;
+  if (state === "waiting_connection") {
+    const connectionId = interaction.payload.toolAction?.connectionId;
+    const appName = interaction.payload.toolAction?.appDisplayName || "app";
+    return <div role="status" className="space-y-2 text-sm text-muted-foreground">
+      <p className="font-medium text-foreground">
+        {translateInstant("issueThreadInteraction.toolAction.waitingConnection")}
+      </p>
+      <p>
+        {translateInstant("issueThreadInteraction.toolAction.waitingConnectionBody")}
+      </p>
+      {connectionId ? (
+        <Button asChild size="sm" variant="outline">
+          <Link to={appTabHref(connectionId, "permissions")}>
+            {translateInstant("issueThreadInteraction.toolAction.reconnectApp", {
+              appName,
+            })}
+          </Link>
+        </Button>
+      ) : null}
+    </div>;
+  }
   if (state === "failed" && result?.errorCode === "github_access_denied") {
     const connectionId = interaction.payload.toolAction?.connectionId;
     return (
@@ -2375,7 +2403,7 @@ function RequestToolActionCard({
   );
 }
 
-type SecretProposalCardState = ToolActionCardState;
+type SecretProposalCardState = Exclude<ToolActionCardState, "waiting_connection">;
 
 function secretProposalCardState(
   interaction: RequestConfirmationInteraction,

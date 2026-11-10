@@ -13,7 +13,6 @@ import { queryKeys } from "@/lib/queryKeys";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/context/ToastContext";
-import { describeError } from "@/api/errors";
 
 /** Provider authorization is performed by the backend; no task or agent run. */
 export function ComposioAppSetup({
@@ -39,7 +38,7 @@ export function ComposioAppSetup({
   const connectionId = selectedConnectionId ?? connections[0]?.id ?? "__new__";
   const [result, setResult] = useState<ComposioAppSetupResult | null>(null);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
   const [setupFailed, setSetupFailed] = useState(false);
   const connection = connections.find(
     (candidate) => candidate.id === connectionId,
@@ -76,7 +75,10 @@ export function ComposioAppSetup({
         onClose();
       }
     } catch (cause) {
-      setError(describeError(cause).body);
+      // Keep provider text intact, but resolve the app-owned fallback while
+      // rendering so a locale change never preserves a pretranslated string.
+      setError(cause instanceof Error ? cause : null);
+      setSetupFailed(!(cause instanceof Error));
     } finally {
       setBusy(false);
     }
@@ -112,7 +114,7 @@ export function ComposioAppSetup({
       </div>
       {error || setupFailed ? (
         <p role="alert" className="text-sm text-destructive">
-          {error ?? t("aggregatorConnect.composio.setupFailed")}
+          {error?.message ?? t("aggregatorConnect.composio.setupFailed")}
         </p>
       ) : null}
       {result ? (

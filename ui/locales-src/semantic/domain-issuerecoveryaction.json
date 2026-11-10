@@ -171,7 +171,7 @@
   },
   "issueRecoveryAction.current.headline.issue_graph_liveness": {
     "en": "Paperclip could not find a clear next step for this open task. Choose whether to continue work, send it for review, mark it done, or record what is blocking it.",
-    "zh-CN": "Paperclip 无法为这个开放任务找到明确的下一步。请选择继续工作、送审、标记完成，或记录阻塞原因。",
+    "zh-CN": "Paperclip 无法为这个未关闭任务找到明确的下一步。请选择继续工作、送审、标记完成，或记录阻塞原因。",
     "reviewedEnglishHash": "ae6d3dbd99070b51521ded6c78a128060e67a35c08ea9ca6b61a1535b2722f06"
   },
   "issueRecoveryAction.current.headline.missing_disposition": {
@@ -331,7 +331,7 @@
   },
   "issueRecoveryAction.lineage.board": {
     "en": "Automatic recovery is exhausted, so the board must choose the next step. The task itself still belongs to its original owner.",
-    "zh-CN": "自动恢复已用尽，因此看板必须选择下一步；任务本身仍归原负责人。",
+    "zh-CN": "自动恢复已用尽，因此董事会必须选择下一步；任务本身仍归原负责人。",
     "reviewedEnglishHash": "efd50a35aaaebeb3ed6560fff097ea3f2c7c49f881cd217db3a2634ec04e0b1a"
   },
   "issueRecoveryAction.lineage.recoveryOwner": {
@@ -481,7 +481,7 @@
   },
   "issueRecoveryAction.overrideConfirm": {
     "en": "I've verified this — reconcile anyway",
-    "zh-CN": "我已验证 - 仍要协调",
+    "zh-CN": "我已核实，仍要对齐",
     "reviewedEnglishHash": "d3c1046737b8d5b4298087e7446dcf2ac6f5746ac38e62ed9f6e2f0e9ba61f68"
   },
   "issueRecoveryAction.overridePrefix": {
@@ -491,7 +491,7 @@
   },
   "issueRecoveryAction.owner.board": {
     "en": "Board",
-    "zh-CN": "看板",
+    "zh-CN": "董事会",
     "reviewedEnglishHash": "4816cbfd74aa8297b9c9cdaae89e2f0d2ced6041e952dfcd114e01b4c82e9c6d"
   },
   "issueRecoveryAction.owner.decidesNextStep": {
@@ -851,7 +851,7 @@
   },
   "issueRecoveryAction.wake.boardDecision": {
     "en": "Board decision required",
-    "zh-CN": "需要看板决策。",
+    "zh-CN": "需要董事会决策。",
     "reviewedEnglishHash": "e6936688911dc7f5cbfc4d7132419d4af2eafe81a96f3a7303e666cc5dd4bee3"
   },
   "issueRecoveryAction.wake.checkScheduled": {
@@ -871,7 +871,7 @@
   },
   "issueRecoveryAction.wake.escalatedToBoard": {
     "en": "Escalated to board",
-    "zh-CN": "已升级到看板",
+    "zh-CN": "已升级到董事会",
     "reviewedEnglishHash": "0848d993bfcd7b09cba5c1cdda117d52d2014a0b76d318a5ed3415b8c1c17cb5"
   },
   "issueRecoveryAction.wake.manual": {

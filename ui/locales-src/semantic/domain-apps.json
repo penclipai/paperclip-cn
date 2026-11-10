@@ -195,12 +195,12 @@
   },
   "apps.common.actions": {
     "en": "Actions",
-    "zh-CN": "行动",
+    "zh-CN": "操作",
     "reviewedEnglishHash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
   },
   "apps.common.allAgents": {
     "en": "All agents",
-    "zh-CN": "所有智能体商",
+    "zh-CN": "所有智能体",
     "reviewedEnglishHash": "54c32d3e2cfa1cc879f746643e6b41360541692fc0a163f3793595510398e6f5"
   },
   "apps.common.app": {
@@ -235,7 +235,7 @@
   },
   "apps.common.company": {
     "en": "Company",
-    "zh-CN": "公司简介",
+    "zh-CN": "公司",
     "reviewedEnglishHash": "de4743c879734dc38cb3e270ecefcae077c3c2e626f9298115d5a03c8613f89b"
   },
   "apps.common.connect": {
@@ -1155,12 +1155,12 @@
   },
   "apps.detail.activity.allowlist.sheet": {
     "en": "sheet",
-    "zh-CN": "片材",
+    "zh-CN": "工作表",
     "reviewedEnglishHash": "78af7bdb5626eb0a046772b3edda705ca9e60ba7af0960eea89f7fa201d685a8"
   },
   "apps.detail.activity.allowlist.sheets": {
     "en": "sheets",
-    "zh-CN": "床单",
+    "zh-CN": "工作表",
     "reviewedEnglishHash": "01c01800d6990c0c31fe6e858dbc3a9ce03d1482a1956932aea7492f8cab7bb0"
   },
   "apps.detail.activity.allowlist.updated": {
@@ -1240,7 +1240,7 @@
   },
   "apps.detail.activity.lifecycle.actionsQuarantined": {
     "en": "{{count}} new actions need review",
-    "zh-CN": "{{count}} 新行动需要审查",
+    "zh-CN": "{{count}} 个新操作需要审核",
     "reviewedEnglishHash": "08f7a0f4bdf4a640c4cee119e0373a6156b9ac3139b77fcc62e1d36d18706ea1"
   },
   "apps.detail.activity.lifecycle.connected": {
@@ -1305,7 +1305,7 @@
   },
   "apps.detail.advanced.danger.removeDescription": {
     "en": "Agents lose access to {{appName}} right away. You can connect it again later.",
-    "zh-CN": "特工立即失去对 {{appName}} 的访问权限。您可以稍后再次连接。",
+    "zh-CN": "智能体会立即失去对 {{appName}} 的访问权限。你可以稍后再次连接。",
     "reviewedEnglishHash": "fb06886afdbf7c30c8be63a0867cbb2df5ae3b33d8db79b838217f024ab82752"
   },
   "apps.detail.advanced.danger.removeTitle": {
@@ -1320,12 +1320,12 @@
   },
   "apps.detail.advanced.key.description": {
     "en": "Your key is stored securely. Replace it if it stopped working or you rotated it.",
-    "zh-CN": "您的密钥已安全存储。如果它停止工作或您旋转了它，请更换它。",
+    "zh-CN": "密钥已安全存储。如已失效或完成轮换，可将其更换。",
     "reviewedEnglishHash": "1ed62df1413f650295f749dcf3820c5b505865b8ba00b45d586df424b2cf1267"
   },
   "apps.detail.advanced.key.replace": {
     "en": "Replace key",
-    "zh-CN": "更换钥匙",
+    "zh-CN": "更换密钥",
     "reviewedEnglishHash": "548dca59aca6ba0f15b29f2420e804245da35b09b8d53add2b2a61e7609b3bec"
   },
   "apps.detail.advanced.key.title": {
@@ -1345,7 +1345,7 @@
   },
   "apps.detail.advanced.reconnect.error.title": {
     "en": "That key didn't work",
-    "zh-CN": "那把钥匙不起作用",
+    "zh-CN": "该密钥不可用",
     "reviewedEnglishHash": "5bf9a8b27f980ee4b7287f9869518f941728485d08ec4b47687a004757836334"
   },
   "apps.detail.advanced.reconnect.fieldPlaceholder": {
@@ -1365,7 +1365,7 @@
   },
   "apps.detail.advanced.reconnect.stillFailing.body": {
     "en": "That key didn't check out. Try another.",
-    "zh-CN": "那把钥匙没有检查出来。尝试另一个。",
+    "zh-CN": "该密钥未通过验证。请尝试其他密钥。",
     "reviewedEnglishHash": "1fb0c9a965190532746583174799819db4e5ff26947ee1aa02d25223fc2d4a88"
   },
   "apps.detail.advanced.reconnect.stillFailing.title": {
@@ -1390,7 +1390,7 @@
   },
   "apps.detail.advanced.reconnectCard.description": {
     "en": "The key stopped working. Paste a new one to get it back online.",
-    "zh-CN": "钥匙停止工作了。粘贴一个新的以使其重新联机。",
+    "zh-CN": "密钥已失效。粘贴新密钥以重新上线。",
     "reviewedEnglishHash": "912825a71b2da6548bda49e2a8a5bad357ea452e541e4705b57ce4adcdb5745c"
   },
   "apps.detail.advanced.reconnectCard.oauthDescription": {
@@ -1460,7 +1460,7 @@
   },
   "apps.detail.breadcrumb.company": {
     "en": "Company",
-    "zh-CN": "公司简介",
+    "zh-CN": "公司",
     "reviewedEnglishHash": "de4743c879734dc38cb3e270ecefcae077c3c2e626f9298115d5a03c8613f89b"
   },
   "apps.detail.common.app": {
@@ -1605,7 +1605,7 @@
   },
   "apps.detail.permissions.access.option.all.title": {
     "en": "All agents",
-    "zh-CN": "所有智能体商",
+    "zh-CN": "所有智能体",
     "reviewedEnglishHash": "54c32d3e2cfa1cc879f746643e6b41360541692fc0a163f3793595510398e6f5"
   },
   "apps.detail.permissions.access.option.specific.description": {
@@ -1725,7 +1725,7 @@
   },
   "apps.detail.permissions.installed.description": {
     "en": "Whose harness carries {{appName}}'s tools on every run.",
-    "zh-CN": "每次跑步时，他的安全带都会携带 {{appName}} 的工具。",
+    "zh-CN": "指定在每次运行中承载 {{appName}} 工具的执行环境。",
     "reviewedEnglishHash": "cfdb639a3221aa1b7b8d51872971ea33836e20b4d7a28c3ecdf389001237fe88"
   },
   "apps.detail.permissions.installed.installAll.aria": {
@@ -1810,7 +1810,7 @@
   },
   "apps.detail.setup.googleSheets.description": {
     "en": "Agents can only use the sheets listed here.",
-    "zh-CN": "智能体商只能使用此处列出的表格。",
+    "zh-CN": "智能体只能使用此处列出的工作表。",
     "reviewedEnglishHash": "17ba1daf3a11cf474f0886a6e4ad788d5042ffa381c1573c82336741e5949912"
   },
   "apps.detail.setup.googleSheets.empty": {
@@ -1840,12 +1840,12 @@
   },
   "apps.detail.setup.googleSheets.removeDisabledTitle": {
     "en": "Add another sheet before removing this one.",
-    "zh-CN": "在移除这张纸之前添加另一张纸。",
+    "zh-CN": "移除此工作表前，请先添加另一个工作表。",
     "reviewedEnglishHash": "a9ae307c4c0d302267b9453cf6c66b84550698f933c17846731be3380a282c0f"
   },
   "apps.detail.setup.googleSheets.title": {
     "en": "Sheets agents can use",
-    "zh-CN": "床单智能体商可以使用",
+    "zh-CN": "智能体可使用的工作表",
     "reviewedEnglishHash": "38b73bee3388770118130f0cfcec6e184db7c626060bc6a5ec84b873dba908e7"
   },
   "apps.detail.setup.lifecycle.enabledDescription": {
@@ -1855,7 +1855,7 @@
   },
   "apps.detail.setup.lifecycle.enabledTitle": {
     "en": "Agents can use this app",
-    "zh-CN": "智能体商可以使用此应用",
+    "zh-CN": "智能体可使用此应用",
     "reviewedEnglishHash": "346766f2a04b43a78effd90e1cfc9b5d4b241e1e8b731400235cf7dcfb022df8"
   },
   "apps.detail.setup.lifecycle.pauseAria": {
@@ -1920,7 +1920,7 @@
   },
   "apps.detail.setup.quarantine.review": {
     "en": "Review",
-    "zh-CN": "评论",
+    "zh-CN": "审核",
     "reviewedEnglishHash": "aff0766a5290e117b8433c351bae7b7b23bed682b2369bd822d88a647cc58512"
   },
   "apps.detail.setup.quarantine.title": {

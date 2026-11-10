@@ -6,7 +6,8 @@ import { createVitest, parseCLI } from "vitest/node";
 // foo.test.tsx. Run the exact discovered specifications assigned to this shard.
 const { filter, options } = parseCLI(["vitest", "run", ...process.argv.slice(2)]);
 assert.ok(filter.length > 0, "Selected execution requires explicit test files");
-const expected = new Set(filter.map((file) => path.resolve(file)));
+const normalizedPath = (file) => path.normalize(file);
+const expected = new Set(filter.map((file) => normalizedPath(path.resolve(file))));
 assert.equal(expected.size, filter.length, "Duplicate selected file");
 process.env.TEST = "true";
 process.env.VITEST = "true";
@@ -17,8 +18,8 @@ delete options.exclude;
 const ctx = await createVitest({ ...options, watch: false });
 try {
   await ctx.standalone();
-  const specifications = (await ctx.globTestSpecifications()).filter((spec) => expected.has(spec.moduleId));
-  assert.deepEqual(specifications.map((spec) => spec.moduleId).sort(), [...expected].sort(),
+  const specifications = (await ctx.globTestSpecifications()).filter((spec) => expected.has(normalizedPath(spec.moduleId)));
+  assert.deepEqual(specifications.map((spec) => normalizedPath(spec.moduleId)).sort(), [...expected].sort(),
     "Selected files must match exactly one discovered specification in this project");
   await ctx.runTestSpecifications(specifications);
 } catch (error) {

@@ -416,7 +416,7 @@
   },
   "issueDetail.routineExecutionTitle": {
     "en": "Routine execution from routine {{routine}}",
-    "zh-CN": "来自例程 {{routine}} 的执行",
+    "zh-CN": "例行任务 {{routine}} 的执行",
     "reviewedEnglishHash": "a71ef5882a8ce03b71f7b24bb7090066f8fb6bd1ffb060a7b5077652fb042ae1"
   },
   "issueDetail.runStoppedTaskCancelled": {
@@ -606,7 +606,7 @@
   },
   "issueDetail.tokens": {
     "en": "Tokens",
-    "zh-CN": "Token",
+    "zh-CN": "词元",
     "reviewedEnglishHash": "a039dfb9628b53ddaebcfe8ef0793e3fdf19867601295f00d192acef59050869"
   },
   "issueDetail.tokensValue": {

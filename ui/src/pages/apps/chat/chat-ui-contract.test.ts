@@ -251,7 +251,7 @@ describe("chat connector UI contract", () => {
     expect(setup).toContain("defaultSlackAppConfiguration");
     expect(setup).not.toContain("No credentials");
     expect(setup).not.toContain("managed Microsoft app");
-    expect(setup).toContain("slackSetupState({ endpoint, repairing");
+    expect(setup).toMatch(/slackSetupState\(\{\s*endpoint,\s*repairing,/);
     expect(source("./slack/setup-state.ts")).toContain("endpoint.providerAccountId && !repairing");
     expect(setup).not.toContain('field("webhookSecret"');
     expect(setup).not.toContain("@penclipai/teams-connect");

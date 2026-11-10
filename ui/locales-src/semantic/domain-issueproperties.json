@@ -121,7 +121,7 @@
   },
   "issueProperties.blockedBy": {
     "en": "Blocked by",
-    "zh-CN": "被阻塞于",
+      "zh-CN": "受阻于",
     "reviewedEnglishHash": "36931a940259dfe117f3281b4e81fea12f40554406944f8d0e5bc46a19ef750c"
   },
   "issueProperties.blocking": {
@@ -151,7 +151,7 @@
   },
   "issueProperties.checkingMomentarily": {
     "en": "checking momentarily…",
-    "zh-CN": "即将检查…",
+      "zh-CN": "正在检查…",
     "reviewedEnglishHash": "801f78c66b103d62ec27a16e79ead7b92ebfcd251fea657db66526f455d436be"
   },
   "issueProperties.clearAdapterOptions": {
@@ -436,7 +436,7 @@
   },
   "issueProperties.noAssignee": {
     "en": "No assignee",
-    "zh-CN": "无指派对象",
+      "zh-CN": "无负责人",
     "reviewedEnglishHash": "d64d8cecf4ebff54afe8a87fed86f1dd654047995cd310132fc461f4355fdf9c"
   },
   "issueProperties.noBlockers": {
@@ -706,7 +706,7 @@
   },
   "issueProperties.triage": {
     "en": "Triage",
-    "zh-CN": "分诊",
+    "zh-CN": "任务分流",
     "reviewedEnglishHash": "4ffbef3c08edfa3878c8357dbe3de3f11c3c74c594d8405f40243390f7f2d118"
   },
   "issueProperties.unarchiveFailed": {

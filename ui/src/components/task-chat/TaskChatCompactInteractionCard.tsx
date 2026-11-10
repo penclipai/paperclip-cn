@@ -601,12 +601,12 @@ function ReceiptDisclosure({
               <strong>{interaction.payload.toolAction.toolDisplayName}</strong>{" "}
               · {interaction.payload.toolAction.risk} {translateInstant("risk")}
             </p>
-            <p className="mt-1">
+            {interaction.payload.toolAction.expiresAt ? <p className="mt-1">
               {translateInstant("apps.gateways.tokens.expiresLabel")}{" "}
               {new Date(
                 interaction.payload.toolAction.expiresAt,
               ).toLocaleString()}
-            </p>
+            </p> : null}
             <div className="mt-2">
               <MarkdownBody externalReferences={externalReferences}>
                 {interaction.payload.toolAction.previewMarkdown}
@@ -980,12 +980,12 @@ function ConfirmationCard({
             >
               {interaction.payload.toolAction.risk} {translateInstant("risk")}
             </span>
-            <span className="ml-auto text-xs text-muted-foreground">
+            {interaction.payload.toolAction.expiresAt ? <span className="ml-auto text-xs text-muted-foreground">
               {translateInstant("apps.gateways.tokens.expiresLabel")}{" "}
               {new Date(
                 interaction.payload.toolAction.expiresAt,
               ).toLocaleString()}
-            </span>
+            </span> : null}
           </div>
           <MarkdownBody externalReferences={externalReferences}>
             {interaction.payload.toolAction.previewMarkdown}

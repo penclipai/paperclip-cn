@@ -473,8 +473,12 @@ export function FailedRunInboxRow({
     ),
   );
   const displayError =
-    isRetrying || interruption?.state === "working"
+    isRetrying
       ? "Thinking"
+      : interruption?.retryWait
+        ? interruption.retryWait.message
+      : interruption?.state === "working"
+        ? "Thinking"
       : interruption?.state === "retry_scheduled"
         ? `Trying again in ${retrySeconds}s…`
         : interruption?.state === "failed"

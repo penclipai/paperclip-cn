@@ -473,7 +473,10 @@ it("restores a sparse checkpoint after a killed transfer left provider scratch, 
   const f = await fixture(); await disposeDirectorySnapshot(f.baseline);
   const remote = path.join(f.temp, "remote");
   const reserved = /^(\._|\.paperclip-upload)/;
-  const run = async (command: string) => { await execute("sh", ["-c", command]); };
+  const run = async (command: string) => {
+    const shell = prepareTestPosixShell({ command: "sh", args: ["-c", command] });
+    await execute(shell.command, shell.args, { env: process.platform === "win32" ? shell.env : process.env });
+  };
   type Operations = import("./sandbox-managed-runtime.js").SandboxSyncOperation[];
   const stripUmask = async (directory: string): Promise<void> => {
     for (const child of await fs.readdir(directory, { withFileTypes: true })) {
@@ -506,10 +509,14 @@ it("restores a sparse checkpoint after a killed transfer left provider scratch, 
   await fs.writeFile(path.join(remote, ".paperclip-upload-d99fe36b-5acc-437b-96ad-85d5ff9e79c4.tar"), Buffer.alloc(2048, 1));
   await fs.writeFile(path.join(remote, "new"), "agent work");
   await fs.writeFile(path.join(remote, "._summary"), "user summary");
-  await fs.writeFile(path.join(remote, "build.sh"), "#!/bin/sh\n"); await fs.chmod(path.join(remote, "build.sh"), 0o775);
+  const buildScript = path.join(remote, "build.sh");
+  await fs.writeFile(buildScript, "#!/bin/sh\n"); await fs.chmod(buildScript, 0o775);
+  const sourceBuildMode = (await fs.stat(buildScript)).mode & 0o777;
+  if (process.platform !== "win32") expect(sourceBuildMode).toBe(0o775);
   await prepared.restoreWorkspace();
   expect(await fs.readFile(path.join(f.root, "new"), "utf8")).toBe("agent work");
   expect(await fs.readFile(path.join(f.root, "._summary"), "utf8")).toBe("user summary");
-  expect((await fs.stat(path.join(f.root, "build.sh"))).mode & 0o777).toBe(0o775);
+  expect(await fs.readFile(path.join(f.root, "build.sh"), "utf8")).toBe("#!/bin/sh\n");
+  expect((await fs.stat(path.join(f.root, "build.sh"))).mode & 0o777).toBe(sourceBuildMode);
   expect((await fs.readdir(f.root)).filter(name => name.startsWith(".paperclip-upload"))).toEqual([]);
 }, 30000);

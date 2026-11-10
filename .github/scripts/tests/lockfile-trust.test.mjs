@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
@@ -16,6 +16,14 @@ import {
 
 const repo = 'paperclipai/paperclip';
 const base = { author: 'someuser', headRepo: repo, baseRepo: repo, headRef: 'fix/bug', dependabotLockCommits: {} };
+
+function quoteBash(value) {
+  return `'${value.replaceAll("'", "'\"'\"'")}'`;
+}
+
+test('quotes Windows fixture values with spaces and apostrophes for Bash', () => {
+  assert.equal(quoteBash("D:\\fixture space\\owner's policy"), "'D:\\fixture space\\owner'\"'\"'s policy'");
+});
 
 test('allows a pull request that does not change lock content', () => {
   assert.deepEqual(
@@ -192,21 +200,33 @@ function runPrCheck(build) {
     git('init', '-q');
     const baseSha = commit('base', { 'pnpm-lock.yaml': 'lock: base\n', 'package.json': '{}\n' });
     const { author, commits } = build(commit);
-    const bin = path.join(root, '.bin');
-    mkdirSync(bin, { recursive: true });
-    writeFileSync(path.join(bin, 'gh'), '#!/bin/sh\nprintf "%s\\n" "$GH_STUB_OUTPUT"\n');
-    chmodSync(path.join(bin, 'gh'), 0o755);
+    const ghHook = path.join(root, 'gh-stub.cjs');
+    writeFileSync(
+      ghHook,
+      `const childProcess = require('node:child_process');
+const { syncBuiltinESMExports } = require('node:module');
+const originalExecFileSync = childProcess.execFileSync;
+childProcess.execFileSync = function(command, args, options) {
+  if (command === 'gh') {
+    const output = process.env.GH_STUB_OUTPUT ?? '';
+    return options?.encoding ? output : Buffer.from(output);
+  }
+  return originalExecFileSync.call(this, command, args, options);
+};
+syncBuiltinESMExports();
+`,
+    );
     const output = path.join(root, '.output');
     writeFileSync(output, '');
     const result = spawnSync(process.execPath, [path.resolve('.github/scripts/lockfile-trust.mjs'), 'pr'], {
       cwd: root, encoding: 'utf8',
-      env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, GITHUB_OUTPUT: output, GITHUB_REPOSITORY: repo,
+      env: { ...process.env, NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ''} --require=${JSON.stringify(ghHook)}`, GITHUB_OUTPUT: output, GITHUB_REPOSITORY: repo,
         PR_NUMBER: '7', BASE_SHA: baseSha, HEAD_SHA: git('rev-parse', 'HEAD'), PR_AUTHOR: author, HEAD_REPO: repo,
         HEAD_REF: 'dependabot/npm_and_yarn/zod', GH_STUB_OUTPUT: commits.map((entry) => JSON.stringify(entry)).join('\n') },
     });
-    return { status: result.status, stdout: result.stdout, output: readFileSync(output, 'utf8') };
+    return { status: result.status, stdout: result.stdout + result.stderr, output: readFileSync(output, 'utf8') };
   } finally {
-    rmSync(root, { recursive: true, force: true });
+    rmSync(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 }
 
@@ -305,15 +325,41 @@ function runPolicyStep({ staleBase, githubSha, headSha, author, headRef, root })
   const script = lines.slice(start, end).map((line) => line.slice(10)).join('\n');
   const output = path.join(root, '.output');
   writeFileSync(output, '');
-  const runnerTemp = path.join(mkdtempSync(path.join(tmpdir(), 'policy-runner-')), 'temp');
-  symlinkSync(mkdtempSync(path.join(tmpdir(), 'policy-runner-real-')), runnerTemp);
-  const result = spawnSync('bash', ['-e', '-c', script], {
-    cwd: root, encoding: 'utf8',
-    env: { ...process.env, RUNNER_TEMP: runnerTemp, GITHUB_OUTPUT: output,
-      GITHUB_REPOSITORY: repo, GITHUB_SHA: githubSha, BASE_SHA: staleBase, HEAD_SHA: headSha, PR_NUMBER: '1',
-      PR_AUTHOR: author, HEAD_REPO: repo, HEAD_REF: headRef },
-  });
-  return { status: result.status, stdout: result.stdout + result.stderr, output: readFileSync(output, 'utf8') };
+  const runnerTempParent = mkdtempSync(path.join(tmpdir(), 'policy-runner-'));
+  const runnerTemp = path.join(runnerTempParent, 'temp');
+  const runnerTempReal = mkdtempSync(path.join(tmpdir(), 'policy-runner-real-'));
+  symlinkSync(runnerTempReal, runnerTemp, process.platform === 'win32' ? 'junction' : 'dir');
+  const bashVariables = {
+    RUNNER_TEMP: runnerTemp,
+    GITHUB_OUTPUT: output,
+    GITHUB_REPOSITORY: repo,
+    GITHUB_SHA: githubSha,
+    BASE_SHA: staleBase,
+    HEAD_SHA: headSha,
+    PR_NUMBER: '1',
+    PR_AUTHOR: author,
+    HEAD_REPO: repo,
+    HEAD_REF: headRef,
+  };
+  const exports = Object.entries(bashVariables)
+    .map(([name, value]) => `export ${name}=${quoteBash(value)}`)
+    .join('\n');
+  try {
+    const gitBash = path.join(process.env.ProgramFiles ?? 'C:\\Program Files', 'Git', 'bin', 'bash.exe');
+    const bash = process.platform === 'win32' && existsSync(gitBash) ? gitBash : 'bash';
+    const result = spawnSync(bash, ['-e', '-c', `${exports}\n${script}`], {
+      cwd: root, encoding: 'utf8',
+      env: { ...process.env,
+        // Git for Windows otherwise rewrites revision suffixes such as ^1 while
+        // this fixture runs the Bash workflow step through MSYS.
+        ...(process.platform === 'win32' ? { MSYS2_ARG_CONV_EXCL: '*' } : {}),
+      },
+    });
+    return { status: result.status, stdout: result.stdout + result.stderr, output: readFileSync(output, 'utf8') };
+  } finally {
+    rmSync(runnerTempParent, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
+    rmSync(runnerTempReal, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
+  }
 }
 
 test('the policy step loads the policy from the merge commit when the recorded base is stale', () => {
@@ -359,7 +405,7 @@ test('the policy step loads the policy from the merge commit when the recorded b
     assert.equal(fallback.status, 0, fallback.stdout);
     assert.match(fallback.output, /^writer=none$/m);
   } finally {
-    rmSync(root, { recursive: true, force: true });
+    rmSync(root, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
   }
 });
 
@@ -386,6 +432,6 @@ test('the policy step fails when the loaded policy exits without reporting a wri
     assert.equal(result.status, 1, result.stdout);
     assert.match(result.stdout, /did not report a lockfile writer/);
   } finally {
-    rmSync(root, { recursive: true, force: true });
+    rmSync(root, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
   }
 });

@@ -256,7 +256,7 @@
   },
   "Mapping": {
     "en": "Mapping",
-    "zh-CN": "测绘",
+    "zh-CN": "映射",
     "reviewedEnglishHash": "1ff9a5f8b4bd530e726c82924b08bf653263a5cf1a9084f782836e3700e73b22"
   },
   "Mappings": {
@@ -301,7 +301,7 @@
   },
   "Markdown": {
     "en": "Markdown",
-    "zh-CN": "降价",
+    "zh-CN": "Markdown",
     "reviewedEnglishHash": "0e52f6b9d02515c59bb4fdeec2762fdbe701080c82986fc4dfbefcb1e2389817"
   },
   "Markdown body": {
@@ -416,7 +416,7 @@
   },
   "Message ID:": {
     "en": "Message ID:",
-    "zh-CN": "消息 ID(D):",
+    "zh-CN": "消息 ID：",
     "reviewedEnglishHash": "5edb6aa2916467228745bae608d793f66960fb6bb2d8fc9097377ea7c45e6e0f"
   },
   "Message agents and share photos from Apple Messages with a dedicated Photon number.": {
@@ -426,7 +426,7 @@
   },
   "Message details": {
     "en": "Message details",
-    "zh-CN": "留言详情",
+    "zh-CN": "消息详情",
     "reviewedEnglishHash": "1c8313102993543060b28a153265ed8f05e8b2d30dac18f80167a31cec1a08ea"
   },
   "Message in a channel": {
@@ -771,7 +771,7 @@
   },
   "mapping stage": {
     "en": "mapping stage",
-    "zh-CN": "测绘阶段",
+    "zh-CN": "映射阶段",
     "reviewedEnglishHash": "c85fe0bccc54043ac0342d8fa531082e636ba5a8acad790275730ae2f8a05716"
   },
   "marked as read": {
@@ -806,7 +806,7 @@
   },
   "more in stage settings": {
     "en": "more in stage settings",
-    "zh-CN": "舞台设置中的更多内容",
+    "zh-CN": "阶段设置中的更多内容",
     "reviewedEnglishHash": "2342eb61b009a3898c21c351ce1cef8f22054778c4dffb83c82f0e829ee86704"
   },
   "more minutes.": {
@@ -816,12 +816,12 @@
   },
   "more rows": {
     "en": "more rows",
-    "zh-CN": "行未显示",
+    "zh-CN": "更多行",
     "reviewedEnglishHash": "265a0c79eeae3ca4e2e6ac22d2f75cf1ee9c42392f311e0c32e8b93e1f46271f"
   },
   "more rows in the raw response": {
     "en": "more rows in the raw response",
-    "zh-CN": "行未显示，可在原始响应中查看",
+    "zh-CN": "更多行，可在原始响应中查看",
     "reviewedEnglishHash": "b9690f51c734233780db32a8e4ffde315db850e2df1b2a79d8296a09da799b31"
   },
   "more task": {
@@ -831,7 +831,7 @@
   },
   "most recent artifacts.": {
     "en": "most recent artifacts.",
-    "zh-CN": "最近的文物。",
+    "zh-CN": "最近的工件。",
     "reviewedEnglishHash": "3f4d1829220b672fa02ffc27ec466aab8071430f6447ef68a0fdbdd85355c0a4"
   },
   "most recent routine runs.": {

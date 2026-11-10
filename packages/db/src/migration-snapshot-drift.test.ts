@@ -1,7 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { generateDrizzleJson, generateMigration } from "drizzle-kit/api";
 
 // The newest snapshot in `src/migrations/meta` is the state `drizzle-kit
@@ -52,17 +52,27 @@ async function importSchemaModules(): Promise<Record<string, unknown>> {
 }
 
 describe("migration snapshot drift", () => {
-  it("keeps the newest snapshot in sync with the drizzle schema", async () => {
+  let statements: Awaited<ReturnType<typeof generateMigration>>;
+  let snapshotFile: string;
+
+  // Importing every schema module and initializing Drizzle's generator is cold
+  // work that can exceed Vitest's default five-second *test* budget on Windows.
+  // Keep it in a bounded setup hook; the assertion below retains the normal
+  // timeout and still proves the generated diff is empty.
+  beforeAll(async () => {
     const { file, snapshot } = await readNewestSnapshot();
+    snapshotFile = file;
     const current = generateDrizzleJson(await importSchemaModules(), snapshot.id as string);
-    const statements = await generateMigration(
+    statements = await generateMigration(
       snapshot as Parameters<typeof generateMigration>[0],
       current as Parameters<typeof generateMigration>[1],
     );
+  }, 30_000);
 
+  it("keeps the newest snapshot in sync with the drizzle schema", async () => {
     expect(
       statements,
-      `${file} no longer matches src/schema. Run \`pnpm --filter @penclipai/db generate\` and commit the migration it emits; do not hand-edit the snapshot.`,
+      `${snapshotFile} no longer matches src/schema. Run \`pnpm --filter @penclipai/db generate\` and commit the migration it emits; do not hand-edit the snapshot.`,
     ).toEqual([]);
   });
 });

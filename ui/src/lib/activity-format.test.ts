@@ -127,7 +127,7 @@ describe("activity formatting", () => {
   it("formats monitor activity through the same translation path as the activity row", async () => {
     const rows = [
       ["issue.monitor_scheduled", "scheduled monitor on", "安排了监控："],
-      ["issue.monitor_exhausted", "exhausted monitor on", "已耗尽监控："],
+      ["issue.monitor_exhausted", "exhausted monitor on", "监控已耗尽："],
     ] as const;
     for (const [action, english] of rows) expect(translationState.translate(formatActivityVerb(action))).toBe(english);
     expect(formatIssueActivityAction("issue.monitor_triggered")).toBe("triggered a monitor");

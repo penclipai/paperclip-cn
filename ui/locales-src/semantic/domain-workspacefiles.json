@@ -1,7 +1,7 @@
 {
   "workspaceFiles.unavailable.cleaned.body": {
     "en": "The isolated worktree for this issue has been cleaned up, so files cannot be previewed.",
-    "zh-CN": "此任务的隔离 worktree 已清理，因此无法预览文件。",
+      "zh-CN": "此任务的隔离工作树已清理，因此无法预览文件。",
     "reviewedEnglishHash": "f472e17436eb79b53585017001a8cf41952f5f40f824f76e477de94fc8ba4ad5"
   },
   "workspaceFiles.unavailable.cleaned.title": {

@@ -192,8 +192,20 @@ export function PluginManager() {
     [installedPlugins]
   );
 
-  if (isLoading) return <div className="p-4 text-sm text-muted-foreground">{translateInstant("Loading plugins...")}</div>;
-  if (error) return <div className="p-4 text-sm text-destructive">{translateInstant("Failed to load plugins.")}</div>;
+  if (isLoading || pluginsView.kind === "reconnecting") {
+    return <div className="p-4 text-sm text-muted-foreground">{translateInstant("Loading plugins...")}</div>;
+  }
+  if (pluginsView.kind === "error") {
+    return (
+      <QueryErrorState
+        size="page"
+        error={error}
+        action="load plugins"
+        onRetry={pluginsView.retry}
+        retrying={pluginsView.isFetching}
+      />
+    );
+  }
 
   return (
     <div className="max-w-6xl space-y-6">
@@ -263,10 +275,15 @@ export function PluginManager() {
           </div>
         )}
 
-        {bundledQuery.isLoading ? (
+        {bundledQuery.isLoading || bundledView.kind === "reconnecting" ? (
           <div className="text-sm text-muted-foreground">{translateInstant("Loading bundled plugins...")}</div>
-        ) : bundledQuery.error ? (
-          <div className="text-sm text-destructive">{translateInstant("Failed to load bundled plugins.")}</div>
+        ) : bundledView.kind === "error" ? (
+          <QueryErrorState
+            error={bundledQuery.error}
+            action="load bundled plugins"
+            onRetry={bundledView.retry}
+            retrying={bundledView.isFetching}
+          />
         ) : bundledPlugins.length === 0 ? (
           <div className="rounded-md border border-dashed px-4 py-3 text-sm text-muted-foreground">
             {translateInstant("No bundled plugins were found in this checkout.")}</div>

@@ -65,7 +65,8 @@ async function readSource(asset: NativeRuntimeAssetReference) {
     const handle = await fs.open(path.join(expected, entry.path), constants.O_RDONLY | constants.O_NOFOLLOW);
     try {
       const stat = await handle.stat();
-      if (!stat.isFile() || stat.nlink !== 1 || stat.size !== entry.size || (stat.mode & 0o777) !== entry.mode) throw new Error("runtime_skill_source_changed");
+      const modeMatches = process.platform === "win32" || (stat.mode & 0o777) === entry.mode;
+      if (!stat.isFile() || stat.nlink !== 1 || stat.size !== entry.size || !modeMatches) throw new Error("runtime_skill_source_changed");
       const bytes = await handle.readFile();
       if (bytes.length !== entry.size || hash(bytes) !== entry.sha256) throw new Error("runtime_skill_source_changed");
       files.push(snapshotFile(entry.path, entry.path === "SKILL.md" ? "skill" : "other", bytes, Boolean(entry.mode & 0o111)));

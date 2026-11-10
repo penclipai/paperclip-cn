@@ -36,7 +36,7 @@
   },
   "+{{count}} more issues": {
     "en": "+{{count}} more issues",
-    "zh-CN": "另有 +{{count}} 个任务",
+    "zh-CN": "+{{count}} 个任务",
     "reviewedEnglishHash": "2e2185e9eb9d5f9bb7c34bc1c868273408f358a0c569f5b6de5221854f41f726"
   },
   ", choose the downloaded package, and install it in each intended personal chat, group chat, or team. One team install covers its standard channels. Private and shared channels require a separate app installation and are not supported by this release. If upload is unavailable, a Teams administrator must enable or approve custom apps.": {
@@ -286,7 +286,7 @@
   },
   "Cancelled after {{duration}}": {
     "en": "Cancelled after {{duration}}",
-    "zh-CN": "{{duration}}后已取消",
+    "zh-CN": "{{duration}} 后已取消",
     "reviewedEnglishHash": "5e5aa2c0b385a3b97016305729e337045b717c5df69e8b0454ae46df50dcf20e"
   },
   "Cancelling a subtree is destructive. Non-terminal issues will be marked cancelled, and running or queued work will be interrupted where possible.": {
@@ -311,7 +311,7 @@
   },
   "Canonical PRP events and persisted presentation decisions remain available below.": {
     "en": "Canonical PRP events and persisted presentation decisions remain available below.",
-    "zh-CN": "规范的 PRP 事件和持续的演示决策在下面仍然可用。",
+    "zh-CN": "规范的 PRP 事件和已保存的展示决策仍可在下方查看。",
     "reviewedEnglishHash": "143b2bcd38a857e27eb74f61a9fb72d65330e5af245ef00c424d5445f0881e10"
   },
   "Canonical PRP events and presentation decisions remain inspectable below.": {
@@ -331,12 +331,12 @@
   },
   "Capture exact provider traffic for this run (expires after 24 hours)": {
     "en": "Capture exact provider traffic for this run (expires after 24 hours)",
-    "zh-CN": "捕获此次运行的完整提供商流量（24 小时后过期）",
+    "zh-CN": "捕获此次运行的完整提供方流量（24 小时后过期）",
     "reviewedEnglishHash": "075981626599d2f835b3cd15b8222b22a5bbb58d24fd8afe7add7acff1c6597c"
   },
   "Capture raw provider traces": {
     "en": "Capture raw provider traces",
-    "zh-CN": "捕获原始提供商追踪",
+    "zh-CN": "捕获原始提供方追踪",
     "reviewedEnglishHash": "071aa7509f9921a3b302f866023daccb3ff89ba2f0c7701b2e931860ebe1e732"
   },
   "Capture setup pitfalls and screenshots.": {
@@ -421,7 +421,7 @@
   },
   "Change AI connection": {
     "en": "Change AI connection",
-    "zh-CN": "更改AI连接",
+    "zh-CN": "更改 AI 连接",
     "reviewedEnglishHash": "1dae4a98f6ebca2cda77c82f8d97e5cb2ac42ab59d51f77f808ca0d121d56b7e"
   },
   "Change API key": {
@@ -641,7 +641,7 @@
   },
   "Check your model and provider connection, then try again.": {
     "en": "Check your model and provider connection, then try again.",
-    "zh-CN": "请检查模型和提供商连接后再试。",
+    "zh-CN": "请检查模型和提供方连接后再试。",
     "reviewedEnglishHash": "c7c75083b81f3cf22de88a8a8a90ba71cc6928008ab9fa746492f3df56790202"
   },
   "Checkbox & Label": {
@@ -806,7 +806,7 @@
   },
   "Choose a provider connection for this agent.": {
     "en": "Choose a provider connection for this agent.",
-    "zh-CN": "为此智能体选择提供商连接。",
+    "zh-CN": "为此智能体选择提供方连接。",
     "reviewedEnglishHash": "e1594231b271d3f965e050c89752d06fe4566f2c082f5f8575439af6622abd21"
   },
   "Choose a role": {
@@ -831,7 +831,7 @@
   },
   "Choose an AI connection": {
     "en": "Choose an AI connection",
-    "zh-CN": "选择AI连接",
+    "zh-CN": "选择 AI 连接",
     "reviewedEnglishHash": "3ef5e338f39a381f1074251aae4808a7ac744dbe76d9ae07ab4bad4ae68e0b65"
   },
   "Choose an account": {
@@ -871,17 +871,17 @@
   },
   "Choose another branch": {
     "en": "Choose another branch",
-    "zh-CN": "选择另一个分行",
+    "zh-CN": "选择另一个分支",
     "reviewedEnglishHash": "2b88b70b0c299694823f22ea44e2288b453a3fc8aee27f661c60fc278b0fee09"
   },
   "Choose another provider or gateway": {
     "en": "Choose another provider or gateway",
-    "zh-CN": "选择其他提供商或网关",
+    "zh-CN": "选择其他提供方或网关",
     "reviewedEnglishHash": "89999001e9e59a85667554cd5d3d8a6e8ee0c78a79225d51a1778d7a64f3fd9c"
   },
   "Choose assignee": {
     "en": "Choose assignee",
-    "zh-CN": "选择受让人",
+    "zh-CN": "选择负责人",
     "reviewedEnglishHash": "14513f02d1e81921de428eb886bfa5ce731e7fbba42e1a9e13dbe3c8acdb8dfa"
   },
   "Choose connection": {
@@ -946,7 +946,7 @@
   },
   "Choose the shared connection Paperclip uses for optional decision features. API usage is charged to this connection.": {
     "en": "Choose the shared connection Paperclip uses for optional decision features. API usage is charged to this connection.",
-    "zh-CN": "选择 Paperclip 用于可选决策功能的共享连接。 API 使用量按此连接收费。",
+    "zh-CN": "选择 Paperclip 用于可选决策功能的共享连接。API 使用量将计入此连接。",
     "reviewedEnglishHash": "ee93f2914ad3ee1485dd5b881ca4fe708030c525f80355e6dfba8efd8e3d315e"
   },
   "Choose the skills to keep synced. Unchecked skills stay installed.": {
@@ -976,7 +976,7 @@
   },
   "Choose whether the agents you manage may archive tasks out of your inbox on your behalf. You can undo any archive, and every agent archive is attributed in the task&apos;s properties.": {
     "en": "Choose whether the agents you manage may archive tasks out of your inbox on your behalf. You can undo any archive, and every agent archive is attributed in the task's properties.",
-    "zh-CN": "选择您管理的智能体是否可以代表您将任务从收件箱中存档。您可以撤消任何存档，并且每个智能体存档都归属于任务的属性。",
+    "zh-CN": "选择您管理的智能体是否可以代表您将任务从收件箱中存档。您可以撤销任何存档，每次由智能体执行的存档操作都会记录在任务属性中。",
     "reviewedEnglishHash": "998e091da08c9782362bfc4868f8805d36bc19dad99f7a0af546c8d74203d1fc"
   },
   "Choose which columns stay visible": {
@@ -1016,7 +1016,7 @@
   },
   "Claim this instance": {
     "en": "Claim this instance",
-    "zh-CN": "领取此实例",
+    "zh-CN": "认领此实例",
     "reviewedEnglishHash": "b7c7de5dd324d7d8f06443e295fe8d8eb771cab843b9d67bcee50df4342a5552"
   },
   "Claimed API key path": {
@@ -1031,7 +1031,7 @@
   },
   "Claude (ACPX)": {
     "en": "Claude (ACPX)",
-    "zh-CN": "克劳德 (ACPX)",
+    "zh-CN": "Claude（ACPX）",
     "reviewedEnglishHash": "60a5ff3212877efd385399ba88a60fa0fe77c108c3f95dc7145a091bb5baf30d"
   },
   "Claude (local)": {
@@ -1136,7 +1136,7 @@
   },
   "Client → provider": {
     "en": "Client → provider",
-    "zh-CN": "客户→提供商",
+    "zh-CN": "客户端 → 提供方",
     "reviewedEnglishHash": "1bd07e0a3c09789aa3f393638d6d66b749b941468dbec68daf9e654319177f42"
   },
   "Clipboard access was denied.": {
@@ -1256,7 +1256,7 @@
   },
   "Codex subscription": {
     "en": "Codex subscription",
-    "zh-CN": "Codex订阅",
+    "zh-CN": "Codex 订阅",
     "reviewedEnglishHash": "3e08a5f512acb061d851d6cefb385e02557cdcc0fbcb98f9849a72c7808cbac2"
   },
   "Collapse all": {
@@ -1296,7 +1296,7 @@
   },
   "Collapse {{label}}": {
     "en": "Collapse {{label}}",
-    "zh-CN": "折叠{{label}}",
+    "zh-CN": "折叠 {{label}}",
     "reviewedEnglishHash": "41cf121810da52cef2098142ec0238d68c53b304155f70e598f64cfafc891dcf"
   },
   "Collapse {{name}}": {
@@ -1546,7 +1546,7 @@
   },
   "Complete sign-in in the provider window, then return here. Paperclip is waiting for confirmation.": {
     "en": "Complete sign-in in the provider window, then return here. Paperclip is waiting for confirmation.",
-    "zh-CN": "请在提供商窗口中完成登录后返回此处。Paperclip 正在等待确认。",
+    "zh-CN": "请在提供方窗口中完成登录后返回此处。Paperclip 正在等待确认。",
     "reviewedEnglishHash": "5b1f7130db4650a0988665710757decfb5b24ce483ff84c36daf96ff0b628c3f"
   },
   "Complete this connection’s configuration before agents receive its instructions.": {
@@ -1856,7 +1856,7 @@
   },
   "Connect GitHub": {
     "en": "Connect GitHub",
-    "zh-CN": "连接GitHub",
+    "zh-CN": "连接 GitHub",
     "reviewedEnglishHash": "4027e5b24418520f3efe49fa4bb5381fda41aa2eee28f43e018f971ced6acd2b"
   },
   "Connect GitHub account": {
@@ -2501,7 +2501,7 @@
   },
   "Correlate exact provider traffic with every interpretation stage, canonical PRP event, and production surface.": {
     "en": "Correlate exact provider traffic with every interpretation stage, canonical PRP event, and production surface.",
-    "zh-CN": "将准确的提供商流量与每个解释阶段、规范 PRP 事件和生产界面相关联。",
+    "zh-CN": "将完整的提供方流量与每个解释阶段、规范 PRP 事件和生产界面关联。",
     "reviewedEnglishHash": "58234f9c215db81b9dec967141fae6f6cc9bc58a57c1c1f2fd999f08faa95a48"
   },
   "Cost": {
@@ -2531,7 +2531,7 @@
   },
   "Costs are unavailable for": {
     "en": "Costs are unavailable for",
-    "zh-CN": "本期有",
+    "zh-CN": "以下时段的成本不可用：",
     "reviewedEnglishHash": "b163c225e8275bef75d65a13ef387538c1a8c624d0f388fe210a6ec7bb7cdb6a"
   },
   "Costs by user": {
@@ -2561,7 +2561,7 @@
   },
   "Could not check your saved Claude subscription. Try again.": {
     "en": "Could not check your saved Claude subscription. Try again.",
-    "zh-CN": "无法检查您保存的克劳德订阅。再试一次。",
+    "zh-CN": "无法检查已保存的 Claude 订阅。请重试。",
     "reviewedEnglishHash": "c8c6c2beb441b19892db7a2e391e2406ee9d1aaa6cbe457bfc361c7828b627fc"
   },
   "Could not copy automatically. Select and copy the prompt above, or try again.": {
@@ -2676,7 +2676,7 @@
   },
   "Could not load profiles.": {
     "en": "Could not load profiles.",
-    "zh-CN": "无法加载浏览器配置。",
+    "zh-CN": "无法加载配置档案。",
     "reviewedEnglishHash": "a6c9d7f863b2ff043afed59c347a0ec7c7d3c90bdb89370e5c87c7fdab7ae2d0"
   },
   "Could not load public key": {
@@ -2906,7 +2906,7 @@
   },
   "Couldn't confirm channel delivery": {
     "en": "Couldn't confirm channel delivery",
-    "zh-CN": "无法确认渠道传送",
+    "zh-CN": "无法确认频道消息是否送达",
     "reviewedEnglishHash": "c3e0510dffa9113344998a18328520a3edf711d95e4ac13abdf770133267c9e6"
   },
   "Couldn't connect": {
@@ -3366,7 +3366,7 @@
   },
   "Create new secret…": {
     "en": "Create new secret…",
-    "zh-CN": "创造新的秘密……",
+    "zh-CN": "创建新密钥…",
     "reviewedEnglishHash": "e51d402a190315fd4ba16880b54688a59fcf05e8778fdb6b83ebdffd4a50c795"
   },
   "Create or link a secret here, then open an agent&apos;s Environment variables or a project&apos;s Env field. Add the env key the process expects, for example": {
@@ -3431,7 +3431,7 @@
   },
   "Create {{label}}": {
     "en": "Create {{label}}",
-    "zh-CN": "创建{{label}}",
+    "zh-CN": "创建 {{label}}",
     "reviewedEnglishHash": "e493e4eb9fa834c482d33c5d59d9cd74ec2b18c1be03e779e56740e37b9e2270"
   },
   "Create, update and read tickets.": {
@@ -3541,7 +3541,7 @@
   },
   "Credits": {
     "en": "Credits",
-    "zh-CN": "返还",
+    "zh-CN": "额度",
     "reviewedEnglishHash": "2a6b24ad287220345e96eb8021fe29d42b0785766c8df658827e7251da2d36dc"
   },
   "Critical": {
@@ -3626,7 +3626,7 @@
   },
   "Cursor uses Paperclip questions; per-run cost is unavailable. Pi accepts any provider/model ID. GitHub Copilot awaits qualification.": {
     "en": "Cursor uses Paperclip questions; per-run cost is unavailable. Pi accepts any provider/model ID. GitHub Copilot awaits qualification.",
-    "zh-CN": "Cursor 使用 Paperclip 提问；单次运行成本不可用。Pi 接受任何提供商或模型 ID。GitHub Copilot 尚待资格认证。",
+    "zh-CN": "Cursor 使用 Paperclip 提问；单次运行成本不可用。Pi 接受任何提供方/模型 ID。GitHub Copilot 尚待资格认证。",
     "reviewedEnglishHash": "cab6499e8cad98ffc2853921741ae343e7688de6159314dbfd01d8c23ef330cf"
   },
   "Custom": {
@@ -3806,7 +3806,7 @@
   },
   "complete": {
     "en": "complete",
-    "zh-CN": "完全的",
+    "zh-CN": "已完成",
     "reviewedEnglishHash": "eebbf6457e46a7f63acdf9b97390f790ba443d60cfa44b607da7e5c40aa1cc1d"
   },
   "completed runs await accounting.": {
@@ -3946,7 +3946,7 @@
   },
   "credits": {
     "en": "credits",
-    "zh-CN": "退回",
+    "zh-CN": "额度",
     "reviewedEnglishHash": "be379a30f1aa05d130468f4818fc077ccd2a8b9c972cf5dc901eed1be8587ab8"
   },
   "ctx": {

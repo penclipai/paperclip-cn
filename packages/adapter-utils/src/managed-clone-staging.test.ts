@@ -26,6 +26,7 @@ import {
   stopSshEnvLabFixture,
 } from "./ssh.js";
 import { workspacePaths } from "./workspace-manifest.js";
+import { prepareTestPosixShell } from "./test-fixtures/posix-shell.js";
 
 const execFile = promisify(execFileCallback);
 const STAGING_PATH = ".paperclip-repositories/backend.clone-Ab12Cd";
@@ -63,7 +64,8 @@ function makeFilesystemClient(): SandboxManagedRuntimeClient {
       await rm(remotePath, { recursive: true, force: true });
     },
     run: async (command) => {
-      await execFile("sh", ["-c", command], { maxBuffer: 32 * 1024 * 1024 });
+      const shell = prepareTestPosixShell({ command: "sh", args: ["-c", command] });
+      await execFile(shell.command, shell.args, { env: shell.env, maxBuffer: 32 * 1024 * 1024 });
     },
   };
   client.syncIn = async (operations: SandboxSyncOperation[]): Promise<SandboxSyncResult> => {
@@ -79,7 +81,8 @@ function makeFilesystemClient(): SandboxManagedRuntimeClient {
         bytesTransferred += bytes.byteLength;
       }
       for (const command of operation.postUploadCommands ?? []) {
-        await execFile("sh", ["-c", command.command], { maxBuffer: 32 * 1024 * 1024 });
+        const shell = prepareTestPosixShell({ command: "sh", args: ["-c", command.command] });
+        await execFile(shell.command, shell.args, { env: shell.env, maxBuffer: 32 * 1024 * 1024 });
       }
       resultOperations.push({ operationId: operation.operationId, filesTransferred, bytesTransferred });
     }

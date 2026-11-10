@@ -333,9 +333,9 @@ function McpConnectRequest({
             }}
           >
             <p className="text-sm">
-              Enter the one-use code from Paperclip’s agent setup to review this
-              connection’s access. Keep the code out of Bot chat. Access is
-              granted only when you approve the named agent below.
+              {translateInstant(
+                "Enter the one-use code from your Dot setup prompt to review this agent’s access. Access is granted when you click “Connect Dot with pairing code”.",
+              )}
             </p>
             <label htmlFor="dot-pairing-code" className="text-sm">
               {translateInstant("Pairing code", { defaultValue: "Pairing code" })}
@@ -421,7 +421,7 @@ function McpConnectRequest({
               >
                 {pairDot.isPending
                   ? translateInstant("Connecting…")
-                  : "Allow agent connection"}
+                  : translateInstant("Connect Dot with pairing code")}
               </Button>
             </div>
           </form>

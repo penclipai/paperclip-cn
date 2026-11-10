@@ -226,12 +226,12 @@
   },
   "tools.agent.policyEffects.block": {
     "en": "block",
-    "zh-CN": "块",
+    "zh-CN": "阻止",
     "reviewedEnglishHash": "496aca80e4d8f29fb8e8cd816c3afb48d3f103970b3a2ee1600c08ca67326dee"
   },
   "tools.agent.policyEffects.deny": {
     "en": "deny",
-    "zh-CN": "否认",
+    "zh-CN": "拒绝",
     "reviewedEnglishHash": "3026a0ca485e5831657ba0120fa8dd66b3425427bfb0a2be0db743e2305cc7c5"
   },
   "tools.agent.policyEffects.rateLimit": {
@@ -241,7 +241,7 @@
   },
   "tools.agent.policyEffects.redact": {
     "en": "redact",
-    "zh-CN": "编辑",
+    "zh-CN": "脱敏",
     "reviewedEnglishHash": "18f1255e3f7344a3ba6b47c30c585c48baf1b1d0ace3872b38658de130772f6e"
   },
   "tools.agent.policyEffects.requireApproval": {
@@ -256,7 +256,7 @@
   },
   "tools.agent.resolvingEffectiveAccess": {
     "en": "Resolving effective access…",
-    "zh-CN": "解决有效访问权限...",
+    "zh-CN": "正在解析有效访问权限…",
     "reviewedEnglishHash": "84e7e40cc934098a2f8a3070bf7d69955c57b209d1899e83596e51db9290882d"
   },
   "tools.agent.toolCount": {
@@ -736,7 +736,7 @@
   },
   "tools.common.dismiss": {
     "en": "Dismiss",
-    "zh-CN": "解雇",
+    "zh-CN": "关闭",
     "reviewedEnglishHash": "48845bff334a50a59aaecf499f28a7a24c3b4b891b8b18a9f1169ad8e8a6b261"
   },
   "tools.common.duplicate": {
@@ -836,12 +836,12 @@
   },
   "tools.common.resume": {
     "en": "Resume",
-    "zh-CN": "简历",
+    "zh-CN": "恢复",
     "reviewedEnglishHash": "d640c7421da066618a39daf4266da5f61f66a9b1afcd626481b831a17064965d"
   },
   "tools.common.review": {
     "en": "Review",
-    "zh-CN": "评论",
+    "zh-CN": "审核",
     "reviewedEnglishHash": "aff0766a5290e117b8433c351bae7b7b23bed682b2369bd822d88a647cc58512"
   },
   "tools.common.risky": {
@@ -1326,7 +1326,7 @@
   },
   "tools.gateways.owner.label": {
     "en": "Owner",
-    "zh-CN": "业主",
+    "zh-CN": "所有者",
     "reviewedEnglishHash": "4b1b8aa3608a26da451ae0630d75b60ab1bc2dd229c41a80838fc7993e835c46"
   },
   "tools.gateways.profileId": {
@@ -1351,7 +1351,7 @@
   },
   "tools.gateways.scope.issue": {
     "en": "Issue {{id}}",
-    "zh-CN": "问题 {{id}}",
+    "zh-CN": "任务 {{id}}",
     "reviewedEnglishHash": "52253f682b267594472f4f4c48dfdf6bc529a86216ea96228cfaf34906b79ea1"
   },
   "tools.gateways.scope.label": {
@@ -1421,7 +1421,7 @@
   },
   "tools.gateways.toast.tokenIssued": {
     "en": "Token issued",
-    "zh-CN": "代币发行",
+    "zh-CN": "令牌已签发",
     "reviewedEnglishHash": "819e5d266a5b8cca1d745567ed12b95cc95385c5d4cf0a81cc78a8640d89ef90"
   },
   "tools.gateways.toast.tokenIssuedBody": {
@@ -1456,17 +1456,17 @@
   },
   "tools.gateways.token.issue": {
     "en": "Issue token",
-    "zh-CN": "发行代币",
+    "zh-CN": "签发令牌",
     "reviewedEnglishHash": "3f03f9be7b13c89bd92160a1caabd7cbd3d97cc6ed32fcdda352a741b815b425"
   },
   "tools.gateways.token.issuing": {
     "en": "Issuing...",
-    "zh-CN": "发行...",
+    "zh-CN": "正在签发...",
     "reviewedEnglishHash": "88cfef9c371bbb93af112d806c5700ae5e1c19c931a814d116fbb6624874f46d"
   },
   "tools.gateways.token.name": {
     "en": "Token name",
-    "zh-CN": "代币名称",
+    "zh-CN": "令牌名称",
     "reviewedEnglishHash": "2e4186244bbd6ea2b97c61c04ea09e2f0d4ad0341dfaf0b950cb83192c7f42ac"
   },
   "tools.gateways.token.namePlaceholder": {
@@ -1481,22 +1481,22 @@
   },
   "tools.gateways.token.noExpiry": {
     "en": "no expiry",
-    "zh-CN": "没有期限",
+    "zh-CN": "未设置过期时间",
     "reviewedEnglishHash": "dd848d4323a22313fd82e98da6444e3176062f0f1aac9872c20bb9a42f513018"
   },
   "tools.gateways.token.none": {
     "en": "No tokens issued.",
-    "zh-CN": "没有发行代币。",
+    "zh-CN": "尚未签发令牌。",
     "reviewedEnglishHash": "96bebe094787511f1d9efd84d1c0f556996a657e66531d8dc6f5e748b5067f6b"
   },
   "tools.gateways.token.ownerNote": {
     "en": "Owner note",
-    "zh-CN": "业主须知",
+    "zh-CN": "所有者备注",
     "reviewedEnglishHash": "863302c01fbafb2eeb7e509fc2063688b07b8be669ec72ae1535ca2868bb092e"
   },
   "tools.gateways.token.ownerNotePlaceholder": {
     "en": "Who owns this token and why it exists",
-    "zh-CN": "谁拥有这个代币以及它存在的原因",
+    "zh-CN": "谁拥有此令牌，以及创建它的原因",
     "reviewedEnglishHash": "d28e03a01a78e6da0f2e703e526010a33de5c7f5b660b4a33c62dca3ff84a2a5"
   },
   "tools.gateways.token.revoke": {
@@ -1521,12 +1521,12 @@
   },
   "tools.gateways.tokens": {
     "en": "Tokens",
-    "zh-CN": "代币",
+    "zh-CN": "令牌",
     "reviewedEnglishHash": "a039dfb9628b53ddaebcfe8ef0793e3fdf19867601295f00d192acef59050869"
   },
   "tools.gateways.toolsAllowed": {
     "en": "{{count}} tools allowed",
-    "zh-CN": "允许使用 {{count}} 工具",
+    "zh-CN": "允许使用 {{count}} 个工具",
     "reviewedEnglishHash": "77770810bcbc840b3c4f4e82058c3f3a2925ac27b0ea9bac3b183995f6dc4377"
   },
   "tools.pasteConfig.activateCount": {
@@ -2396,7 +2396,7 @@
   },
   "tools.profiles.assign.moreTargetsHelp": {
     "en": "Assign this profile to a whole project or a scheduled routine instead of (or as well as) individual agents.",
-    "zh-CN": "将此访问配置分配给整个项目或计划的例程，而不是（或以及）单个智能体。",
+    "zh-CN": "此访问配置既可分配给单个智能体，也可分配给整个项目或计划运行的例行任务。",
     "reviewedEnglishHash": "9bc8b6bb61a6be78b681b3eb0bea9ff2f8d1405475112c8a4328568b765d72e9"
   },
   "tools.profiles.assign.noProfiles": {
@@ -2821,7 +2821,7 @@
   },
   "tools.profiles.legacyDescription": {
     "en": "Reusable bundles of allowed applications, connections, and tools, assignable to agents, projects, routines, or issues.",
-    "zh-CN": "可重复使用的允许应用、连接和工具包，可分配给智能体、项目、例程或问题。",
+    "zh-CN": "由获准使用的应用、连接和工具组成的可复用配置，可分配给智能体、项目、例行任务或任务。",
     "reviewedEnglishHash": "0a513750e0ff2027004447fc11cf766ff5c1b573dfa390c2b701081e66e7d5ca"
   },
   "tools.profiles.loading": {
@@ -3011,7 +3011,7 @@
   },
   "tools.profiles.selectRoutine": {
     "en": "Select a routine",
-    "zh-CN": "选择一个例行程序",
+    "zh-CN": "选择例行任务",
     "reviewedEnglishHash": "29f3689a4ece4637879d0409e1fcc3ce9020cfacf32670c5c1f679459b0a6aca"
   },
   "tools.profiles.selection.all": {
@@ -3266,7 +3266,7 @@
   },
   "tools.profiles.toast.bound": {
     "en": "Profile bound",
-    "zh-CN": "访问配置装订",
+    "zh-CN": "访问配置已绑定",
     "reviewedEnglishHash": "0b1808d5b860717f8c34dde2335316ba877d1634347b4bf12473971f0a43b339"
   },
   "tools.profiles.toast.copyUnassigned": {

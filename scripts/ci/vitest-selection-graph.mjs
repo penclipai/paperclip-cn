@@ -39,6 +39,8 @@ const reviewedSetup = new Map([
 const packageName = (specifier) => specifier.startsWith("@")
   ? specifier.split("/").slice(0, 2).join("/") : specifier.split("/")[0];
 const inside = (root, file) => file.startsWith(`${root}${path.sep}`) && !file.includes(`${path.sep}node_modules${path.sep}`);
+const normalizedModulePath = (id) => path.normalize(id.startsWith("/@fs/")
+  ? id.slice(process.platform === "win32" ? 5 : 4) : id);
 
 // Parse source, including imports erased by mocks/transforms. Unknown loaders
 // retain their consumers. This is intentionally conservative, not a regex-based
@@ -222,6 +224,8 @@ export async function selectProjectTests({ root = process.cwd(), project, change
       || [...setup].some(module => touchesInputs(fileInputs.get(module) ?? [], file)));
     const raw = await ctx.getRelevantTestSpecifications();
     const modules = environment.moduleGraph.idToModuleMap;
+    const modulesByPath = new Map([...modules].map(([id, module]) => [normalizedModulePath(id), module]));
+    const normalizedModules = new Set(modulesByPath.keys());
     const resolvedDependencies = new Map();
     const localImports = new Map();
     const dependencyPath = (dep) => {
@@ -233,7 +237,7 @@ export async function selectProjectTests({ root = process.cwd(), project, change
       }
       return resolvedDependencies.get(dep);
     };
-    for (const [id, module] of modules) {
+    for (const [id, module] of modulesByPath) {
       if (!inside(root, id) || !/\.[cm]?[jt]sx?$/.test(id)) continue;
       const source = parse(id);
       const coveredBuiltins = declaredInputs(id, source);
@@ -268,7 +272,7 @@ export async function selectProjectTests({ root = process.cwd(), project, change
           local.push(dependency);
           // Vitest intentionally skips some edges (e.g. CJS, externalized
           // workspaces). Never regard an untracked local edge as independent.
-          if (!modules.get(dependency)?.transformResult) reasons.push(`untracked dependency ${path.relative(root, dependency)}`);
+          if (!modulesByPath.get(dependency)?.transformResult) reasons.push(`untracked dependency ${path.relative(root, dependency)}`);
         } else {
           const external = dependency?.split(`${path.sep}node_modules${path.sep}`).at(-1).split(path.sep).join("/");
           if (!dependency || !dependency.includes(`${path.sep}node_modules${path.sep}`)
@@ -284,19 +288,20 @@ export async function selectProjectTests({ root = process.cwd(), project, change
     const inputRelated = [];
     const retentionReasons = {};
     for (const spec of inventory) {
+      const specPath = normalizedModulePath(spec.moduleId);
       const mocked = new Set();
       // Honor only unconditional, explicitly supplied mock factories without an
       // importOriginal parameter. Automocks, spies, unmock/importActual, dynamic
       // mocking and escaped vi bindings stay conservative. The related-file
       // graph remains uncut: edits to a mocked module can still select its tests.
       if (owner.config.isolate !== false) {
-        for (const name of parse(spec.moduleId).mocks) {
-          const target = await resolve(name, spec.moduleId);
+        for (const name of parse(specPath).mocks) {
+          const target = await resolve(name, specPath);
           if (target && inside(root, target)) mocked.add(target);
         }
       }
-      const queue = [spec.moduleId], visited = new Set();
-      let opaque = setupChanged || owner.config.isolate === false || !localImports.has(spec.moduleId);
+      const queue = [specPath], visited = new Set();
+      let opaque = setupChanged || owner.config.isolate === false || !localImports.has(specPath);
       while (queue.length && !opaque) {
         const file = queue.pop();
         if (visited.has(file)) continue;
@@ -320,7 +325,7 @@ export async function selectProjectTests({ root = process.cwd(), project, change
       inputRelated: [...new Set(inputRelated.map(relative))].sort(),
       alwaysRun: retained.map(relative).sort(),
       retentionReasons,
-      coveredChanges: changed.filter((file, index) => modules.has(absoluteChanges[index]) || setup.has(absoluteChanges[index])
+      coveredChanges: changed.filter((file, index) => normalizedModules.has(normalizedModulePath(absoluteChanges[index])) || setup.has(absoluteChanges[index])
         || [...fileInputs.values()].some(inputs => touchesInputs(inputs, absoluteChanges[index]))),
       fileInputs: Object.fromEntries([...fileInputs].filter(([, inputs]) => inputs.length)
         .map(([file, inputs]) => [path.relative(root, file), inputs.map(input => ({ ...input, path: path.relative(root, input.path) }))])),

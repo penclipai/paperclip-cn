@@ -411,12 +411,12 @@
   },
   "pipelines.pipelineCount_one": {
     "en": "{{formattedCount}} pipeline",
-    "zh-CN": "{{formattedCount}} 条流水线",
+    "zh-CN": "{{formattedCount}} 个管道",
     "reviewedEnglishHash": "0a8e55a183297a0566a68a145ac9983b46074bfe81cf8a9e504e9c21d0e9f15c"
   },
   "pipelines.pipelineCount_other": {
     "en": "{{formattedCount}} pipelines",
-    "zh-CN": "{{formattedCount}} 条流水线",
+    "zh-CN": "{{formattedCount}} 个管道",
     "reviewedEnglishHash": "3704abbd64e8347a0a2b935a05a5695ae357c65885445743a88c12471ebd360b"
   },
   "pipelines.preview": {

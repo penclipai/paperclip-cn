@@ -160,6 +160,12 @@ ${options.brokerFile ? String.raw`
     process.exitCode = 1;
     return;
   }
+  // The broker capability authenticates only the credential request above.
+  // Downstream Git/GitHub commands receive the resulting per-operation
+  // credential, never the control-plane capability that obtained it.
+  delete env.PAPERCLIP_GITHUB_BROKER_TOKEN;
+  delete env.PAPERCLIP_GITHUB_BRIDGE_TOKEN;
+  delete env.PAPERCLIP_API_KEY;
   // Only this invocation and its children inherit the captured credential.
   env.PAPERCLIP_GITHUB_OPERATION_ACTIVE = '1';
   // Its Git children use the real binary, so steering cannot split a gh operation.

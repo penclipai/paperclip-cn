@@ -101,7 +101,7 @@
   },
   "Decision reason": {
     "en": "Decision reason",
-    "zh-CN": "决定理由",
+    "zh-CN": "决策理由",
     "reviewedEnglishHash": "733f30ba30b55e4a81475e33038b0e92c061795ea7bf9d82e7e9a1a0cedae3bc"
   },
   "Declared by the skill author. Importing does not install dependencies or run scripts.": {
@@ -311,7 +311,7 @@
   },
   "Delivery status could not be refreshed. Your draft is kept; Paperclip will check again without sending another update.": {
     "en": "Delivery status could not be refreshed. Your draft is kept; Paperclip will check again without sending another update.",
-    "zh-CN": "无法刷新交付状态。您的草稿将被保留； Paperclip 将再次检查，而不会发送其他更新。",
+    "zh-CN": "无法刷新交付状态。草稿已保留；Paperclip 将再次检查，不会重复发送更新。",
     "reviewedEnglishHash": "2c58b83f06c813e457a5d0aa5299dcd688308ed6de889cc03a5b1268891ea53c"
   },
   "Dense card": {
@@ -626,7 +626,7 @@
   },
   "Dismiss delivery receipt": {
     "en": "Dismiss delivery receipt",
-    "zh-CN": "驳回交货收据",
+    "zh-CN": "关闭送达回执",
     "reviewedEnglishHash": "e6d60fbc843c8d0c2789b4ad894b64d0afc69a054aca5e29719d252025f9625a"
   },
   "Dismiss from inbox": {
@@ -741,7 +741,7 @@
   },
   "Dot connection checks": {
     "en": "Dot connection checks",
-    "zh-CN": "点连接检查",
+    "zh-CN": "Dot 连接检查",
     "reviewedEnglishHash": "0c8a99e80eed8f3fc03b5887cf41b76e9329baeadb3074e6a0e35f3872b1a580"
   },
   "Dot does not report token usage or cost. Paperclip cannot enforce a provider spend ceiling; known company and agent budget limits still apply.": {
@@ -756,7 +756,7 @@
   },
   "Dot manages its model and external tools. Paperclip supplies task coordination, people, assigned skills, and connected app tools. Dot can start a task directly from its conversation. Enable Read task attachments below to send assigned task file contents to OpenAI. Enable workspace files and commands for work in the assigned workspace. Provider usage and cost are unavailable; stopping a Paperclip run revokes access without confirming an external stop.": {
     "en": "Dot manages its model and external tools. Paperclip supplies task coordination, people, assigned skills, and connected app tools. Dot can start a task directly from its conversation. Enable Read task attachments below to send assigned task file contents to OpenAI. Enable workspace files and commands for work in the assigned workspace. Provider usage and cost are unavailable; stopping a Paperclip run revokes access without confirming an external stop.",
-    "zh-CN": "Dot管理其模型和外部工具。Paperclip提供任务协调、人员、分配的技能和连接的应用程序工具。点可以直接从其对话开始任务。启用下面的读取任务附件，将分配的任务文件内容发送到OpenAI。启用工作区文件和命令，以便在分配的工作区中工作。提供商的使用和成本不可用；停止Paperclip CN运行将在不确认外部停止的情况下撤销访问权限。",
+    "zh-CN": "Dot 管理其模型和外部工具。Paperclip 提供任务协调、人员、已分配的技能和已连接的应用工具。Dot 可直接从其对话中启动任务。启用下方的“读取任务附件”，即可将已分配任务的附件内容发送至 OpenAI。启用工作区文件和命令，便可在分配的工作区中工作。无法获取提供商的用量和成本；停止 Paperclip CN 运行会撤销访问权限，但无法确认外部进程是否停止。",
     "reviewedEnglishHash": "da22767764e131fb2bccee0856237bdf9fbe8f28bb8ca91683ea072e043f2ab5"
   },
   "Dot uses your OpenAI account. Provider usage and cost aren’t reported to Paperclip.": {
@@ -871,7 +871,7 @@
   },
   "decline": {
     "en": "decline",
-    "zh-CN": "衰退",
+    "zh-CN": "拒绝",
     "reviewedEnglishHash": "fd5f8cbed3d05d63b3076b2d1fb011a3d1dbefed44211503bde4de377258b395"
   },
   "default role {{role}}": {

@@ -99,25 +99,145 @@
     "zh-CN": "无法安装团队",
     "reviewedEnglishHash": "d57775b3aaa88f923ce65b9c1af9fb2c4b2cd37327250829ac84a5cdee740b86"
   },
+  "queryError.action.loadAccessRequest": {
+    "en": "Couldn't load this access request",
+    "zh-CN": "无法加载此访问申请",
+    "reviewedEnglishHash": "f4d3e0e66d7a7d8a4d9049628fcfdec4872b30e835c475ff7be22a006e1e1ad8"
+  },
+  "queryError.action.loadActiveRuns": {
+    "en": "Couldn't load active runs",
+    "zh-CN": "运行记录加载失败",
+    "reviewedEnglishHash": "6a2d5b70e18eb6eaac52c5b62441ca566b897c5df6a05a2b91e9a8f6787642eb"
+  },
+  "queryError.action.loadAgents": {
+    "en": "Couldn't load agents",
+    "zh-CN": "智能体列表加载失败",
+    "reviewedEnglishHash": "629af13f59c2ff73300f662b1b5686717ed2ab1024fcdf5600e32ae341d789c0"
+  },
   "queryError.action.loadApprovals": {
     "en": "Couldn't load approvals",
     "zh-CN": "无法加载审批",
     "reviewedEnglishHash": "04295d232038f8a140ae8fb8c3e46804383c1bd56a57f2f5377ecefea26097c6"
+  },
+  "queryError.action.loadAuditLog": {
+    "en": "Couldn't load the audit log",
+    "zh-CN": "无法加载审计日志",
+    "reviewedEnglishHash": "58b11ed8bb732545856f838bcf76e5ec18ab82b313ddc7f7821627f53b0976a2"
   },
   "queryError.action.loadBlockedTab": {
     "en": "Couldn't load the Blocked tab",
     "zh-CN": "无法加载“已阻塞”选项卡",
     "reviewedEnglishHash": "b340e73c71b85528906ecfdbab569e4770bbf364146cd747fea0b1fce2f03efc"
   },
+  "queryError.action.loadBoardClaimChallenge": {
+    "en": "Couldn't load the board claim challenge",
+    "zh-CN": "无法加载实例认领请求",
+    "reviewedEnglishHash": "c82f4a21c5dbb1d4c90915a4179bfe5998636432a010503b33aefa5bb1e0c526"
+  },
+  "queryError.action.loadBundledPlugins": {
+    "en": "Couldn't load bundled plugins",
+    "zh-CN": "无法加载内置插件",
+    "reviewedEnglishHash": "64f31224ee872013fed419fd87c4f120a7bd96df211c1b74894eacd659e2a116"
+  },
+  "queryError.action.loadCliAuthChallenge": {
+    "en": "Couldn't load the CLI auth challenge",
+    "zh-CN": "无法加载 CLI 授权请求",
+    "reviewedEnglishHash": "38080da1ca0a829538ffaac63c2f00920d6beee8500216b39d2e047397c5dfef"
+  },
+  "queryError.action.loadConnectionPermissions": {
+    "en": "Couldn't load connection permissions",
+    "zh-CN": "连接权限加载失败",
+    "reviewedEnglishHash": "8d2e70b1de57511faca36817307fc9e1e207cf3b6e7b28e042cb8fdc27654154"
+  },
+  "queryError.action.loadConnectionReviews": {
+    "en": "Couldn't load connection reviews",
+    "zh-CN": "无法加载连接审核列表",
+    "reviewedEnglishHash": "eacabdcbfc06460345a62ecc951c560c386a1a90912f273c3fcb4d4dfda15ed0"
+  },
+  "queryError.action.loadConnections": {
+    "en": "Couldn't load connections",
+    "zh-CN": "连接列表加载失败",
+    "reviewedEnglishHash": "8ea80f069b8c86f7d7901be7f099c4efc3a2c83a8bad4faf6a86099ae4eb15a3"
+  },
+  "queryError.action.loadFolder": {
+    "en": "Couldn't load the folder",
+    "zh-CN": "无法加载文件夹",
+    "reviewedEnglishHash": "aa3fba3cb55dd686db1698cb9dbe796a16f46e4843c1609a7e7597bfd598c529"
+  },
+  "queryError.action.loadGeneralSettings": {
+    "en": "Couldn't load general settings",
+    "zh-CN": "无法加载常规设置",
+    "reviewedEnglishHash": "3e5e1d36accebfcc807c610bba5dbf082b0d9aeea81e1af9ace9d468e126e0b3"
+  },
   "queryError.action.loadInstallPreview": {
     "en": "Couldn't load the install preview",
     "zh-CN": "无法加载安装预览",
     "reviewedEnglishHash": "ffe7f55d2cc0eaa92d7bc795e2f047e7b827168e57a5ce6fc3f87fb421fc62fd"
   },
+  "queryError.action.loadInvites": {
+    "en": "Couldn't load invites",
+    "zh-CN": "邀请列表加载失败",
+    "reviewedEnglishHash": "5113524e4a971600d169e22a8179fdfd7863d905c323e23ecfceaf33b47b8247"
+  },
+  "queryError.action.loadOrganizations": {
+    "en": "Couldn't load organizations",
+    "zh-CN": "无法加载组织",
+    "reviewedEnglishHash": "85d97564a8cdcf01327b43624324ce1e52f05732b0bd9df53ed619f78ee1881a"
+  },
+  "queryError.action.loadPlugins": {
+    "en": "Couldn't load plugins",
+    "zh-CN": "无法加载插件",
+    "reviewedEnglishHash": "106b864c3f8d48c5bab7e157bd04a02a297aa0dd5afc9fc7d5a041eccfec86d6"
+  },
+  "queryError.action.loadPreview": {
+    "en": "Couldn't load the preview",
+    "zh-CN": "无法加载预览",
+    "reviewedEnglishHash": "bc607d94647ffce70377bb7dfd3dcd34fc14823fe60549dd8e4312de8bf15b55"
+  },
+  "queryError.action.loadProfiles": {
+    "en": "Couldn't load profiles",
+    "zh-CN": "无法加载配置列表",
+    "reviewedEnglishHash": "6c5a432101401c90e1d2d68400e7b9d2f0e065ffe4c3912a5de1eb06ce008d34"
+  },
+  "queryError.action.loadProposals": {
+    "en": "Couldn't load proposals",
+    "zh-CN": "无法加载提案",
+    "reviewedEnglishHash": "9e5cc029a50a7730a62c714d0c67ea11d6510e9fbb301d65ca92981e42960bc5"
+  },
+  "queryError.action.loadRoutineActivity": {
+    "en": "Couldn't load routine activity",
+    "zh-CN": "无法加载例行任务活动",
+    "reviewedEnglishHash": "ddb2d4973c2b28a3ddafc80194f362c8b207d8b5e1be6d92b936138a14f4806d"
+  },
+  "queryError.action.loadRunLog": {
+    "en": "Couldn't load the run log",
+    "zh-CN": "无法加载运行日志",
+    "reviewedEnglishHash": "1640da238bd8b12b7397aabee6060d318606773b43dfd695e966471d7068477b"
+  },
+  "queryError.action.loadSavedAccess": {
+    "en": "Couldn't load saved access",
+    "zh-CN": "无法加载已保存的访问权限",
+    "reviewedEnglishHash": "09cace66b2369272990d2b8d6ad4278c1ad9ddbe93602bb06485d6087c33df9f"
+  },
   "queryError.action.loadTaskHierarchy": {
     "en": "Couldn't load task hierarchy",
     "zh-CN": "无法加载任务层级",
     "reviewedEnglishHash": "9efb877aec7c977be9def64e12503a050976fadcadc77367b5e63e03b7271a9d"
+  },
+  "queryError.action.loadThisSkill": {
+    "en": "Couldn't load this skill",
+    "zh-CN": "无法加载此技能",
+    "reviewedEnglishHash": "0c40217d58bf45cd5c858633da936da31dd744e6ee951e3757ff5488ff118b23"
+  },
+  "queryError.action.loadThisWorkspace": {
+    "en": "Couldn't load this workspace",
+    "zh-CN": "无法加载此工作区",
+    "reviewedEnglishHash": "3228733d7728d5e12d00d1367ee487492e0dbd49a858c26d1bd0e6d84be82595"
+  },
+  "queryError.action.loadUserAccess": {
+    "en": "Couldn't load user access",
+    "zh-CN": "无法加载用户访问权限",
+    "reviewedEnglishHash": "4a5a1b50ab22bedb4a9c2e8fd27589cef8e2c68467c7447e05bf37f22d780fd3"
   },
   "queryError.action.loadWorkspaceFiles": {
     "en": "Couldn't load workspace files",
@@ -403,35 +523,5 @@
     "en": "Something went wrong",
     "zh-CN": "发生错误",
     "reviewedEnglishHash": "ab827e3fe17da220a9a652087a35d20adda002aa4df887c5d813b2b1e95228f9"
-  },
-  "queryError.action.loadActiveRuns": {
-    "en": "Couldn't load active runs",
-    "zh-CN": "运行记录加载失败",
-    "reviewedEnglishHash": "6a2d5b70e18eb6eaac52c5b62441ca566b897c5df6a05a2b91e9a8f6787642eb"
-  },
-  "queryError.action.loadAgents": {
-    "en": "Couldn't load agents",
-    "zh-CN": "智能体列表加载失败",
-    "reviewedEnglishHash": "629af13f59c2ff73300f662b1b5686717ed2ab1024fcdf5600e32ae341d789c0"
-  },
-  "queryError.action.loadConnectionPermissions": {
-    "en": "Couldn't load connection permissions",
-    "zh-CN": "连接权限加载失败",
-    "reviewedEnglishHash": "8d2e70b1de57511faca36817307fc9e1e207cf3b6e7b28e042cb8fdc27654154"
-  },
-  "queryError.action.loadConnections": {
-    "en": "Couldn't load connections",
-    "zh-CN": "连接列表加载失败",
-    "reviewedEnglishHash": "8ea80f069b8c86f7d7901be7f099c4efc3a2c83a8bad4faf6a86099ae4eb15a3"
-  },
-  "queryError.action.loadInvites": {
-    "en": "Couldn't load invites",
-    "zh-CN": "邀请列表加载失败",
-    "reviewedEnglishHash": "5113524e4a971600d169e22a8179fdfd7863d905c323e23ecfceaf33b47b8247"
-  },
-  "queryError.action.loadRunLog": {
-    "en": "Couldn't load the run log",
-    "zh-CN": "无法加载运行日志",
-    "reviewedEnglishHash": "1640da238bd8b12b7397aabee6060d318606773b43dfd695e966471d7068477b"
   }
 }

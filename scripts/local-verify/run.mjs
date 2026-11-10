@@ -3,6 +3,7 @@ import { mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node
 import path from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 import { selectionHash } from "../ci/test-selection-manifest.mjs";
+import { resolvePnpmInvocation } from "../pnpm-invocation.mjs";
 import { protocolVersion } from "./inputs.mjs";
 
 export const cacheDirectory = root => path.join(root, ".turbo/local-verify");
@@ -41,10 +42,10 @@ export function writeRecord(root, name, record) {
 
 export const invalidatePass = (root, key) => rmSync(path.join(cacheDirectory(root), `${key}.json`), { force: true });
 
-async function execute(command, args, root, env, label) {
+async function execute(command, args, root, env, label, spawnOptions = {}) {
   return new Promise(resolve => {
     const grouped = process.platform !== "win32";
-    const child = spawn(command, args, { cwd: root, env, stdio: "inherit", detached: grouped });
+    const child = spawn(command, args, { cwd: root, env, stdio: "inherit", detached: grouped, ...spawnOptions });
     let stopped;
     let finished = false;
     const interrupt = signal => {
@@ -75,7 +76,8 @@ export async function runPlan(root, env, plan) {
   if (plan.manifest) writeFileSync(manifestFile, JSON.stringify(plan.manifest));
   try {
     for (const job of plan.jobs) {
-      const code = job.args === null ? await execute("pnpm", ["test:run"], root, env, job.id)
+      const pnpm = job.args === null ? resolvePnpmInvocation(["test:run"], { env }) : null;
+      const code = job.args === null ? await execute(pnpm.command, pnpm.args, root, env, job.id, pnpm.spawnOptions)
         : await execute(process.execPath, [path.join(root, "scripts/run-vitest-stable.mjs"), ...job.args], root,
           job.selected ? { ...env, PAPERCLIP_CI_TEST_SELECTION: manifestFile,
             PAPERCLIP_CI_SELECTION_HASH: selectionHash(plan.manifest) } : env, job.id);

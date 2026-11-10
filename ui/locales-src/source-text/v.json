@@ -171,7 +171,7 @@
   },
   "View routine activity": {
     "en": "View routine activity",
-    "zh-CN": "查看日常活动",
+    "zh-CN": "查看例行任务活动",
     "reviewedEnglishHash": "cd1bd79b590009183dcad16b4598cb5c6b46926eb06e5e193c8bd5ea0cc9d6da"
   },
   "View routines →": {
@@ -236,7 +236,7 @@
   },
   "Visit task": {
     "en": "Visit task",
-    "zh-CN": "参观任务",
+    "zh-CN": "前往任务",
     "reviewedEnglishHash": "ecacc67b009d5b6870ed801bb45358cfdb5dea649dad45965a0beb9aad04ad83"
   },
   "validation errors and will be skipped.": {

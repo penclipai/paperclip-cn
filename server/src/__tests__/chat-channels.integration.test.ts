@@ -26820,37 +26820,24 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               pinned.getProviderAdapter() as unknown as {
                 app: {
                   activitySender: {
-                    createClient(
-                      serviceUrl: string,
-                    ): {
-                      http: {
-                        post(
-                          url: string,
-                          body: unknown,
-                        ): Promise<{ data: unknown }>;
-                      };
+                    client: {
+                      post(
+                        url: string,
+                        body: unknown,
+                      ): Promise<{ data: unknown }>;
                     };
                   };
                 };
               }
             ).app;
-            const createClient = app.activitySender.createClient.bind(
-              app.activitySender,
-            );
-            vi.spyOn(app.activitySender, "createClient").mockImplementation(
-              (serviceUrl) => {
-                const client = createClient(serviceUrl);
-                vi.spyOn(client.http, "post").mockImplementation(
-                  async (url, body) => {
-                    httpBodies.push({ url, body });
-                    return {
-                      data: {
-                        id: `teams-http-receipt-${httpBodies.length}`,
-                      },
-                    };
+            vi.spyOn(app.activitySender.client, "post").mockImplementation(
+              async (url, body) => {
+                httpBodies.push({ url, body });
+                return {
+                  data: {
+                    id: `teams-http-receipt-${httpBodies.length}`,
                   },
-                );
-                return client;
+                };
               },
             );
           }
@@ -58659,8 +58646,14 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     { control: "close", status: "cancelled", state: "completed" },
   ] as const)("binds Slack DM slash controls to the latest task ($control, $status, $state)", async ({ control, status, state }) => {
     const fixture = await seedCompany();
+    const scheduledWork: Array<() => void | Promise<void>> = [];
+    const runScheduledWork = async () => {
+      while (scheduledWork.length > 0) await scheduledWork.shift()!();
+    };
     const { callbacks, endpoint, runtime, service } =
-      await configuredSlackEndpoint(fixture);
+      await configuredSlackEndpoint(fixture, {
+        scheduleDeferredWork: (task) => scheduledWork.push(task),
+      });
     const command = endpoint.setup.command;
     if (!command) throw new Error("Slack endpoint did not expose its command");
     if (!callbacks.onSlashCommand) {
@@ -58702,16 +58695,15 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       });
 
     await invoke("Start a task from this DM slash command");
-    await vi.waitFor(() =>
-      expect(runtime.endpoints.get(endpoint.id)?.posts).toContainEqual({
-        threadId: "slack:D09SLASHTASK:",
-        text: "Starting a task…",
-      }),
-    );
+    expect(scheduledWork).toHaveLength(1);
+    await service.processPendingSlackTaskStarts();
+    await runScheduledWork();
+    expect(runtime.endpoints.get(endpoint.id)?.posts).toContainEqual({
+      threadId: "slack:D09SLASHTASK:",
+      text: "Starting a task…",
+    });
     expect(post).not.toHaveBeenCalled();
-    await vi.waitFor(async () =>
-      expect(await service.listConversations(endpoint.id)).toHaveLength(1),
-    );
+    await expect(service.listConversations(endpoint.id)).resolves.toHaveLength(1);
     const [conversation] = await service.listConversations(endpoint.id);
     expect(conversation.externalThreadId).toBe(starterThreadId);
     await db.update(issues).set({ status }).where(eq(issues.id, conversation.issueId));
@@ -65996,6 +65988,11 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           await db.insert(nativeRunFinalizations).values({ companyId, issueId, runId: parent.runId!, phase: "terminal_failure" });
           await db.insert(heartbeatRunEvents).values({ companyId, agentId: f.fixture.assignedAgentId, runId: parent.runId!,
             seq: 1, eventType: "native.local_process_stopped", payload: { processPid: 999999998, processGroupId: null } });
+          const successorLease = { id: randomUUID(), companyId, issueId, heartbeatRunId: parent.runId!, provider: "daytona",
+            providerLeaseId: randomUUID(), status: "released" as const, cleanupStatus: "success" as const,
+            releasedAt: new Date(), leasePolicy: "ephemeral" as const };
+          await db.insert(environmentLeases).values({ ...successorLease, metadata: { remoteExecutionTermination:
+            remoteTerminationReceipt(successorLease, { providerLeaseId: successorLease.providerLeaseId, state: "destroyed" }) } });
           await service.configure(f.endpoint.id, { action: "reconnect" }, "owner-user");
           const next = await requestTaskRetry({ ...input, observedRunId: parent.runId!, idempotencyKey: randomUUID(),
             prepareChatRetry: service.prepareFailedChatRunRetry });

@@ -71,7 +71,7 @@
   },
   "pipelineSettings.archivedDestination": {
     "en": "This destination pipeline is archived, so its validation fields can't be edited until it's restored.",
-    "zh-CN": "目标 pipeline 已归档，恢复前无法编辑其验证字段。",
+    "zh-CN": "目标管道已归档，恢复前无法编辑其验证字段。",
     "reviewedEnglishHash": "df5ba3041e33157936dcec3975234a74b983393c453c5ab1e403a4684b8e4bf3"
   },
   "pipelineSettings.archiving": {
@@ -411,7 +411,7 @@
   },
   "pipelineSettings.progressCopyPrefix": {
     "en": "Drives copy on this case (e.g. “3 of 5",
-    "zh-CN": "用于生成此 case 的文案（例如“5 项中的 3 项",
+    "zh-CN": "用于生成此条目的文案（例如“5 项中的 3 项",
     "reviewedEnglishHash": "e3d8908b437604b71dd87c5001471868b09e3938ff1d2092f6554bf993d7c6d3"
   },
   "pipelineSettings.progressCopySuffix": {

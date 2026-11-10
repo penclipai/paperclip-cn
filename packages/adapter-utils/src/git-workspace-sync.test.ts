@@ -267,8 +267,80 @@ describe("git workspace sync", () => {
       expect(await git(cloneDir, ["branch", "--show-current"])).toBe("main");
       await git(cloneDir, ["config", "core.autocrlf", "false"]);
       await git(cloneDir, ["reset", "--hard"]);
-      await expect(readFile(path.join(cloneDir, "tracked.txt"), "utf8")).resolves.toBe("base\n");
+      expect((await readFile(path.join(cloneDir, "tracked.txt"), "utf8")).replace(/\r\n/g, "\n")).toBe("base\n");
     });
+  });
+
+  it("retains a source core.symlinks=false checkout policy", async () => {
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-git-symlink-policy-"));
+    cleanupDirs.push(rootDir);
+    const repo = await createRepo(rootDir);
+    await git(repo, ["config", "--local", "core.symlinks", "false"]);
+    const snapshot = await readGitWorkspaceSnapshot(repo);
+
+    await withShallowGitWorkspaceClone({ localDir: repo, snapshot: snapshot! }, async (cloneDir) => {
+      expect(await git(cloneDir, ["config", "--local", "--get", "core.symlinks"])).toBe("false");
+    });
+  });
+
+  it("uses Git's true default when the source has no core.symlinks setting", async () => {
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-git-symlink-default-"));
+    cleanupDirs.push(rootDir);
+    const repo = await createRepo(rootDir);
+    // Windows `git init` may materialize its auto-probed false locally. Remove
+    // only that local entry so this fixture exercises Git's documented unset
+    // default under the isolated runner config.
+    await git(repo, ["config", "--local", "--unset-all", "core.symlinks"]);
+    const isolatedGlobal = path.join(rootDir, "empty-gitconfig");
+    await writeFile(isolatedGlobal, "", "utf8");
+    const previousGlobal = process.env.GIT_CONFIG_GLOBAL;
+    const previousNoSystem = process.env.GIT_CONFIG_NOSYSTEM;
+    process.env.GIT_CONFIG_GLOBAL = isolatedGlobal;
+    process.env.GIT_CONFIG_NOSYSTEM = "1";
+    try {
+      await expect(git(repo, ["config", "--local", "--get", "core.symlinks"])).rejects.toThrow();
+      const snapshot = await readGitWorkspaceSnapshot(repo);
+
+      await withShallowGitWorkspaceClone({ localDir: repo, snapshot: snapshot! }, async (cloneDir) => {
+        expect(await git(cloneDir, ["config", "--local", "--get", "core.symlinks"])).toBe("true");
+      });
+    } finally {
+      if (previousGlobal === undefined) delete process.env.GIT_CONFIG_GLOBAL;
+      else process.env.GIT_CONFIG_GLOBAL = previousGlobal;
+      if (previousNoSystem === undefined) delete process.env.GIT_CONFIG_NOSYSTEM;
+      else process.env.GIT_CONFIG_NOSYSTEM = previousNoSystem;
+    }
+  });
+
+  it("fails closed for an invalid source core.symlinks value", async () => {
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-git-symlink-invalid-"));
+    cleanupDirs.push(rootDir);
+    const repo = await createRepo(rootDir);
+    const snapshot = await readGitWorkspaceSnapshot(repo);
+    await git(repo, ["config", "--local", "core.symlinks", "not-a-boolean"]);
+
+    await expect(withShallowGitWorkspaceClone({ localDir: repo, snapshot: snapshot! }, async () => undefined))
+      .rejects.toThrow(/bad boolean config value/i);
+  });
+
+  it("fails closed when the source Git configuration cannot be read", async () => {
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-git-symlink-config-read-"));
+    cleanupDirs.push(rootDir);
+    const repo = await createRepo(rootDir);
+    const snapshot = await readGitWorkspaceSnapshot(repo);
+    const previousGlobal = process.env.GIT_CONFIG_GLOBAL;
+    const previousNoSystem = process.env.GIT_CONFIG_NOSYSTEM;
+    process.env.GIT_CONFIG_GLOBAL = rootDir;
+    process.env.GIT_CONFIG_NOSYSTEM = "1";
+    try {
+      await expect(withShallowGitWorkspaceClone({ localDir: repo, snapshot: snapshot! }, async () => undefined))
+        .rejects.toThrow();
+    } finally {
+      if (previousGlobal === undefined) delete process.env.GIT_CONFIG_GLOBAL;
+      else process.env.GIT_CONFIG_GLOBAL = previousGlobal;
+      if (previousNoSystem === undefined) delete process.env.GIT_CONFIG_NOSYSTEM;
+      else process.env.GIT_CONFIG_NOSYSTEM = previousNoSystem;
+    }
   });
 
   it.skipIf(process.platform !== "win32")("checks out long paths in the controlled temporary clone", async () => {
@@ -294,11 +366,13 @@ describe("git workspace sync", () => {
     await expect(readFile(path.join(repo, ".git", "config"))).resolves.toEqual(sourceConfig);
   });
 
-  it.skipIf(process.platform === "win32")("preserves nested repository symlinks after the temporary clone is removed", async () => {
+  it("preserves nested repository symlinks after the temporary clone is removed", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-git-nested-links-"));
     cleanupDirs.push(rootDir);
     const repo = await createRepo(rootDir);
     const nested = await createRepo(path.join(repo, ".paperclip-repositories"));
+    await git(repo, ["config", "--local", "core.symlinks", "true"]);
+    await git(nested, ["config", "--local", "core.symlinks", "true"]);
     await writeFile(path.join(repo, ".git/info/exclude"), ".paperclip-repositories/\n");
     await mkdir(path.join(nested, "skills", "demo"), { recursive: true });
     await mkdir(path.join(nested, ".claude", "skills"), { recursive: true });
@@ -321,14 +395,22 @@ describe("git workspace sync", () => {
       const copied = path.join(cloneDir, ".paperclip-repositories", "repo");
       for (const [name, target] of links) {
         expect((await lstat(path.join(copied, name))).isSymbolicLink()).toBe(true);
-        expect(await readlink(path.join(copied, name))).toBe(target);
+        expect(path.normalize(await readlink(path.join(copied, name)))).toBe(path.normalize(target));
       }
-      expect(await readFile(path.join(copied, ".claude/skills/demo/SKILL.md"), "utf8")).toBe("skill content\n");
-      expect(await readFile(path.join(copied, "skill-alias/SKILL.md"), "utf8")).toBe("skill content\n");
+      expect((await readFile(path.join(copied, ".claude/skills/demo/SKILL.md"), "utf8")).replace(/\r\n/g, "\n")).toBe("skill content\n");
+      expect((await readFile(path.join(copied, "skill-alias/SKILL.md"), "utf8")).replace(/\r\n/g, "\n")).toBe("skill content\n");
       await expect(stat(path.join(copied, "future"))).rejects.toMatchObject({ code: "ENOENT" });
       expect(await git(copied, ["status", "--porcelain"])).toBe("");
     });
     expect(await git(nested, ["status", "--porcelain"])).toBe("");
+  });
+
+  it.skipIf(process.platform !== "win32")("uses native symlinks for Git Bash fixture children without changing other MSYS options", () => {
+    const sourceEnv = { MSYS: "foo,winsymlinks:copy;bar", PATH: "fixture-path" };
+    const shell = prepareTestPosixShell({ command: "sh", args: ["-c", "true"], env: sourceEnv });
+
+    expect(shell.env.MSYS).toBe("foo bar winsymlinks:nativestrict");
+    expect(sourceEnv.MSYS).toBe("foo,winsymlinks:copy;bar");
   });
 
   it("copies the workspace origin remote into the shallow clone", async () => {
@@ -644,9 +726,10 @@ describe("git workspace sync", () => {
     const shallowPath = path.join(root, "shallow");
     const exportRef = createRemoteGitExportRef("test");
     const importedRef = createImportedGitRef("test");
-    await execFile("sh", ["-c", buildRemoteGitDeltaBundleScript({
+    const initialShell = prepareTestPosixShell({ command: "sh", args: ["-c", buildRemoteGitDeltaBundleScript({
       remoteDir: sandbox, baseSha: published, exportRef, bundlePath, shallowPath, forceFullBundle: true,
-    })]);
+    })] });
+    await execFile(initialShell.command, initialShell.args, { env: initialShell.env });
     const tracePath = path.join(root, "git-trace.json");
     const previousTrace = process.env.GIT_TRACE2_EVENT;
     process.env.GIT_TRACE2_EVENT = tracePath;
@@ -686,9 +769,10 @@ describe("git workspace sync", () => {
       .rejects.toThrow("Invalid Git shallow boundaries");
     expect(await git(host, ["rev-list", "HEAD"])).toBe(before);
     await writeFile(path.join(sandbox, ".git", "shallow"), `${published}\n`.repeat(2000));
-    await expect(execFile("sh", ["-c", buildRemoteGitDeltaBundleScript({
+    const oversizedShell = prepareTestPosixShell({ command: "sh", args: ["-c", buildRemoteGitDeltaBundleScript({
       remoteDir: sandbox, baseSha: published, exportRef, bundlePath, shallowPath, forceFullBundle: true,
-    })])).rejects.toThrow("byte limit");
+    })] });
+    await expect(execFile(oversizedShell.command, oversizedShell.args, { env: oversizedShell.env })).rejects.toThrow("byte limit");
   });
 
   it("falls back to a full self-contained bundle when the sandbox lacks baseSha", async () => {

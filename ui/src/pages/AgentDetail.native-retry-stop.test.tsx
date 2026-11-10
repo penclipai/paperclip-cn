@@ -12,6 +12,7 @@ import { PanelProvider } from "../context/PanelContext";
 import { pendingSendKeyFor, readPendingSend, writePendingSend } from "../lib/pending-send";
 
 const { get, cancel, grokStop, actor } = vi.hoisted(() => ({ get: vi.fn(), cancel: vi.fn(), grokStop: vi.fn(), actor: { id: "operator-1", source: "authenticated" } }));
+const statusLabels: Record<string, string> = { failed: "Failed", succeeded: "Succeeded", cancelled: "Cancelled", running: "Running", queued: "Queued" };
 vi.mock("../api/heartbeats", async importOriginal => ({ heartbeatsApi: { ...(await importOriginal<typeof import("../api/heartbeats")>()).heartbeatsApi,
   get, events: async () => [], workspaceOperations: async () => [] } }));
 vi.mock("../api/grokBot", () => ({ grokBotApi: { stop: grokStop } }));
@@ -105,7 +106,7 @@ it.each([RunsTab, ProductionRunsTab].flatMap(Tab => states.map(state => ({ Tab, 
   </ToastProvider></PanelProvider></MemoryRouter></QueryClientProvider>);
   try {
     await act(async () => render());
-    await vi.waitFor(async () => { await act(async () => {}); expect(element.textContent).toContain(status); });
+    await vi.waitFor(async () => { await act(async () => {}); expect(element.textContent).toContain(statusLabels[status]); });
     const control = () => Array.from(element.querySelectorAll("button")).find(candidate => ["Stop", "Cancel", "Stop Paperclip work"].includes(candidate.textContent ?? ""));
     if (label) {
       expect(control()?.textContent).toBe(expectedLabel);
@@ -157,7 +158,7 @@ it.each([RunsTab, ProductionRunsTab].flatMap(Tab => states.map(state => ({ Tab, 
           if (state.denial) expect(control()?.textContent).toBe(expectedLabel);
         } else {
           expect(control()).toBeUndefined();
-          expect(element.textContent).toContain(state.pending || state.uncertain ? "failed" : "cancelled");
+          expect(element.textContent).toContain(state.pending || state.uncertain ? "Failed" : "Cancelled");
           expect(element.querySelector('[role="alert"]')).toBeNull();
         }
       });

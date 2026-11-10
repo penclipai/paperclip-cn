@@ -12,6 +12,7 @@ import {
   __lastEmbeddedPostgresStartModeForTests as lastStartMode,
   __resetEmbeddedPostgresTemplateStateForTests as resetTemplateState,
   __setEmbeddedPostgresCtorProviderForTests,
+  __setEmbeddedPostgresTempRootForTests,
   __startEmbeddedPostgresWithRetryForTests as startWithRetry,
   computeEmbeddedPostgresTemplateKey,
   EMBEDDED_POSTGRES_TEST_TIMEOUT_MS,
@@ -79,6 +80,7 @@ function makeFakeCtor(failFirst: number) {
 describe("startEmbeddedPostgresWithRetry", () => {
   afterEach(() => {
     __setEmbeddedPostgresCtorProviderForTests(null);
+    __setEmbeddedPostgresTempRootForTests(null);
   });
 
   it("recovers from a transient port conflict and returns on a later attempt", async () => {
@@ -247,24 +249,16 @@ describe("isUsableTemplate", () => {
 const support = await getEmbeddedPostgresTestSupport();
 const describeWithPostgres = support.supported ? describe : describe.skip;
 
-// Points `os.tmpdir()` at a private scratch directory so a test can drive the
-// cache root from an empty state. `os.tmpdir()` reads the environment on every
-// call: TMPDIR on POSIX, TEMP and then TMP on Windows, so all three are set.
-// Returns the scratch directory; `restore` puts the environment and the
-// fixture's cached state back.
-const TMPDIR_VARIABLES = ["TMPDIR", "TEMP", "TMP"] as const;
-
+// Points only this fixture at a private scratch directory. Do not modify
+// TEMP/TMP/TMPDIR: Vitest can materialize its SSR cache under that process-wide
+// temp root while this test runs.
 function useScratchTmpdir(prefix: string): { scratch: string; restore(): void } {
   const scratch = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
-  const previous = new Map(TMPDIR_VARIABLES.map((name) => [name, process.env[name]] as const));
-  for (const name of TMPDIR_VARIABLES) process.env[name] = scratch;
+  __setEmbeddedPostgresTempRootForTests(scratch);
   return {
     scratch,
     restore() {
-      for (const [name, value] of previous) {
-        if (value === undefined) delete process.env[name];
-        else process.env[name] = value;
-      }
+      __setEmbeddedPostgresTempRootForTests(null);
       resetTemplateState();
       fs.rmSync(scratch, { recursive: true, force: true });
     },
@@ -529,6 +523,8 @@ describe("support probe when the template cannot be built", () => {
   it("falls through to the fresh probe instead of reporting the host as unsupported", { timeout: EMBEDDED_POSTGRES_TEST_TIMEOUT_MS }, async () => {
     const originalTemplateSetting = process.env.PAPERCLIP_TEST_POSTGRES_TEMPLATE;
     delete process.env.PAPERCLIP_TEST_POSTGRES_TEMPLATE;
+    const vitestCacheSentinel = path.join(os.tmpdir(), `paperclip-vitest-cache-sentinel-${process.pid}-${Date.now()}`);
+    fs.writeFileSync(vitestCacheSentinel, "keep");
     const scratch = useScratchTmpdir("paperclip-template-build-fail-");
     const warnings: string[] = [];
     const warn = console.warn;
@@ -536,9 +532,9 @@ describe("support probe when the template cannot be built", () => {
       warnings.push(args.map(String).join(" "));
     };
     try {
-      // This test runs on every platform, so check the redirect took effect
-      // before asserting on paths under it.
-      expect(os.tmpdir()).toBe(scratch.scratch);
+      // The fixture redirect is local: Vitest's process-wide temp root remains
+      // intact while the template test uses a private scratch directory.
+      expect(templateRootDir().startsWith(scratch.scratch)).toBe(true);
       // The fake cluster "starts" without listening, so the template build
       // fails after the start, at the migration step, the way a broken
       // migration would. A real broken migration then fails the suite on
@@ -560,6 +556,10 @@ describe("support probe when the template cannot be built", () => {
     } finally {
       console.warn = warn;
       scratch.restore();
+      // This stands in for Vitest's SSR cache: template isolation must never
+      // remove files that belong to the runner's process-wide temp root.
+      expect(fs.existsSync(vitestCacheSentinel)).toBe(true);
+      fs.rmSync(vitestCacheSentinel, { force: true });
       if (originalTemplateSetting === undefined) delete process.env.PAPERCLIP_TEST_POSTGRES_TEMPLATE;
       else process.env.PAPERCLIP_TEST_POSTGRES_TEMPLATE = originalTemplateSetting;
     }

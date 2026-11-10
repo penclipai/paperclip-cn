@@ -91,7 +91,7 @@
   },
   "Last attempt failed:": {
     "en": "Last attempt failed:",
-    "zh-CN": "尝试失败",
+    "zh-CN": "上次尝试失败：",
     "reviewedEnglishHash": "3ee8f66616673a29067e9969ace95f2f102338ce3bb18f9cd84f49a62265bddd"
   },
   "Last checked:": {
@@ -436,7 +436,7 @@
   },
   "Linking counts these accounts once, combines their Paperclip usage, and keeps the selected account’s price. Only link the same subscription or paid seat.": {
     "en": "Linking counts these accounts once, combines their Paperclip usage, and keeps the selected account’s price. Only link the same subscription or paid seat.",
-    "zh-CN": "链接会对这些账户进行一次计数，合并其Paperclip CN使用情况，并保留所选账户的价格。仅链接相同的订阅或付费席位。",
+    "zh-CN": "关联后，这些账户只计一次，并会合并其 Paperclip CN 用量，同时保留所选账户的价格。只能关联同一订阅或付费席位的账户。",
     "reviewedEnglishHash": "e3bd59a075e4aa8d2bca90a8c04cf4caf9bda1d5ef9783c8d3ee5d76661deec4"
   },
   "List": {
@@ -486,7 +486,7 @@
   },
   "Live runner activity is temporarily unavailable. Retrying…": {
     "en": "Live runner activity is temporarily unavailable. Retrying…",
-    "zh-CN": "实时跑步活动暂时无法进行。正在重试...",
+    "zh-CN": "实时运行器活动暂时不可用。正在重试…",
     "reviewedEnglishHash": "2e96977e51efe0dfd5c6e3234c3fe897a334ea602057d61be4ff292d9c6f4b18"
   },
   "Live stream": {
@@ -676,7 +676,7 @@
   },
   "Loading conversation...": {
     "en": "Loading conversation...",
-    "zh-CN": "加载对话",
+    "zh-CN": "正在加载对话…",
     "reviewedEnglishHash": "05ddf541f5c7e787c12cb53402ab677f211db1c922a79bf8eb94078a481a35de"
   },
   "Loading conversations…": {
@@ -1061,7 +1061,7 @@
   },
   "Local workspace board": {
     "en": "Local workspace board",
-    "zh-CN": "本地工作区董事会",
+    "zh-CN": "本地工作区看板",
     "reviewedEnglishHash": "0b25be898116ccc851cb9fa6d5b759ff5cf79fb1480577038722458d11e6a94a"
   },
   "Local-file LLM Wiki plugin for source ingestion, wiki browsing, query, lint, and maintenance workflows.": {

@@ -28,35 +28,30 @@ export const AGENT_DETAIL_NAVIGATION: ReadonlyArray<{
     labelKey: "entityType.agent",
     items: [
       { value: "overview", labelKey: "caseDetail.tabs.overview" },
-      { value: "instructions", labelKey: "agentDetail.instructions" },
-      { value: "skills", labelKey: "agentDetail.skills" },
-    ],
-  },
-  {
-    labelKey: "agentDetail.runtime",
-    items: [
+      { value: "instructions", labelKey: "agentConfig.identity" },
       { value: "runtime", labelKey: "agentDetail.harnessRuntime" },
       { value: "secrets", labelKey: "agentDetail.secretsAndVariables" },
-      { value: "tools", labelKey: "agentDetail.tools" },
-      { value: "channels", labelKey: "agentDetail.channels" },
+      { value: "permissions", labelKey: "agentDetail.permissionsTrust" },
+      { value: "advanced", labelKey: "Advanced" },
     ],
   },
   {
-    labelKey: "agentDetail.governance",
+    labelKey: "auditFeed.title",
     items: [
-      { value: "permissions", labelKey: "agentDetail.permissionsTrust" },
-      { value: "api-keys", labelKey: "agentDetail.apiKeys" },
-      { value: "revisions", labelKey: "caseComponents.revisions.title" },
+      { value: "activity", labelKey: "Activity" },
+      { value: "runs", labelKey: "agentDetail.runs" },
+      { value: "costs", labelKey: "agentDetail.costs" },
+      { value: "budgets", labelKey: "Budgets" },
     ],
   },
 ] as const;
 
 const HIDDEN_VIEW_LABELS: Partial<Record<AgentLocalDetailView, string>> = {
-  skills: "Skills",
-  tools: "Tools",
-  channels: "Channels",
-  "api-keys": "API Keys",
-  revisions: "Agent history",
+  skills: "agentDetail.skills",
+  tools: "agentDetail.tools",
+  channels: "agentDetail.channels",
+  "api-keys": "agentDetail.apiKeys",
+  revisions: "caseComponents.revisions.title",
 };
 
 export const AGENT_AUDIT_VIEWS: ReadonlySet<AgentLocalDetailView> = new Set(["activity", "runs", "costs", "budgets"]);
@@ -67,7 +62,7 @@ export function isAgentAuditView(view: AgentDetailView): view is AgentAuditView 
 
 export function agentDetailViewLabel(view: AgentLocalDetailView): string {
   const item = AGENT_DETAIL_NAVIGATION.flatMap((section) => section.items).find((entry) => entry.value === view);
-  return item ? translateInstant(item.labelKey) : HIDDEN_VIEW_LABELS[view] ?? translateInstant("caseDetail.tabs.overview");
+  return translateInstant(item?.labelKey ?? HIDDEN_VIEW_LABELS[view] ?? "caseDetail.tabs.overview");
 }
 
 export function parseAgentDetailView(value: string | null): AgentLocalDetailView {

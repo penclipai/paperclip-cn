@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { agents, companies, controllerInstances, createDb, environmentLeases, heartbeatRuns, issues, nativeRunFinalizations } from "@penclipai/db";
+import { agents, companies, controllerInstances, createDb, environmentLeases, heartbeatRuns, issues, nativeRunFinalizations, workspaceOperations } from "@penclipai/db";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import {
   controllerInstanceLeaseEnabled, proveControllerInstance, registerControllerInstanceDb, registerControllerInstanceLeaseWork,
@@ -53,6 +53,8 @@ suite("controller instance lease: a replaced container's records are provable", 
   }
 
   const minutesAgo = (minutes: number) => new Date(Date.now() - minutes * 60_000).toISOString();
+  const foreignProcessSpaceProof = () => ({ verdict: "unprovable" as const,
+    reason: currentProcessSpaceHash() === "unknown" ? "unknown_process_space" : "different_process_space" as const });
   const stampOf = (bootId: string, extra: Partial<LocalOwnerStamp> = {}): LocalOwnerStamp => ({
     kind: "local", scope: "test", generation: null, host: null, processSpace: "old-container", bootId, pid: 7,
     processStartedAt: null, processGroupId: null, touchedAt: minutesAgo(10), ...extra });
@@ -118,21 +120,21 @@ suite("controller instance lease: a replaced container's records are provable", 
     await startHere();
     expect(await proveOwnerGone(stampOf(justExpired))).toEqual({ verdict: "alive", reason: "controller_lease_grace" });
     expect(await proveOwnerGone(stampOf(resumed, { touchedAt: minutesAgo(1) }))).toEqual({ verdict: "alive", reason: "controller_lease_grace" });
-    expect(await proveOwnerGone(stampOf(resumed, { touchedAt: null }))).toEqual({ verdict: "unprovable", reason: "different_process_space" });
+    expect(await proveOwnerGone(stampOf(resumed, { touchedAt: null }))).toEqual(foreignProcessSpaceProof());
     for (const bootId of [justExpired, resumed]) expect(await proveControllerInstance(db, bootId, null)).toBe("expired");
   });
 
   it("never lets an older epoch fence a newer one", async () => {
     await startHere();
     const newer = await otherBoot({ expiredMsAgo: 600_000, epoch: 9_000_000 });
-    expect(await proveOwnerGone(stampOf(newer))).toEqual({ verdict: "unprovable", reason: "different_process_space" });
+    expect(await proveOwnerGone(stampOf(newer))).toEqual(foreignProcessSpaceProof());
     expect(await proveControllerInstance(db, newer, null)).toBe("expired");
   });
 
   it("never fences without a lease row of its own: off, or not registered", async () => {
     const replaced = await otherBoot({ expiredMsAgo: 600_000 });
     registerControllerInstanceDb(db);
-    expect(await proveOwnerGone(stampOf(replaced))).toEqual({ verdict: "unprovable", reason: "different_process_space" });
+    expect(await proveOwnerGone(stampOf(replaced))).toEqual(foreignProcessSpaceProof());
     expect(await proveControllerInstance(db, replaced, null)).toBe("expired");
   });
 
@@ -181,6 +183,31 @@ suite("controller instance lease: a replaced container's records are provable", 
     } finally { vi.useRealTimers(); }
   });
 
+  it("keeps renewing while this boot runs a remote workspace save", async () => {
+    let now = 0;
+    vi.useFakeTimers({ toFake: ["Date"], now: new Date() });
+    try {
+      await startHere({ now: () => now }, false);
+      currentControllerProcessStamp();
+      await tickControllerInstanceLease();
+      now = 120_000;
+      vi.setSystemTime(Date.now() + 120_000);
+      const invocation = randomUUID();
+      const owner = { bootId: currentControllerBootId(), pid: process.pid, hostHash: currentProcessSpaceHash(), processStartedAt: null };
+      await db.insert(workspaceOperations).values({ companyId, phase: "remote_workspace_snapshot", status: "running",
+        metadata: { boundary: "final", epoch: 1, saveWork: { schema: "paperclip.remote-workspace-save-work.v1", activeIds: [invocation],
+          unknown: false, quiescedAt: null, owners: { [invocation]: owner } } } });
+      beginIdleTrackedWork()();
+      await db.update(controllerInstances).set({ leaseExpiresAt: sql`now()` });
+      await tickControllerInstanceLease();
+      expect(await proveControllerInstance(db, currentControllerBootId(), null)).toBe("live");
+      await db.delete(workspaceOperations);
+      await db.update(controllerInstances).set({ leaseExpiresAt: sql`now()` });
+      await tickControllerInstanceLease();
+      expect(await proveControllerInstance(db, currentControllerBootId(), null)).toBe("expired");
+    } finally { vi.useRealTimers(); }
+  });
+
   it("keeps renewing while this boot runs a legacy run", async () => {
     vi.useFakeTimers({ toFake: ["Date"], now: new Date() });
     try {
@@ -209,7 +236,7 @@ suite("controller instance lease: a replaced container's records are provable", 
   it("keeps a record that names a process group unprovable: agent processes may outlive their server", async () => {
     const replaced = await otherBoot();
     await startHere();
-    expect(await proveOwnerGone(stampOf(replaced, { processGroupId: 7 }))).toEqual({ verdict: "unprovable", reason: "different_process_space" });
+    expect(await proveOwnerGone(stampOf(replaced, { processGroupId: 7 }))).toEqual(foreignProcessSpaceProof());
   });
 
   it("issues no statements while idle, and renews in one statement only while it holds stamped work", async () => {

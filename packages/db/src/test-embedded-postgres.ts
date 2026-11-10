@@ -125,7 +125,7 @@ const EMBEDDED_POSTGRES_PASSWORD = "paperclip";
 const EMBEDDED_POSTGRES_INITDB_FLAGS = ["--encoding=UTF8", "--locale=C", "--lc-messages=C"];
 
 async function createEmbeddedPostgresTestInstance(tempDirPrefix: string) {
-  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), tempDirPrefix));
+  const dataDir = fs.mkdtempSync(path.join(embeddedPostgresTempRoot(), tempDirPrefix));
   try {
     return await createEmbeddedPostgresTestInstanceAt(dataDir);
   } catch (error) {
@@ -248,7 +248,11 @@ async function stopEmbeddedPostgresBounded(
   let timer: ReturnType<typeof setTimeout> | undefined;
   const stopped = instance.stop().then(
     () => scheduleCleanup(),
-    async () => {
+    async (error) => {
+      // A managed owner could not prove its cluster stopped. Retaining this
+      // error prevents the caller from starting a replacement alongside an
+      // unknown live cluster (and preserves its data directory for diagnosis).
+      if (error instanceof TestPostgresShutdownError) throw error;
       if (await confirmDataDirStopped()) scheduleCleanup();
     },
   );
@@ -373,6 +377,21 @@ const TEMPLATE_PRUNE_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 export type EmbeddedPostgresStartMode = "template" | "fresh";
 
+// Tests need an empty template cache occasionally. Changing TEMP/TMP/TMPDIR to
+// get one changes the temp root used by Vitest's own SSR cache too; removing
+// that scratch directory then makes unrelated test files fail their imports.
+// Keep the fixture's temporary files injectable instead, without mutating the
+// process-wide environment.
+let embeddedPostgresTempRootForTests: string | null = null;
+
+function embeddedPostgresTempRoot(): string {
+  return embeddedPostgresTempRootForTests ?? os.tmpdir();
+}
+
+export function __setEmbeddedPostgresTempRootForTests(tempRoot: string | null): void {
+  embeddedPostgresTempRootForTests = tempRoot;
+}
+
 function isTemplateCacheDisabled(): boolean {
   return process.env.PAPERCLIP_TEST_POSTGRES_TEMPLATE === "0";
 }
@@ -434,7 +453,7 @@ function templateOwnerTag(): string {
 }
 
 function templateRootDir(): string {
-  return path.join(os.tmpdir(), `${TEMPLATE_ROOT_DIR_NAME}-${templateOwnerTag()}`);
+  return path.join(embeddedPostgresTempRoot(), `${TEMPLATE_ROOT_DIR_NAME}-${templateOwnerTag()}`);
 }
 
 // Why `dir` cannot be trusted as a private directory of the current user, or
@@ -654,7 +673,7 @@ async function startEmbeddedPostgresFromTemplateWithRetry(
     if (!isUsableTemplate(templateDir)) {
       throw new Error(`embedded Postgres template ${templateDir} is no longer usable`);
     }
-    const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), tempDirPrefix));
+    const rootDir = fs.mkdtempSync(path.join(embeddedPostgresTempRoot(), tempDirPrefix));
     const dataDir = path.join(rootDir, "data");
     let created: Awaited<ReturnType<typeof createEmbeddedPostgresTestInstanceAt>> | null = null;
     try {

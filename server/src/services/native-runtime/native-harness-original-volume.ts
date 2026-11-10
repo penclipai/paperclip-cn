@@ -37,6 +37,8 @@ export function originalHarnessVolumeAnchorPath() {
 
 async function verify(witness: ReviewedOriginalHarnessVolumeWitness) {
   const now = Date.now(), observed = Date.parse(witness.observedAt), expiry = Date.parse(witness.expiresAt);
+  const currentUid = process.getuid?.();
+  if (currentUid === undefined) reject();
   if (!Number.isFinite(observed) || !Number.isFinite(expiry) || observed > now || now - observed > 120_000
     || expiry <= now || expiry - observed > 120_000 || !digest.test(witness.anchorSha256)
     || !digest.test(witness.providerWitnessSha256) || !/^[a-f0-9]{40}$/.test(witness.currentCommit)) reject();
@@ -53,11 +55,11 @@ async function verify(witness: ReviewedOriginalHarnessVolumeWitness) {
     if (!inside(mount, path)) reject();
     const stat = await lstat(path);
     if (!stat.isDirectory() || stat.isSymbolicLink()
-      || path === dirname(anchorPath) && ((stat.mode & 0o777) !== 0o700 || stat.uid !== process.getuid?.())) reject();
+      || path === dirname(anchorPath) && ((stat.mode & 0o777) !== 0o700 || stat.uid !== currentUid)) reject();
   }
   const before = await lstat(anchorPath);
   if (!before.isFile() || before.isSymbolicLink() || before.nlink !== 1 || before.size > 8192
-    || (before.mode & 0o777) !== 0o600 || before.uid !== process.getuid?.()) reject();
+    || (before.mode & 0o777) !== 0o600 || before.uid !== currentUid) reject();
   const handle = await open(anchorPath, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
   let anchor: OriginalHarnessVolumeAnchor;
   try {

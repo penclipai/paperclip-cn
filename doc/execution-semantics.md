@@ -244,6 +244,32 @@ writer and finalization holds remain until ordinary snapshot publication and
 cleanup complete. This fallback does not remove source files, rerun provider
 work, or solve capacity failure while creating the workspace archive itself.
 
+### Delayed tool approvals
+
+Ordinary tool reviews have no implicit one-hour deadline. A person may approve
+the saved action after the requesting run ends or the server restarts. Explicit
+action deadlines and terminal-task expiry still apply. The shared interaction
+payload represents the absence of a deadline with `toolAction.expiresAt = null`.
+
+New connected-tool snapshots bind the reviewed arguments, tool contract,
+connection settings, credential owner, consent and permissions. Authenticated
+OAuth refresh preserves the vault's credential identity epoch; manual credential
+replacement and new consent do not. Token versions and refresh timestamps may
+change without invalidating the action. Fixed credential versions and non-OAuth
+credentials retain their exact-version checks. Earlier signed snapshots retain
+their original strict comparison and saved deadlines; the server does not infer
+continuity for historical rotations or revive already-expired requests.
+
+If sign-in is required before dispatch, the accepted decision remains saved.
+The card shows that approval is waiting for the app connection and links to its
+repair surface. Recovery waits without a recurring timer and wakes on committed
+connection changes or startup. It checks the exact saved action and current
+authority again. Repair under the same authorization can continue automatically;
+new consent, changed permissions or changed credentials require a new review.
+The existing execution claim and result receipt prevent repeated approval from
+dispatching the action twice. Uncertain provider outcomes retain the existing
+no-replay recovery contract.
+
 ### Answered Slack conversations
 
 An accepted scheduled-monitor yield remains unfinished task work. Its committed
@@ -3576,6 +3602,19 @@ ownership, active controllers, cleanup leases, pause, approval, budget, and norm
 execution gates still apply. Dependency-blocked interaction mode remains limited
 to its existing answer/triage contract.
 
+A saved human answer or confirmation can reach the requesting assignee while
+dependencies remain unfinished. Admission and dispatch verify the stored response
+against its company, task, requesting agent, resolved status, and human resolver.
+The response uses dependency-blocked answer/triage mode. It does not check out the
+task, set it to `in_progress`, resolve its dependencies, or approve another action.
+An absent, changed, pending, or agent-resolved response grants no such exception.
+That bounded response remains a continuation after a workspace or AI-account wait,
+so final dispatch still verifies it. Finishing a dependency during preparation
+does not turn the admitted response into an attempt to check out the task.
+Task interruption notices ignore Retry receipts for a superseded run. A later
+successful conversation must not inherit the old failure banner. This read-only
+projection neither retires Retry authority nor acknowledges independent saved input.
+
 Snapshot preservation and native copyback are distinct receipts. A historical
 workspace recovered as an immutable snapshot does not make its old native sync
 reference finalized. Once recovery settles, the current inbound owner can
@@ -3791,6 +3830,17 @@ cancellation fence qualify. No native identity, coordinator, adapter invocation,
 provider event, or process-launch evidence may exist. Environment cleanup still
 requires the same receipts. This historical proof permits explicit Retry or a
 newer saved user message; it does not replay the cancelled input.
+
+Workspace and AI-capacity waits use the same pre-dispatch classification for
+recovery and stop proof. A cancelled legacy run must retain its matching
+`workspace_wait` or `ai_connection_wait` receipt with `providerWorkStarted: false`.
+The runtime must remain unresolved, and the stage must be `preparing` or
+`settled`. Native execution references, workspace recovery obligations, a live
+controller lease, retained resources, or dispatch events still reject the proof.
+Remote cleanup requires the exact termination receipt. This rule also covers
+historical waits without a process ID; neither an old timestamp nor a different
+server boot proves that a run stopped. Pause and terminate can then finish,
+while a subsequent run still requires ordinary admission and new authorization.
 
 The existing bounded saved-message worker rechecks this proof after restart.
 Admission atomically settles an unclaimed coordinator and admits one fresh turn,
@@ -4101,13 +4151,33 @@ run's wait marker along with its terminal, result and pending-request authority.
 Already-numbered cancellation acknowledgements and cancelled/expired runtime requests
 are retained during shutdown so recovery can replay a contiguous journal. They
 carry no permission to start work. Stream closure, stream failure or drain timeout
-after complete usage leaves the saved wait unfinalized until a provider terminal
-is retained; complete token counters alone cannot certify a stopped provider.
-Codex governed-wait settlement allows up to 30 seconds for its interruption
-terminal, matching the transport command window. The caller's execution deadline
-can shorten that window. An interrupt acknowledgement alone is not terminal proof.
-A timeout, missing accounting, or an unproven provider terminal remains a failure;
-the saved wait does not certify successful provider execution.
+after complete usage leaves the saved wait unfinalized until execution is proven
+stopped; complete token counters alone cannot certify that boundary. Codex allows
+up to 30 seconds for its interruption terminal, matching the transport command
+window; the caller's execution deadline can shorten it. After that bounded drain,
+a supporting driver uses its existing owned shutdown.
+For Runner, this requires exact run/session/turn identity, provider settlement,
+durable event drain, settled semantic tool outcomes and verified Runner
+suspension. An interrupt acknowledgement, process signal or ordinary close
+promise alone is insufficient. This proof settles the saved yielded result
+without asserting provider success or complete accounting. The stopped session
+is retired from warm reuse.
+
+The checkpoint may add a shutdown settlement receipt to the existing governed
+wait. Previous checkpoints without it follow the same terminal-or-shutdown
+settlement path. Recovery validates the original triggering event and receipt
+binding, rejects later turns and failed provider terminals, and completes the
+same saved handoff without starting a model turn, even if its question has been
+answered. A crash after receipt persistence retains that proof. Late settlement
+after controller cancellation cannot publish a result.
+
+If shutdown cannot be proven, the run retains its checkpoint and the named
+`native_governed_wait_settlement_pending` condition. The existing bounded
+same-run recovery schedule owns further settlement; it grants no replacement
+or tool replay. The task explains that work is saved and shutdown is pending.
+Exhausted or gated recovery holds continuation and names the shutdown problem.
+Actual provider failures and integrity failures retain their existing meaning.
+Accounting keeps its separate receipt and reconciliation requirements.
 
 An exact governed-cancellation terminal with an explicit turn ID may return its
 durable event receipt before postcommit accounting and output observers finish.

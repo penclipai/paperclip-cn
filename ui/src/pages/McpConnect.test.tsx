@@ -387,7 +387,7 @@ it("explains a rejected pairing code in readable copy and clears it when the cod
   try {
     await vi.waitFor(() => expect(page.container.querySelector("#dot-pairing-code")).not.toBeNull());
     const input = page.container.querySelector<HTMLInputElement>("#dot-pairing-code")!;
-    const connect = Array.from(page.container.querySelectorAll("button")).find(button => button.textContent === "Allow agent connection")!;
+    const connect = Array.from(page.container.querySelectorAll("button")).find(button => button.textContent === "Connect Dot with pairing code")!;
     const enter = (value: string) => flushSync(() => {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, value);
       input.dispatchEvent(new Event("input", { bubbles: true }));

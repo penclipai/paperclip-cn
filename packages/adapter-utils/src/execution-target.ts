@@ -1836,6 +1836,17 @@ export async function prepareGitHubOperationLaunchers(input: {
     ...["git", "gh"].map((name) => [name, githubLauncherSource()] as const),
     ...[".zshenv", ".zprofile", ".zshrc", ".bash_profile", ".bashrc", ".profile"].map((name) => [name, profile] as const),
   ]);
+  // The staged launcher itself remains a POSIX CommonJS script for remote
+  // targets. Windows command discovery ignores an extensionless script, so a
+  // local operation adds only a fixed-node `.cmd` entry point beside it.
+  // `process.execPath` is fixed by this host; no PATH lookup can choose a
+  // caller-provided interpreter.
+  if (!remote && process.platform === "win32") {
+    const node = process.execPath.replaceAll("%", "%%");
+    for (const program of ["git", "gh"]) {
+      files[`${program}.cmd`] = `@echo off\r\nsetlocal DisableDelayedExpansion\r\n"${node}" "%~dp0${program}" %*\r\nexit /b %ERRORLEVEL%\r\n`;
+    }
+  }
   if (remote) {
     const runner = adapterExecutionTargetCommandRunner(remote);
     await syncRemoteTextFilesWithHashSkip({

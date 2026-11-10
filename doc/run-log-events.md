@@ -627,6 +627,8 @@ run phases:
 | `storage.snapshot.verify_plaintext` | Hash the decrypted archive against its sealed digest. |
 | `storage.snapshot.publish` | Copy the verified archive to its destination. |
 | `workspace.snapshot.sandbox_restore` | Upload and unpack the archive in the sandbox. |
+| `workspace.snapshot.sandbox_upload` | Inside `sandbox_restore`: copy the archive into the sandbox. |
+| `workspace.snapshot.sandbox_extract` | Inside `sandbox_restore`: verify and unpack the archive, then publish the restored folder. |
 | `storage.snapshot.prior_attempts` | Check whether an earlier upload attempt already landed. |
 | `storage.snapshot.encrypt` | Hash and encrypt the archive in one pass. |
 | `storage.snapshot.digest` | Hash the encrypted file that is uploaded. |
@@ -981,3 +983,15 @@ references in Postgres. Local-disk instances remain local. Raw provider
 traces have their own restricted, encrypted object path. See
 [run evidence storage](run-evidence-storage.md) for batching, durability,
 configuration, migration, retention, and qualification boundaries.
+
+### Event commit stall diagnostics
+
+A Runner event commit stall records the first safe error code in the error and
+up to three nested `cause` objects. This retains database and transport codes
+when an adapter wraps the original error. Each code has the existing 80-character
+identifier limit. If no safe code exists, the diagnostic uses the outer error's
+safe name. It never copies exception messages, SQL, or query arguments. Cyclic or
+long cause chains stop at the same four-object limit.
+
+This only improves the recorded cause. Event acknowledgement, replay integrity,
+the bounded stall policy, and operator recovery requirements stay unchanged.

@@ -53,6 +53,7 @@ test("real graph retains direct and indirect filesystem, process and opaque depe
   const select = (changed) => selectProjectTests({ root: directory, project: "fixture", changed });
   const result = await select(["ui/src/leaf.ts"]);
   assert.ok(result.related.includes("ui/src/import.test.ts"));
+  assert.deepEqual(result.coveredChanges, ["ui/src/leaf.ts"], "native and Vitest module paths must compare portably");
   assert.ok(result.inputRelated.includes("ui/src/raw.test.ts"), "raw text has an explicit repository input edge");
   assert.ok(!result.alwaysRun.includes("ui/src/raw.test.ts"));
   assert.ok(!(await select(["ui/src/independent.test.ts"])).selected.includes("ui/src/raw.test.ts"));

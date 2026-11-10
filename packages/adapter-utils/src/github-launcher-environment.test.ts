@@ -380,6 +380,7 @@ describe("managed GitHub launcher environment", () => {
   it("saves local commits through staged sandbox shells without author setup", async () => {
     const fixture = await sandbox("usr/bin");
     await rm(path.join(fixture.bin, "git"));
+    await rm(path.join(fixture.bin, "git.cmd"), { force: true });
     await writeFile(path.join(fixture.root, ".gitconfig"), "[user]\nname = Image User\nemail = image@example.test\n");
     const env = await prepareGitHubOperationLaunchers({
       runId: "default-local-author", target: fixture.target, cwd: fixture.root,

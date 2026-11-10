@@ -122,6 +122,25 @@ original-volume anchor or filesystem read. These validations add bounded
 per-retained-scope database reads during startup. They do not add a worker or a
 poll. Missing or invalid byte evidence remains an enrollment blocker.
 
+The original-volume owner can refresh a WEB receipt whose database facts digest
+has become stale only when fresh source inspection, current-key checkpoint
+validation and ciphertext hash/size readback prove the preserved bindings unchanged.
+It reuses the same archive and takes the existing finalizer, task and run fences before
+comparing the prior receipt digest and replacing it. The company activity log
+retains the prior database and local facts digests, source witness fingerprint,
+observation time and receipt digest. Those four changed fields must reconstruct
+the exact prior proof from the unchanged current bindings before publication. No source paths
+enter the audit delta; normal activity redaction remains enabled. Changed
+evidence, concurrent invalid receipts and active sources remain blocked; remote
+recovery obligations are unchanged.
+
+Local inode and timestamp observations may change between preservation attempts
+without changing byte coverage. Valid receipts remain idempotent after those
+changes; stale database facts can refresh with the same archive and fresh local
+observations. During one attempt, the local metadata digest must remain stable
+from capture through the locked publication check. Changed bytes, paths or modes
+still invalidate preservation evidence.
+
 Receipt validation adds bounded per-scope database reads to startup eligibility.
 It does not add a recurring scan or network work. Qualification must measure the
 selected cohort's startup latency on the serving revision before enrollment.
@@ -2029,6 +2048,14 @@ verified late receipt updates effective token/request fields; each adjustment
 retains its previous usage in `previous_usage_json`.
 Unknown late run receipts remain durable per-receipt debt; resolving one receipt
 cannot clear another unresolved receipt.
+
+Live usage receipt writes use READ COMMITTED and the existing run-row lock. All
+mutable receipt and accounting reads occur under that lock. A streamed run-log
+append between company validation and lock acquisition therefore cannot exhaust
+serialization retries. A concurrent finalization is read under the lock and
+keeps the normal late-receipt reconciliation path. Other independent accounting
+operations retain their repeatable-read snapshot. Receipt identity, replay
+conflicts, company scoping and budget-work publication remain transactional.
 
 Upgrade all controllers/workers to this accounting contract and drain incompatible
 pre-upgrade database transactions before enabling independent writers. Do not run

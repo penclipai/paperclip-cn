@@ -261,6 +261,13 @@ export function projectTaskInterruption(issue: ProjectionIssue, input: Projectio
   // dispatch runs. A resume that never ran falls through to one Retry.
   const nativeResumeAt = run.nativeResumeAt?.getTime();
   const retryAt = system?.nextAttemptAt ?? nativeResumeAt ?? run.scheduledRetryAt?.getTime();
+  if (run.runtimeMode === "native" && run.errorCode === "native_governed_wait_settlement_pending") {
+    const settling = recoveryRunning || Boolean(retryAt && now - retryAt < NATIVE_RESUME_DISPATCH_GRACE_MS);
+    return { ...base, state: settling ? "working" : "failed", canRetry: false,
+      retryWait: { reason: "governed_wait_settlement", message: settling
+        ? "Your work is saved. Paperclip is finishing shutdown."
+        : "Paperclip couldn’t confirm shutdown. Your work is saved; continuation is paused." } };
+  }
   if (retryAt && retryAt > now) return { ...base, state: "retry_scheduled",
     nextRetryAt: new Date(retryAt).toISOString(), canRetry: !preparationPending && !nativeResumeAt,
     ...(system?.nextAttemptAt && recoveryStep ? { recoveryStep } : {}) };
@@ -470,7 +477,11 @@ export async function taskInterruptionPresentations(db: Db, companyId: string, i
   const ownerStopRequired = new Set(ownerStops.map(row => `${row.issueId}:${row.runId}`));
   const byIssue = <T extends { issueId: string }>(rows: T[]) => new Map(rows.map(row => [row.issueId, row]));
   const runMap = byIssue(runs), waitMap = new Map<string, typeof waits[number]>();
-  const retryWaitMap = byIssue(waits.filter(wait => wait.sourceRunId));
+  // A Retry belongs to the run it observed. New conversation work supersedes
+  // that authority, even before dispatch retires the old receipt. Retained
+  // ordinary input is independent and must still be shown as waiting.
+  const currentWaits = waits.filter(wait => !wait.sourceRunId || wait.sourceRunId === runMap.get(wait.issueId)?.id);
+  const retryWaitMap = byIssue(currentWaits.filter(wait => wait.sourceRunId));
   const retryIssueIds = [...retryWaitMap.keys()];
   const retryDependencyMap = new Map<string, RetryDependencies>();
   if (retryIssueIds.length) {
@@ -490,7 +501,7 @@ export async function taskInterruptionPresentations(db: Db, companyId: string, i
         savingFilesOnly: ids.every(id => saving.has(id)) });
     }
   }
-  for (const wait of waits) {
+  for (const wait of currentWaits) {
     const current = waitMap.get(wait.issueId);
     if (!current || wait.requestedAt > current.requestedAt ||
         (wait.requestedAt.getTime() === current.requestedAt.getTime() && wait.id > current.id)) waitMap.set(wait.issueId, wait);

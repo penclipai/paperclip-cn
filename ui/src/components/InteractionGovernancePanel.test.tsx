@@ -4,6 +4,7 @@ import { act as reactAct } from "react";
 import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import i18n from "i18next";
 import {
   ISSUE_THREAD_INTERACTION_KINDS as INTERACTION_KINDS,
   type InteractionResolverGovernance,
@@ -84,6 +85,18 @@ describe("InteractionGovernancePanel", () => {
     // Governed tool approvals keep their human-only guarantee.
     expect(copy).toContain("Tool-approval confirmations always stay");
     expect(copy).toContain("Human only");
+  });
+
+  it("switches the complete governance explanation while retaining its permission limits and emphasis", async () => {
+    const { host } = renderPanel();
+    await act(async () => { await i18n.changeLanguage("zh-CN"); });
+
+    const description = host.querySelector("p");
+    expect(description?.textContent).toContain("请求者未指定回复对象");
+    expect(description?.textContent).toContain("只能收紧每条此类请求的回复范围，不能放宽范围");
+    expect(description?.textContent).toContain("工具操作审批始终仅限人工");
+    const emphasis = Array.from(description?.querySelectorAll("span") ?? []).map(span => span.textContent);
+    expect(emphasis).toEqual(["任何人", "默认策略", "范围上限", "仅限人工"]);
   });
 
   it("shows a stored narrowing override on the matching row", () => {

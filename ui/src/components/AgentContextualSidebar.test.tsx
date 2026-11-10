@@ -94,9 +94,9 @@ describe("AgentContextualSidebar", () => {
         </QueryClientProvider>,
       );
 
-      expect(markup).toContain("运行环境");
+      expect(markup).toContain("智能体");
       expect(markup).toContain('aria-label="Agent的导航"');
-      expect(markup).toContain("治理");
+      expect(markup).toContain("审计");
       expect(markup).toContain("执行框架 / 运行环境");
       expect(markup).toContain("权限 / 信任");
       expect(markup).toContain("Caller override");

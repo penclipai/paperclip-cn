@@ -136,7 +136,7 @@
   },
   "executionWorkspace.loadRoutinesFailed": {
     "en": "Failed to load routines.",
-    "zh-CN": "加载例程失败。",
+    "zh-CN": "加载例行任务失败。",
     "reviewedEnglishHash": "fff3c4968690f7f2c95f8c82b8ec268335725b2681e790ed6151dc0337865e7a"
   },
   "executionWorkspace.loadWorkspaceFailed": {
@@ -156,7 +156,7 @@
   },
   "executionWorkspace.loadingRoutines": {
     "en": "Loading routines...",
-    "zh-CN": "正在加载例程...",
+    "zh-CN": "正在加载例行任务…",
     "reviewedEnglishHash": "e351124d680fa27fe07bb5a14b498f658c17aa98f5eb0cf14444cf91baab23c7"
   },
   "executionWorkspace.loadingWorkspace": {
@@ -201,7 +201,7 @@
   },
   "executionWorkspace.noWorkspaceRoutines": {
     "en": "No routines use workspace-specific variables yet.",
-    "zh-CN": "还没有例程使用工作区专属变量。",
+    "zh-CN": "尚无例行任务使用工作区专属变量。",
     "reviewedEnglishHash": "fbd8935e8518f6ba4786f00dae71cb3a3452bbbab05f71c04483ea193eea846e"
   },
   "executionWorkspace.notScheduled": {
@@ -346,17 +346,17 @@
   },
   "executionWorkspace.routineRunFailed": {
     "en": "Routine run failed",
-    "zh-CN": "例程运行失败",
+    "zh-CN": "例行任务运行失败",
     "reviewedEnglishHash": "296c7ca6e9b82b39e4ddc83e5a9ab87dbe6d1f041045a313b739d1e846076425"
   },
   "executionWorkspace.routineRunFailedBody": {
     "en": "Paperclip could not start the routine run.",
-    "zh-CN": "Paperclip 无法启动例程运行。",
+    "zh-CN": "Paperclip 未能启动这次例行任务运行。",
     "reviewedEnglishHash": "5628bbf83ac3d58dba8413ebdf9701bb24bd99dea60a66e54f2a8f00ab257d6e"
   },
   "executionWorkspace.routineStarted": {
     "en": "Routine started",
-    "zh-CN": "例程已启动",
+    "zh-CN": "例行任务已启动",
     "reviewedEnglishHash": "768fcb182941e01c53a32fb6c3322c7f80a79952abc4ac5d8883f4c3a82a13fc"
   },
   "executionWorkspace.routineStartedBody": {
@@ -486,7 +486,7 @@
   },
   "executionWorkspace.tabs.routines": {
     "en": "Routines",
-    "zh-CN": "例程",
+    "zh-CN": "例行任务",
     "reviewedEnglishHash": "61b7bb44e2b47b7c0ccaccff4872fdcf3e298345d0f003ea4bf54e8c84e2a889"
   },
   "executionWorkspace.tabs.runtimeLogs": {
@@ -571,12 +571,12 @@
   },
   "executionWorkspace.workspaceRoutines": {
     "en": "Workspace routines",
-    "zh-CN": "工作区例程",
+    "zh-CN": "工作区例行任务",
     "reviewedEnglishHash": "b584814bcd16a7befab74b426d8de2aafc7a88941b4644b7bd11619793439474"
   },
   "executionWorkspace.workspaceRoutinesDescription": {
     "en": "Routines that use workspace-specific variables can be run against this execution workspace.",
-    "zh-CN": "使用工作区专属变量的例程可以针对这个执行工作区运行。",
+    "zh-CN": "使用工作区专属变量的例行任务可在此执行工作区中运行。",
     "reviewedEnglishHash": "a720219337f60705de6e13a938d99c03062d464c99fe3d05232af0936cf05e60"
   },
   "executionWorkspace.workspaceSettings": {

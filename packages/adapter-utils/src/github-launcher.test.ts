@@ -41,7 +41,7 @@ async function executeFakeCli(file: string, args: string[], options?: ExecFileOp
 
 describe("managed GitHub launchers", () => {
 
-  it("uses a private interpreter without selecting Node from PATH", async () => {
+  it.skipIf(process.platform === "win32")("uses a private interpreter without selecting Node from PATH", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-github-interpreter-"));
     cleanups.push(() => rm(root, { recursive: true, force: true }));
     const managed = path.join(root, "managed"), real = path.join(root, "real");
@@ -71,18 +71,19 @@ describe("managed GitHub launchers", () => {
     const managed = path.join(root, "managed"), shim = path.join(root, "shim"), calls = path.join(root, "calls");
     await mkdir(managed); await mkdir(shim);
     const launcher = path.join(managed, "git");
-    await writeFile(launcher, githubLauncherSource({ brokerFile }), { mode: 0o700 });
+    await writeFakeCli(managed, "git", githubLauncherSource({ brokerFile }));
     // Bound the pre-fix reproduction: the fixture stops at three invocations.
     await writeFile(path.join(shim, "git"), `#!${process.execPath}
 const fs = require("node:fs"), {spawnSync} = require("node:child_process");
 fs.appendFileSync(${JSON.stringify(calls)}, "call\\n");
 if (fs.readFileSync(${JSON.stringify(calls)}, "utf8").trim().split("\\n").length >= 3) process.exit(99);
-const result = spawnSync(${JSON.stringify(launcher)}, process.argv.slice(2), {env: process.env, stdio: "inherit"});
+const result = spawnSync(process.platform === "win32" ? process.execPath : ${JSON.stringify(launcher)}, process.platform === "win32" ? [${JSON.stringify(launcher)}, ...process.argv.slice(2)] : process.argv.slice(2), {env: process.env, stdio: "inherit"});
 process.exit(result.status ?? 98);
 `, { mode: 0o700 });
+    if (process.platform === "win32") await writeFakeCli(shim, "git", await readFile(path.join(shim, "git"), "utf8"));
     const env = { ...process.env, ...githubBrokerEnvironment({}, {url: "", token: ""}),
       PATH: `${managed}${path.delimiter}${shim}${path.delimiter}${path.dirname(process.execPath)}${path.delimiter}/usr/bin${path.delimiter}/bin` };
-    await expect(exec(launcher, ["--version"], {env, timeout: 5000})).rejects.toMatchObject({
+    await expect(executeFakeCli(fakeCliPath(managed, "git"), ["--version"], {env, timeout: 5000})).rejects.toMatchObject({
       code: 126, stderr: expect.stringContaining("launcher_recursion_rejected"),
     });
     expect((await readFile(calls, "utf8")).trim().split("\n")).toEqual(["call"]);
@@ -98,7 +99,7 @@ process.exit(result.status ?? 98);
     await exec("git", ["-C", repo, "add", "tracked.txt"]);
     const expectedTree = (await exec("git", ["-C", repo, "write-tree"])).stdout;
     await writeFile(path.join(repo, "tracked.txt"), "unstaged contents\n");
-    await writeFile(path.join(bin, "git"), githubLauncherSource(), { mode: 0o700 });
+    await writeFakeCli(bin, "git", githubLauncherSource());
     let captures = 0;
     const server = createServer((_req, res) => {
       captures++;
@@ -108,8 +109,8 @@ process.exit(result.status ?? 98);
     await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
     cleanups.push(() => new Promise<void>(resolve => server.close(() => resolve())));
     const { port } = server.address() as { port: number };
-    const env = { ...process.env, ...githubBrokerEnvironment({}, { url: `http://127.0.0.1:${port}`, token: "run-capability" }), PATH: `${bin}:${process.env.PATH}` };
-    const git = (...args: string[]) => exec(path.join(bin, "git"), args, { cwd: root, env });
+    const env = { ...process.env, ...githubBrokerEnvironment({}, { url: `http://127.0.0.1:${port}`, token: "run-capability" }), PATH: `${bin}${path.delimiter}${process.env.PATH}` };
+    const git = (...args: string[]) => executeFakeCli(fakeCliPath(bin, "git"), args, { cwd: root, env });
     const tree = await git("--git-dir", path.join(repo, ".git"), "--work-tree", repo, "write-tree");
     const diff = await git("-C", repo, "-c", "core.quotepath=false", "diff-files", "--name-only", "-z", "--", ".");
     expect(tree.stdout).toBe(expectedTree);
@@ -123,7 +124,7 @@ process.exit(result.status ?? 98);
     const bin = path.join(root, "managed");
     await mkdir(bin);
     await exec("git", ["init", root]);
-    await writeFile(path.join(bin, "git"), githubLauncherSource(), { mode: 0o700 });
+    await writeFakeCli(bin, "git", githubLauncherSource());
     const server = createServer((_req, res) => {
       res.writeHead(access === "rejected" ? 403 : 200, { "content-type": "application/json" });
       res.end(JSON.stringify({ status: access, env: {
@@ -138,10 +139,10 @@ process.exit(result.status ?? 98);
       GH_TOKEN: "host-token", GIT_AUTHOR_NAME: "Host", GIT_AUTHOR_EMAIL: "host@example.test",
       GIT_COMMITTER_NAME: "Host", GIT_COMMITTER_EMAIL: "host@example.test",
     }, { url: `http://127.0.0.1:${port}`, token: access === "missing" ? "" : "run-capability" }),
-      PATH: `${bin}:${process.env.PATH}` };
+      PATH: `${bin}${path.delimiter}${process.env.PATH}` };
     await writeFile(path.join(root, "work.txt"), "saved work\n");
-    await exec(path.join(bin, "git"), ["add", "work.txt"], { cwd: root, env });
-    await exec(path.join(bin, "git"), ["commit", "-m", "Save local work"], { cwd: root, env });
+    await executeFakeCli(fakeCliPath(bin, "git"), ["add", "work.txt"], { cwd: root, env });
+    await executeFakeCli(fakeCliPath(bin, "git"), ["commit", "-m", "Save local work"], { cwd: root, env });
     expect((await exec("git", ["-C", root, "log", "-1", "--format=%an <%ae>|%cn <%ce>"])).stdout.trim())
       .toBe("Paperclip <noreply@paperclip.ing>|Paperclip <noreply@paperclip.ing>");
     expect((await exec("git", ["-C", root, "show", "HEAD:work.txt"])).stdout).toBe("saved work\n");
@@ -174,28 +175,53 @@ process.exit(result.status ?? 98);
   it.each(["broker-offline", "config-unwritable", "capability-rejected"])("keeps real local Git usable when %s", async (failure) => {
     const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-github-failure-"));
     cleanups.push(() => rm(root, { recursive: true, force: true }));
-    const bin = path.join(root, "managed");
-    await mkdir(bin);
+    const bin = path.join(root, "managed"), fakeBin = path.join(root, "fake-git");
+    const capturedCapabilities = path.join(root, "captured-capabilities.json");
+    await mkdir(bin); await mkdir(fakeBin);
     await exec("git", ["init", root]);
     await exec("git", ["-C", root, "config", "user.name", "Local Author"]);
     await exec("git", ["-C", root, "config", "user.email", "local@example.test"]);
     await writeFakeCli(bin, "git", githubLauncherSource());
-    const server = createServer((_req, res) => { res.writeHead(403); res.end(); });
+    const realGit = process.platform === "win32"
+      ? (await exec("where.exe", ["git"])).stdout.split(/\r?\n/).find(Boolean)!
+      : "git";
+    await writeFakeCli(fakeBin, "git", `#!/usr/bin/env node
+const fs = require("node:fs");
+const { spawnSync } = require("node:child_process");
+const args = process.argv.slice(2);
+if (args[0] === "fetch") {
+  fs.writeFileSync(process.env.PAPERCLIP_TEST_CAPABILITY_RECORD, JSON.stringify({
+    brokerToken: process.env.PAPERCLIP_GITHUB_BROKER_TOKEN ?? null,
+    bridgeToken: process.env.PAPERCLIP_GITHUB_BRIDGE_TOKEN ?? null,
+    apiKey: process.env.PAPERCLIP_API_KEY ?? null,
+  }));
+  process.exit(0);
+}
+const result = spawnSync(${JSON.stringify(realGit)}, args, { stdio: "inherit" });
+process.exit(result.status ?? 1);
+`);
+    let brokerCalls = 0;
+    const server = createServer((_req, res) => { brokerCalls++; res.writeHead(403); res.end(); });
     await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
     const { port } = server.address() as { port: number };
     if (failure === "broker-offline") await new Promise<void>(resolve => server.close(() => resolve()));
     else cleanups.push(() => new Promise<void>(resolve => server.close(() => resolve())));
     const configRoot = path.join(root, "config");
     if (failure === "config-unwritable") await writeFile(configRoot, "not a directory");
-    const result = await executeFakeCli(fakeCliPath(bin, "git"), ["status", "--porcelain"], { cwd: root, env: {
+    const env = {
       ...process.env, ...githubBrokerEnvironment({ GH_TOKEN: "host-must-not-leak" }, { url: `http://127.0.0.1:${port}`, token: "private-capability" }),
-      GH_CONFIG_DIR: configRoot, PATH: prependPath(bin),
-    } });
+      GH_CONFIG_DIR: configRoot, PATH: prependPath(bin, fakeBin), PAPERCLIP_TEST_CAPABILITY_RECORD: capturedCapabilities,
+    };
+    const local = await executeFakeCli(fakeCliPath(bin, "git"), ["status", "--porcelain"], { cwd: root, env });
+    expect(local.stderr).not.toContain("broker_");
+    expect(brokerCalls).toBe(0);
+    const result = await executeFakeCli(fakeCliPath(bin, "git"), ["fetch", "origin"], { cwd: root, env });
     expect(result.stderr).toContain(failure === "broker-offline" ? "broker_transport_unavailable" : failure === "config-unwritable" ? "configuration_directory_unavailable" : "capability_rejected");
     expect(result.stderr).not.toMatch(/host-must-not-leak|private-capability/);
+    expect(JSON.parse(await readFile(capturedCapabilities, "utf8"))).toEqual({ brokerToken: null, bridgeToken: null, apiKey: null });
     await executeFakeCli(fakeCliPath(bin, "git"), ["commit", "--allow-empty", "-m", "Offline work"], { cwd: root, env: {
       ...process.env, ...githubBrokerEnvironment({}, { url: `http://127.0.0.1:${port}`, token: "private-capability" }),
-      GH_CONFIG_DIR: configRoot, PATH: prependPath(bin),
+      GH_CONFIG_DIR: configRoot, PATH: prependPath(bin, fakeBin),
     } });
   }, 15_000); // broker-offline retries the transport twice per command before it falls back
 
@@ -223,8 +249,8 @@ process.exit(result.status ?? 98);
     cleanups.push(() => rm(root, { recursive: true, force: true }));
     const bin = path.join(root, "managed"), realBin = path.join(root, "real");
     await mkdir(bin); await mkdir(realBin);
-    await writeFile(path.join(bin, "gh"), githubLauncherSource(), { mode: 0o700 });
-    await writeFile(path.join(realBin, "gh"), '#!/usr/bin/env node\nprocess.stdout.write(JSON.stringify({args:process.argv.slice(2),token:process.env.GH_TOKEN ?? null}));', { mode: 0o700 });
+    await writeFakeCli(bin, "gh", githubLauncherSource());
+    await writeFakeCli(realBin, "gh", '#!/usr/bin/env node\nprocess.stdout.write(JSON.stringify({args:process.argv.slice(2),token:process.env.GH_TOKEN ?? null}));');
     let status = "available";
     const server = createServer((_req, res) => {
       res.setHeader("content-type", "application/json");
@@ -234,8 +260,8 @@ process.exit(result.status ?? 98);
     cleanups.push(() => new Promise<void>(resolve => server.close(() => resolve())));
     const { port } = server.address() as { port: number };
     const env = { ...process.env, ...githubBrokerEnvironment({}, { url: `http://127.0.0.1:${port}`, token: "run-capability" }),
-      PATH: `${bin}:${realBin}:${process.env.PATH}` };
-    const gh = (...args: string[]) => exec(path.join(bin, "gh"), args, { env });
+      PATH: `${bin}${path.delimiter}${realBin}${path.delimiter}${process.env.PATH}` };
+    const gh = (...args: string[]) => executeFakeCli(fakeCliPath(bin, "gh"), args, { env });
     for (const [args, tool] of [
       [["repo", "create", "demo", "--private"], "create_repository"],
       [["repo", "new", "demo"], "create_repository"],
@@ -261,11 +287,11 @@ process.exit(result.status ?? 98);
     await mkdir(bin); await mkdir(realBin);
     await exec("git", ["init", root]);
     for (const name of ["git", "gh"]) await writeFile(path.join(bin, name), githubLauncherSource(), { mode: 0o700 });
-    await writeFile(path.join(realBin, "gh"), '#!/usr/bin/env node\nprocess.stdout.write(process.env.GH_TOKEN || "anonymous");', { mode: 0o700 });
+    await writeFakeCli(realBin, "gh", '#!/usr/bin/env node\nprocess.stdout.write(process.env.GH_TOKEN || "anonymous");');
     const fault = path.join(root, "write-fault.cjs");
     await writeFile(fault, `const fs = require('node:fs'); const write = fs.writeFileSync;
 fs.writeFileSync = (file, ...args) => {
-  if (String(file).endsWith('/gitconfig')) {
+  if (/[\\\\/]gitconfig$/.test(String(file))) {
     if (${failure === "partial-write"}) write(file, '[user', { mode: 0o600 });
     throw new Error('fixture disk full');
   }
@@ -280,7 +306,7 @@ fs.writeFileSync = (file, ...args) => {
     const { port } = server.address() as { port: number };
     const env = {
       ...process.env, ...githubBrokerEnvironment({}, { url: `http://127.0.0.1:${port}`, token: "run-capability" }),
-      PATH: `${bin}:${realBin}:${process.env.PATH}`,
+      PATH: `${bin}${path.delimiter}${realBin}${path.delimiter}${process.env.PATH}`,
     };
     const result = await exec(process.execPath, ["--require", fault, path.join(bin, "gh")], { cwd: root, env });
     expect(result.stdout).toBe("managed-token");
@@ -298,13 +324,13 @@ fs.writeFileSync = (file, ...args) => {
     ["body read fails mid-response", (res: import("node:http").ServerResponse) => {
       res.writeHead(200, {"content-type":"application/json"}); res.write('{"status":'); setTimeout(() => res.socket?.destroy(), 20);
     }],
-  ])("retries when the %s and still uses managed credentials", async (_label, fail) => {
+  ])("retries when the %s and still uses managed credentials without leaking internal capabilities", async (_label, fail) => {
     const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-github-retry-"));
     cleanups.push(() => rm(root, {recursive:true,force:true}));
     const bin = path.join(root,"managed"), realBin = path.join(root,"real");
     await mkdir(bin); await mkdir(realBin);
     await writeFakeCli(bin, "gh", githubLauncherSource());
-    await writeFakeCli(realBin, "gh", '#!/usr/bin/env node\nprocess.stdout.write(JSON.stringify({token:process.env.GH_TOKEN ?? null}));');
+    await writeFakeCli(realBin, "gh", '#!/usr/bin/env node\nprocess.stdout.write(JSON.stringify({token:process.env.GH_TOKEN ?? null,brokerToken:process.env.PAPERCLIP_GITHUB_BROKER_TOKEN ?? null,bridgeToken:process.env.PAPERCLIP_GITHUB_BRIDGE_TOKEN ?? null,apiKey:process.env.PAPERCLIP_API_KEY ?? null}));');
     let requests = 0;
     const server = createServer((_req,res) => {
       requests++;
@@ -315,8 +341,8 @@ fs.writeFileSync = (file, ...args) => {
     await new Promise<void>(resolve => server.listen(0,"127.0.0.1",resolve));
     cleanups.push(() => new Promise<void>(resolve => server.close(() => resolve())));
     const {port} = server.address() as {port:number};
-    const result = await executeFakeCli(fakeCliPath(bin, "gh"), [], {env:{...process.env,...githubBrokerEnvironment({GH_TOKEN:"host-token"},{url:`http://127.0.0.1:${port}`,token:"run-capability"}),PATH:prependPath(bin, realBin)}});
-    expect(JSON.parse(result.stdout)).toEqual({token:"managed-token"});
+    const result = await executeFakeCli(fakeCliPath(bin, "gh"), [], {env:{...process.env,...githubBrokerEnvironment({GH_TOKEN:"host-token"},{url:`http://127.0.0.1:${port}`,token:"run-capability"}),PAPERCLIP_GITHUB_BRIDGE_TOKEN:"bridge-capability",PAPERCLIP_API_KEY:"api-capability",PATH:prependPath(bin, realBin)}});
+    expect(JSON.parse(result.stdout)).toEqual({token:"managed-token",brokerToken:null,bridgeToken:null,apiKey:null});
     expect(requests).toBe(2);
     expect(result.stderr).not.toContain("broker_transport_unavailable");
     expect(result.stderr).not.toMatch(/host-token|run-capability/);
@@ -433,7 +459,7 @@ process.stdout.write(JSON.stringify({identity, token:process.env.GH_TOKEN ?? nul
     cleanups.push(() => rm(root, { recursive: true, force: true }));
     const bin = path.join(root, "managed");
     await mkdir(bin);
-    await writeFile(path.join(bin, "git"), githubLauncherSource(), { mode: 0o700 });
+    await writeFakeCli(bin, "git", githubLauncherSource());
     let posts = 0;
     const server = createServer((_req, res) => {
       posts++;
@@ -446,10 +472,10 @@ process.stdout.write(JSON.stringify({identity, token:process.env.GH_TOKEN ?? nul
     await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
     cleanups.push(() => new Promise<void>(resolve => server.close(() => resolve())));
     const { port } = server.address() as { port: number };
-    const env = { ...process.env, ...githubBrokerEnvironment({}, { url: `http://127.0.0.1:${port}`, token: "run-capability" }), PATH: `${bin}:${process.env.PATH}` };
+    const env = { ...process.env, ...githubBrokerEnvironment({}, { url: `http://127.0.0.1:${port}`, token: "run-capability" }), PATH: `${bin}${path.delimiter}${process.env.PATH}` };
     const git = async (...args: string[]) => {
       const before = posts;
-      const { stdout } = await exec(path.join(bin, "git"), args, { cwd: root, env }).catch(() => ({ stdout: "" }));
+      const { stdout } = await executeFakeCli(fakeCliPath(bin, "git"), args, { cwd: root, env }).catch(() => ({ stdout: "" }));
       return { stdout: stdout.trim(), posts: posts - before };
     };
     for (const args of [
@@ -481,8 +507,8 @@ it("captures the current task broker file once per invocation and never falls ba
   cleanups.push(() => rm(root, { recursive: true, force: true }));
   const bin = path.join(root, "managed"), real = path.join(root, "real");
   await mkdir(bin); await mkdir(real);
-  await writeFile(path.join(bin, "gh"), githubLauncherSource({ brokerFile: true }), { mode: 0o700 });
-  await writeFile(path.join(real, "gh"), '#!/usr/bin/env node\nprocess.stdout.write(process.env.GH_TOKEN || "anonymous");\n', { mode: 0o700 });
+  await writeFakeCli(bin, "gh", githubLauncherSource({ brokerFile: true }));
+  await writeFakeCli(real, "gh", '#!/usr/bin/env node\nprocess.stdout.write(process.env.GH_TOKEN || "anonymous");\n');
   const captured: string[] = [];
   const server = createServer((req, res) => {
     captured.push(req.headers.authorization!);
@@ -492,9 +518,9 @@ it("captures the current task broker file once per invocation and never falls ba
   await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
   cleanups.push(() => new Promise<void>(resolve => server.close(() => resolve())));
   const url = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
-  const env = { ...process.env, PATH: `${bin}:${real}:${process.env.PATH}`, GH_TOKEN: "ambient-secret",
+  const env = { ...process.env, PATH: `${bin}${path.delimiter}${real}${path.delimiter}${process.env.PATH}`, GH_TOKEN: "ambient-secret",
     PAPERCLIP_GITHUB_BROKER_URL: url, PAPERCLIP_GITHUB_BROKER_TOKEN: "stale-capability", PAPERCLIP_API_KEY: "unrelated-api-key" };
-  const run = () => exec(path.join(bin, "gh"), [], { env });
+  const run = () => executeFakeCli(fakeCliPath(bin, "gh"), [], { env });
   for (const token of ["first-run", "next-run"]) {
     await writeFile(path.join(bin, "broker.json"), JSON.stringify({ url, token }));
     expect((await run()).stdout).toBe(token + "-credential");

@@ -518,6 +518,7 @@ export function Browse({
     ) : null,
 }: { renderAccountDetails?: (connection: ToolConnection) => ReactNode } = {}) {
   const { i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
   const navigate = useNavigate();
   const preselectedChatAgentId =
     typeof window === "undefined"
@@ -1297,6 +1298,7 @@ export function Browse({
           left.key.localeCompare(right.key),
       );
   }, [
+    language,
     applicationsQuery.data,
     chatEndpointsQuery.data,
     chatConnectorsEnabled,

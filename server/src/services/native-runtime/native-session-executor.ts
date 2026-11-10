@@ -175,6 +175,7 @@ import {
   NativeProviderSideEffectPendingError,
   NativeProviderStateIncompatibleError,
   NativeProviderTerminalFailure,
+  NativeGovernedWaitSettlementPendingError,
   NativeRunnerSourceReconciliationRequiredError,
   NativeSessionCleanupQuarantinedError,
   NativeSessionCloseUnrecoverableError,
@@ -8026,7 +8027,7 @@ export function nativeSessionFailureDisposition(
     phase: exhausted
       ? ("terminal_failure" as const)
       : ("retryable_failure" as const),
-    failureCode: permanentFailure || permissionDeclined
+    failureCode: permanentFailure || permissionDeclined || sourceFailureCode === "native_governed_wait_settlement_pending"
       ? sourceFailureCode!
       : exhausted
         ? ("native_session_retry_exhausted" as const)
@@ -8065,6 +8066,7 @@ export function nativeSessionFailureSourceCode(
 ):
   | "native_permission_declined"
   | "native_provider_terminal_failed"
+  | "native_governed_wait_settlement_pending"
   | typeof NATIVE_PROVIDER_STATE_INCOMPATIBLE
   | typeof NATIVE_PROVIDER_SIDE_EFFECT_PENDING
   | "native_provider_approval_required"
@@ -8097,6 +8099,7 @@ export function nativeSessionFailureSourceCode(
   | "local_runtime_api_listener_unavailable"
   | "native_session_interrupted" {
   if (error instanceof NativePermissionDeclinedError) return "native_permission_declined";
+  if (error instanceof NativeGovernedWaitSettlementPendingError) return "native_governed_wait_settlement_pending";
   if (error instanceof NativeProviderStateIncompatibleError) return NATIVE_PROVIDER_STATE_INCOMPATIBLE;
   if (error instanceof NativeProviderSideEffectPendingError) return NATIVE_PROVIDER_SIDE_EFFECT_PENDING;
   if (error instanceof NativeProviderTerminalFailure) {
@@ -9555,9 +9558,10 @@ export async function executePaperclipNativeSession(input: {
       }
       return preparedInput;
     };
+    const stageAttachments = () => createRunPreparationTiming(runId, "native.controller")("attachment_staging", prepareAttachments);
     return needsWarmRetirement
-      ? await executePaperclipNativeSessionWithinScope(input, prepareAttachments, false, ownDiagnosticLease)
-      : await executePaperclipNativeSessionWithinScope(await prepareAttachments(), undefined, false, ownDiagnosticLease);
+      ? await executePaperclipNativeSessionWithinScope(input, stageAttachments, false, ownDiagnosticLease)
+      : await executePaperclipNativeSessionWithinScope(await stageAttachments(), undefined, false, ownDiagnosticLease);
   } catch (error) {
     executionFailure = error;
     if (error instanceof NativeControllerRecoveryWaitingError) {
@@ -9714,7 +9718,8 @@ async function executePaperclipNativeSessionAttempt(
     : null;
   const stagedRestart = input.restartRecovery?.kind === "reattach_remote_runner"
     ? await verifyStagedAttachmentRestart(input) : null;
-  if (input.useRunnerd) await restoreWarmRunnerdController(input);
+  const timeController = createRunPreparationTiming(input.execution.binding.runId, "native.controller");
+  if (input.useRunnerd) await timeController("warm_restore", () => restoreWarmRunnerdController(input));
   const identityRedactor = createAgentIdentityRedactor(input.runnerEnvironment?.PAPERCLIP_AGENT_PRIVATE_KEY);
   const redactIdentityText = (text: string) => redactSensitiveText(
     identityRedactor.chunk("diagnostic", text) + identityRedactor.finish("diagnostic"),
@@ -9740,7 +9745,6 @@ async function executePaperclipNativeSessionAttempt(
       "paperclip_runner_provider_unsupported: ACPX candidate requires exact host qualification authorization",
     );
   }
-  const timeController = createRunPreparationTiming(input.execution.binding.runId, "native.controller");
   const preparationSpans = input.preparationSpans ?? [];
   const preparationStarts = nativeRunPreparationStarts(
     preparationSpans,
@@ -9794,20 +9798,22 @@ async function executePaperclipNativeSessionAttempt(
           startedAtMs: environmentStartedAtMs,
         })
       : null;
-  for (const span of preparationSpans) {
-    const rootMilestone = isNativeRunRootHistoricalSpan(span.name);
-    await trace.record({
-      ...span,
-      parentName: rootMilestone
-        ? "task.provider_session"
-        : environmentSpans.includes(span)
-          ? "environment.startup"
-          : "task.prepare",
-    });
-  }
-  if (environmentScope) {
-    await trace.end(environmentScope, { endedAtMs: environmentEndedAtMs });
-  }
+  await timeController("span_persistence", async () => {
+    for (const span of preparationSpans) {
+      const rootMilestone = isNativeRunRootHistoricalSpan(span.name);
+      await trace.record({
+        ...span,
+        parentName: rootMilestone
+          ? "task.provider_session"
+          : environmentSpans.includes(span)
+            ? "environment.startup"
+            : "task.prepare",
+      });
+    }
+    if (environmentScope) {
+      await trace.end(environmentScope, { endedAtMs: environmentEndedAtMs });
+    }
+  });
   let retainedTransition: VerifiedWarmTransitionBinding | undefined;
   let remoteWarmRecovery: RemoteWarmSessionRecovery | undefined;
   const cachedReleasedOwner = warmNativeSessions.get(nativeSessionScopeKey(input.execution));
@@ -9892,7 +9898,7 @@ async function executePaperclipNativeSessionAttempt(
     }
   }
   if (input.useRunnerd) {
-    retainedTransition = await migrateRunnerdStateRootForExecution({
+    retainedTransition = await timeController("state_migration", () => migrateRunnerdStateRootForExecution({
       db: input.db,
       execution: input.execution,
       preparedExecutionAdmission: input.preparedExecutionAdmission,
@@ -9903,7 +9909,7 @@ async function executePaperclipNativeSessionAttempt(
       restartRecovery: input.restartRecovery,
       runnerExecutionTarget: input.runnerExecutionTarget,
       bootstrapRetryLeaseOwner: input.leaseOwner,
-    });
+    }));
   }
   const durableRunnerBinding = input.useRunnerd
     ? loadRunnerdDurableBinding(input.execution, retainedTransition)
@@ -11922,6 +11928,8 @@ async function executePaperclipNativeSessionAttempt(
                     ? "The computer provider rejected access. Restore the environment's credentials or permissions before retrying. Automatic retries are stopped."
                   : sourceFailureCode === "native_provider_terminal_failed"
                     ? "The provider session is permanently unusable. Verify stopped execution, completed actions, and task context before starting a linked continuation."
+                  : sourceFailureCode === "native_governed_wait_settlement_pending"
+                    ? "The work and waiting state are saved. Confirm shutdown of the retained execution and settle that same handoff without repeating provider work."
                   : sourceFailureCode === "native_provider_model_rejected" && !recoveryEvidence.providerSessionEstablished
                     ? NATIVE_STARTUP_MODEL_REJECTED_ACTION
                   : sourceFailureCode === NATIVE_PROVIDER_STATE_INCOMPATIBLE

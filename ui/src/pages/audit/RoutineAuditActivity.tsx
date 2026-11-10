@@ -4,9 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Activity } from "lucide-react";
 import { routinesApi } from "@/api/routines";
 import { EmptyState } from "@/components/EmptyState";
-import { useQueryView } from "@/components/QueryView";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { RoutineActivityRow } from "@/components/RoutineActivityRow";
-import { Button } from "@/components/ui/button";
 import { queryKeys } from "@/lib/queryKeys";
 
 export function RoutineAuditActivity({
@@ -43,13 +42,12 @@ export function RoutineAuditActivity({
 
   if (activityView.kind === "error") {
     return (
-      <div className="flex flex-col items-center gap-3 border-y border-border py-14 text-center">
-        <p className="text-sm text-muted-foreground">
-          {activity.error instanceof Error ? activity.error.message : "Failed to load routine activity."}
-        </p>
-        <Button variant="outline" size="sm" onClick={() => activity.refetch()}>
-          {translateInstant("Try again")}</Button>
-      </div>
+      <QueryErrorState
+        error={activityView.error}
+        action="load routine activity"
+        onRetry={activityView.retry}
+        retrying={activityView.isFetching}
+      />
     );
   }
 

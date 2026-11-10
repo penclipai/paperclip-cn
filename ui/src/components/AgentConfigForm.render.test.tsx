@@ -1583,7 +1583,7 @@ describe("AgentConfigForm environment selector", () => {
     roots.push(result.root);
 
     expect(result.container.textContent).toContain("Secret access");
-    expect(result.container.textContent).toContain("No company secret references are bound to this agent yet.");
+    expect(result.container.textContent).toContain("No secrets are bound to this agent yet.");
     expect(result.container.textContent).not.toContain("Environment variables");
   });
 

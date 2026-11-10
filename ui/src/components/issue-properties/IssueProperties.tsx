@@ -1359,13 +1359,13 @@ export function IssueProperties({
     ? monitorPaused ? "Automatic checks paused" : formatMonitorEtaLabel(monitorNextCheckAt, monitorNow)
     : monitorState?.status === "cleared"
       ? "Cleared"
-      : "None";
+      : t("common.none", { defaultValue: "None" });
   const monitorSecondary = monitorNextCheckAt
     ? monitorPaused
       ? canCheckMonitorNow ? "Check now to request a manual check" : "Resume this task to continue checking"
       : monitorIsDueNow
-      ? "checking momentarily…"
-      : `${formatMonitorAbsolute(monitorNextCheckAt, {}, monitorNow)}${monitorIsOverdue ? " · fires on next tick" : monitorAttemptCount > 0 ? ` · Attempt ${monitorAttemptCount}` : ""}`
+      ? t("issueProperties.checkingMomentarily", { defaultValue: "checking momentarily…" })
+      : `${formatMonitorAbsolute(monitorNextCheckAt, {}, monitorNow)}${monitorIsOverdue ? ` · ${t("issueProperties.firesOnNextTick", { defaultValue: "fires on next tick" })}` : monitorAttemptCount > 0 ? ` · ${t("issueProperties.attemptCount", { count: monitorAttemptCount, defaultValue: `Attempt ${monitorAttemptCount}` })}` : ""}`
     : monitorState?.status === "cleared"
       ? [
           monitorLastTriggeredAt ? `last checked ${timeAgo(monitorLastTriggeredAt)}` : null,
@@ -2365,7 +2365,7 @@ export function IssueProperties({
   const propertiesBody = (
     <div className={cn(streamlinedPropertiesEnabled && "task-detail-properties pl-4")}>
       <PropertySection
-        title={streamlinedPropertiesEnabled ? "Work" : "Triage"}
+        title={streamlinedPropertiesEnabled ? t("Work", { defaultValue: "Work" }) : t("issueProperties.triage", { defaultValue: "Triage" })}
         first
         streamlined={streamlinedPropertiesEnabled}
       >

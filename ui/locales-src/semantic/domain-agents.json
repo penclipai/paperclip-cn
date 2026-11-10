@@ -14,10 +14,135 @@
     "zh-CN": "{{count}} 个智能体",
     "reviewedEnglishHash": "977a7422900b40a5ade4526c98653a1b04619b8ff81240ead3699dea1b7df70e"
   },
+  "agents.filters.allConnections": {
+    "en": "All connections",
+    "zh-CN": "全部连接",
+    "reviewedEnglishHash": "72038b8426ddc9e34ab31fc8f64ef68b2058693511b3a12695414ed8154f2ea7"
+  },
+  "agents.filters.allHarnesses": {
+    "en": "All harnesses",
+    "zh-CN": "全部运行器",
+    "reviewedEnglishHash": "6f5450ea7cf0aedeeac7327109ab902c8c72feab3bfe381da170b9db2dfb2984"
+  },
+  "agents.filters.allModels": {
+    "en": "All models",
+    "zh-CN": "全部模型",
+    "reviewedEnglishHash": "0f589c19cd5c9c86865b547983f930def3de25b40775a5d7b964ec1dec2ffa87"
+  },
+  "agents.filters.allStatuses": {
+    "en": "All statuses",
+    "zh-CN": "全部状态",
+    "reviewedEnglishHash": "8ee57323a6f24cc7a5e2395cc0bec1eafc76799ef0e0f31c7a81ddb87faf7a2b"
+  },
+  "agents.filters.assignedConnection": {
+    "en": "Assigned connection",
+    "zh-CN": "已分配的连接",
+    "reviewedEnglishHash": "44e638cf4f04d4ef67334cee82783c7c89e8695efb4ca131fbad9aab597defd2"
+  },
+  "agents.filters.choices": {
+    "en": "Agent filter choices",
+    "zh-CN": "智能体筛选选项",
+    "reviewedEnglishHash": "0a1c1d8d283a7d5d0da932e47a0691e335ab05c5d3224285bfe077c518047c73"
+  },
+  "agents.filters.clear": {
+    "en": "Clear filters",
+    "zh-CN": "清除筛选",
+    "reviewedEnglishHash": "7179ea0035fca783ec62b7185659b68c75f2a7c12b909306a57183dc9b3fa44b"
+  },
+  "agents.filters.connection": {
+    "en": "Connection",
+    "zh-CN": "连接",
+    "reviewedEnglishHash": "639a40e82b9a96f0cbeed5f006cf5634c8d1b990b3c83753c00a910fc268d2a6"
+  },
+  "agents.filters.connectionNamesLoadFailed": {
+    "en": "Connection names couldn’t be loaded.",
+    "zh-CN": "无法加载连接名称。",
+    "reviewedEnglishHash": "26f6fa18daf8604c5dd2b26f575c282ef8a61b8dc875e112b89b2620af9afcaf"
+  },
+  "agents.filters.connectionPool": {
+    "en": "Connection pool",
+    "zh-CN": "连接池",
+    "reviewedEnglishHash": "420161ab02e0aa03be725843c3f2a19dbbc72b6ece95d967527bbc870b1945ff"
+  },
+  "agents.filters.count": {
+    "en": "Filters: {{count}}",
+    "zh-CN": "已筛选：{{count}} 项",
+    "reviewedEnglishHash": "1893a93fd706ec63c51812e3ccc76ab528c1421f1012231f76ed5891bb732fe0"
+  },
+  "agents.filters.external": {
+    "en": "Managed externally",
+    "zh-CN": "由外部管理",
+    "reviewedEnglishHash": "22684bdf15e55ad84596af19696df20adaef73eb70b56f0dce420781e5c6b74f"
+  },
+  "agents.filters.filterAgents": {
+    "en": "Filter agents",
+    "zh-CN": "筛选智能体",
+    "reviewedEnglishHash": "2b2a8e180c4201f3f44724248ef46e2b1e36cb048fb5a4a8e77981751c918c1d"
+  },
+  "agents.filters.harness": {
+    "en": "Harness",
+    "zh-CN": "运行器",
+    "reviewedEnglishHash": "e3b5b45953d79a150092df37922ee6261a81040f5fb3c084fa00efffe8b98589"
+  },
+  "agents.filters.harnessDefault": {
+    "en": "Harness default",
+    "zh-CN": "运行器默认值",
+    "reviewedEnglishHash": "7760912abe8a12d7ad14c5344032d3365e80a8192b7e035bf5a54e12b5dd3596"
+  },
+  "agents.filters.localCredentials": {
+    "en": "Local credentials",
+    "zh-CN": "本地凭据",
+    "reviewedEnglishHash": "881c6ec9da25e939c0a1842d6728b3d5c4fef3737a74392cf5444c4dfaacd3a9"
+  },
+  "agents.filters.model": {
+    "en": "Model",
+    "zh-CN": "模型",
+    "reviewedEnglishHash": "5e2c614c23f02239bc03c6c04fcb681950f9e72bf8fdff6be79c79841cbb10c0"
+  },
+  "agents.filters.notAvailableYet": {
+    "en": "Not available yet",
+    "zh-CN": "暂不可用",
+    "reviewedEnglishHash": "787406ddea2a10a482aadb0a7af672d2621eef25af4aba9af33d4ae4ed135509"
+  },
+  "agents.filters.previouslySelected": {
+    "en": "Previously selected {{field}}",
+    "zh-CN": "此前选择的{{field}}",
+    "reviewedEnglishHash": "db8b3cae48df75c10b6d453a4c72acf30547e8d908b4027b975d738431af8398"
+  },
+  "agents.filters.responsibleUserDefault": {
+    "en": "Responsible user's default",
+    "zh-CN": "负责人默认连接",
+    "reviewedEnglishHash": "9e65636072ab47d77dce3ff116744bd9e0a747bbdcddb2a5e66d6b6fabf91821"
+  },
+  "agents.filters.status": {
+    "en": "Status",
+    "zh-CN": "状态",
+    "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "agents.filters.title": {
+    "en": "Filters",
+    "zh-CN": "筛选",
+    "reviewedEnglishHash": "546ebb8eb993ea561029d9febd84c363bdb09010bb2cb915a8287762b76b9a64"
+  },
+  "agents.filters.toolbar": {
+    "en": "Agent filters",
+    "zh-CN": "智能体筛选",
+    "reviewedEnglishHash": "c2c5a93941683b9e768b625d10f913f49121355e3fbf4d801e57b81c12e44354"
+  },
+  "agents.filters.unconfigured": {
+    "en": "Not configured",
+    "zh-CN": "未配置",
+    "reviewedEnglishHash": "dd1841d295024256e8884cb898d863cb17333ef927fefae59368238e401c6ef0"
+  },
   "agents.invalidReportingChain": {
     "en": "Invalid reporting chain",
     "zh-CN": "汇报链无效",
     "reviewedEnglishHash": "bf9c6d9dc8a902fc2e58f3e4ca9c5c63b48f9fb5fd1fcbe7a2bddd592f85af1b"
+  },
+  "agents.noFilterMatches": {
+    "en": "No agents match these filters.",
+    "zh-CN": "没有智能体符合当前筛选条件。",
+    "reviewedEnglishHash": "d077c9ec6c6a1bcf04df990a5956552ad2ec1761e5734331031d729317c898aa"
   },
   "agents.noStatusMatches": {
     "en": "No agents match the selected status.",

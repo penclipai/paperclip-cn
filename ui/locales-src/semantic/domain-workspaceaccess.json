@@ -21,7 +21,7 @@
   },
   "workspaceAccess.state.provisioning": {
     "en": "Provisioning",
-    "zh-CN": "供应中",
+      "zh-CN": "正在准备",
     "reviewedEnglishHash": "c2b1b8e2e03928e24b07be3e3cbc597577096c8303d9aa621a147ca2456bdad7"
   },
   "workspaceAccess.state.ready": {
