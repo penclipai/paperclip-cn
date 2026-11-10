@@ -114,12 +114,11 @@ they call `hashPrivateRef()` before queueing an event. The wire field names stay
 unchanged. The same agent correlates within one installation, while different
 installation salts produce different values.
 
-Company import refs are hashed unless the caller identifies a verified public
-catalog entry with `sourceType: "catalog"` and `isPrivate: false`. GitHub URLs
-are always hashed because the transport does not prove repository visibility.
-Userinfo in parseable URLs is removed before hashing, and credential-bearing catalog URLs
-are also hashed. CLI imports provide no public catalog verification and always
-mark their sources private. `source_ref_hashed` describes the emitted value.
+Company import refs are always hashed. The telemetry transport has no verified
+public-catalog boundary, so `sourceType` and `isPrivate` never permit a raw ref
+to be emitted. Userinfo in parseable URLs is removed before hashing. The
+`isPrivate` helper input remains only for API compatibility; `source_ref_hashed`
+is always `true` when a company import ref is emitted.
 
 ## Agent Task Run Events
 

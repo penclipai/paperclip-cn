@@ -37,7 +37,7 @@ task_id?: string
 
 export interface PaperclipCompanyImportedDimensions {
 source_type: ("local_path" | "github" | "url" | "catalog" | "skills_sh" | "unknown")
-/** Hash private or unverified sources; raw refs are reserved for verified public catalog entries. Never include URL userinfo. */
+/** Per-installation salted hash of every import ref. URL userinfo is removed before hashing; no raw import refs are emitted. */
 source_ref?: string
 source_ref_hashed?: boolean
 }

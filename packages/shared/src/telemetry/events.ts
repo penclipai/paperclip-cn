@@ -29,22 +29,21 @@ export function trackCompanyImported(
   },
 ): void {
   let sourceRef = dims.sourceRef;
-  let hasCredentials = false;
   try {
     const url = new URL(sourceRef);
-    hasCredentials = Boolean(url.username || url.password);
     url.username = "";
     url.password = "";
     sourceRef = url.href;
   } catch {
     // Paths and catalog identifiers are not necessarily URLs.
   }
-  const isPrivate = dims.isPrivate || dims.sourceType !== "catalog" || hasCredentials;
-  const ref = isPrivate ? client.hashPrivateRef(sourceRef) : sourceRef;
+  // `isPrivate` is compatibility-only: this transport has no verified public
+  // catalog boundary, so no import ref is safe to emit verbatim.
+  const ref = client.hashPrivateRef(sourceRef);
   client.track("company.imported", {
     source_type: asEventDimension(dims.sourceType),
     source_ref: ref,
-    source_ref_hashed: isPrivate,
+    source_ref_hashed: true,
   });
 }
 
