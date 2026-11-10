@@ -2,6 +2,8 @@ import { retireInheritedRemoteRunnerIdentity } from "../native-runtime/native-in
 import { randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
+import { readFileSync } from "node:fs";
+import os from "node:os";
 import type { Db } from "@penclipai/db";
 import { activityLog, agents, applyPendingMigrations, companies, createDb, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS, environments, environmentLeases, heartbeatRunEvents, heartbeatRuns, issueRecoveryActions, issues, nativeRunFinalizations, nativeRunnerCheckpoints } from "@penclipai/db";
 import { eq } from "drizzle-orm";
@@ -282,8 +284,18 @@ describePostgres("heartbeat recovery module ownership", () => {
       stdio: "ignore", detached: true, env: { PATH: process.env.PATH },
     });
     await once(child, "spawn");
+    const processGroupId = process.platform === "linux"
+      ? (() => {
+        const stat = readFileSync(`/proc/${child.pid}/stat`, "utf8");
+        const commandEnd = stat.lastIndexOf(")");
+        const group = Number.parseInt(stat.slice(commandEnd + 1).trim().split(/\s+/)[2] ?? "", 10);
+        if (!Number.isSafeInteger(group) || group <= 0) throw new Error("Expected spawned fixture process group");
+        return group;
+      })()
+      : child.pid!;
     return {
       pid: child.pid!,
+      processGroupId,
       async stop() {
         if (child.exitCode !== null || child.signalCode !== null) return;
         const exited = once(child, "exit");
@@ -294,7 +306,7 @@ describePostgres("heartbeat recovery module ownership", () => {
     };
   }
 
-  async function nativeProcessFixture(pid: number, targetKind: "local" | "remote", status: "running" | "failed") {
+  async function nativeProcessFixture(pid: number, targetKind: "local" | "remote", status: "running" | "failed", processGroupId = pid) {
     const run = await seedRun();
     await db.update(heartbeatRuns).set({ runtimeMode: "native", nativeIssueId: run.issueId, status,
       nativePhase: status === "failed" ? "retryable_failure" : "running",
@@ -304,7 +316,7 @@ describePostgres("heartbeat recovery module ownership", () => {
     }).where(eq(heartbeatRuns.id, run.id));
     await db.insert(nativeRunFinalizations).values({ runId: run.id, companyId: run.companyId, issueId: run.issueId!,
       phase: status === "failed" ? "retryable_failure" : "running", nextAttemptAt: new Date(Date.now() - 1) });
-    await persistHeartbeatRunProcessMetadata(db, run.id, { pid, processGroupId: pid,
+    await persistHeartbeatRunProcessMetadata(db, run.id, { pid, processGroupId,
       startedAt: new Date().toISOString(), targetKind });
     const deps = callbacks(db);
     deps.setRunStatusFromLive.mockImplementation(async (id, nextStatus, fromStatuses, patch) => {
@@ -679,10 +691,40 @@ describePostgres("heartbeat recovery module ownership", () => {
 
   it("clears a verified stopped local retry identity and records its stop", async () => {
     const child = await ownedProcess();
-    await child.stop();
-    const f = await nativeProcessFixture(child.pid, "local", "failed");
+    const f = await nativeProcessFixture(child.pid, "local", "failed", child.processGroupId);
     try {
+      const before = await f.current();
+      const [identity] = await db.select().from(heartbeatRunEvents)
+        .where(eq(heartbeatRunEvents.runId, f.run.id));
+      expect(identity).toMatchObject({
+        eventType: "native.process_identity_recorded",
+        agentId: f.run.agentId,
+        sourceEventId: null,
+        payload: {
+          targetKind: "local",
+          hostname: os.hostname(),
+          processPid: child.pid,
+          processGroupId: child.processGroupId,
+          processStartedAt: before.processStartedAt?.toISOString(),
+        },
+      });
+      await child.stop();
+      if (process.platform === "linux") {
+        expect(child.processGroupId).toBe(child.pid);
+        expect(() => process.kill(child.pid, 0)).toThrow(/ESRCH/);
+        expect(() => process.kill(-child.processGroupId, 0)).toThrow(/ESRCH/);
+      }
       await createHeartbeatRecovery(db, f.deps).reapOrphanedRuns();
+      if (process.platform === "win32") {
+        expect(await f.current()).toMatchObject({
+          processPid: child.pid,
+          processGroupId: child.processGroupId,
+          processStartedAt: before.processStartedAt,
+        });
+        expect(await hasNativeLocalProcessStop(db, f.run.companyId, f.run.id)).toBe(false);
+        expect(f.deps.terminateHeartbeatRunProcess).not.toHaveBeenCalled();
+        return;
+      }
       expect(await f.current()).toMatchObject({ processPid: null, processGroupId: null, processStartedAt: null });
       expect(await hasNativeLocalProcessStop(db, f.run.companyId, f.run.id)).toBe(true);
       expect(f.deps.terminateHeartbeatRunProcess).not.toHaveBeenCalled();

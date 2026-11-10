@@ -27,6 +27,7 @@ import { claimNativeRestartRecoveries } from "../native-runtime/native-restart-r
 import { buildNativeModelEnvelope, canonicalNativeRuntimeContextDigest } from "../../vendor/paperclip-runner/index.js";
 import { prepareAndSelectHeartbeatRuntime, selectHeartbeatRuntime, type HeartbeatRuntimeSelectionInput } from "./runtime-selection.js";
 import { reserveRunBudget } from "../budget-reservations.js";
+import { requestedRunCancellation } from "../run-cancellation.js";
 import { legacyControllerBootId, legacyControllerClaim } from "../legacy-controller-lease.js";
 import { agentInstructionWorkingCopyService } from "../agent-instruction-working-copies.js";
 import { createHeartbeatInstructionWorkingCopy } from "./instruction-working-copy.js";
@@ -676,7 +677,7 @@ describe.skipIf(!support.supported)("heartbeat runtime selection boundary", () =
     expect((await read(run.id)).contextSnapshot?.skillVersions).toEqual({ [key]: versionId });
   });
 
-  it.each(["exact", "fresh", "bootstrap", "dead-runner", "expired", "foreign-owner", "missing-audit"] as const)(
+  it.each(["exact", "combined", "ordinary-cancellation", "fresh", "bootstrap", "dead-runner", "expired", "foreign-owner", "missing-audit"] as const)(
     "admits only exact pending Stop cleanup at runtime selection (%s)", async mode => {
       const { input, run, issue } = await fixture();
       const initial = await selectHeartbeatRuntime(db, input);
@@ -693,20 +694,27 @@ describe.skipIf(!support.supported)("heartbeat runtime selection boundary", () =
         recoveryState: mode === "bootstrap" ? "bootstrap_incomplete" : mode === "dead-runner" ? "resuming_session" : "awaiting_runner_reattach",
         recoveryHistory: [{ disposition: "reattach_remote_runner", controllerGeneration: 2, providerAttempt: 1 }],
       }).where(eq(nativeRunFinalizations.runId, run.id));
+      const includesOrdinaryCancellation = mode === "combined" || mode === "ordinary-cancellation";
       await db.update(heartbeatRuns).set({ resultJson: {
-        startupCancellation: { beforeNativeSelection: false, errorCode: "cancelled", requestedAt: new Date().toISOString() },
+        ...(includesOrdinaryCancellation ? {
+          cancelledByActorType: "user",
+          cancellation: requestedRunCancellation({ cancelledByActorType: "user" }, "Operator requested Stop"),
+        } : {}),
+        ...(mode !== "ordinary-cancellation" ? {
+          startupCancellation: { beforeNativeSelection: false, errorCode: "cancelled", requestedAt: new Date().toISOString() },
+        } : {}),
         executionCancellation: { state: "requested" },
         nativeCancellation: { schema: "paperclip.native-cancellation.v1", companyId: run.companyId, runId: run.id, issueId: issue.id,
           scope: "run", reasonCode: "cancellation_run_only", intentId: `native-cancellation:${randomUUID()}`,
           intentAuditId: mode === "missing-audit" ? randomUUID() : intentAuditId, dispatchState: "pending", dispatched: false,
           effects: ["release_run_resources"] },
       } }).where(eq(heartbeatRuns.id, run.id));
-      input.recovery = mode === "fresh" ? {} : { nativeLeaseOwner: leaseOwner, nativeRestartRecovery: {
+      input.recovery = mode === "fresh" || mode === "ordinary-cancellation" ? {} : { nativeLeaseOwner: leaseOwner, nativeRestartRecovery: {
         kind: "reattach_remote_runner", runId: run.id, leaseOwner, controllerGeneration: 2, providerAttempt: 1,
         restartKind: "hard", recoveryRequestId: null, remote: { providerLeaseId: "existing-sandbox", remoteCwd: "/workspace" },
       } };
       const selected = await selectHeartbeatRuntime(db, input);
-      expect(selected.selected).toBe(mode === "exact");
+      expect(selected.selected).toBe(mode === "exact" || mode === "combined");
       expect(await coordinators(run.id)).toHaveLength(1);
       expect((await read(run.id)).nativeSessionId).toBe(saved.nativeSessionId);
       expect((await read(run.id)).runnerProfileJson?.nativeExecutionInput).toEqual(initial.nativeExecution);

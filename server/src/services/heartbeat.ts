@@ -4101,35 +4101,6 @@ export function heartbeatService(
             providerDispatchStarted: legacyAdapterEntered || nativeDispatchStarted || nativeOwnershipHeld,
           }) ?? latestRun;
         }
-        if (latestRun?.status === "cancelled" && latestRun.runtimeMode === "legacy" &&
-            !legacyAdapterEntered && !nativeDispatchStarted && !nativeOwnershipHeld) {
-          // This executor still owns the legacy controller and has completed
-          // every host cleanup without entering the adapter. Preserve a
-          // restart-safe, provider-never-started receipt without replacing
-          // workspace-restore or other nested execution evidence. This is
-          // deliberately not a provider-cancellation acknowledgement: no
-          // provider session was entered on this path.
-          const preparationSettledAt = new Date().toISOString();
-          await db.update(heartbeatRuns).set({
-            resultJson: sql`jsonb_set(
-              coalesce(${heartbeatRuns.resultJson}, '{}'::jsonb),
-              '{executionRecovery}',
-              coalesce(${heartbeatRuns.resultJson}->'executionRecovery', '{}'::jsonb) ||
-                ${JSON.stringify({ kind: "bootstrap", providerWorkStarted: false, preparationSettledAt })}::jsonb,
-              true
-            )`,
-          }).where(and(
-            eq(heartbeatRuns.id, run.id),
-            eq(heartbeatRuns.companyId, run.companyId),
-            eq(heartbeatRuns.runtimeMode, "legacy"),
-            eq(heartbeatRuns.status, "cancelled"),
-            eq(heartbeatRuns.controllerBootId, legacyControllerBootId),
-            sql`coalesce(${heartbeatRuns.resultJson}->'executionRecovery'->>'providerWorkStarted', 'false') <> 'true'`,
-            sql`coalesce(${heartbeatRuns.resultJson}->'executionRecovery'->>'kind', 'bootstrap') = 'bootstrap'`,
-            sql`not (coalesce(${heartbeatRuns.resultJson}, '{}'::jsonb) ? 'workspaceRestoreFailure')`,
-            sql`not (coalesce(${heartbeatRuns.resultJson}, '{}'::jsonb) ? 'workspaceRestoreRecovery')`,
-          ));
-        }
         if (latestRun?.status === "cancelled" && latestRun.runtimeMode === "legacy") {
           const settled = await settleCancelledLegacyPreparation(db, { run: latestRun,
             providerDispatchStarted: legacyAdapterEntered || nativeDispatchStarted || nativeOwnershipHeld,

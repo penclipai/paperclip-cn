@@ -420,13 +420,13 @@ describe("Teams inline images through pinned runtime/App HTTP", () => {
               };
             };
           };
-        };
-        activitySender: {
-          client: {
-            post(
-              url: string,
-              body: unknown,
-            ): Promise<{ data: { id?: string } }>;
+          activitySender: {
+            client: {
+              post(
+                url: string,
+                body: unknown,
+              ): Promise<{ data: { id?: string } }>;
+            };
           };
         };
       }

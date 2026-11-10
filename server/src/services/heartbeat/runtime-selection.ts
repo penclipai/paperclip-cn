@@ -962,7 +962,7 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
         && await readClaimedNativeStopRecovery(tx as unknown as Db, lockedRun, runOptions.nativeLeaseOwner);
         if (lockedRun.status !== "running" ||
           (lockedRun.resultJson?.startupCancellation && !stopRecovery) ||
-          lockedRun.resultJson?.cancellation) return false;
+          (lockedRun.resultJson?.cancellation && !stopRecovery)) return false;
       if (lockedRun.runtimeMode === "legacy" && lockedRun.controllerBootId &&
           !(await renewLegacyControllerLease(tx as unknown as Db, lockedRun))) {
         onNativeOwnershipHeld();
