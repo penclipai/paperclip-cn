@@ -13,7 +13,6 @@ permissions:
 
 jobs:
   ci:
-    if: github.event.action != 'labeled' || github.event.label.name == 'profile-ci' || github.event.label.name == 'full-ci'
-    # The immutable fork ref is the reviewed CI definition. A new trusted
-    # workflow revision must be bootstrapped and reviewed before this pin moves.
-    uses: penclipai/paperclip-cn/.github/workflows/pr-trusted.yml@7f3ba7f8a85e598e02f2240eefc10cc7951f5a61
+    # Use an immutable fork commit for the reviewed CI definition.
+    uses: penclipai/paperclip-cn/.github/workflows/pr-trusted.yml@ed39c1ab117c735cc97ffc1c527c5fcf020f5b32
+    if: github.event.action != 'labeled' || github.event.label.name == 'profile-ci'

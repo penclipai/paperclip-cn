@@ -159,14 +159,30 @@ package-manager inputs, and verify with a frozen install.
 
 ## Trusted PR Workflow
 
-The CN PR caller pins
-`penclipai/paperclip-cn/.github/workflows/pr-trusted.yml@7f3ba7f8a85e598e02f2240eefc10cc7951f5a61`.
+The CN PR caller uses an immutable fork commit in `.github/workflows/pr.yml`.
 The AWS runner group `paperclip-public-pr` must allow that exact reference.
-The identity and shard tests compare the trusted workflow at that commit with
-`git show`; later working-tree edits cannot change the pinned workflow.
-Authorize each new pinned reference before updating the caller.
+Update trusted workflow sources in two stages:
 
-Runner selection calls `ci-routing.yml@master`. Allowlisted maintainers use the
+1. Keep the caller identical to the protected fork base. Review and merge the
+   proposed workflow, routing, and source-guard changes without activating them.
+2. In a separate PR, change only the caller's commit pin. The new commit must
+   already be in the protected fork base history. The workflow, routing, guard,
+   and their contract tests must match that commit. Authorize the exact runner
+   reference before activation.
+
+The source guard checks the tested PR merge and its protected base parent in
+GitHub Actions. Local checks use the explicitly identified fork remote's fetched
+`master`; they do not prove protected-branch approval or runner authorization.
+Missing identity, source, or ancestry evidence fails the check.
+Before merge, also verify the exact run attempt through GitHub's Actions API:
+`referenced_workflows` must name the fork workflow and resolve to the caller's
+immutable pin. Record this separately from the source tests. The reusable
+workflow's `GITHUB_WORKFLOW_REF` and `GITHUB_WORKFLOW_SHA` describe its caller;
+they do not attest the called workflow revision.
+
+Runner selection uses `ci-routing.yml` from the pinned reusable workflow commit.
+The following routing behavior describes the proposed source; it becomes active
+only after the separate pin update. Allowlisted maintainers use the
 reserved `paperclip-ci-routing-x64` AWS fleet for this bounded metadata job;
 other callers use GitHub-hosted capacity. The gate never checks out or executes
 PR code. The author, event sender and rerun actor must each be both
@@ -382,7 +398,8 @@ the full fallback matrices in `pr-trusted.yml`; the contract tests require them
 to agree. Add new cache-affecting environment settings to `globalEnv`.
 
 The `paperclip-ci-routing` runner group must allow
-`paperclipai/paperclip/.github/workflows/ci-routing.yml@refs/heads/master`.
+the fork routing workflow's exact reference. Do not authorize an upstream
+workflow reference for CN PR execution.
 Keep `AWS_CI_ROUTING_USER_IDS_SOURCE` equal to the exact JSON value of
 `AWS_CI_TRUSTED_USER_IDS` and `AWS_CI_ROUTING_USER_IDS` as its delimiter-wrapped
 numeric IDs (for example, `|34892728|139239|`). Missing or mismatched admission

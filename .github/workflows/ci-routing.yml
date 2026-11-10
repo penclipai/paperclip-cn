@@ -98,11 +98,11 @@ jobs:
 
           # Both the resolver and CODEOWNERS come from the same protected master
           # revision. Never use the PR's CODEOWNERS or execute its source here.
-          trusted_sha="$(gh api /repos/paperclipai/paperclip/git/ref/heads/master --jq .object.sha)" \
+          trusted_sha="$(gh api /repos/penclipai/paperclip-cn/git/ref/heads/master --jq .object.sha)" \
             || fail_closed 'could not resolve trusted CODEOWNERS revision'
           is_commit_sha "$trusted_sha" || fail_closed 'invalid trusted CODEOWNERS revision'
           owner_helper="$RUNNER_TEMP/aws-ci-owners.mjs"
-          if ! gh api "/repos/paperclipai/paperclip/contents/scripts/ci-profile/authorize.mjs?ref=$trusted_sha" \
+          if ! gh api "/repos/penclipai/paperclip-cn/contents/scripts/ci-profile/authorize.mjs?ref=$trusted_sha" \
               --jq '.content' > "$owner_helper.base64" ||
              ! base64 --decode < "$owner_helper.base64" > "$owner_helper"; then
             fail_closed 'could not load trusted CODEOWNERS resolver'

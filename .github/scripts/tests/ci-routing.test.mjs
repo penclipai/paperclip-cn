@@ -41,6 +41,15 @@ test("routing exports both placement and stack scope to callers", () => {
 
 const githubStub = "#!/usr/bin/env bash\nset -Eeuo pipefail\n\nendpoint=\"\"\nquery=\"\"\nfor arg in \"$@\"; do\n  case \"$arg\" in /repos/*|/users/*) endpoint=\"$arg\" ;; esac\ndone\nif [[ \"$*\" == *\"--jq\"* ]]; then query=\"${*: -1}\"; fi\ncase \"$endpoint\" in\n  */contents/scripts/ci-profile/authorize.mjs?ref=*)\n    [[ -z \"${TEST_OWNER_HELPER_FAIL:-}\" ]] || exit 1\n    [[ \"$endpoint\" == *\"ref=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\" ]] || exit 1\n    base64 < \"$TEST_OWNER_HELPER\"\n    ;;\n  */contents/.github/CODEOWNERS?ref=*)\n    [[ -z \"${TEST_CODEOWNERS_FAIL:-}\" ]] || exit 1\n    [[ \"$endpoint\" == *\"ref=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\" ]] || exit 1\n    jq -cn --arg content \"$TEST_CODEOWNERS_BASE64\" '{encoding: \"base64\", content: $content}'\n    ;;\n  /users/ci-owner)\n    [[ -z \"${TEST_OWNER_LOOKUP_FAIL:-}\" ]] || exit 1\n    jq -cn --argjson id \"${TEST_CI_OWNER_ID:-34892728}\" --arg type \"${TEST_CI_OWNER_TYPE:-User}\" '{id: $id, type: $type}'\n    ;;\n  */pulls/*)\n    jq -cn \\\n      --argjson author_id \"${TEST_PR_AUTHOR_ID:-34892728}\" \\\n      --argjson repository_id \"${TEST_REPOSITORY_ID:-1192887762}\" \\\n      --arg base_ref \"${TEST_BASE_REF:-master}\" \\\n      --arg base_sha \"${TEST_PR_BASE_SHA:-$EVENT_BASE_SHA}\" \\\n      --arg head_sha \"${TEST_PR_HEAD_SHA:-1111111111111111111111111111111111111111}\" \\\n      --arg merge_sha \"${TEST_PR_MERGE_SHA:-4444444444444444444444444444444444444444}\" '{\n        state: \"open\",\n        user: {id: $author_id},\n        base: {repo: {id: $repository_id}, ref: $base_ref, sha: $base_sha},\n        head: {sha: $head_sha},\n        merge_commit_sha: $merge_sha\n      }'\n    ;;\n  */git/ref/heads/*)\n    if [[ \"$query\" == \".object.sha\" ]]; then\n      [[ -z \"${TEST_MASTER_FAIL:-}\" ]] || exit 1\n      echo \"${TEST_TRUSTED_MASTER_SHA:-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}\"\n      exit 0\n    fi\n    jq -cn \\\n      --arg sha \"${TEST_LIVE_BASE_REF_SHA:-$EVENT_BASE_SHA}\" '{object: {sha: $sha}}'\n    ;;\n  */compare/*)\n    [[ -z \"${TEST_COMPARE_FAIL:-}\" ]] || exit 1\n    comparison=\"${endpoint##*/}\"\n    comparison_base=\"${comparison%%...*}\"\n    comparison_head=\"${comparison##*...}\"\n    default_files='[{\"filename\":\"server/src/index.ts\"}]'\n    jq -cn \\\n      --arg base \"$comparison_base\" \\\n      --arg head \"$comparison_head\" \\\n      --arg event_base \"$EVENT_BASE_SHA\" \\\n      --arg intermediate \"${TEST_INTERMEDIATE_BASE_SHA:-}\" \\\n      --arg current \"${TEST_LIVE_BASE_REF_SHA:-$EVENT_BASE_SHA}\" \\\n      --arg side_branch \"${TEST_SIDE_BRANCH_SHA:-}\" \\\n      --arg merge_base_override \"${TEST_BASE_COMPARISON_MERGE_BASE_SHA:-}\" \\\n      --arg status_override \"${TEST_BASE_COMPARISON_STATUS:-}\" \\\n      --argjson files \"${TEST_COMPARE_FILES:-$default_files}\" '\n        [$event_base, $intermediate, $current] | map(select(length > 0)) as $history |\n        ($history | index($base)) as $from |\n        ($history | index($head)) as $to |\n        (($from != null and $to != null and $from <= $to) or\n          ($side_branch != \"\" and $base == $event_base and $head == $side_branch)) as $ancestor |\n        {\n          merge_base_commit: {sha: (if $merge_base_override != \"\" then $merge_base_override\n            elif $ancestor then $base\n            elif $base == $side_branch and $to != null then $event_base\n            else \"0000000000000000000000000000000000000000\" end)},\n          status: (if $status_override != \"\" then $status_override\n            elif $base == $head then \"identical\" elif $ancestor then \"ahead\" else \"diverged\" end),\n          files: $files\n        }'\n    ;;\n  */git/commits/*)\n    requested_sha=\"${endpoint##*/}\"\n    live_merge_sha=\"${TEST_PR_MERGE_SHA:-4444444444444444444444444444444444444444}\"\n    synthetic_base_merge_sha=\"${TEST_SYNTHETIC_BASE_MERGE_SHA:-}\"\n    if [[ \"$requested_sha\" == \"$EVENT_MERGE_SHA\" ]]; then\n      tree_sha=\"${TEST_EVENT_MERGE_TREE_SHA:-5555555555555555555555555555555555555555}\"\n      base_sha=\"${TEST_EVENT_MERGE_BASE_SHA:-$EVENT_BASE_SHA}\"\n      head_sha=\"${TEST_EVENT_MERGE_HEAD_SHA:-$EVENT_HEAD_SHA}\"\n    elif [[ \"$requested_sha\" == \"$live_merge_sha\" ]]; then\n      tree_sha=\"${TEST_LIVE_MERGE_TREE_SHA:-5555555555555555555555555555555555555555}\"\n      base_sha=\"${TEST_LIVE_MERGE_BASE_SHA:-$EVENT_BASE_SHA}\"\n      head_sha=\"${TEST_LIVE_MERGE_HEAD_SHA:-$EVENT_HEAD_SHA}\"\n    elif [[ -n \"$synthetic_base_merge_sha\" && \"$requested_sha\" == \"$synthetic_base_merge_sha\" ]]; then\n      tree_sha=\"${TEST_SYNTHETIC_BASE_MERGE_TREE_SHA:-8888888888888888888888888888888888888888}\"\n      base_sha=\"${TEST_SYNTHETIC_MASTER_PARENT_SHA:-9999999999999999999999999999999999999999}\"\n      head_sha=\"${TEST_SYNTHETIC_BASE_REF_PARENT_SHA:-${TEST_LIVE_BASE_REF_SHA:-$EVENT_BASE_SHA}}\"\n    else\n      echo \"unexpected merge commit: $requested_sha\" >&2\n      exit 1\n    fi\n    jq -cn \\\n      --arg sha \"$requested_sha\" \\\n      --arg tree_sha \"$tree_sha\" \\\n      --arg base_sha \"$base_sha\" \\\n      --arg head_sha \"$head_sha\" '{\n        sha: $sha,\n        tree: {sha: $tree_sha},\n        parents: [{sha: $base_sha}, {sha: $head_sha}]\n      }'\n    ;;\n  */actions/runs/*/attempts/*)\n    jq -cn \\\n      --argjson actor_id \"${TEST_TRIGGERING_ACTOR_ID:-34892728}\" \\\n      --argjson repository_id \"${TEST_REPOSITORY_ID:-1192887762}\" \\\n      --argjson run_attempt \"${TEST_RUN_ATTEMPT:-1}\" \\\n      --arg event_name \"${TEST_EVENT_NAME:-pull_request}\" '{\n        run_attempt: $run_attempt,\n        triggering_actor: {id: $actor_id},\n        repository: {id: $repository_id},\n        event: $event_name\n      }'\n    ;;\n  *)\n    echo \"unexpected gh endpoint: $endpoint\" >&2\n    exit 1\n    ;;\nesac";
 
+const trustedForkEndpoint = "/repos/penclipai/paperclip-cn/";
+function githubStubForTrustedFork() {
+  const marker = 'case "$endpoint" in\n';
+  assert.ok(githubStub.includes(marker), "GitHub fixture must dispatch endpoints");
+  return githubStub.replace(
+    marker,
+    `case "$endpoint" in\n  ${trustedForkEndpoint}*|/users/*) ;;\n  /repos/*)\n    echo "unexpected GitHub repository endpoint: $endpoint" >&2\n    exit 1\n    ;;\nesac\n${marker}`,
+  );
+}
 function stepScript(name) {
   const start = workflow.indexOf(`      - name: ${name}\n`);
   assert.ok(start >= 0, `missing step: ${name}`);
@@ -51,12 +60,28 @@ function stepScript(name) {
   return script.split("\n").map((line) => line.replace(/^ {10}/, "")).join("\n");
 }
 
+test("trusted routing helpers fetch only from the CN fork", () => {
+  const identity = stepScript("Validate PR identity and select runner");
+  assert.match(
+    identity,
+    /gh api \/repos\/penclipai\/paperclip-cn\/git\/ref\/heads\/master --jq \.object\.sha/,
+  );
+  assert.match(
+    identity,
+    /\"\/repos\/penclipai\/paperclip-cn\/contents\/scripts\/ci-profile\/authorize\.mjs\?ref=\$trusted_sha\"/,
+  );
+  assert.doesNotMatch(
+    identity,
+    /\/repos\/paperclipai\/paperclip\/(?:git\/ref|contents\/scripts\/ci-profile)/,
+  );
+});
+
 function executeStep(name, overrides = {}) {
   const directory = mkdtempSync(path.join(tmpdir(), "paperclip-routing-test-"));
   const output = path.join(directory, "output");
   try {
     const gh = path.join(directory, "gh");
-    writeFileSync(gh, githubStub);
+    writeFileSync(gh, githubStubForTrustedFork());
     chmodSync(gh, 0o700);
     writeWindowsJqShim(path.join(directory, "jq"));
     const ghHook = path.join(directory, "gh-hook.cjs");
