@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { createActionsReader, readSourceVerification, sourceVerificationJob, waitForSourceVerification, SourceVerificationDeferred } from "./cloud-source-verification.mjs";
 
 import { releaseAdmitted, deferredProducer, requestDeferredProducer, readMigratorPublication, sourceAdmissionJob, migratorAdmissionJob, createReleaseRerunner } from "./cloud-release-admission.mjs";
@@ -12,13 +12,15 @@ import { releaseAdmitted, deferredProducer, requestDeferredProducer, readMigrato
 import { cancelImageRun, runnerWaits, watchReleaseSource } from "./watch-release-source.mjs";
 
 const sha = "a".repeat(40);
+const repository = "penclipai/paperclip-cn";
+const repositoryId = 1192887762;
 
-function runAdmissionCli({ active = false, imageOnly = false, repositoryName = "paperclipai/paperclip" } = {}) {
+function runAdmissionCli({ active = false, imageOnly = false, repositoryName = repository } = {}) {
   const root = mkdtempSync(join(tmpdir(), "release-admission-cli-"));
   try {
     const preload = join(root, "github-fixture.mjs");
     const installFixture = (active) => {
-      const repository = { id: 1170821064, full_name: "paperclipai/paperclip" };
+      const repository = { id: 1192887762, full_name: "penclipai/paperclip-cn" };
       const run = { id: 77, workflow_id: 21, path: ".github/workflows/docker.yml", head_sha: "a".repeat(40),
         repository, head_repository: repository, head_branch: "master", event: "push", run_attempt: 1, status: "in_progress" };
       globalThis.fetch = async url => {
@@ -35,7 +37,7 @@ function runAdmissionCli({ active = false, imageOnly = false, repositoryName = "
     };
     writeFileSync(preload, "(" + installFixture.toString() + ")(" + JSON.stringify(active) + ");\n");
     const output = join(root, "output");
-    const result = spawnSync(process.execPath, ["--import", preload, fileURLToPath(new URL("./cloud-release-admission.mjs", import.meta.url)), ...(imageOnly ? ["image-only"] : [])], {
+    const result = spawnSync(process.execPath, ["--import", pathToFileURL(preload).href, fileURLToPath(new URL("./cloud-release-admission.mjs", import.meta.url)), ...(imageOnly ? ["image-only"] : [])], {
       encoding: "utf8", timeout: 5_000,
       env: { ...process.env, GITHUB_REPOSITORY: repositoryName, GITHUB_REF: "refs/heads/master", GITHUB_SHA: "a".repeat(40),
         GITHUB_EVENT_NAME: "push", GITHUB_RUN_ATTEMPT: "1", GITHUB_TOKEN: "fixture", GITHUB_OUTPUT: output },
@@ -57,10 +59,12 @@ describe("admission CLI startup", () => {
     }
   }
   test("rejects a noncanonical CLI context before discovering consumers", () => {
-    const result = runAdmissionCli({ repositoryName: "fork/paperclip" });
-    assert.equal(result.status, 1);
-    assert.match(result.stderr, /Canonical master admission context required/);
-    assert.equal(result.output, "");
+    for (const repositoryName of ["paperclipai/paperclip", "fork/paperclip"]) {
+      const result = runAdmissionCli({ repositoryName });
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /Canonical master admission context required/);
+      assert.equal(result.output, "");
+    }
   });
 });
 
@@ -69,7 +73,7 @@ test("the final image publication CLI rejects a green workflow that skipped its 
   try {
     const preload = join(root, "fixture.mjs");
     const installFixture = () => {
-      const repository = { id: 1170821064, full_name: "paperclipai/paperclip" };
+      const repository = { id: 1192887762, full_name: "penclipai/paperclip-cn" };
       const run = (id, file) => ({ id, workflow_id: id, run_attempt: 1, path: `.github/workflows/${file}`, event: "push",
         head_branch: "master", head_sha: "a".repeat(40), repository, head_repository: repository, status: "completed", conclusion: "success" });
       const source = run(1, "cloud-readiness.yml"), migrator = run(2, "cloud-migrator-artifacts.yml");
@@ -95,8 +99,8 @@ test("the final image publication CLI rejects a green workflow that skipped its 
     writeFileSync(preload, "(" + installFixture.toString() + ")();\n");
     for (const published of [false, true]) {
       const output = join(root, `output-${published}`);
-      const result = spawnSync(process.execPath, ["--import", preload, fileURLToPath(new URL("./watch-release-source.mjs", import.meta.url)), "--check-proof"], {
-        encoding: "utf8", timeout: 5_000, env: { ...process.env, GITHUB_REPOSITORY: "paperclipai/paperclip", GITHUB_REF: "refs/heads/master",
+      const result = spawnSync(process.execPath, ["--import", pathToFileURL(preload).href, fileURLToPath(new URL("./watch-release-source.mjs", import.meta.url)), "--check-proof"], {
+        encoding: "utf8", timeout: 5_000, env: { ...process.env, GITHUB_REPOSITORY: repository, GITHUB_REF: "refs/heads/master",
           GITHUB_SHA: sha, GITHUB_TOKEN: "fixture", GITHUB_OUTPUT: output, FIXTURE_PUBLISHED: published ? "1" : "0" },
       });
       assert.equal(result.status, published ? 0 : 1, result.stderr || result.error?.message);
@@ -106,7 +110,6 @@ test("the final image publication CLI rejects a green workflow that skipped its 
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 const workflow = { id: 123, path: ".github/workflows/cloud-readiness.yml" };
-const repository = "penclipai/paperclip-cn";
 const baseRun = {
   id: 456, workflow_id: workflow.id, path: workflow.path, run_attempt: 2,
   repository: { full_name: repository }, head_repository: { full_name: repository },
@@ -345,27 +348,32 @@ describe("image build source monitor", () => {
   const attempt = 1;
   const workflow = { id: 123, path: ".github/workflows/cloud-readiness.yml" };
   const sourceRun = { id: 99, workflow_id: 123, path: workflow.path, run_attempt: 1,
-    repository: { full_name: "paperclipai/paperclip" }, head_repository: { full_name: "paperclipai/paperclip" },
+    repository: { full_name: repository }, head_repository: { full_name: repository },
     head_sha: sha, head_branch: "master", event: "push", status: "in_progress" };
   const imageRun = { id: runId, run_attempt: attempt, head_sha: sha, head_branch: "master", event: "push",
-    repository: { id: 1170821064 }, head_repository: { id: 1170821064 },
+    repository: { id: repositoryId }, head_repository: { id: repositoryId },
     path: ".github/workflows/docker.yml", status: "in_progress" };
   const proof = { id: 111, name: "Cloud source verified v1", run_id: 99, run_attempt: 1,
     head_sha: sha, status: "completed", conclusion: "success" };
 
-  function fixture({ jobs = [proof], run = sourceRun, current = run, image = imageRun, imageJobs = [], missing = false } = {}) {
+  function fixture({ jobs = [proof], run = sourceRun, current = run, image = imageRun, imageJobs = [], missing = false, maxImagePolls = 4 } = {}) {
     const cancellations = [];
     const messages = [];
+    let imagePolls = 0;
+    let time = 0;
     const api = async path => {
       if (path.endsWith("/workflows/cloud-readiness.yml")) return workflow;
       if (path.includes("/workflows/123/runs?")) return { workflow_runs: missing ? [] : [run], total_count: missing ? 0 : 1 };
       if (path.includes("/runs/99/attempts/1/jobs?")) return { jobs };
       if (path.endsWith("/runs/99")) return current;
-      if (path.includes(`/runs/${runId}/attempts/${attempt}/jobs?`)) return { jobs: imageJobs, total_count: imageJobs.length };
+      if (path.includes(`/runs/${runId}/attempts/${attempt}/jobs?`)) {
+        if (++imagePolls > maxImagePolls) throw new Error("Fixture image monitor exceeded its poll budget");
+        return { jobs: imageJobs, total_count: imageJobs.length };
+      }
       if (path.endsWith(`/runs/${runId}`)) return image;
       throw new Error(`Unexpected request: ${path}`);
     };
-    return { sha, runId, attempt, api, cancel: async path => cancellations.push(path),
+    return { sha, runId, attempt, api, now: () => time, sleep: async ms => { time += ms; }, timeoutMs: 100, intervalMs: 10, cancel: async path => cancellations.push(path),
       cancellations, messages, log: message => messages.push(message), summary: async message => messages.push(message) };
   }
 
@@ -378,7 +386,7 @@ describe("image build source monitor", () => {
   test("a required check failing cancels the same image attempt before siblings finish", async () => {
     const f = fixture({ jobs: [{ ...proof, name: "General tests", conclusion: "failure" }] });
     await assert.rejects(watchReleaseSource(f), /General tests/);
-    assert.deepEqual(f.cancellations, ["/repos/paperclipai/paperclip/actions/runs/99/cancel", `/repos/paperclipai/paperclip/actions/runs/${runId}/cancel`]);
+    assert.deepEqual(f.cancellations, [`/repos/${repository}/actions/runs/99/cancel`, `/repos/${repository}/actions/runs/${runId}/cancel`]);
   });
 
   test("a superseded readiness attempt cancels image work with no deployable future", async () => {
@@ -451,11 +459,11 @@ describe("image build source monitor", () => {
 });
 
 describe("release candidate admission", () => {
-  const repository = { id: 1170821064, full_name: "paperclipai/paperclip" };
+  const releaseRepository = { id: repositoryId, full_name: repository };
   const ids = { "docker.yml": 101, "release.yml": 102, "cloud-readiness.yml": 123, "cloud-migrator-artifacts.yml": 124 };
   function run(file, change = {}) {
     return { id: ids[file] + 1000, workflow_id: ids[file], path: `.github/workflows/${file}`,
-      repository, head_repository: repository, head_sha: sha, head_branch: "master", event: "push",
+      repository: releaseRepository, head_repository: releaseRepository, head_sha: sha, head_branch: "master", event: "push",
       run_attempt: 1, status: "in_progress", conclusion: null, ...change };
   }
   function job(run, name, conclusion = "skipped") {
@@ -517,8 +525,8 @@ describe("release candidate admission", () => {
   });
 
   test("forks, stale identities, tags, and non-push consumers do not admit work", async () => {
-    for (const change of [{ repository: { ...repository, id: 2 } }, { head_repository: { ...repository, id: 2 } },
-      { repository: { ...repository, full_name: "fork/paperclip" } }, { path: ".github/workflows/pr.yml" },
+    for (const change of [{ repository: { ...releaseRepository, id: 2 } }, { head_repository: { ...releaseRepository, id: 2 } },
+      { repository: { ...releaseRepository, full_name: "paperclipai/paperclip" } }, { repository: { ...releaseRepository, full_name: "fork/paperclip" } }, { path: ".github/workflows/pr.yml" },
       { workflow_id: 999 }, { head_sha: "b".repeat(40) }, { head_branch: "v1" }, { event: "workflow_dispatch" },
       { id: 0 }, { run_attempt: 0 }]) {
       const f = fixture();
@@ -547,7 +555,7 @@ describe("release candidate admission", () => {
     for (const file of ["cloud-readiness.yml", "cloud-migrator-artifacts.yml"]) {
       const f = fixture(file);
       assert.equal(await requestDeferredProducer(f), "pending");
-      assert.deepEqual(f.writes, [`/repos/paperclipai/paperclip/actions/runs/${ids[file] + 1000}/rerun`]);
+      assert.deepEqual(f.writes, [`/repos/${repository}/actions/runs/${ids[file] + 1000}/rerun`]);
       await requestDeferredProducer(f);
       assert.equal(f.writes.length, 1);
     }
@@ -717,7 +725,8 @@ describe("release candidate admission", () => {
     const calls = [];
     const rerun = createReleaseRerunner("fixture", async (url, options) => { calls.push({ url, options }); return { ok: true }; });
     await assert.rejects(rerun("/repos/fork/paperclip/actions/runs/1/rerun"), /Invalid release retry/);
-    await rerun("/repos/paperclipai/paperclip/actions/runs/1/rerun");
+    await assert.rejects(rerun("/repos/paperclipai/paperclip/actions/runs/1/rerun"), /Invalid release retry/);
+    await rerun(`/repos/${repository}/actions/runs/1/rerun`);
     assert.equal(calls.length, 1);
     assert.equal(calls[0].options.method, "POST");
     assert.equal(calls[0].options.redirect, "error");

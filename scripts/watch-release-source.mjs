@@ -3,7 +3,8 @@ import { pathToFileURL } from "node:url";
 import { createActionsReader, readSourceVerification, SourceVerificationFailed, SourceVerificationDeferred } from "./cloud-source-verification.mjs";
 import { requestDeferredProducer, readMigratorPublication, sourceAdmissionJob, migratorAdmissionJob, createReleaseRerunner } from "./cloud-release-admission.mjs";
 
-const repository = "paperclipai/paperclip";
+const repository = "penclipai/paperclip-cn";
+const repositoryId = 1192887762;
 
 export function runnerWaits(jobs, now = Date.now()) {
   return jobs.filter(job => ["queued", "in_progress", "completed"].includes(job.status) &&
@@ -18,7 +19,7 @@ export function runnerWaits(jobs, now = Date.now()) {
 export async function cancelImageRun({ api, cancel, runId, attempt, sha }) {
   const run = await api(`/repos/${repository}/actions/runs/${runId}`);
   if (run.id !== runId || run.run_attempt !== attempt || run.head_sha !== sha || run.head_branch !== "master" ||
-      run.repository?.id !== 1170821064 || run.head_repository?.id !== 1170821064 ||
+      run.repository?.id !== repositoryId || run.head_repository?.id !== repositoryId ||
       run.path !== ".github/workflows/docker.yml" || !["push", "workflow_dispatch"].includes(run.event)) {
     throw new Error("Refusing to cancel a different image workflow identity.");
   }
