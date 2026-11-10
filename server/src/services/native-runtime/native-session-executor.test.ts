@@ -15692,10 +15692,18 @@ describe("runnerd provider runtime wiring", () => {
       provider: { kind: "acpx", agent: "grok", model: "grok-4.7", permissionMode: "approve-all", grokEffort: "high" },
       session: { ...execution.session, driverKind: "acpx_runtime" },
     } as unknown as NativeExecutionInput;
+    prepareGrokCredentials.mockReset().mockRejectedValueOnce(
+      new Error("Grok subscription login is unavailable. Connect Grok Build or select an xAI API key."),
+    );
     await expect(createRunnerdBackend({ db: leaseDb(current), execution: current,
       runnerInstanceId: "grok-v10-missing-credential", runnerEnvironment: {},
       managedAiCredentialHome: join(isolatedStateDirectory, "absent-grok-login"),
     })).rejects.toThrow("Grok subscription login is unavailable");
+    expect(prepareGrokCredentials).toHaveBeenCalledWith(expect.objectContaining({
+      companyId: current.binding.companyId,
+      environment: {},
+      remote: false,
+    }));
   });
 
   it("copies back and removes Grok credentials from the exact ACPX launch home", async () => {

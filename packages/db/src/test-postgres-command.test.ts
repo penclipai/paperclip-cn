@@ -45,7 +45,12 @@ it.skipIf(!supported).each(["SIGTERM", "SIGINT"] as const)("drains the test comm
     wrapper.kill(signal);
     expect(await exited, output).toBe(signal === "SIGINT" ? 130 : 143);
     expect(fs.readFileSync(done, "utf8")).toBe("database available during child shutdown");
-    expect(fs.readdirSync(directory).filter((name) => name.startsWith("paperclip-test-command-"))).toEqual([]);
+    const { stdout } = await execute("/bin/ps", ["-axo", "pid=,pgid=,stat="]);
+    const runningProcessGroupMembers = stdout.split("\n").flatMap((line) => {
+      const [pid, group, state] = line.trim().split(/\s+/);
+      return Number(group) === descendants.root && state && !state.startsWith("Z") ? [{ pid, state }] : [];
+    });
+    expect(runningProcessGroupMembers, "test command process group still running").toEqual([]);
     for (const pid of Object.values(descendants)) {
       const result = await execute("/bin/ps", ["-p", String(pid), "-o", "stat="]).catch(() => ({ stdout: "" }));
       expect(result.stdout.trim() === "" || result.stdout.trim().startsWith("Z"), `descendant ${pid} still running`).toBe(true);

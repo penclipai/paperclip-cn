@@ -141,7 +141,7 @@ test("new-task images survive reload, retain bytes, and clear after creation", a
   const fixture = await setup(page, request, false);
   await page.getByRole("button", { name: /^New [Tt]ask$/, exact: true }).first().click();
   const dialog = page.getByRole("dialog", { name: "New task", exact: true });
-  const editor = dialog.getByRole("textbox", { name: "editable markdown", exact: true });
+  const editor = dialog.getByRole("textbox", { name: "Editable markdown", exact: true });
   await editor.fill("Keep the caption and image after reload.");
   const chooser = await openAttachmentChooser(page, dialog);
   await chooser.setFiles(files[1]!);
@@ -202,7 +202,7 @@ test("two open tabs retain their staged images when either tab saves or creates 
   const dialogs = [page, second].map((tab) => tab.getByRole("dialog", { name: "New task", exact: true }));
   for (const [index, tab] of [page, second].entries()) {
     await tab.getByRole("button", { name: /^New [Tt]ask$/, exact: true }).first().click();
-    await dialogs[index]!.getByRole("textbox", { name: "editable markdown", exact: true }).fill(`Keep tab ${index + 1}'s image.`);
+    await dialogs[index]!.getByRole("textbox", { name: "Editable markdown", exact: true }).fill(`Keep tab ${index + 1}'s image.`);
     await expect(dialogs[index]!.getByRole("button", { name: "Create task", exact: true })).toBeEnabled();
   }
   const savedNames = () => page.evaluate(async () => {
@@ -232,7 +232,7 @@ test("two open tabs retain their staged images when either tab saves or creates 
   await second.reload();
   await second.getByRole("button", { name: /^New [Tt]ask$/, exact: true }).first().click();
   await expect(dialogs[1]!.getByRole("img", { name: "tab-2.png", exact: true })).toBeVisible();
-  await dialogs[1]!.getByRole("textbox", { name: "editable markdown", exact: true }).fill("Create the remaining tab's image.");
+  await dialogs[1]!.getByRole("textbox", { name: "Editable markdown", exact: true }).fill("Create the remaining tab's image.");
   await dialogs[1]!.getByRole("button", { name: "Create task", exact: true }).click();
   await expect(dialogs[1]!).toBeHidden();
   await expect.poll(savedNames).toEqual([]);

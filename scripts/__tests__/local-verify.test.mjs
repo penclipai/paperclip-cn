@@ -35,7 +35,8 @@ function fixture(t) {
   const virtualStoreDir = modules.match(/^virtualStoreDir: (.+)$/m)?.[1]?.trim();
   assert.ok(virtualStoreDir, "fixture source must identify its pnpm virtual store");
   write("node_modules/.modules.yaml", modules);
-  write("node_modules/.pnpm/lock.yaml", readFileSync(path.join(virtualStoreDir, "lock.yaml"), "utf8"));
+  const virtualStore = path.resolve(path.join(repository, "node_modules"), virtualStoreDir);
+  write("node_modules/.pnpm/lock.yaml", readFileSync(path.join(virtualStore, "lock.yaml"), "utf8"));
   write(".gitignore", "node_modules\nnode_modules/\n.turbo/\n.env\n");
   write("package.json", JSON.stringify({ name: "local-verification-fixture", private: true, type: "module", packageManager: "pnpm@9.15.4",
     scripts: { verify: "node scripts/local-verify.mjs", "test:run": "vitest run" } }));
@@ -177,6 +178,16 @@ test("dependency installation, ignored dotenv and child environment enter the ca
   f.write(".env", "FEATURE=true\n");
   assert.notEqual(snapshot(f.root, f.env).hash, before);
   rmSync(path.join(f.root, ".env"));
+  assert.equal(snapshot(f.root, f.env).hash, before);
+  const installedLock = "node_modules/.pnpm/lock.yaml";
+  const originalInstalledLock = readFileSync(path.join(f.root, installedLock), "utf8");
+  f.write(installedLock, `${originalInstalledLock}\n# fixture lock change\n`);
+  assert.notEqual(snapshot(f.root, f.env).hash, before);
+  f.write(installedLock, originalInstalledLock);
+  assert.equal(snapshot(f.root, f.env).hash, before);
+  rmSync(path.join(f.root, installedLock));
+  assert.notEqual(snapshot(f.root, f.env).hash, before);
+  f.write(installedLock, originalInstalledLock);
   assert.equal(snapshot(f.root, f.env).hash, before);
   f.write("pnpm-lock.yaml", "lockfileVersion: '9.0'\n");
   assert.notEqual(snapshot(f.root, f.env).hash, before);

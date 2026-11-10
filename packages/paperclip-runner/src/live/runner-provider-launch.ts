@@ -277,14 +277,16 @@ export function createRunnerProviderLaunch(
   const runnerCodexLaunchProfile = provider === "codex"
     ? codexRunnerLaunchProfile({
         codexCommand: effectiveCodexCommand!,
-        appServerArgs: input.options.codexArgs ?? createRunnerdCodexAppServerArgs({
+        appServerArgs: createRunnerdCodexAppServerArgs({
+          args: input.options.codexArgs,
+          disableWebSearch: settings.disableCodexWebSearch,
           environment: input.options.environment,
           codexHome,
           workingDirectory: input.cwd,
           runtimeStateRoot: input.options.runnerFilesystemRoot ?? input.root,
           codexCommand: effectiveCodexCommand,
           instructionWorkingCopyRoot: runtimeContext?.instructions.workingCopy?.rootPath,
-          disableProjectInstructions: input.options.disableCodexProjectInstructions,
+          disableProjectInstructions: settings.disableCodexProjectInstructions ?? input.options.disableCodexProjectInstructions,
           readOnlyRoots: [
             ...trustedRuntimeReadOnlyRoots(input.options.environment),
             ...(runtimeContext
@@ -394,31 +396,7 @@ export function createRunnerProviderLaunch(
                   args:
                     provider === "opencode"
                       ? [opencodeProxyPath]
-                      : createRunnerdCodexAppServerArgs({
-                          args: input.options.codexArgs,
-                          disableWebSearch: settings.disableCodexWebSearch,
-                          environment: input.options.environment,
-                          codexHome,
-                          workingDirectory: input.cwd,
-                          runtimeStateRoot: input.options.runnerFilesystemRoot ?? input.root,
-                          codexCommand: effectiveCodexCommand,
-                          instructionWorkingCopyRoot: runtimeContext?.instructions.workingCopy?.rootPath,
-                          disableProjectInstructions: settings.disableCodexProjectInstructions ?? input.options.disableCodexProjectInstructions,
-                          readOnlyRoots: [
-                            ...trustedRuntimeReadOnlyRoots(
-                              input.options.environment,
-                            ),
-                            ...(runtimeContext
-                              ? [
-                                  resolve(codexHome, "skills"),
-                                  runtimeContext.instructions.bundle.rootPath,
-                                  ...runtimeContext.skills.map(
-                                    (skill) => skill.bundle.rootPath,
-                                  ),
-                                ]
-                              : []),
-                          ],
-                        }),
+                      : runnerCodexLaunchProfile!.args,
                   cwd: input.cwd,
                   model: requirements.model,
                   approvalPolicy:

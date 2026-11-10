@@ -5,6 +5,37 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { selectProjects } from "./select-projects.mjs";
+import { selectProjectTests } from "./vitest-selection-graph.mjs";
+
+test("absolute setup paths are canonicalized and outside setup inputs fail closed", async t => {
+  const root = realpathSync(mkdtempSync(path.join(tmpdir(), "setup-paths-")));
+  const outside = realpathSync(mkdtempSync(path.join(tmpdir(), "outside-setup-")));
+  t.after(() => {
+    for (const directory of [root, outside]) rmSync(directory, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+  });
+  symlinkSync(path.resolve("node_modules"), path.join(root, "node_modules"), "dir");
+  mkdirSync(path.join(root, "ui"));
+  const setup = path.join(root, "ui/setup.ts");
+  writeFileSync(setup, "export const setup = true;");
+  writeFileSync(path.join(root, "vitest.config.mjs"), 'export default {test:{projects:["ui"]}}');
+  for (const name of ["one", "two"]) writeFileSync(path.join(root, `ui/${name}.test.ts`), 'throw new Error("selection must not execute tests");');
+  const configure = (input, value) => writeFileSync(path.join(root, "ui/vitest.config.mjs"),
+    `export default {test:{name:"fixture",include:["*.test.ts"],${input}:${JSON.stringify([value])}}}`);
+  configure("setupFiles", setup.replaceAll(path.sep, "/"));
+  execFileSync("git", ["init", "-q"], { cwd: root });
+  execFileSync("git", ["add", "."], { cwd: root });
+  const options = { root, project: "fixture", changed: ["ui/setup.ts"] };
+  const selected = await selectProjectTests(options);
+  assert.equal(selected.setupChanged, true);
+  assert.deepEqual(selected.selected, selected.inventory);
+  assert.deepEqual(selected.coveredChanges, ["ui/setup.ts"]);
+  const external = path.join(outside, "setup.mjs");
+  writeFileSync(external, 'throw new Error("outside setup must never execute");');
+  for (const input of ["setupFiles", "globalSetup", "snapshotSerializers"]) {
+    configure(input, external.replaceAll(path.sep, "/"));
+    await assert.rejects(selectProjectTests(options), /Setup module outside repository/);
+  }
+});
 
 test("parallel project graphs preserve isolation, ordering and conservative selection", async t => {
   const root = realpathSync(mkdtempSync(path.join(tmpdir(), "parallel-graphs-")));
@@ -31,4 +62,13 @@ test("parallel project graphs preserve isolation, ordering and conservative sele
   assert.deepEqual(parallel[1].selected, ["one/leaf.test.ts", "one/opaque.test.ts"]);
   await assert.rejects(selectProjects({ ...options, projects: ["missing", "one"] }), /Graph worker missing:/);
   await assert.rejects(selectProjects({ ...options, concurrency: 3 }), /one or two/);
+  write("one/independent.test.ts", "export const independent = true;");
+  write("two/setup.ts", 'import "node:child_process"; throw new Error("setup must not execute during selection");');
+  write("two/vitest.config.mjs", 'export default {test:{name:"two",include:["*.test.ts"],setupFiles:["./setup.ts"]}}');
+  execFileSync("git", ["add", "."], { cwd: root });
+  const conservative = await selectProjects(options);
+  assert.deepEqual(conservative[0].selected, conservative[0].inventory, "opaque setup retains the complete affected project");
+  assert.deepEqual(conservative[0].alwaysRun, conservative[0].inventory);
+  assert.match(conservative[0].retentionReasons[conservative[0].inventory[0]].reasons[0], /Opaque setup/);
+  assert.ok(!conservative[1].selected.includes("one/independent.test.ts"), "a separate audited project can still narrow");
 });

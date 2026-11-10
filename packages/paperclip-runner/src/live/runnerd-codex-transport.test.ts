@@ -6,8 +6,8 @@ import {
 } from "./runner-provider-launch.js";
 import { coldAdmissionTimeoutMs, waitForRunnerCommand } from "./runnerd-codex-transport.js";
 import { configuredEnvironmentProjection } from "../configured-environment.js";
-import { chmod, cp, mkdir, mkdtemp, readFile, readdir, realpath, rename, rm, stat, truncate, writeFile } from "node:fs/promises";
-import { createHash } from "node:crypto";
+import { chmod, cp, lstat, mkdir, mkdtemp, open, readFile, readdir, readlink, realpath, rename, rm, stat, truncate, writeFile } from "node:fs/promises";
+import { createHash, randomUUID } from "node:crypto";
 import { execFileSync, spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { bindAcpxAgentFiles } from "../drivers/acpx/agent-files-binding.js";
@@ -22,6 +22,7 @@ import type { PrpEvent } from "../protocol/replay-contract.js";
 import { PRP_PROTOCOL_VERSION } from "../protocol/replay-contract.js";
 import { redactCapabilityEvidenceData } from "./evidence-redaction.js";
 import { NativeSessionCloseUnrecoverableError } from "../contracts/native-session-backend.js";
+import { executeNativeSession } from "../native-session-runtime.js";
 import { parsePaperclipQuestionSet } from "../contracts/question-set.js";
 import {
   ACPX_CREDENTIAL_BINDING_ENV,
@@ -158,7 +159,15 @@ function fixtureTransportOptions(
   // cleanup, so keep it out of these transport-only scenarios.
   if (process.platform !== "win32" || options.observeCredentials !== undefined)
     return options;
-  return { ...options, observeCredentials: false };
+  // Keep live option accessors (notably authorityRunId) intact. A spread
+  // evaluates them while the fixture is assembled and turns a later owner
+  // change into a permanent undefined snapshot.
+  const fixture = Object.create(
+    Object.getPrototypeOf(options),
+    Object.getOwnPropertyDescriptors(options),
+  ) as CapabilityRunnerdCodexTransportOptions;
+  fixture.observeCredentials = false;
+  return fixture;
 }
 
 function createCapabilityRunnerdCodexTransport(
@@ -7657,7 +7666,8 @@ it.each([
         },
       };
     };
-    const OriginalCore = durableControlPlane.DurablePrpControlPlane;
+    // Keep an unspied constructor; `spyOn` replaces the namespace export below.
+    const OriginalCore = DurablePrpControlPlane;
     const coreSpy = vi
       .spyOn(durableControlPlane, "DurablePrpControlPlane")
       .mockImplementation(function (

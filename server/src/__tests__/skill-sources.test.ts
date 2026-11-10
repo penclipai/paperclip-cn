@@ -663,6 +663,7 @@ describe.skipIf(!support.supported)('skill source persistence', () => {
     expect((await skills.readFile(companyId, localCopy.id, '.paperclip-repository/agents/worker.md'))?.content).toBe('Worker v2');
     expect((await skills.auditSkill(companyId, localCopy.id))?.verdict).not.toBe('fail');
     for (const copied of [copy.skill, localCopy]) {
+      expect(copied.sourceLocator).toBeNull();
       const version = (await skills.getVersion(companyId, copied.id, copied.currentVersionId!))!;
       const asset = version.fileInventory.find(file => file.path === '.paperclip-repository/assets/data.bin')!;
       expect(asset.kind).toBe('asset');
@@ -674,13 +675,14 @@ describe.skipIf(!support.supported)('skill source persistence', () => {
       if (process.platform !== 'win32') {
         expect((await fs.stat(path.join(runtime.source, '.paperclip-repository/shared/check.sh'))).mode & 0o111).toBeGreaterThan(0);
       }
-      await fs.writeFile(path.join(copied.sourceLocator!, '.paperclip-repository/agents/worker.md'), 'Worker execution snapshot');
+      // Forked and managed-local copies intentionally have no mutable external
+      // source. Requesting the latest runtime therefore retains this version.
       const unpinned = (await skills.listRuntimeSkillEntries(companyId, {
         onlyKeys: new Set([copied.key]),
         snapshotLatest: true,
       }))[0]!;
       const executionSnapshot = (await skills.getVersion(companyId, copied.id, unpinned.currentVersionId!))!;
-      expect(executionSnapshot.id).not.toBe(version.id);
+      expect(executionSnapshot.id).toBe(version.id);
       expect(executionSnapshot.fileInventory.find(file => file.path === '.paperclip-repository/shared/check.sh')?.executable).toBe(true);
       expect(executionSnapshot.fileInventory.find(file => file.path === '.paperclip-repository/agents/worker.md')?.executable).not.toBe(true);
     }

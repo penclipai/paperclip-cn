@@ -87,7 +87,10 @@ test("real graph retains direct and indirect filesystem, process and opaque depe
   const fileSetup = await select(["ui/src/leaf.ts"]);
   assert.deepEqual(fileSetup.selected, fileSetup.inventory, "an explicit setup file read affects the entire project");
   write("ui/src/environment.ts", 'import {readFileSync} from "node:fs"; readFileSync(process.env.INPUT);');
-  await assert.rejects(select(["ui/src/leaf.ts"]), /Opaque setup builtin/, "setup filesystem reads can affect every test outside the import graph");
+  const opaqueSetup = await select(["ui/src/leaf.ts"]);
+  assert.deepEqual(opaqueSetup.selected, opaqueSetup.inventory, "opaque setup effects retain every test in the project");
+  assert.deepEqual(opaqueSetup.alwaysRun, opaqueSetup.inventory);
+  assert.match(opaqueSetup.retentionReasons[opaqueSetup.inventory[0]].reasons[0], /Opaque setup builtin/);
   mkdirSync(path.join(directory, "server/src/__tests__/helpers"), { recursive: true });
   for (const file of ["server/src/__tests__/setup-supertest.ts", "server/src/__tests__/helpers/isolated-test-home.ts"]) {
     write(file, readFileSync(path.join(root, file), "utf8"));
@@ -99,7 +102,9 @@ test("real graph retains direct and indirect filesystem, process and opaque depe
   const changedSetup = await select([helper]);
   assert.deepEqual(changedSetup.selected, changedSetup.inventory, "reviewed helpers still invalidate all tests when changed");
   write(helper, `${readFileSync(path.join(directory, helper), "utf8")}\n// setup edited since review\n`);
-  await assert.rejects(select(["ui/src/leaf.ts"]), /Opaque setup/, "a stale review cannot authorize new setup effects");
+  const staleSetup = await select(["ui/src/leaf.ts"]);
+  assert.deepEqual(staleSetup.selected, staleSetup.inventory, "a stale review cannot authorize narrowing");
+  assert.match(staleSetup.retentionReasons[staleSetup.inventory[0]].reasons[0], /Opaque setup/);
 });
 
 test("partitioning reduces runners and preserves an exact, non-overlapping file cover", () => {

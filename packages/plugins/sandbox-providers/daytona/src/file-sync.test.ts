@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 import zlib from "node:zlib";
 import { Transform } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
-import { prepareTestPosixShell } from "../../../../adapter-utils/src/test-fixtures/posix-shell.js";
+import { prepareTestPosixShell } from "./test-fixtures/posix-shell.js";
 
 // The plugin module imports `@daytonaio/sdk` as a value, but the sync tests never
 // touch a real Daytona client — every sandbox call goes through a local mock. Stub

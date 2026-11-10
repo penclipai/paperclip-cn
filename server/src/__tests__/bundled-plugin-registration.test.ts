@@ -181,10 +181,11 @@ describePostgres("bundled image registration in PostgreSQL", () => {
       await registry.update(installed.id, { packagePath: "/lost/release/home/daytona" });
       await registry.updateStatus(installed.id, { status: "ready" });
       const registration = (await registry.getById(installed.id))!;
+      const loaded = await loader.loadSingle(installed.id);
+      expect(loaded.success, loaded.success ? undefined : loaded.error).toBe(true);
       const inspected = await inspectCloudPackages({ installs, catalogRoot, registrations: [registration], loadManifest: (root) => loader.loadManifest(root) });
       expect(inspected.blockers).toEqual([]);
       expect(inspected.packages[0]?.packageDigest).toMatch(/^sha256:/);
-      expect((await loader.loadSingle(installed.id)).success).toBe(true);
       expect(await manager.call(installed.id, "health", {})).toMatchObject({ status: "ok", message: "Daytona sandbox provider plugin healthy" });
     } finally { await manager.stopAll(); vi.unstubAllEnvs(); }
   }, 90_000);

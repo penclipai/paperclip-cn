@@ -17,9 +17,13 @@ export function createIsolatedTestHome() {
       throw new Error("Refusing to clean a replaced isolated test home");
     }
     const makeDirectoriesWritable = (directory: string) => {
-      const fd = openSync(directory, constants.O_RDONLY | constants.O_DIRECTORY | constants.O_NOFOLLOW);
-      try { fchmodSync(fd, 0o700); }
-      finally { closeSync(fd); }
+      // Windows directories do not support POSIX fchmod; rm handles their
+      // native attributes. Keep descriptor-based, no-follow repair on POSIX.
+      if (process.platform !== "win32") {
+        const fd = openSync(directory, constants.O_RDONLY | constants.O_DIRECTORY | constants.O_NOFOLLOW);
+        try { fchmodSync(fd, 0o700); }
+        finally { closeSync(fd); }
+      }
       for (const entry of readdirSync(directory, { withFileTypes: true })) {
         if (entry.isDirectory()) makeDirectoriesWritable(path.join(directory, entry.name));
       }

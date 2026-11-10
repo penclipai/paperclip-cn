@@ -184,7 +184,7 @@ process.exit(result.status ?? 98);
     await writeFakeCli(bin, "git", githubLauncherSource());
     const realGit = process.platform === "win32"
       ? (await exec("where.exe", ["git"])).stdout.split(/\r?\n/).find(Boolean)!
-      : "git";
+      : (await exec("which", ["git"])).stdout.trim();
     await writeFakeCli(fakeBin, "git", `#!/usr/bin/env node
 const fs = require("node:fs");
 const { spawnSync } = require("node:child_process");

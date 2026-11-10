@@ -151,7 +151,15 @@ const support = externalDatabaseUrl
     ) {
       await db
         .update(nativeRunFinalizations)
-        .set({ failureDetail: { originalFailureCode } })
+        .set({
+          // A transport failure is recoverable only after stopped-turn proof.
+          // Keep provider-turn failures on the terminal code so they remain
+          // operator-owned and are never converted into a replacement.
+          failureCode: originalFailureCode === "notification_transport_failed"
+            ? "provider_transport_failed"
+            : "native_provider_terminal_failed",
+          failureDetail: { originalFailureCode },
+        })
         .where(eq(nativeRunFinalizations.runId, source.runId));
     }
     async function linkedSuccessors(runId: string) {
@@ -711,7 +719,9 @@ const support = externalDatabaseUrl
       expect(verifyStoppedSession).toHaveBeenCalledOnce();
       expect(await linkedSuccessors(source.runId)).toHaveLength(0);
       const [finalization] = await db.select().from(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, source.runId));
-      expect(finalization!.failureDetail?.replacementDenied).toBe("provider_failure_meaning_unverified");
+      // Lack of proof is still recoverable: leave the transport terminal
+      // pending for a later sweep rather than permanently denying it.
+      expect(finalization!.failureDetail?.replacementDenied).toBeUndefined();
     });
     it("rolls back a changed stopped-turn proof without recording an event or successor", async () => {
       const source = await seed();
@@ -721,7 +731,8 @@ const support = externalDatabaseUrl
         evidence: { schema: "paperclip.stopped_text_turn.v1", runId: source.runId },
         retire,
       }));
-      await reconcileSafeNativeReplacements(db, new Date(), { verifyStoppedSession });
+      await expect(reconcileSafeNativeReplacements(db, new Date(), { verifyStoppedSession }))
+        .rejects.toThrow("native_replacement_decision_retry_required");
       expect(verifyStoppedSession).toHaveBeenCalledOnce();
       expect(retire).toHaveBeenCalledOnce();
       expect(await linkedSuccessors(source.runId)).toHaveLength(0);

@@ -2382,6 +2382,11 @@ describe("Chat SDK published adapter integration", () => {
       const app = (
         adapter as unknown as {
           app: {
+            activitySender: {
+              client: {
+                post(url: string, body: unknown): Promise<{ data: { id?: string } }>;
+              };
+            };
             api: {
               serviceUrl: string;
               http: {
@@ -2418,17 +2423,10 @@ describe("Chat SDK published adapter integration", () => {
       const put = vi
         .fn()
         .mockResolvedValue({ data: { id: "owned-progress" } });
-      const middlewareId = app.api.http.use({
-        async invoke({ config }, next) {
-          if (config.method === "post") {
-            return post(config.url, config.data);
-          }
-          if (config.method === "put") {
-            return put(config.url, config.data);
-          }
-          return next();
-        },
-      });
+      vi.spyOn(app.activitySender.client, "post").mockImplementation(post);
+      // Scoped API clients own separate HTTP instances in the installed SDK.
+      // Intercept their final transport method while retaining URL generation.
+      vi.spyOn(Object.getPrototypeOf(app.api.http), "put").mockImplementation(put);
       const conversation =
         scope === "personal"
           ? "a:close-personal"
@@ -2502,7 +2500,6 @@ describe("Chat SDK published adapter integration", () => {
         expect(post).toHaveBeenCalledTimes(2);
         expect(network).not.toHaveBeenCalled();
       } finally {
-        app.api.http.eject(middlewareId);
         await runtime.shutdown();
         vi.restoreAllMocks();
         vi.unstubAllGlobals();

@@ -6,11 +6,28 @@ import path from "node:path";
 import test from "node:test";
 import { parseSync } from "oxc-parser";
 import { repositoryFileInputs } from "./repository-file-inputs.mjs";
-import { selectProjectTests, sourceDependencies } from "./vitest-selection-graph.mjs";
+import { reviewedSetupFingerprint, selectProjectTests, sourceDependencies } from "./vitest-selection-graph.mjs";
 import { dependencyFingerprint, dependencyReviews } from "./reviewed-test-dependencies.mjs";
 
-const file = "/repo/ui/src/contract.test.ts";
+const file = path.resolve("/repo/ui/src/contract.test.ts");
 const analyze = source => repositoryFileInputs(file, parseSync(file, source).program);
+
+test("reviewed setup fingerprints survive Git CRLF checkout and revoke on content changes", () => {
+  const source = 'export const isolated = true;\n';
+  assert.equal(reviewedSetupFingerprint(source.replaceAll("\n", "\r\n")), reviewedSetupFingerprint(source));
+  assert.notEqual(reviewedSetupFingerprint(source + 'import "node:fs";\n'), reviewedSetupFingerprint(source));
+  assert.notEqual(reviewedSetupFingerprint(source.replaceAll("\n", "\r")), reviewedSetupFingerprint(source));
+});
+
+test("JSON setup catalogs contain data and malformed JSON remains opaque", () => {
+  const catalog = sourceDependencies("/repo/ui/public/locales/en/common.json",
+    '{"help":"import node:child_process; fetch input", "nested":{"Function":true}, "__proto__":{}}');
+  assert.deepEqual(catalog, { imports: [], reasons: [], mocks: [], fileInputs: { covered: [], inputs: [] } });
+  for (const source of ['{"key":}', 'process.exit(0)', '{"key": () => 1}']) {
+    assert.deepEqual(sourceDependencies("/repo/catalog.json", source).reasons, ["unparsed JSON"]);
+  }
+  assert.ok(sourceDependencies("/repo/catalog.ts", 'fetch("https://example.invalid")').reasons.length);
+});
 
 test("data properties and erased types are not global loaders or mock bypasses", () => {
   const data = sourceDependencies(file, 'import {vi} from "vitest"; const schema = {arguments: {}, fetch: false, Function: "name"}; type Factory = Function;');
@@ -58,7 +75,7 @@ test("file input edges require module-relative paths and non-escaping read APIs"
     'import fs from "node:fs"; import path from "node:path"; const root = path.dirname(import.meta.filename); const input = path.join(root, "leaf.ts"); fs.readFileSync(input);',
     'import {promises as fs} from "node:fs"; import {fileURLToPath} from "node:url"; fs.readFile(fileURLToPath(new URL("./leaf.ts", import.meta.url)));',
   ]) {
-    assert.deepEqual(analyze(source), { covered: ["fs"], inputs: ["/repo/ui/src/leaf.ts"] });
+    assert.deepEqual(analyze(source), { covered: ["fs"], inputs: [path.join(path.dirname(file), "leaf.ts")] });
   }
   for (const source of [
     'import fs from "node:fs"; fs.readFileSync(process.env.INPUT);',

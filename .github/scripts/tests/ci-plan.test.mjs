@@ -235,7 +235,10 @@ test("the real routing step uses pinned trusted definitions and defaults to full
   try {
     const repository = path.join(directory, "source");
     mkdirSync(repository);
-    const gitBin = process.env.GIT || (process.platform === "win32" ? "C:\\Program Files\\Git\\cmd\\git.exe" : "git");
+    const gitCommand = process.env.GIT || (process.platform === "win32" ? "C:\\Program Files\\Git\\cmd\\git.exe" : "git");
+    const gitBin = path.isAbsolute(gitCommand) ? gitCommand
+      : execFileSync(process.platform === "win32" ? "where.exe" : "which", [gitCommand], { encoding: "utf8" }).trim().split(/\r?\n/)[0];
+    assert.ok(path.isAbsolute(gitBin), "the delegating Git stub must never resolve itself through its modified PATH");
     const git = (...args) => execFileSync(gitBin, args, { cwd: repository, encoding: "utf8" }).trim();
     git("init", "-q", "-b", "main"); git("config", "user.name", "CI"); git("config", "user.email", "ci@example.invalid");
     writeFileSync(path.join(repository, "base"), "base"); git("add", "."); git("commit", "-qm", "base");

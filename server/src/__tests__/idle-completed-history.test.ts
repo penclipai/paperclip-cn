@@ -2172,9 +2172,9 @@ const DELETE_METHOD = "DELETE" as never;
       const cleanupEntered = new Promise<void>(resolve => { enterCleanup = resolve; });
       const cleanupGate = new Promise<void>(resolve => { releaseCleanup = resolve; });
       const failedControl = Object.create(db) as typeof db;
-      failedControl.select = (() => ({ from: () => ({ where: async () => {
+      failedControl.select = (() => ({ from: () => ({ where: () => ({ limit: async () => {
         enterCleanup(); await cleanupGate; throw new Error("controlled stop cleanup failure");
-      } }) })) as unknown as typeof db.select;
+      } }) }) })) as unknown as typeof db.select;
       const stopping = runtime.stopRuntimeServicesForExecutionWorkspace({ db: failedControl,
         executionWorkspaceId: workspace.id, workspaceCwd: directory });
       await cleanupEntered;

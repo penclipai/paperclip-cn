@@ -32,7 +32,7 @@ const reviewedSetup = new Map([
     external: ["supertest/lib/test.js"],
   }],
   ["server/src/__tests__/helpers/isolated-test-home.ts", {
-    hash: "bd5645dc590087f26b473beab06d5c3ddd7956a79949f0b3e9713f11897a0c1b",
+    hash: "33b88489e8308e5bd18b63ce308aa02bb9d3d9fc53128f68c52f724303ad422f",
     external: [],
   }],
 ]);
@@ -42,10 +42,32 @@ const inside = (root, file) => file.startsWith(`${root}${path.sep}`) && !file.in
 const normalizedModulePath = (id) => path.normalize(id.startsWith("/@fs/")
   ? id.slice(process.platform === "win32" ? 5 : 4) : id);
 
+// These reviewed repository sources use Git's canonical LF representation.
+// Keep package fingerprints and all other security pins byte-exact.
+export function reviewedSetupFingerprint(source) {
+  return createHash("sha256").update(source.replaceAll("\r\n", "\n")).digest("hex");
+}
+
+class OpaqueSetupError extends Error {
+  constructor(file, message) {
+    super(message);
+    this.file = file;
+  }
+}
+
 // Parse source, including imports erased by mocks/transforms. Unknown loaders
 // retain their consumers. This is intentionally conservative, not a regex-based
 // promise that arbitrary JavaScript has no effects.
 export function sourceDependencies(file, source) {
+  // JSON imports are data, including catalogs loaded by locale test setup.
+  // Keep the file in the dependency closure, but never interpret its values as
+  // JavaScript imports or effects. Invalid JSON remains opaque.
+  if (path.extname(file).toLowerCase() === ".json") {
+    let reasons = [];
+    try { JSON.parse(source); }
+    catch { reasons = ["unparsed JSON"]; }
+    return { imports: [], reasons, mocks: [], fileInputs: { covered: [], inputs: [] } };
+  }
   const ast = parseSync(file, source);
   const imports = new Set();
   const reasons = new Set();
@@ -200,26 +222,44 @@ export async function selectProjectTests({ root = process.cwd(), project, change
       const source = parse(file);
       const coveredBuiltins = declaredInputs(file, source);
       const review = reviewedSetup.get(path.relative(root, file).split(path.sep).join("/"));
-      const reviewed = review?.hash === createHash("sha256").update(readFileSync(file)).digest("hex");
+      const reviewed = review?.hash === reviewedSetupFingerprint(readFileSync(file, "utf8"));
       const context = setupChain(chain, file);
-      if (!reviewed && source.reasons.length) throw new Error(`Opaque setup dependency: ${file} (setup chain: ${context})`);
+      if (!reviewed && source.reasons.length) throw new OpaqueSetupError(file, `Opaque setup dependency: ${file} (setup chain: ${context})`);
       for (const specifier of source.imports) {
         if (isBuiltin(specifier)) {
-          if (!reviewed && !pureBuiltins.has(specifier.replace(/^node:/, "")) && !coveredBuiltins.includes(specifier.replace(/^node:/, ""))) throw new Error(`Opaque setup builtin: ${specifier} (setup chain: ${context})`);
+          if (!reviewed && !pureBuiltins.has(specifier.replace(/^node:/, "")) && !coveredBuiltins.includes(specifier.replace(/^node:/, ""))) throw new OpaqueSetupError(file, `Opaque setup builtin: ${specifier} (setup chain: ${context})`);
           continue;
         }
         if (reviewed && review.external.includes(specifier)) continue;
         const dependency = await resolve(specifier, file);
         if (dependency && inside(root, dependency)) await setupClosure(dependency, [...chain, path.relative(root, file).split(path.sep).join("/")]);
         else if (!dependency) throw new Error(`Unresolved setup dependency: ${specifier} (setup chain: ${context})`);
-        else if (!purePackages.has(packageName(specifier))) throw new Error(`Opaque setup package: ${specifier} (setup chain: ${context})`);
+        else if (!purePackages.has(packageName(specifier))) throw new OpaqueSetupError(file, `Opaque setup package: ${specifier} (setup chain: ${context})`);
       }
     }
-    for (const file of [...(owner.config.setupFiles ?? []), ...(owner.config.globalSetup ?? []),
-      ...(owner.config.snapshotSerializers ?? [])]) {
-      const resolved = path.isAbsolute(file) ? file : await resolve(file, owner.vite.config.configFile);
-      if (resolved && inside(root, resolved)) await setupClosure(resolved);
-      else if (!resolved) throw new Error(`Unresolved setup module: ${file}`);
+    try {
+      for (const file of [...(owner.config.setupFiles ?? []), ...(owner.config.globalSetup ?? []),
+        ...(owner.config.snapshotSerializers ?? [])]) {
+        const resolved = path.isAbsolute(file) ? realpathSync(file) : await resolve(file, owner.vite.config.configFile);
+        if (!resolved) throw new Error(`Unresolved setup module: ${file}`);
+        if (!inside(root, resolved)) throw new Error(`Setup module outside repository: ${file}`);
+        await setupClosure(resolved);
+      }
+    } catch (error) {
+      if (!(error instanceof OpaqueSetupError)) throw error;
+      // The inventory was collected before analysis. Unknown setup effects
+      // retain every test in this project; they never authorize narrowing.
+      // Resolution, inventory and manifest failures still abort selection.
+      const all = inventory.map(relative).sort();
+      const module = path.relative(root, error.file).split(path.sep).join("/");
+      return {
+        project, isolated: owner.config.isolate !== false,
+        inventory: all, selected: all, related: [], inputRelated: [], alwaysRun: all,
+        retentionReasons: Object.fromEntries(all.map(file => [file, { module, reasons: [error.message] }])),
+        coveredChanges: [], fileInputs: {}, opaqueModules: { [module]: [error.message] },
+        setupChanged: absoluteChanges.some(file => setup.has(file)),
+        seconds: (performance.now() - started) / 1000,
+      };
     }
     for (const file of owner.vite.config.configFileDependencies ?? []) setup.add(realpathSync(file));
     const setupChanged = absoluteChanges.some(file => setup.has(file)

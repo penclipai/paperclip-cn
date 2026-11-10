@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { assertKimiInstallationProfile, verifyKimiInstallation } from "./kimi-installation.js";
+import { KIMI_DISTRIBUTION_CLOSURE_SHA256 } from "./kimi-closure-pins.js";
 import { QUALIFIED_ACPX_PROFILES } from "./qualified-profiles.js";
 import { isSupportedAcpxProfileVersion } from "./profile-compatibility.js";
 
@@ -114,9 +115,14 @@ describe("Kimi installed runtime admission", () => {
 
   it("gives the normal setup command and never falls back to ambient kimi when assets are missing", async () => {
     const root = await realpath(await mkdtemp(join(tmpdir(), "paperclip-kimi-installation-test-"))); roots.push(root);
-    await writeFile(join(root, "package.json"), '{"name":"@paperclipai/paperclip-runner"}');
+    await writeFile(join(root, "package.json"), '{"name":"@penclipai/paperclip-runner"}');
     environment("PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT", root);
     environment("PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", join(root, "package.json"));
+    const target = `${process.platform}-${process.arch}`;
+    if (!Object.hasOwn(KIMI_DISTRIBUTION_CLOSURE_SHA256, target)) {
+      await expect(verifyKimiInstallation(QUALIFIED_ACPX_PROFILES.kimi)).rejects.toThrow(`Kimi runtime target is unsupported: ${target}`);
+      return;
+    }
     await expect(verifyKimiInstallation(QUALIFIED_ACPX_PROFILES.kimi)).rejects.toThrow(/paperclipai runtime setup kimi/);
     const assets = join(root, "provider-assets/kimi", `${process.platform}-${process.arch}`);
     await mkdir(join(assets, "runtime"), { recursive: true });

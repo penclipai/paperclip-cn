@@ -290,6 +290,7 @@ describe("git workspace sync", () => {
     // Windows `git init` may materialize its auto-probed false locally. Remove
     // only that local entry so this fixture exercises Git's documented unset
     // default under the isolated runner config.
+    await git(repo, ["config", "--local", "core.symlinks", "false"]);
     await git(repo, ["config", "--local", "--unset-all", "core.symlinks"]);
     const isolatedGlobal = path.join(rootDir, "empty-gitconfig");
     await writeFile(isolatedGlobal, "", "utf8");

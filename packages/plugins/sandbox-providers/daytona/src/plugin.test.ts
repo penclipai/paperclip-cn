@@ -4,7 +4,7 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { prepareTestPosixShell } from "../../../../adapter-utils/src/test-fixtures/posix-shell.js";
+import { prepareTestPosixShell } from "./test-fixtures/posix-shell.js";
 
 const mockCreate = vi.hoisted(() => vi.fn());
 const mockGet = vi.hoisted(() => vi.fn());

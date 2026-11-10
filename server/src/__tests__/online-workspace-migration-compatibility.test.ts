@@ -2,7 +2,6 @@ import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
 import { eq, sql } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { activityLog, companies, createDb, executionWorkspaceSnapshots, executionWorkspaces,
@@ -23,19 +22,32 @@ const support = await getEmbeddedPostgresTestSupport();
 const oldCommit = "e2d490c61bbf12290b35af65f6e12648f5f2af75";
 function deferred() { let resolve!: () => void; const promise = new Promise<void>(ready => { resolve = ready; }); return { promise, resolve }; }
 
-describe.skipIf(!support.supported)("versioned online migration compatibility with serving e2d", () => {
+it("preserves the frozen upstream protocol bytes after the fork package namespace mapping", async () => {
+  const fixture = new URL("./fixtures/online-workspace-e2d-protocol.mjs", import.meta.url);
+  const provenance = JSON.parse(await fs.readFile(new URL("./fixtures/online-workspace-e2d-protocol.provenance.json", import.meta.url), "utf8"));
+  expect(provenance.commit).toBe(oldCommit);
+  expect(provenance.sourceFiles["server/src/services/workspace-source-lock.ts"])
+    .toBe("f01502b1432e896a922fbf0b3526d15b1a987f785afe89c3e8992d05a21c8040");
+  expect(Object.keys(provenance.sourceFiles)).toHaveLength(15);
+  expect(provenance.bundleSha256).toBe("b668e53a48c6b8cd6c3ce6a8d935144fdedb74de43970607e740f3bfd45bb218");
+  const bundle = (await fs.readFile(fixture, "utf8")).replaceAll("\r\n", "\n");
+  // Only external package specifiers were adapted for the fork. Reversing
+  // that mapping must reproduce the frozen upstream bytes and provenance.
+  expect(createHash("sha256").update(bundle).digest("hex"))
+    .toBe("b038ee78c522551dfc1ee0d658a74617c75afaa3a455ef12f0f489e4b8253538");
+  expect(createHash("sha256").update(bundle.replaceAll("@penclipai/", "@paperclipai/")).digest("hex"))
+    .toBe(provenance.bundleSha256);
+});
+
+// The archived protocol requires POSIX ownership/mode proof. Windows rejection
+// is exercised by the archive authority tests, rather than pretending it can
+// round-trip the 0640 files used by this compatibility fixture.
+describe.skipIf(!support.supported || typeof process.getuid !== "function")("versioned online migration compatibility with serving e2d", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: ReturnType<typeof createDb>, old: OldProtocol, home: string, storage: StorageService;
   beforeAll(async () => {
     const fixture = new URL("./fixtures/online-workspace-e2d-protocol.mjs", import.meta.url);
-    const provenance = JSON.parse(await fs.readFile(new URL("./fixtures/online-workspace-e2d-protocol.provenance.json", import.meta.url), "utf8"));
-    expect(provenance.commit).toBe(oldCommit);
-    expect(provenance.sourceFiles["server/src/services/workspace-source-lock.ts"])
-      .toBe("f01502b1432e896a922fbf0b3526d15b1a987f785afe89c3e8992d05a21c8040");
-    expect(Object.keys(provenance.sourceFiles)).toHaveLength(15);
-    expect(provenance.bundleSha256).toBe("b668e53a48c6b8cd6c3ce6a8d935144fdedb74de43970607e740f3bfd45bb218");
-    expect(createHash("sha256").update(await fs.readFile(fixture)).digest("hex")).toBe(provenance.bundleSha256);
-    old = await import(pathToFileURL(fixture.pathname).href) as OldProtocol;
+    old = await import(fixture.href) as OldProtocol;
     database = await startEmbeddedPostgresTestDatabase("online-migration-compatibility-");
     db = createDb(database.connectionString, { maxConnections: 1 });
     await db.execute(sql`set client_min_messages = warning`);
