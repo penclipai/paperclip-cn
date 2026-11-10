@@ -209,21 +209,9 @@ test.describe("chat destination partial updates", () => {
 
 test.describe("Board send delivery refresh", () => {
   test.beforeEach(async ({ page }) => {
-    await page.addLocatorHandler(
-      page
-        .getByRole("complementary", {
-          name: "Paperclip announcements",
-          exact: true,
-        })
-        .getByRole("button", {
-          name: "Dismiss announcement",
-          exact: true,
-        }),
-      async (dismiss) => {
-        await dismiss.click();
-      },
-      { noWaitAfter: true },
-    );
+    await page.route("**/api/announcements/current", async (route) => {
+      await route.fulfill({ json: null });
+    });
   });
 
   for (const classic of [false, true]) {
