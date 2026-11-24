@@ -309,10 +309,10 @@ export function CodexLocalConfigFields({
       {runnerManaged && isCursorCloud && <>
         <p className="text-sm text-muted-foreground">{t("codexLocal.cursorCloudNotice", { defaultValue: "Experimental. Cursor hosts this agent’s execution environment. A Paperclip computer is not required. Cursor manages command permissions; effective model identity is unavailable. Agent environment settings support only CURSOR_API_KEY. Configure hosted secrets in your Cursor Cloud environment." })}</p>
         {[
-          { key: "repoUrl", label: "GitHub repository", fallback: "", legacy: undefined, placeholder: "https://github.com/your-org/repo", hint: "Select a repository or a named Cursor cloud environment." },
-          { key: "repoRef", label: "Starting ref", fallback: config.repoStartingRef ?? "", legacy: "repoStartingRef", placeholder: "Repository default" },
-          { key: "prUrl", label: "Pull request URL", fallback: config.repoPullRequestUrl ?? "", legacy: "repoPullRequestUrl", placeholder: "Optional" },
-          { key: "cloudEnvName", label: "Cursor cloud environment", fallback: config.runtimeEnvName ?? "", legacy: "runtimeEnvName", placeholder: "Use instead of a repository" },
+          { key: "repoUrl", label: t("GitHub repository", { defaultValue: "GitHub repository" }), fallback: "", legacy: undefined, placeholder: "https://github.com/your-org/repo", hint: t("codexLocal.cursorCloudRepoHint", { defaultValue: "Select a repository or a named Cursor cloud environment." }) },
+          { key: "repoRef", label: t("Starting ref", { defaultValue: "Starting ref" }), fallback: config.repoStartingRef ?? "", legacy: "repoStartingRef", placeholder: t("Repository default", { defaultValue: "Repository default" }) },
+          { key: "prUrl", label: t("Pull request URL", { defaultValue: "Pull request URL" }), fallback: config.repoPullRequestUrl ?? "", legacy: "repoPullRequestUrl", placeholder: t("Optional", { defaultValue: "Optional" }) },
+          { key: "cloudEnvName", label: t("codexLocal.cursorCloudEnvLabel", { defaultValue: "Cursor cloud environment" }), fallback: config.runtimeEnvName ?? "", legacy: "runtimeEnvName", placeholder: t("codexLocal.cursorCloudEnvPlaceholder", { defaultValue: "Use instead of a repository" }) },
         ].map(field => <Field key={field.key} configSection="adapter" label={field.label} hint={field.hint}>
           <DraftInput value={String(runnerSchemaValue(field.key, field.fallback))} placeholder={field.placeholder} className={inputClass}
             onCommit={value => {
@@ -321,9 +321,9 @@ export function CodexLocalConfigFields({
             }} />
         </Field>)}
         {[
-          { key: "workOnCurrentBranch", label: "Work on current branch" },
-          { key: "autoCreatePR", label: "Auto-create pull request" },
-          { key: "skipReviewerRequest", label: "Skip reviewer request" },
+          { key: "workOnCurrentBranch", label: t("Work on current branch", { defaultValue: "Work on current branch" }) },
+          { key: "autoCreatePR", label: t("codexLocal.autoCreatePullRequest", { defaultValue: "Auto-create pull request" }) },
+          { key: "skipReviewerRequest", label: t("Skip reviewer request", { defaultValue: "Skip reviewer request" }) },
         ].map(field => <ToggleField key={field.key} label={field.label}
           checked={runnerSchemaValue(field.key, false) === true} onChange={value => updateRunnerSchemaValue(field.key, value)} />)}
       </>}
@@ -339,10 +339,10 @@ export function CodexLocalConfigFields({
           checked={runnerSchemaValue("allowUnmeteredProvider", false) === true} onChange={value => updateRunnerSchemaValue("allowUnmeteredProvider", value)} />
       </>}
       {runnerManaged && isMuse && <>
-        <Field configSection="adapter" label="Muse connection" hint="Pairing, receiver contact, background reply, and agent setup are verified separately.">
+        <Field configSection="adapter" label={t("codexLocal.museConnection", { defaultValue: "Muse connection" })} hint={t("codexLocal.museConnectionHint", { defaultValue: "Pairing, receiver contact, background reply, and agent setup are verified separately." })}>
           <MuseRunnerConnection companyId={companyId} agentId={agentId} />
         </Field>
-        <ToggleField label={translateInstant("Allow externally billed provider", { defaultValue: "Allow externally billed provider" })} hint="Muse does not report usage or cost. Paperclip cannot enforce a Muse spend ceiling; known company and agent budget limits still apply."
+        <ToggleField label={translateInstant("Allow externally billed provider", { defaultValue: "Allow externally billed provider" })} hint={t("codexLocal.museExternallyBilledHint", { defaultValue: "Muse does not report usage or cost. Paperclip cannot enforce a Muse spend ceiling; known company and agent budget limits still apply." })}
           checked={runnerSchemaValue("allowUnmeteredProvider", false) === true} onChange={value => updateRunnerSchemaValue("allowUnmeteredProvider", value)} />
       </>}
       {runnerManaged && !hideRunnerHarness && runnerProvider === "acpx" && runnerSchemaValue("acpxAgent", "claude") !== "grok" && (
