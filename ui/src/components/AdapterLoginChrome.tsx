@@ -437,7 +437,7 @@ export function ProviderSubscriptionCard({
   loading?: boolean;
   children: ReactNode;
 }) {
-  useTranslation();
+  const { t } = useTranslation();
   return (
     <OnboardingLoginCard
       loading={loading}
@@ -465,8 +465,8 @@ export function ProviderSubscriptionCard({
     >
       {failure && (
         <div className="flex flex-col items-start gap-3 px-2">
-          <p role="alert" className="text-sm text-muted-foreground">Retry sign-in to get a fresh code. Your setup is saved.</p>
-          {onRetry && <Button type="button" variant="outline" onClick={onRetry}>Retry sign-in</Button>}
+          <p role="alert" className="text-sm text-muted-foreground">{t("adapterLogin.retrySignInHelp", { defaultValue: "Retry sign-in to get a fresh code. Your setup is saved." })}</p>
+          {onRetry && <Button type="button" variant="outline" onClick={onRetry}>{t("adapterLogin.retrySignIn", { defaultValue: "Retry sign-in" })}</Button>}
         </div>
       )}
       {children}

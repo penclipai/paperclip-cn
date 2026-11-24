@@ -1488,7 +1488,7 @@ function Setup({
                         )}
                         {adapterType === "cursor_cloud" && (
                           <>
-                          {nativeCursorCloud && <p className="text-sm text-muted-foreground">Experimental. Cursor hosts this agent’s execution environment. A Paperclip computer is not required. Cursor manages cloud command permissions; the effective model is not acknowledged.</p>}
+                          {nativeCursorCloud && <p className="text-sm text-muted-foreground">{translateInstant("newAgent.cursorCloudNotice", { defaultValue: "Experimental. Cursor hosts this agent’s execution environment. A Paperclip computer is not required. Cursor manages cloud command permissions; the effective model is not acknowledged." })}</p>}
                           <div className="grid gap-5 sm:grid-cols-2">
                             <Field label={translateInstant("GitHub repository", { defaultValue: "GitHub repository" })}>
                               <Input

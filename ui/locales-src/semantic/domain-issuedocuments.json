@@ -199,6 +199,16 @@
     "zh-CN": "查看远端",
     "reviewedEnglishHash": "478fba4045cc9913a9b9faf39bd5c1f6a3d85cc50e815082bc0a5aa26601d692"
   },
+  "issueDocuments.reviewedRevisionLoadFailed": {
+    "en": "Could not load the reviewed revision. Try opening the link again.",
+    "zh-CN": "无法加载所审阅的修订版本，请重新打开链接。",
+    "reviewedEnglishHash": "7a84427fed02d1d4a2e44fcc17dc77ea3883434be56e89005a1c7acc0a000b01"
+  },
+  "issueDocuments.reviewedRevisionUnavailable": {
+    "en": "The reviewed revision is unavailable.",
+    "zh-CN": "所审阅的修订版本不可用。",
+    "reviewedEnglishHash": "c3bff43bf2b4c118a034eef1c128caaa58cfda0f3d31dfa2c05422683b301bd7"
+  },
   "issueDocuments.revisionNumber": {
     "en": "rev {{number}}",
     "zh-CN": "修订 {{number}}",

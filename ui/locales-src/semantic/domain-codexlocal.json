@@ -1,4 +1,9 @@
 {
+  "codexLocal.cursorCloudNotice": {
+    "en": "Experimental. Cursor hosts this agent’s execution environment. A Paperclip computer is not required. Cursor manages command permissions; effective model identity is unavailable. Agent environment settings support only CURSOR_API_KEY. Configure hosted secrets in your Cursor Cloud environment.",
+    "zh-CN": "实验性功能。Cursor 托管此智能体的执行环境，无需 Paperclip 计算机。Cursor 会管理命令权限，且无法获取实际模型标识。智能体环境变量设置仅支持 CURSOR_API_KEY，请在 Cursor Cloud 环境中配置托管密钥。",
+    "reviewedEnglishHash": "c209a48e451a179457269e6a519460eb7b2e020c521adc3134bc2ccec2e83e11"
+  },
   "codexLocal.fastModeUnsupportedModels": {
     "en": "Fast mode currently only works on {{models}} or manual model IDs. Paperclip will ignore this toggle until the model is switched.",
     "zh-CN": "快速模式目前仅适用于 {{models}} 或手动模型 ID。在切换模型前，Paperclip 会忽略此开关。",

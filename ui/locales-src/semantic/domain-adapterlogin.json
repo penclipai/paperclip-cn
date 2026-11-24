@@ -3,5 +3,15 @@
     "en": "Finish signing in in the Google browser window, then return here.",
     "zh-CN": "请在 Google 登录窗口中完成登录，再返回此处。",
     "reviewedEnglishHash": "9b948e44f6ae76cfa9d01c9d86145c8df89929a462753e60bb520507dd268897"
+  },
+  "adapterLogin.retrySignIn": {
+    "en": "Retry sign-in",
+    "zh-CN": "重新登录",
+    "reviewedEnglishHash": "0338e01471b811839ef94a905b7867985fdb52293676988ae284d9b834ba56d0"
+  },
+  "adapterLogin.retrySignInHelp": {
+    "en": "Retry sign-in to get a fresh code. Your setup is saved.",
+    "zh-CN": "重新登录以获取新的授权码，你的设置已保存。",
+    "reviewedEnglishHash": "6cdcba7d8cc4bfb9e853749a35d4520676fc1f166c92f90a2d741ae7866ee812"
   }
 }

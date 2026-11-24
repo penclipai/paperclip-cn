@@ -1011,18 +1011,18 @@ function AccountIssueDocumentsSection({
     if (!doc) return;
     if (handledRevisionHash?.target === revisionTarget && handledRevisionHash.latestRevisionId === doc.latestRevisionId) return;
     if (revisionsQueryFailed) {
-      setError("Could not load the reviewed revision. Try opening the link again.");
+      setError(t("issueDocuments.reviewedRevisionLoadFailed", { defaultValue: "Could not load the reviewed revision. Try opening the link again." }));
       return;
     }
     if (!getDocumentRevisions(doc.key).some((revision) => revision.id === documentHashTarget.revisionId)
       && doc.latestRevisionId !== documentHashTarget.revisionId) {
       if (!isFetchingDocumentRevisions && activeDocumentRevisions !== undefined) {
-        setError("The reviewed revision is unavailable.");
+        setError(t("issueDocuments.reviewedRevisionUnavailable", { defaultValue: "The reviewed revision is unavailable." }));
       }
       return;
     }
     if (previewRevision(doc, documentHashTarget.revisionId)) setHandledRevisionHash({ target: revisionTarget!, latestRevisionId: doc.latestRevisionId });
-  }, [activeDocumentRevisions, documentHashTarget, getDocumentRevisions, handledRevisionHash, isFetchingDocumentRevisions, previewRevision, revisionTarget, revisionsQueryFailed, sortedDocuments]);
+  }, [activeDocumentRevisions, documentHashTarget, getDocumentRevisions, handledRevisionHash, isFetchingDocumentRevisions, previewRevision, revisionTarget, revisionsQueryFailed, sortedDocuments, t]);
 
   useEffect(() => {
     return () => {
