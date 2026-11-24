@@ -131,6 +131,11 @@ type FileRuntime = ChatSdkEndpointRuntime & {
   ): Promise<{ id: string }>;
 };
 interface AppSeam {
+  activitySender: {
+    client: {
+      post(url: string, body: unknown): Promise<{ data: { id?: string } }>;
+    };
+  };
   server: {
     serviceTokenValidator: {
       check(header: string, body: Record<string, unknown>): Promise<unknown>;
@@ -159,15 +164,13 @@ interface AppSeam {
 }
 
 // Real installed adapter/App router, ActivitySender and scoped API clients.
-// The Teams 2.1 SDK creates a scoped HTTP client for each send, so only the
-// final HTTP post is replaced. There is no
+// ActivitySender creates a scoped API client from its own HTTP client for each
+// send, so only that client's final HTTP post is replaced. There is no
 // live tenant, Graph, service/DB authority, or successful file-delivery claim.
 describe("Teams opt-in file-consent runtime", () => {
   const runtimes: ChatSdkEndpointRuntime[] = [];
-  const ejectHttpMiddlewares: Array<() => void> = [];
   afterEach(async () => {
     try {
-      ejectHttpMiddlewares.splice(0).forEach((eject) => eject());
       await Promise.all(
         runtimes.splice(0).map((runtime) => runtime.shutdown()),
       );
@@ -225,15 +228,7 @@ describe("Teams opt-in file-consent runtime", () => {
         };
       });
     const post = vi.fn().mockResolvedValue({ data: { id: "card-receipt-1" } });
-    const middlewareId = app.api.http.use({
-      async invoke({ config }, next) {
-        if (config.method === "post") {
-          return post(config.url, config.data);
-        }
-        return next();
-      },
-    });
-    ejectHttpMiddlewares.push(() => app.api.http.eject(middlewareId));
+    vi.spyOn(app.activitySender.client, "post").mockImplementation(post);
     const dispatch = (
       activity: unknown,
       authorization = "Bearer fixture-token",

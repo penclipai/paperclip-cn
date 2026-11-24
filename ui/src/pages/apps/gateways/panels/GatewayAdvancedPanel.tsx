@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/context/ToastContext";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { gatewaysQueryKey } from "../NewGatewayDialog";
+import { describeError } from "@/api/errors";
 
 /**
  * Advanced tab — raw protocol/transport details, config JSON and the archive
@@ -69,7 +70,7 @@ export function GatewayAdvancedPanel({
         title: t("apps.gateways.advanced.toast.archiveFailedTitle", {
           defaultValue: "Couldn't archive the gateway",
         }),
-        body: error instanceof Error ? error.message : String(error),
+        body: describeError(error).body,
         tone: "error",
       }),
   });

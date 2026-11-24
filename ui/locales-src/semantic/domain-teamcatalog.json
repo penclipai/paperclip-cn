@@ -426,7 +426,7 @@
   },
   "teamCatalog.step.target_manager": {
     "en": "Manager",
-    "zh-CN": "Manager",
+      "zh-CN": "管理者",
     "reviewedEnglishHash": "8b2085f74dfa9c78a23b7d573c23d27d6d0b0e50c82a9b13138b193325be3814"
   },
   "teamCatalog.stepProgress": {
@@ -441,12 +441,12 @@
   },
   "teamCatalog.targetManager": {
     "en": "Target manager",
-    "zh-CN": "目标 manager",
+      "zh-CN": "目标管理者",
     "reviewedEnglishHash": "48ca2348f0360ea194d036127aed37949a2f98e139ed7a628988324638d430f1"
   },
   "teamCatalog.targetManagerHelp": {
     "en": "This team's root agents need a manager in your company. Pick the agent who will become their parent. Internal team hierarchy is preserved.",
-    "zh-CN": "此团队的根智能体需要公司中的一个 manager。请选择将成为其父级的智能体。内部团队层级会保留。",
+      "zh-CN": "此团队的根智能体需要公司中的一名管理者。请选择将成为其父级的智能体。内部团队层级会保留。",
     "reviewedEnglishHash": "0d299fb4c05d1235274803f08904d1db6dddd83702cf8154cd7da4a24f04652e"
   },
   "teamCatalog.teamImportedToast": {

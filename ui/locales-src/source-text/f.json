@@ -16,7 +16,7 @@
   },
   "Failed after {{duration}}": {
     "en": "Failed after {{duration}}",
-    "zh-CN": "{{duration}}后失败",
+    "zh-CN": "{{duration}} 后失败",
     "reviewedEnglishHash": "8658ffbfbeffb922fd0553efd93645fc8287a0b8aa8d6d42e17222409ebd469e"
   },
   "Failed runs": {
@@ -511,7 +511,7 @@
   },
   "Failure:": {
     "en": "Failure:",
-    "zh-CN": "失效",
+    "zh-CN": "失败：",
     "reviewedEnglishHash": "f130e747d546a5ff4121caf686260ccab8fe1357f9442cc9da7aa79ecf5ebea6"
   },
   "Fallback if the ACP agent asks for input outside an interactive session.": {
@@ -531,7 +531,7 @@
   },
   "Fast mode consumes credits/tokens much faster than standard Codex runs.": {
     "en": "Fast mode consumes credits/tokens much faster than standard Codex runs.",
-    "zh-CN": "快速模式消耗积分和词元的速度远高于标准 Codex 运行。",
+    "zh-CN": "快速模式消耗额度和词元的速度远高于标准 Codex 运行。",
     "reviewedEnglishHash": "e22cfbeff23571633136a3c55d0f32ac9e9bbaa6f4acba16b346856c3f180fdf"
   },
   "Fast mode will be passed through for this manual model. If Codex rejects it, turn the toggle off.": {
@@ -636,7 +636,7 @@
   },
   "Files ·": {
     "en": "Files ·",
-    "zh-CN": "文件·",
+    "zh-CN": "文件 ·",
     "reviewedEnglishHash": "bbcf4d5ad0dbde3f2037187ea8f25fd87af487b011924d4477e2c9e77755c777"
   },
   "Filter": {
@@ -801,7 +801,7 @@
   },
   "Finished {{time}}": {
     "en": "Finished {{time}}",
-    "zh-CN": "{{time}}完成",
+    "zh-CN": "于 {{time}} 完成",
     "reviewedEnglishHash": "0d8996408d187151b92eb4923d835c65667354d2defa1f51f2f9a570b0f9cbd2"
   },
   "First task: propose with a plan document": {
@@ -1041,17 +1041,17 @@
   },
   "frame": {
     "en": "frame",
-    "zh-CN": "框架",
+    "zh-CN": "帧",
     "reviewedEnglishHash": "9dff50df08c635815f4b19da10f756605a34a79a48d4ba48712782502975a70e"
   },
   "frames": {
     "en": "frames",
-    "zh-CN": "框架",
+    "zh-CN": "帧",
     "reviewedEnglishHash": "594cfd2607d4f09e1ce6241203e418cacfed545063792bc5eab7afaadbf0c4e0"
   },
   "frames ·": {
     "en": "frames ·",
-    "zh-CN": "框架·",
+    "zh-CN": "帧 ·",
     "reviewedEnglishHash": "e775ba8d8ae6fab08a7ad922958a7f7449c2cf90c8fc3dfcba068fffb3bffd5d"
   },
   "from Paperclip only.": {

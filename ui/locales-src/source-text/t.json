@@ -51,7 +51,7 @@
   },
   ". Token estimates use published rates and recorded assumptions; provider bills may differ.": {
     "en": ". Token estimates use published rates and recorded assumptions; provider bills may differ.",
-    "zh-CN": "。Token 费用按公开费率及已记录的假设估算，服务商账单可能与之不同。",
+    "zh-CN": "。词元费用按公开费率及已记录的假设估算，服务商账单可能与之不同。",
     "reviewedEnglishHash": "2bf6c132c11d8c1c7c73dc9e2a0da97ef57b6d62c0fbd5a87f68cc6e5030dfec"
   },
   ". Try widening the scope or rephrasing your query.": {
@@ -406,7 +406,7 @@
   },
   "The agent can choose a lower limit. Paperclip also applies any remaining hard budget limit.": {
     "en": "The agent can choose a lower limit. Paperclip also applies any remaining hard budget limit.",
-    "zh-CN": "智能体可以选择更低的上限。Paperclip 也会根据剩余的硬性预算限制费用。",
+    "zh-CN": "智能体可以选择更低的上限。Paperclip 还会应用剩余的硬性预算上限。",
     "reviewedEnglishHash": "9063e2474b9ed603ea7d1eaa3b84abdec158a8d4911db4a88354f718fb2fe70c"
   },
   "The company or task budget prevents this request. Review Costs and Budgets.": {
@@ -546,7 +546,7 @@
   },
   "The old key will stop working. Update your sending app with the new key.": {
     "en": "The old key will stop working. Update your sending app with the new key.",
-    "zh-CN": "旧钥匙将停止工作。使用新密钥更新您的发送应用程序。",
+    "zh-CN": "旧密钥将失效。请在发送应用中更新为新密钥。",
     "reviewedEnglishHash": "43f717b1de3ac8a58112a96ee6946cf955fd5218b12962c790eeda693785d498"
   },
   "The original call was not repeated.": {
@@ -606,7 +606,7 @@
   },
   "The routine is paused. Enable its automatic triggers when you’re ready to use this schedule.": {
     "en": "The routine is paused. Enable its automatic triggers when you’re ready to use this schedule.",
-    "zh-CN": "例行程序暂停。当您准备好使用此计划时，启用其自动触发器。",
+    "zh-CN": "例行任务已暂停。准备使用此计划时，请启用其自动触发器。",
     "reviewedEnglishHash": "28f907214665c335a20caac139acf16c56245c4e001c485b3b795c67048e184e"
   },
   "The runner verifies this exact level before each session can prompt. Changing it starts a new session.": {
@@ -1181,7 +1181,7 @@
   },
   "This trigger starts the routine through the API.": {
     "en": "This trigger starts the routine through the API.",
-    "zh-CN": "该触发器通过 API 启动例程。",
+    "zh-CN": "此触发器会通过 API 启动例行任务。",
     "reviewedEnglishHash": "76104f998b651601518cb420cd66234e7789fdc86050672905a53caa29acb96c"
   },
   "This value looks sensitive — store it as a secret": {
@@ -1191,7 +1191,7 @@
   },
   "This webhook is already enabled. Events sent now can start the routine. Send an event from your app to check delivery.": {
     "en": "This webhook is already enabled. Events sent now can start the routine. Send an event from your app to check delivery.",
-    "zh-CN": "此 Webhook 已启用。现在发送的事件可以开始例程。从您的应用程序发送事件以检查发送情况。",
+    "zh-CN": "此 Webhook 已启用。现在发送的事件可以启动例行任务。请从你的应用发送一个事件，检查送达情况。",
     "reviewedEnglishHash": "62600030413ef652b5154fe5b28c44358d3091ed47961feff054500f57e41be0"
   },
   "This webhook uses its URL as the shared secret.": {
@@ -1486,7 +1486,7 @@
   },
   "Token history": {
     "en": "Token history",
-    "zh-CN": "令牌历史",
+    "zh-CN": "词元历史",
     "reviewedEnglishHash": "17d96e04d8b230c302e7c595c609ce0dcc6dcba121acda1977f5003419add98a"
   },
   "Tokens": {

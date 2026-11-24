@@ -1,9 +1,9 @@
-import { translateInstant } from "@/i18n";
-import { useTranslation } from "react-i18next";
 import { AgentAvatar } from "./AgentAvatar";
 import { Identity } from "./Identity";
 import { renderAccessIdentity, type AccessSelectOption } from "./AccessSelectIdentity";
 import { useMemo, useState } from "react";
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { SearchableSelect, type SearchableSelectGroup } from "@/components/SearchableSelect";
 import { Skeleton } from "@/components/ui/skeleton";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { agentsApi } from "@/api/agents";
 import { accessApi } from "@/api/access";
 import { issuesApi } from "@/api/issues";
@@ -182,7 +183,6 @@ export function IssueShareSheet({
   /** Pre-selected add subject (`type:id`), used by stories/tests to show the caution. */
   initialAddSelection?: string;
 }) {
-  useTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [view, setView] = useState<"list" | "add">(initialView);
@@ -223,10 +223,10 @@ export function IssueShareSheet({
       queryClient.invalidateQueries({ queryKey: ["issues"] });
       setAddSelection("");
       setView("list");
-      pushToast({ title: translateInstant("Access granted"), tone: "success" });
+      pushToast({ title: translateInstant("Access granted", { defaultValue: "Access granted" }), tone: "success" });
     },
     onError: (error) => {
-      pushToast({ title: translateInstant("Couldn't add access"), body: (error as Error).message, tone: "error" });
+      pushToast({ title: translateInstant("Couldn't add access", { defaultValue: "Couldn't add access" }), body: (error as Error).message, tone: "error" });
     },
   });
 
@@ -236,10 +236,10 @@ export function IssueShareSheet({
       // A task grant also changes descendant access and cached task discovery.
       queryClient.invalidateQueries({ queryKey: ["issues"] });
       setRevokeTarget(null);
-      pushToast({ title: translateInstant("Access revoked"), tone: "success" });
+      pushToast({ title: translateInstant("Access revoked", { defaultValue: "Access revoked" }), tone: "success" });
     },
     onError: (error) => {
-      pushToast({ title: translateInstant("Couldn't revoke access"), body: (error as Error).message, tone: "error" });
+      pushToast({ title: translateInstant("Couldn't revoke access", { defaultValue: "Couldn't revoke access" }), body: (error as Error).message, tone: "error" });
     },
   });
 
@@ -266,8 +266,8 @@ export function IssueShareSheet({
         identity: <><AgentAvatar agent={agent} size={24} /><span className="truncate">{agent.name}</span></>,
       }));
     const groups: SearchableSelectGroup<string, AccessSelectOption>[] = [];
-    if (users.length > 0) groups.push({ id: "people", label: translateInstant("People"), options: users });
-    if (agents.length > 0) groups.push({ id: "agents", label: translateInstant("Agents"), options: agents });
+    if (users.length > 0) groups.push({ id: "people", label: translateInstant("People", { defaultValue: "People" }), options: users });
+    if (agents.length > 0) groups.push({ id: "agents", label: translateInstant("Agents", { defaultValue: "Agents" }), options: agents });
     return groups;
   }, [directoryQuery.data, agentsQuery.data, grantedSubjectKeys]);
 
@@ -298,9 +298,10 @@ export function IssueShareSheet({
     addMutation.mutate({ subjectType, subjectId });
   }
 
-  const isLoading = grantsQuery.isLoading;
-  const isError = grantsQuery.isError;
-  const isEmpty = !isLoading && !isError && activeGrants.length === 0 && implicitPrincipals.length === 0;
+  const grantsView = useQueryView(grantsQuery);
+  const isLoading = grantsQuery.isLoading || grantsView.kind === "reconnecting";
+  const loadFailed = grantsView.kind === "error";
+  const isEmpty = !isLoading && !loadFailed && activeGrants.length === 0 && implicitPrincipals.length === 0;
 
   return (
     <Dialog open={open} onOpenChange={resetAndClose}>
@@ -308,7 +309,8 @@ export function IssueShareSheet({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Lock className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-            {translateInstant("Who can access this task")}</DialogTitle>
+            {translateInstant("Who can access this task", { defaultValue: "Who can access this task" })}
+          </DialogTitle>
           <DialogDescription>{aclDescription}</DialogDescription>
         </DialogHeader>
 
@@ -326,20 +328,19 @@ export function IssueShareSheet({
                   </div>
                 ))}
               </div>
-            ) : isError ? (
-              <div
-                className="flex items-center justify-between gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-                data-testid="share-sheet-error"
-              >
-                <span className="flex items-center gap-1.5">
-                  <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  {translateInstant("Couldn't load access.")}</span>
-                <Button variant="ghost" size="sm" onClick={() => grantsQuery.refetch()}>
-                  <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" /> {translateInstant("Retry")}</Button>
+            ) : loadFailed ? (
+              <div data-testid="share-sheet-error">
+                <QueryErrorState
+                  error={grantsQuery.error}
+                  action="load access"
+                  onRetry={grantsView.retry}
+                  retrying={grantsView.isFetching}
+                />
               </div>
             ) : isEmpty ? (
               <p className="py-3 text-sm text-muted-foreground" data-testid="share-sheet-empty">
-                {translateInstant("Only you can see this task.")}</p>
+                {translateInstant("Only you can see this task.", { defaultValue: "Only you can see this task." })}
+              </p>
             ) : (
               <div className="divide-y divide-border/60">
                 {implicitPrincipals.filter(principal => !activeGrants.some(grant => grant.subjectId === principal.id || `${grant.subjectType}:${grant.subjectId}` === principal.id)).map((principal) => (
@@ -411,7 +412,8 @@ export function IssueShareSheet({
                   onClick={() => setView("add")}
                   disabled={isLoading}
                 >
-                  <UserPlus className="h-3.5 w-3.5" aria-hidden="true" /> {translateInstant("Add someone")}</Button>
+                  <UserPlus className="h-3.5 w-3.5" aria-hidden="true" /> {translateInstant("Add someone", { defaultValue: "Add someone" })}
+                </Button>
               </div>
             ) : null}
           </div>
@@ -423,24 +425,27 @@ export function IssueShareSheet({
               renderValue={(option) => option ? renderAccessIdentity(option) : "Choose a person or agent…"}
               renderOption={renderAccessIdentity}
               onValueChange={(value) => setAddSelection(value)}
-              placeholder={translateInstant("Choose a person or agent…")}
+              placeholder={translateInstant("Choose a person or agent…", { defaultValue: "Choose a person or agent…" })}
               searchPlaceholder="Search people and agents…"
               loading={directoryQuery.isLoading || agentsQuery.isLoading}
               loadingMessage="Loading directory…"
-              emptyMessage={translateInstant("No one left to add.")}
+              emptyMessage="No one left to add."
               triggerClassName="w-full"
             />
 
             {selectedSharedAgentName ? (
               <div
                 role="note"
-                aria-label={translateInstant("Shared agent caution")}
+                aria-label={translateInstant("Shared agent caution", { defaultValue: "Shared agent caution" })}
                 data-testid="shared-agent-caution"
                 className="flex items-start gap-2 rounded-md border border-border bg-muted px-3 py-2 text-xs leading-relaxed text-foreground"
               >
                 <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 <span>
-                  <span className="font-semibold">{translateInstant("Shared agent.")}</span> {selectedSharedAgentName}{translateInstant("'s memory &amp; workspace may carry residual private context from this task into its later runs for other people. Grant only if that's acceptable.")}</span>
+                  <span className="font-semibold">{translateInstant("Shared agent.", { defaultValue: "Shared agent." })}</span> {selectedSharedAgentName}'s
+                  memory &amp; workspace may carry residual private context from this task into its
+                  later runs for other people. Grant only if that's acceptable.
+                </span>
               </div>
             ) : null}
 
@@ -453,7 +458,8 @@ export function IssueShareSheet({
                   setAddSelection("");
                 }}
               >
-                {translateInstant("Back")}</Button>
+                {translateInstant("Back", { defaultValue: "Back" })}
+              </Button>
               <Button size="sm" onClick={submitAdd} disabled={!addSelection || addMutation.isPending}>
                 {addMutation.isPending ? "Adding…" : "Add"}
               </Button>
@@ -471,12 +477,14 @@ export function IssueShareSheet({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {translateInstant("Remove")}{" "}{revokeTarget?.subjectDisplayName ?? "this subject"}{translateInstant("'s saved grant?")}</AlertDialogTitle>
+              {translateInstant("Remove", { defaultValue: "Remove" })} {revokeTarget?.subjectDisplayName ?? "this subject"}{translateInstant("'s saved grant?", { defaultValue: "'s saved grant?" })}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {translateInstant("This removes this grant and the access it supplies to this task's descendants. Ownership, current assignment, project membership, inherited access, or another grant can still provide access. Revoking access does")}{" "}<span className="font-semibold">{translateInstant("issueThreadInteraction.not")}</span> {translateInstant("erase content already seen or retained in an agent's memory.")}</AlertDialogDescription>
+              {translateInstant("This removes this grant and the access it supplies to this task's descendants. Ownership, current assignment, project membership, inherited access, or another grant can still provide access. Revoking access does", { defaultValue: "This removes this grant and the access it supplies to this task's descendants. Ownership, current assignment, project membership, inherited access, or another grant can still provide access. Revoking access does" })} <span className="font-semibold">{translateInstant("issueThreadInteraction.not", { defaultValue: "not" })}</span> {translateInstant("erase content already seen or retained in an agent's memory.", { defaultValue: "erase content already seen or retained in an agent's memory." })}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{translateInstant("Cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>{translateInstant("Cancel", { defaultValue: "Cancel" })}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={(event) => {

@@ -1,4 +1,5 @@
 import { configDefaults, defineConfig } from "vitest/config";
+import { retryReporterEnabled } from "./scripts/ci/vitest-retry.mjs";
 
 export default defineConfig({
   test: {
@@ -6,9 +7,12 @@ export default defineConfig({
     // when Vitest fans out every project at once. A small global cap keeps
     // `pnpm test:run` stable without changing individual suite semantics.
     maxWorkers: process.platform === "win32" ? 4 : undefined,
-    ...(process.env.PAPERCLIP_CI_PROFILE === "true"
-      ? { reporters: [...configDefaults.reporters, "./scripts/ci-profile/vitest-reporter.mjs"] }
-      : {}),
+    reporters: [...configDefaults.reporters,
+      ...(process.env.GITHUB_ACTIONS === "true"
+        ? ["./scripts/ci/test-timing-reporter.mjs", "./scripts/ci/oversized-test-files.mjs"] : []),
+      ...(process.env.PAPERCLIP_CI_PROFILE === "true" ? ["./scripts/ci-profile/vitest-reporter.mjs"] : []),
+      // PR lanes pass --retry from scripts/run-vitest-stable.mjs; see scripts/ci/vitest-retry.mjs.
+      ...(retryReporterEnabled() ? ["./scripts/ci/retry-reporter.mjs"] : [])],
     projects: [
       "packages/shared",
       "packages/skills-catalog",

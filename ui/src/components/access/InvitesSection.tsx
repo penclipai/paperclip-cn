@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Copy } from "lucide-react";
 import { accessApi } from "@/api/access";
-import { ApiError } from "@/api/client";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { Button } from "@/components/ui/button";
 import { useCompany } from "@/context/CompanyContext";
 import { useToast } from "@/context/ToastContext";
@@ -12,6 +12,7 @@ import { Link } from "@/lib/router";
 import { queryKeys } from "@/lib/queryKeys";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { Badge } from "@/components/ui/badge";
+import { describeError } from "@/api/errors";
 
 const inviteRoleOptions = [
   {
@@ -102,6 +103,7 @@ export function InvitesSection() {
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
   });
+  const invitesView = useQueryView(invitesQuery);
   const inviteHistory = useMemo(
     () =>
       invitesQuery.data?.pages.flatMap((page) =>
@@ -132,7 +134,7 @@ export function InvitesSection() {
     onError: (error) => {
       pushToast({
         title: translateInstant("Failed to create invite"),
-        body: error instanceof Error ? error.message : translateInstant("Unknown error"),
+        body: describeError(error).body,
         tone: "error",
       });
     },
@@ -147,7 +149,7 @@ export function InvitesSection() {
     onError: (error) => {
       pushToast({
         title: translateInstant("Failed to revoke invite"),
-        body: error instanceof Error ? error.message : translateInstant("Unknown error"),
+        body: describeError(error).body,
         tone: "error",
       });
     },
@@ -157,18 +159,23 @@ export function InvitesSection() {
     return <div className="text-sm text-muted-foreground">{translateInstant("Select an organization to manage invites.")}</div>;
   }
 
-  if (invitesQuery.isLoading) {
+  if (invitesQuery.isLoading || invitesView.kind === "reconnecting") {
     return <div className="text-sm text-muted-foreground">{translateInstant("Loading invites…")}</div>;
   }
 
-  if (invitesQuery.error) {
-    const message =
-      invitesQuery.error instanceof ApiError && invitesQuery.error.status === 403
-        ? translateInstant("You do not have permission to manage company invites.")
-        : invitesQuery.error instanceof Error
-          ? invitesQuery.error.message
-          : translateInstant("Failed to load invites.");
-    return <div className="text-sm text-destructive">{message}</div>;
+  if (invitesView.kind === "error") {
+    if (invitesView.errorKind === "forbidden") {
+      return <div className="text-sm text-destructive">{translateInstant("accessInvites.manageForbidden")}</div>;
+    }
+    return (
+      <QueryErrorState
+        size="page"
+        error={invitesQuery.error}
+        action={"load invites"}
+        onRetry={invitesView.retry}
+        retrying={invitesView.isFetching}
+      />
+    );
   }
 
   return (

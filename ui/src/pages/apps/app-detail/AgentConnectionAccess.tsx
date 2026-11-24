@@ -1,13 +1,14 @@
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import type { Agent, ToolCatalogEntry, ToolPolicy, ToolProfileWithDetails } from "@penclipai/shared";
+import type { Agent, ToolCatalogEntry, ToolPolicy, ToolProfileConfiguration } from "@penclipai/shared";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { Button } from "@/components/ui/button";
+import { describeError } from "@/api/errors";
 
 export function AgentConnectionAccess({ connectionId, profiles, policies, catalog, agents, canManage, onRemove }: {
   connectionId: string;
-  profiles: ToolProfileWithDetails[];
+  profiles: ToolProfileConfiguration[];
   policies: ToolPolicy[];
   catalog: ToolCatalogEntry[];
   agents: Agent[];
@@ -34,7 +35,7 @@ export function AgentConnectionAccess({ connectionId, profiles, policies, catalo
     try {
       await onRemove(profileId);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Couldn't remove this access grant. Please try again.");
+      setError(describeError(cause).body);
     } finally {
       setPending(null);
     }

@@ -1,5 +1,5 @@
 import type { ActivityEvent } from "@penclipai/shared";
-import { translateInstant } from "../i18n";
+import { t as translateInstant } from "i18next";
 
 export interface AssigneeSelection {
   assigneeAgentId: string | null;

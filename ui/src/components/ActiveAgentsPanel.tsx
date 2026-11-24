@@ -112,7 +112,6 @@ export function ActiveAgentsPanel({
       queryKey: queryKeys.issues.detail(issueId),
       queryFn: () => issuesApi.get(issueId),
       staleTime: 30_000,
-      retry: false,
     })),
   });
 
@@ -131,7 +130,7 @@ export function ActiveAgentsPanel({
     maxChunksPerRun: DASHBOARD_MAX_CHUNKS_PER_RUN,
     logPollIntervalMs: DASHBOARD_LOG_POLL_INTERVAL_MS,
     logReadLimitBytes: DASHBOARD_LOG_READ_LIMIT_BYTES,
-    enableRealtimeUpdates: false,
+    enabled: showTranscripts,
   });
 
   return (

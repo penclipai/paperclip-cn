@@ -1,0 +1,37 @@
+{
+  "autosave.couldNotSave": {
+    "en": "Couldn't save",
+    "zh-CN": "无法保存",
+    "reviewedEnglishHash": "d89c56c70c54090e90a26f5eade105b6effe82b72ed6fa29b649dd9a0459c472"
+  },
+  "autosave.couldNotSaveWithReason": {
+    "en": "Couldn't save ({{reason}})",
+    "zh-CN": "无法保存（{{reason}}）",
+    "reviewedEnglishHash": "c338dab9f8e74c096ba9e8b54f6426dc61977266f41095d7ff77af0accb56452"
+  },
+  "autosave.paused": {
+    "en": "Automatic saving paused",
+    "zh-CN": "已暂停自动保存",
+    "reviewedEnglishHash": "5a27b22c0daec9da064888041370b24b8efbfd794e8c4e7138029691aecf49bf"
+  },
+  "autosave.retrySaving": {
+    "en": "Retry saving",
+    "zh-CN": "重新保存",
+    "reviewedEnglishHash": "3adee60b233635b88b8c06e298e09126880a7bff3cbaeda68eb9850094a23db4"
+  },
+  "autosave.saved": {
+    "en": "Saved",
+    "zh-CN": "已保存",
+    "reviewedEnglishHash": "b5c120b316c237a0deab3140267aebedba61947d3ae268d708a53d5be119e9fb"
+  },
+  "autosave.saving": {
+    "en": "Saving…",
+    "zh-CN": "正在保存…",
+    "reviewedEnglishHash": "23e39291d6135814ed7c936e278974544b0df5fbf0eb0427b6700979b7472a93"
+  },
+  "autosave.waiting": {
+    "en": "Will save when reconnected",
+    "zh-CN": "恢复连接后将自动保存",
+    "reviewedEnglishHash": "669f62ef1a57833622a27f698ebb9494e17fb989c9593cb9d79f513e353929eb"
+  }
+}

@@ -31,7 +31,7 @@
   },
   "Each scheduled run creates a task for the routine’s assigned agent. Any existing webhook triggers will continue to work.": {
     "en": "Each scheduled run creates a task for the routine’s assigned agent. Any existing webhook triggers will continue to work.",
-    "zh-CN": "每次计划运行都会为例程的指定智能体创建一个任务。任何现有的 Webhook 触发器都将继续工作。",
+    "zh-CN": "每次定时运行都会为例行任务指定的智能体创建一个任务。现有 Webhook 触发器仍会生效。",
     "reviewedEnglishHash": "ee4ebabb67174e619b4d7229be7b682707a1bb34a388b8ec632c99a291370ded"
   },
   "Earlier": {
@@ -271,7 +271,7 @@
   },
   "Enable fast responses": {
     "en": "Enable fast responses",
-    "zh-CN": "实现快速响应",
+    "zh-CN": "启用快速响应",
     "reviewedEnglishHash": "b60a1ea3d63720afaee7d191d497e2c49af58b374151055e827854047603b291"
   },
   "Enable for agents": {
@@ -371,12 +371,12 @@
   },
   "Enter API key here": {
     "en": "Enter API key here",
-    "zh-CN": "在此处输入您的API密钥",
+    "zh-CN": "在此处输入您的 API 密钥",
     "reviewedEnglishHash": "c80c3ac9799dc19bb78632bd7f03bfcf4f4e7b245bbdc153ba005a20878280f1"
   },
   "Enter a JSON object using the action's argument names.": {
     "en": "Enter a JSON object using the action's argument names.",
-    "zh-CN": "使用操作的参数名称输入JSON对象。",
+    "zh-CN": "使用操作的参数名称输入 JSON 对象。",
     "reviewedEnglishHash": "ab7f07a94f9b454b4ff6af8fddcd46959913c1cc3e450796c057aaa14c5f8ee4"
   },
   "Enter a different code": {
@@ -461,7 +461,7 @@
   },
   "Enter the full amount for one account or seat. Annual prices are divided by 12. Changes apply from now. Ending tracking here does not cancel your provider subscription.": {
     "en": "Enter the full amount for one account or seat. Annual prices are divided by 12. Changes apply from now. Ending tracking here does not cancel your provider subscription.",
-    "zh-CN": "输入一个账户或席位的全额金额。年度价格除以 12。从现在开始进行更改。在此处结束跟踪不会取消您的提供商订阅。",
+    "zh-CN": "输入一个账户或席位的全额金额。年度价格按 12 个月折算。更改立即生效。在此处结束跟踪不会取消您的提供方订阅。",
     "reviewedEnglishHash": "ef0679af81092d484d0e53e369951c1a93dc492c67bd28b94277fea85bedb5a5"
   },
   "Enter the npm package name of the plugin you wish to install.": {
@@ -491,7 +491,7 @@
   },
   "Env": {
     "en": "Env",
-    "zh-CN": "环境变量",
+    "zh-CN": "环境",
     "reviewedEnglishHash": "494d9aa0c06844324346a03866c58b4a61326837fff8b6088ea87d9af14961aa"
   },
   "Environment": {
@@ -601,7 +601,7 @@
   },
   "Events received during setup won’t start the routine or create tasks.": {
     "en": "Events received during setup won’t start the routine or create tasks.",
-    "zh-CN": "设置期间收到的事件不会启动例程或创建任务。",
+    "zh-CN": "设置期间收到的事件不会启动例行任务，也不会创建任务。",
     "reviewedEnglishHash": "ca8e4cd463630dfb198fe19c7c83eb6353878d4356abfc614b4e9257e2a040cb"
   },
   "Every day": {
@@ -646,22 +646,22 @@
   },
   "Everything is set up. Launching now will create the starter task, wake the agent, and open the issue.": {
     "en": "Everything is set up. Launching now will create the starter task, wake the agent, and open the issue.",
-    "zh-CN": "一切都已就绪。现在启动会创建起始任务、唤醒智能体，并打开任务单。",
+    "zh-CN": "一切都已就绪。现在启动会创建起始任务、唤醒智能体，并打开该任务。",
     "reviewedEnglishHash": "e50115efc8e780315eea1258a102d3ac3ebdb69351a7a89f764b6b5c9100ad14"
   },
   "Exact provider traffic will be captured for future runs and retained for up to 24 hours.": {
     "en": "Exact provider traffic will be captured for future runs and retained for up to 24 hours.",
-    "zh-CN": "后续运行将捕获完整的提供商流量，最多保留 24 小时。",
+    "zh-CN": "后续运行将捕获完整的提供方流量，最多保留 24 小时。",
     "reviewedEnglishHash": "43068965efe2eeb0876ee671144ba7a1a8c497eb41157003cace0a1bc3c59b12"
   },
   "Exact trace frame #": {
     "en": "Exact trace frame #",
-    "zh-CN": "精确跟踪帧#",
+    "zh-CN": "精确追踪帧 #",
     "reviewedEnglishHash": "3f73c89ab3de2c0df3413a4157bd5457fa5e89122c0b6994c15ccf8b6c6ab01b"
   },
   "Exact unredacted frame": {
     "en": "Exact unredacted frame",
-    "zh-CN": "精确的未编辑框架",
+    "zh-CN": "精确的未脱敏帧",
     "reviewedEnglishHash": "01fa472359ab818c159ff415fc7daa6466ccb6e53bb5ce58efd4fbb6e4246bdd"
   },
   "Example": {
@@ -726,7 +726,7 @@
   },
   "Execution policy": {
     "en": "Execution policy",
-    "zh-CN": "执行政策",
+    "zh-CN": "执行策略",
     "reviewedEnglishHash": "b9215cec74545ab0d4729aa5a208904cd36658e17cdeecebde2be5dc37d396d2"
   },
   "Execution policy unavailable. Refresh to try again.": {
@@ -821,7 +821,7 @@
   },
   "Expand {{label}}": {
     "en": "Expand {{label}}",
-    "zh-CN": "展开{{label}}",
+    "zh-CN": "展开 {{label}}",
     "reviewedEnglishHash": "871d37330dc95a18981b8b792272a93b8904cf4d94cbb294f3d52599bcc199d5"
   },
   "Expand {{name}}": {
@@ -936,7 +936,7 @@
   },
   "External gateway adapter": {
     "en": "External gateway adapter",
-    "zh-CN": "外部门户适配器",
+    "zh-CN": "外部网关适配器",
     "reviewedEnglishHash": "73f2526439943e44b14ab4fde9ca3c8720bcb67ae6e45bdbf21b81de41d29327"
   },
   "External identity": {

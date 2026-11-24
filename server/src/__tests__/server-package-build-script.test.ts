@@ -73,8 +73,12 @@ describe("server package build script", () => {
       "node ../scripts/i18n-catalog.mjs check --root .. && ",
     )).toBe(true);
     expect(packageJson.scripts?.build).toContain("pnpm run prepare:runner-vendor");
-    expect(packageJson.scripts?.build.indexOf("pnpm run prepare:runner-vendor"))
-      .toBeLessThan(packageJson.scripts?.build.indexOf(" && tsc") ?? Infinity);
+    const buildSteps = packageJson.scripts?.build?.split(" && ") ?? [];
+    const vendorStep = buildSteps.indexOf("pnpm run prepare:runner-vendor");
+    const compileStep = buildSteps.indexOf("node ../scripts/run-tsc.mjs");
+    expect(vendorStep).toBeGreaterThanOrEqual(0);
+    expect(compileStep).toBeGreaterThanOrEqual(0);
+    expect(vendorStep).toBeLessThan(compileStep);
     expect(packageJson.scripts?.build).toContain(
       "node ../scripts/fs-ops.mjs cp --contents ../packages/paperclip-runner/dist dist/vendor/paperclip-runner",
     );

@@ -188,5 +188,10 @@
     "en": "Warning",
     "zh-CN": "警告",
     "reviewedEnglishHash": "e981ddae45d8f4ca53f1ccbe613ad254a041dacf65a06026099a6302d332113b"
+  },
+  "status.monitoring": {
+    "en": "Monitoring",
+    "zh-CN": "监测中",
+    "reviewedEnglishHash": "1dc83f605edf0ae29b9e25c0b6b233972528a78394d5f362b8cbdead1ff75eca"
   }
 }

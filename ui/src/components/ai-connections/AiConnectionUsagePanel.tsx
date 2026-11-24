@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import type { AiConnectionUsage, AiConnectionUsageLimit, AiManagedConnectionSummary } from "@penclipai/shared";
 import { supportsAiConnectionUsage } from "@penclipai/shared";
 import { aiConnectionsApi } from "@/api/ai-connections";
+import { describeError } from "@/api/errors";
 import { Button } from "@/components/ui/button";
 import { QuotaBar } from "@/components/QuotaBar";
 import { formatDateTime, formatNumber } from "@/lib/utils";
@@ -91,7 +92,7 @@ export function AiConnectionUsagePanel({ account, observation, cachedOnly = fals
       </div>
       {cachedOnly && !usage && <p className="text-xs text-muted-foreground">{translateInstant("Usage not observed.")}</p>}
       {!supported && <p className="text-xs text-muted-foreground">{translateInstant("Unavailable for this sign-in method.")}</p>}
-      {probe.error && <p role="alert" className="text-sm text-destructive">{probe.error.message}</p>}
+      {probe.error && <p role="alert" className="text-sm text-destructive">{describeError(probe.error).body}</p>}
       {usage && usage.status !== "ok" && <p role={usage.status === "unsupported" ? "status" : "alert"} className="text-sm text-muted-foreground">{usageError(usage)}</p>}
       {usage?.status === "ok" && (
         <div className="space-y-3" aria-live="polite">

@@ -2,6 +2,7 @@ import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Copy } from "lucide-react";
+import { useQueryView } from "@/components/QueryView";
 import { resolveAgentAppearance, type GitHubAppWizardState } from "@penclipai/shared";
 import type { ChatEndpoint } from "@/api/chatEndpoints";
 import { githubChatApi } from "@/api/githubChat";
@@ -39,6 +40,7 @@ export function GitHubConnectionComplete({
     queryKey: ["github-connected-repositories", endpoint.id],
     queryFn: () => githubChatApi.repositories(endpoint.id, { limit: 1 }),
   });
+  const repositoriesView = useQueryView(repositories);
   const avatar = agent ?? { id: endpoint.assignedAgentId, name: endpoint.assignedAgentName };
   const mention = `${gitHubBotMention(endpoint) || "@your-bot"} review this pull request`;
   const count = repositories.data?.enabledCount;
@@ -78,7 +80,7 @@ export function GitHubConnectionComplete({
                   </>}
                 </p>
                 <Link to={`/apps/chat/${endpoint.id}/access`} className="inline-block text-xs text-muted-foreground underline underline-offset-4">
-                  {repositories.isError ? "Repository access unavailable" : count === undefined ? "Repository access" : count === 0 ? "No repositories enabled" : `${count} ${count === 1 ? "repository" : "repositories"} enabled`}
+                  {repositoriesView.kind === "error" ? "Repository access unavailable" : count === undefined ? "Repository access" : count === 0 ? "No repositories enabled" : `${count} ${count === 1 ? "repository" : "repositories"} enabled`}
                 </Link>
               </div>
             </div>

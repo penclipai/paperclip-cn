@@ -105,7 +105,6 @@ export function CommandPalette() {
   const { data: experimentalSettings } = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
     queryFn: () => instanceSettingsApi.getExperimental(),
-    retry: false,
   });
   const { enabled: combinedInboxTasksEnabled } = useCombinedInboxTasksEnabled();
   const fileViewerEnabled = experimentalSettings?.enableExperimentalFileViewer === true;

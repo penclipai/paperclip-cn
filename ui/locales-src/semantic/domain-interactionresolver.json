@@ -1,7 +1,7 @@
 {
   "interactionResolver.human_only": {
     "en": "Human only",
-    "zh-CN": "仅人工",
+    "zh-CN": "仅限人工",
     "reviewedEnglishHash": "de7c8fff477b3cb88fd9766dfabbf8a4dce99f25d942322201926f3516f6a476"
   },
   "interactionResolver.not_creator": {

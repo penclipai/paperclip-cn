@@ -291,7 +291,7 @@
   },
   "issueRunLedger.moreCount": {
     "en": "+{{count}} more",
-    "zh-CN": "+{{count}} 个更多",
+    "zh-CN": "另有 {{count}} 项",
     "reviewedEnglishHash": "48380badf7a45c74d3fac6b89d19d777585cb9052d135d1ec482b932bc99e98a"
   },
   "issueRunLedger.nextActionPrefix": {

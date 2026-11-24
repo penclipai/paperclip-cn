@@ -121,7 +121,7 @@
   },
   "If authentication fails, connect your subscription in the browser above or use an API key.": {
     "en": "If authentication fails, connect your subscription in the browser above or use an API key.",
-    "zh-CN": "如果身份验证失败，请在上面的浏览器中连接您的订阅或使用API密钥。",
+    "zh-CN": "如果身份验证失败，请在上方浏览器中连接订阅，或使用 API 密钥。",
     "reviewedEnglishHash": "1c16105f97d13b5f35309e63a7e009fbf1635f7ff4058405b5e95562900c004a"
   },
   "If disabled, new tasks stay on the project's primary checkout unless someone opts in.": {
@@ -131,7 +131,7 @@
   },
   "If login is required, connect the provider above and retry.": {
     "en": "If login is required, connect the provider above and retry.",
-    "zh-CN": "如果需要登录，请连接上面的提供商并重试。",
+    "zh-CN": "如果需要登录，请连接上方的提供方后重试。",
     "reviewedEnglishHash": "2b4ddb21ef94427f260aaf81699f3cf12a4fd08ad778f68093f2bf31d4500f94"
   },
   "If login is required, run": {
@@ -151,7 +151,7 @@
   },
   "If your app uses custom headers instead, set Authorization to Bearer followed by a space and this key.": {
     "en": "If your app uses custom headers instead, set Authorization to Bearer followed by a space and this key.",
-    "zh-CN": "如果您的应用程序使用自定义标头，请将 Authorization 设置为 Bearer，后跟一个空格和此键。",
+    "zh-CN": "如果您的应用使用自定义请求头，请将 Authorization 设为 Bearer，后接一个空格和此密钥。",
     "reviewedEnglishHash": "4d7327f21d8e8214c04728534810cdb392ede06ca4c05891ae68760f24ba2de8"
   },
   "If you’re new to this organization, request access and wait for an admin to approve.": {
@@ -181,12 +181,12 @@
   },
   "Image:": {
     "en": "Image:",
-    "zh-CN": "图片:",
+    "zh-CN": "图片：",
     "reviewedEnglishHash": "8eafb03464d1348bfacb61ffd762a5cd24171532cfaa20c54345bb1e8d853c38"
   },
   "Images ·": {
     "en": "Images ·",
-    "zh-CN": "图片·",
+    "zh-CN": "图片 ·",
     "reviewedEnglishHash": "cdcb437e6fb52148926241b75340ece276648c9160bc7044b91bfa6a125f48ae"
   },
   "Implement authentication flow": {
@@ -411,7 +411,7 @@
   },
   "Incoming email can create tasks and trigger agent work. Set up an allowlist in AgentMail to limit who can contact this inbox.": {
     "en": "Incoming email can create tasks and trigger agent work. Set up an allowlist in AgentMail to limit who can contact this inbox.",
-    "zh-CN": "传入的电子邮件可以创建任务并触发智能体工作。在AgentMail中设置允许列表，以限制可以联系此收件箱的人员。",
+    "zh-CN": "收到的电子邮件可以创建任务并触发智能体工作。请在 AgentMail 中设置允许列表，以限制可联系此收件箱的人员。",
     "reviewedEnglishHash": "50c1c42c86a48a8b3539f6a7714b66c9791c9001d153c4a5b3484cfd104f4a1c"
   },
   "Incoming email creates tasks for": {
@@ -991,7 +991,7 @@
   },
   "Issue labels and tags.": {
     "en": "Issue labels and tags.",
-    "zh-CN": "任务标签与标记。",
+    "zh-CN": "任务标签和标记。",
     "reviewedEnglishHash": "7145dac27a93bc350b8bea84c210e46982dd8af859c2d6dca57d05f150c5c648"
   },
   "Issue reassignment": {
@@ -1041,7 +1041,7 @@
   },
   "Item": {
     "en": "Item",
-    "zh-CN": "道具",
+    "zh-CN": "条目",
     "reviewedEnglishHash": "652bcc3a478428893cc505ae19f847b49be52f861bedc64bb192ceed409fa733"
   },
   "Item moved": {
@@ -1051,7 +1051,7 @@
   },
   "Item pagination": {
     "en": "Item pagination",
-    "zh-CN": "项目分页",
+    "zh-CN": "条目分页",
     "reviewedEnglishHash": "3ca1c211751463fee311eb23334c0800e620a4d4e6a53b6db5954b6c10a92725"
   },
   "Item removed": {
@@ -1151,7 +1151,7 @@
   },
   "in this folder won't be deleted. They'll move to Unfiled.": {
     "en": "in this folder won't be deleted. They'll move to Unfiled.",
-    "zh-CN": "该文件夹中的内容不会被删除。他们将移至未归档。",
+    "zh-CN": "该文件夹中的内容不会被删除。它们将移至“未归档”。",
     "reviewedEnglishHash": "5dde52c6ed6b17f3dbcae2717953721f215c78cebed62d46f2f5f7ffcb8f90af"
   },
   "in this period. Totals include known costs only.": {
@@ -1291,7 +1291,7 @@
   },
   "is set. You can clear it in this CEO adapter config and retry the probe.": {
     "en": "is set. You can clear it in this CEO adapter config and retry the probe.",
-    "zh-CN": "已设置时失败。你可以在这个 CEO 适配器配置中清空它，然后重新探测。",
+    "zh-CN": "已设置。您可以在此 CEO 适配器配置中清空它，然后重新探测。",
     "reviewedEnglishHash": "fb98c487688d7cf1569d0b70e404fdb654afa45895fbcf96cb049fddf9e75c51"
   },
   "is signed in. Click Connect to use this account.": {
@@ -1346,7 +1346,7 @@
   },
   "{{input}} input · {{output}} output · {{providers}} providers · {{models}} models": {
     "en": "{{input}} input · {{output}} output · {{providers}} providers · {{models}} models",
-    "zh-CN": "{{input}} 输入 · {{output}} 输出 · {{providers}} 个服务商 · {{models}} 个模型",
+    "zh-CN": "{{input}} 输入 · {{output}} 输出 · {{providers}} 个提供方 · {{models}} 个模型",
     "reviewedEnglishHash": "0e0b9ec4093b0c86e561033299ed43ab55e61501509efa11ebd3b1ff98798e3f"
   },
   "{{issueId}}": {

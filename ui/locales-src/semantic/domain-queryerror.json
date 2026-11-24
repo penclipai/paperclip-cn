@@ -1,0 +1,527 @@
+{
+  "queryError.TIMEOUT.body": {
+    "en": "This took too long to respond. Please try again in a moment.",
+    "zh-CN": "响应时间过长，请稍后重试。",
+    "reviewedEnglishHash": "186202c2b34e1be4ccbb467637ce91392b01c8b455379d3463c4b4a3329df6e7"
+  },
+  "queryError.TIMEOUT.title": {
+    "en": "Request timed out",
+    "zh-CN": "请求超时",
+    "reviewedEnglishHash": "7aa26ae72ac144c6be3ab8a15aaa7d43698911ca10a1bc97b3123dea05d1e86f"
+  },
+  "queryError.WORKER_UNAVAILABLE.body": {
+    "en": "This plugin is restarting. Please try again in a moment.",
+    "zh-CN": "此插件正在重启，请稍后重试。",
+    "reviewedEnglishHash": "6858a6a9ca0afd579ee3fff9b472b0e75f2ad9d1b1ad3e0e2bd39b2f839144fd"
+  },
+  "queryError.WORKER_UNAVAILABLE.title": {
+    "en": "Plugin unavailable",
+    "zh-CN": "插件暂不可用",
+    "reviewedEnglishHash": "0f3f35c866dcf3ebdc0a49616689208f2de137f35200a852f07af6a87cc0d3a1"
+  },
+  "queryError.aborted.body": {
+    "en": "The request was cancelled.",
+    "zh-CN": "请求已取消。",
+    "reviewedEnglishHash": "cef7146670a6d11003372017fa0eef1b781433f67ffcfd61db389470d26aaf00"
+  },
+  "queryError.aborted.title": {
+    "en": "Cancelled",
+    "zh-CN": "已取消",
+    "reviewedEnglishHash": "d353a99eb4556847ceeb3c306ac886cf6b4fa13043eb1864b9aeb0607fd5f2cc"
+  },
+  "queryError.action.approveJoinRequest": {
+    "en": "Couldn't approve the join request",
+    "zh-CN": "无法批准加入请求",
+    "reviewedEnglishHash": "6093355f18df8c52469062738efcd94ef977bb0d7103afc97b300e785369ea13"
+  },
+  "queryError.action.approveRequest": {
+    "en": "Couldn't approve this request",
+    "zh-CN": "无法批准此请求",
+    "reviewedEnglishHash": "9408cf916c94cd860fbc64e53314329d6ecefb0b33864d092b948e0eea69812f"
+  },
+  "queryError.action.archiveCard": {
+    "en": "Couldn't archive the card",
+    "zh-CN": "无法归档卡片",
+    "reviewedEnglishHash": "342f8a2112791be08ce5922e4e797cabc7b3bc1b969bcc5ac6cba253da483a67"
+  },
+  "queryError.action.archiveTask": {
+    "en": "Couldn't archive the task",
+    "zh-CN": "无法归档任务",
+    "reviewedEnglishHash": "e5f162265311a92b671a28295e8752edbf7cfa907c9be289832643b7318a1310"
+  },
+  "queryError.action.changeResponsibility": {
+    "en": "Couldn't change responsibility",
+    "zh-CN": "无法更改负责人",
+    "reviewedEnglishHash": "9254a3727fea5d62357cea8eb9dbf33618fbc4774e9442973e66c515aa75950e"
+  },
+  "queryError.action.checkMonitor": {
+    "en": "Couldn't check the monitor",
+    "zh-CN": "无法检查监控",
+    "reviewedEnglishHash": "feb35fd94766c41d3598091131ac53c2e0e456578dd8f93cd769b184692b14be"
+  },
+  "queryError.action.connectDot": {
+    "en": "Couldn't connect Dot",
+    "zh-CN": "无法连接 Dot",
+    "reviewedEnglishHash": "ba098099d2b0b77191a3a4aa5617c584e8f85ed05767b74044c57354a171a3b5"
+  },
+  "queryError.action.copyToClipboard": {
+    "en": "Couldn't copy to the clipboard",
+    "zh-CN": "无法复制到剪贴板",
+    "reviewedEnglishHash": "703e95e30ea6e2ecf699859c2872212e21eabed703f6a91253c47dfcb2267fe1"
+  },
+  "queryError.action.createRoutine": {
+    "en": "Couldn't create the routine",
+    "zh-CN": "无法创建例行任务",
+    "reviewedEnglishHash": "8083803dca6504e62d88f558143a5fcc54d3f9f9a3d5f93e3916fa1057ec9be1"
+  },
+  "queryError.action.createTask": {
+    "en": "Couldn't create the task",
+    "zh-CN": "无法创建任务",
+    "reviewedEnglishHash": "675e812596c0dbea9ea47dd7b38eb8c971a795576ffe767cbee8042b618ef2e0"
+  },
+  "queryError.action.createTrigger": {
+    "en": "Couldn't create the trigger",
+    "zh-CN": "无法创建触发器",
+    "reviewedEnglishHash": "db9f09f027f7f0166000a9265c35992dccf296bc40bdddbada9fd6df96000a23"
+  },
+  "queryError.action.deleteFolder": {
+    "en": "Couldn't delete the folder",
+    "zh-CN": "无法删除文件夹",
+    "reviewedEnglishHash": "6e413ee0722294792ba1dd504d267a3fbea1e3bd69c6ec03d188f24d84c5229c"
+  },
+  "queryError.action.deleteTrigger": {
+    "en": "Couldn't delete the trigger",
+    "zh-CN": "无法删除触发器",
+    "reviewedEnglishHash": "9d7db304f22fc8e2274e4775ed754a3251e0cc4526ccc1f457790b2fc66da3fd"
+  },
+  "queryError.action.installTeam": {
+    "en": "Couldn't install the team",
+    "zh-CN": "无法安装团队",
+    "reviewedEnglishHash": "d57775b3aaa88f923ce65b9c1af9fb2c4b2cd37327250829ac84a5cdee740b86"
+  },
+  "queryError.action.loadAccessRequest": {
+    "en": "Couldn't load this access request",
+    "zh-CN": "无法加载此访问申请",
+    "reviewedEnglishHash": "f4d3e0e66d7a7d8a4d9049628fcfdec4872b30e835c475ff7be22a006e1e1ad8"
+  },
+  "queryError.action.loadActiveRuns": {
+    "en": "Couldn't load active runs",
+    "zh-CN": "运行记录加载失败",
+    "reviewedEnglishHash": "6a2d5b70e18eb6eaac52c5b62441ca566b897c5df6a05a2b91e9a8f6787642eb"
+  },
+  "queryError.action.loadAgents": {
+    "en": "Couldn't load agents",
+    "zh-CN": "智能体列表加载失败",
+    "reviewedEnglishHash": "629af13f59c2ff73300f662b1b5686717ed2ab1024fcdf5600e32ae341d789c0"
+  },
+  "queryError.action.loadApprovals": {
+    "en": "Couldn't load approvals",
+    "zh-CN": "无法加载审批",
+    "reviewedEnglishHash": "04295d232038f8a140ae8fb8c3e46804383c1bd56a57f2f5377ecefea26097c6"
+  },
+  "queryError.action.loadAuditLog": {
+    "en": "Couldn't load the audit log",
+    "zh-CN": "无法加载审计日志",
+    "reviewedEnglishHash": "58b11ed8bb732545856f838bcf76e5ec18ab82b313ddc7f7821627f53b0976a2"
+  },
+  "queryError.action.loadBlockedTab": {
+    "en": "Couldn't load the Blocked tab",
+    "zh-CN": "无法加载“已阻塞”选项卡",
+    "reviewedEnglishHash": "b340e73c71b85528906ecfdbab569e4770bbf364146cd747fea0b1fce2f03efc"
+  },
+  "queryError.action.loadBoardClaimChallenge": {
+    "en": "Couldn't load the board claim challenge",
+    "zh-CN": "无法加载实例认领请求",
+    "reviewedEnglishHash": "c82f4a21c5dbb1d4c90915a4179bfe5998636432a010503b33aefa5bb1e0c526"
+  },
+  "queryError.action.loadBundledPlugins": {
+    "en": "Couldn't load bundled plugins",
+    "zh-CN": "无法加载内置插件",
+    "reviewedEnglishHash": "64f31224ee872013fed419fd87c4f120a7bd96df211c1b74894eacd659e2a116"
+  },
+  "queryError.action.loadCliAuthChallenge": {
+    "en": "Couldn't load the CLI auth challenge",
+    "zh-CN": "无法加载 CLI 授权请求",
+    "reviewedEnglishHash": "38080da1ca0a829538ffaac63c2f00920d6beee8500216b39d2e047397c5dfef"
+  },
+  "queryError.action.loadConnectionPermissions": {
+    "en": "Couldn't load connection permissions",
+    "zh-CN": "连接权限加载失败",
+    "reviewedEnglishHash": "8d2e70b1de57511faca36817307fc9e1e207cf3b6e7b28e042cb8fdc27654154"
+  },
+  "queryError.action.loadConnectionReviews": {
+    "en": "Couldn't load connection reviews",
+    "zh-CN": "无法加载连接审核列表",
+    "reviewedEnglishHash": "eacabdcbfc06460345a62ecc951c560c386a1a90912f273c3fcb4d4dfda15ed0"
+  },
+  "queryError.action.loadConnections": {
+    "en": "Couldn't load connections",
+    "zh-CN": "连接列表加载失败",
+    "reviewedEnglishHash": "8ea80f069b8c86f7d7901be7f099c4efc3a2c83a8bad4faf6a86099ae4eb15a3"
+  },
+  "queryError.action.loadFolder": {
+    "en": "Couldn't load the folder",
+    "zh-CN": "无法加载文件夹",
+    "reviewedEnglishHash": "aa3fba3cb55dd686db1698cb9dbe796a16f46e4843c1609a7e7597bfd598c529"
+  },
+  "queryError.action.loadGeneralSettings": {
+    "en": "Couldn't load general settings",
+    "zh-CN": "无法加载常规设置",
+    "reviewedEnglishHash": "3e5e1d36accebfcc807c610bba5dbf082b0d9aeea81e1af9ace9d468e126e0b3"
+  },
+  "queryError.action.loadInstallPreview": {
+    "en": "Couldn't load the install preview",
+    "zh-CN": "无法加载安装预览",
+    "reviewedEnglishHash": "ffe7f55d2cc0eaa92d7bc795e2f047e7b827168e57a5ce6fc3f87fb421fc62fd"
+  },
+  "queryError.action.loadInvites": {
+    "en": "Couldn't load invites",
+    "zh-CN": "邀请列表加载失败",
+    "reviewedEnglishHash": "5113524e4a971600d169e22a8179fdfd7863d905c323e23ecfceaf33b47b8247"
+  },
+  "queryError.action.loadOrganizations": {
+    "en": "Couldn't load organizations",
+    "zh-CN": "无法加载组织",
+    "reviewedEnglishHash": "85d97564a8cdcf01327b43624324ce1e52f05732b0bd9df53ed619f78ee1881a"
+  },
+  "queryError.action.loadPlugins": {
+    "en": "Couldn't load plugins",
+    "zh-CN": "无法加载插件",
+    "reviewedEnglishHash": "106b864c3f8d48c5bab7e157bd04a02a297aa0dd5afc9fc7d5a041eccfec86d6"
+  },
+  "queryError.action.loadPreview": {
+    "en": "Couldn't load the preview",
+    "zh-CN": "无法加载预览",
+    "reviewedEnglishHash": "bc607d94647ffce70377bb7dfd3dcd34fc14823fe60549dd8e4312de8bf15b55"
+  },
+  "queryError.action.loadProfiles": {
+    "en": "Couldn't load profiles",
+    "zh-CN": "无法加载配置列表",
+    "reviewedEnglishHash": "6c5a432101401c90e1d2d68400e7b9d2f0e065ffe4c3912a5de1eb06ce008d34"
+  },
+  "queryError.action.loadProposals": {
+    "en": "Couldn't load proposals",
+    "zh-CN": "无法加载提案",
+    "reviewedEnglishHash": "9e5cc029a50a7730a62c714d0c67ea11d6510e9fbb301d65ca92981e42960bc5"
+  },
+  "queryError.action.loadRoutineActivity": {
+    "en": "Couldn't load routine activity",
+    "zh-CN": "无法加载例行任务活动",
+    "reviewedEnglishHash": "ddb2d4973c2b28a3ddafc80194f362c8b207d8b5e1be6d92b936138a14f4806d"
+  },
+  "queryError.action.loadRunLog": {
+    "en": "Couldn't load the run log",
+    "zh-CN": "无法加载运行日志",
+    "reviewedEnglishHash": "1640da238bd8b12b7397aabee6060d318606773b43dfd695e966471d7068477b"
+  },
+  "queryError.action.loadSavedAccess": {
+    "en": "Couldn't load saved access",
+    "zh-CN": "无法加载已保存的访问权限",
+    "reviewedEnglishHash": "09cace66b2369272990d2b8d6ad4278c1ad9ddbe93602bb06485d6087c33df9f"
+  },
+  "queryError.action.loadTaskHierarchy": {
+    "en": "Couldn't load task hierarchy",
+    "zh-CN": "无法加载任务层级",
+    "reviewedEnglishHash": "9efb877aec7c977be9def64e12503a050976fadcadc77367b5e63e03b7271a9d"
+  },
+  "queryError.action.loadThisSkill": {
+    "en": "Couldn't load this skill",
+    "zh-CN": "无法加载此技能",
+    "reviewedEnglishHash": "0c40217d58bf45cd5c858633da936da31dd744e6ee951e3757ff5488ff118b23"
+  },
+  "queryError.action.loadThisWorkspace": {
+    "en": "Couldn't load this workspace",
+    "zh-CN": "无法加载此工作区",
+    "reviewedEnglishHash": "3228733d7728d5e12d00d1367ee487492e0dbd49a858c26d1bd0e6d84be82595"
+  },
+  "queryError.action.loadUserAccess": {
+    "en": "Couldn't load user access",
+    "zh-CN": "无法加载用户访问权限",
+    "reviewedEnglishHash": "4a5a1b50ab22bedb4a9c2e8fd27589cef8e2c68467c7447e05bf37f22d780fd3"
+  },
+  "queryError.action.loadWorkspaceFiles": {
+    "en": "Couldn't load workspace files",
+    "zh-CN": "无法加载工作区文件",
+    "reviewedEnglishHash": "51e09123c78994f6445072a7f968cd4855078195621fd98b869da8483fb89af6"
+  },
+  "queryError.action.moveRoutine": {
+    "en": "Couldn't move the routine",
+    "zh-CN": "无法移动例行任务",
+    "reviewedEnglishHash": "e480f3d2edd45cef75181ba894170b7544a491e4fdfe3676065dac703661e1f7"
+  },
+  "queryError.action.moveSelectedRoutines": {
+    "en": "Couldn't move the selected routines",
+    "zh-CN": "无法移动选中的例行任务",
+    "reviewedEnglishHash": "28efd8b4c6419c36040407ef97229c3a074399c1fbf46d645f584251f1960cd1"
+  },
+  "queryError.action.postComment": {
+    "en": "Couldn't post the comment",
+    "zh-CN": "无法发布评论",
+    "reviewedEnglishHash": "3bb25e7c13621698456273538d1207c34518c34b0bede00898f1f71c56e70f13"
+  },
+  "queryError.action.refreshCard": {
+    "en": "Couldn't refresh the card",
+    "zh-CN": "无法刷新卡片",
+    "reviewedEnglishHash": "a455ed68a6f49c0a39f3d0dae2041b9436231c26b76f1ec01677ec876c6a396e"
+  },
+  "queryError.action.rejectJoinRequest": {
+    "en": "Couldn't reject the join request",
+    "zh-CN": "无法拒绝加入请求",
+    "reviewedEnglishHash": "5034e2408510310fa888ffb2c54d669c64c42cf0b744a9a482d9d9bc3e78ed71"
+  },
+  "queryError.action.rejectRequest": {
+    "en": "Couldn't reject this request",
+    "zh-CN": "无法拒绝此请求",
+    "reviewedEnglishHash": "bfaa8e43f0a4f421264e2e2fbbbc8f8e9cbe418944c8961b7ba807e2ccb395ae"
+  },
+  "queryError.action.requestRevision": {
+    "en": "Couldn't request a revision",
+    "zh-CN": "无法请求修订",
+    "reviewedEnglishHash": "eeba9121ee1b3b81c797b4f2cbe254aae80e254101c1dff2d6aab72625dd8e0a"
+  },
+  "queryError.action.restoreCard": {
+    "en": "Couldn't restore the card",
+    "zh-CN": "无法恢复卡片",
+    "reviewedEnglishHash": "a098df9a76bc4af41d000dcafce4333f0eb6cb21c1f6b092ebec073c91f04d0a"
+  },
+  "queryError.action.restoreRevision": {
+    "en": "Couldn't restore the revision",
+    "zh-CN": "无法恢复修订版本",
+    "reviewedEnglishHash": "8145786b29684471aefa9598531e992e4b0049e4267af61c71d85a97604f8947"
+  },
+  "queryError.action.resubmitRequest": {
+    "en": "Couldn't resubmit this request",
+    "zh-CN": "无法重新提交此请求",
+    "reviewedEnglishHash": "8033cf6d03acf82ebbf3cfa163267f1ed2c4c3eea476235356de705c324099bb"
+  },
+  "queryError.action.revokeConnection": {
+    "en": "Couldn't revoke the connection",
+    "zh-CN": "无法撤销连接",
+    "reviewedEnglishHash": "dd437de50466dd0754ef83bef3d7bd98efbf04389741b86624a57e32e855f7cd"
+  },
+  "queryError.action.rotateWebhookSecret": {
+    "en": "Couldn't rotate the webhook secret",
+    "zh-CN": "无法轮换 Webhook 密钥",
+    "reviewedEnglishHash": "766cbff302636ae899ce55abb6e87c4205b501f622c234676d7ec540c6983695"
+  },
+  "queryError.action.runCard": {
+    "en": "Couldn't run the card",
+    "zh-CN": "无法运行卡片",
+    "reviewedEnglishHash": "0d998f18692981fd4957c6e36a215f26e7ecb4f1a129ceda0bffbb75e5d2bac8"
+  },
+  "queryError.action.saveDocument": {
+    "en": "Couldn't save the document",
+    "zh-CN": "无法保存文档",
+    "reviewedEnglishHash": "27fe5118210206bc5f041927f5758837782f221ad46cf436fa9c99a7f3797de4"
+  },
+  "queryError.action.saveFolder": {
+    "en": "Couldn't save the folder",
+    "zh-CN": "无法保存文件夹",
+    "reviewedEnglishHash": "45d043bf3887697d4acf35cc9868bc960ce0e9466a2a24bfc403cc992e5b1f89"
+  },
+  "queryError.action.saveInboxAgentPolicy": {
+    "en": "Couldn't save the inbox agent policy",
+    "zh-CN": "无法保存收件箱智能体策略",
+    "reviewedEnglishHash": "2ed1bdf9f2f6e8672072f74f17e36bcd4852d78f3ed1c6f318ed8282b8ce8376"
+  },
+  "queryError.action.saveRoutine": {
+    "en": "Couldn't save the routine",
+    "zh-CN": "无法保存例行任务",
+    "reviewedEnglishHash": "c09c8a7de45751bcdb23f7e984480a2c976a823d1cb0942dbf8260769edfa0b6"
+  },
+  "queryError.action.saveSettings": {
+    "en": "Couldn't save the settings",
+    "zh-CN": "无法保存设置",
+    "reviewedEnglishHash": "048eb6523918d97bb713a158dd8a4bc462bb390c553274c540f2e9f0da8f23dc"
+  },
+  "queryError.action.sendMessage": {
+    "en": "Couldn't send this message",
+    "zh-CN": "无法发送此消息",
+    "reviewedEnglishHash": "7cbaecf21f102e8a4f94889a06cc03b6801490afa5b15e544c386ebc05c5ac23"
+  },
+  "queryError.action.startRoutineRun": {
+    "en": "Couldn't start the routine run",
+    "zh-CN": "无法启动例行任务运行",
+    "reviewedEnglishHash": "c7ca2ee4fdbe903183de5bf23873d4d01d1dee7cbed9d8cb1e02e5c9f908d167"
+  },
+  "queryError.action.undoInboxArchive": {
+    "en": "Couldn't undo the inbox archive",
+    "zh-CN": "无法撤销收件箱归档",
+    "reviewedEnglishHash": "5d89581b960f76022b2af2329f4d61ac3a8c6f52654a84c28cf93311de05f8a7"
+  },
+  "queryError.action.updateFolder": {
+    "en": "Couldn't update the folder",
+    "zh-CN": "无法更新文件夹",
+    "reviewedEnglishHash": "87208f18b7165558d0dfde91f41939f74ae2cd4522d791d188755026d2e93e15"
+  },
+  "queryError.action.updateRoutine": {
+    "en": "Couldn't update the routine",
+    "zh-CN": "无法更新例行任务",
+    "reviewedEnglishHash": "6dae9dbbb8f5bd59bc7963f124955183874f10c1e031d38e9de0242493eb00e0"
+  },
+  "queryError.action.updateTrigger": {
+    "en": "Couldn't update the trigger",
+    "zh-CN": "无法更新触发器",
+    "reviewedEnglishHash": "50a6e74b110a6026d7b5bab2c174f54a74ba5404d44f9fb3558fad093f6dbced"
+  },
+  "queryError.action.uploadFile": {
+    "en": "Couldn't upload the file",
+    "zh-CN": "无法上传文件",
+    "reviewedEnglishHash": "2c82593ba13edbc5286608dbd74219c46a27069958f1ed24117d495c0620334f"
+  },
+  "queryError.auth.body": {
+    "en": "Your session has ended. Sign in again to continue.",
+    "zh-CN": "您的会话已结束，请重新登录后继续。",
+    "reviewedEnglishHash": "ce00c98af409547453765268221ce1920fad2a2dc9fccd75150503541d1d5a54"
+  },
+  "queryError.auth.title": {
+    "en": "Signed out",
+    "zh-CN": "登录已失效",
+    "reviewedEnglishHash": "80c6e7caffee367d7a8b9e6db3620dada71015d6f27f1fd07d1a4310075c1548"
+  },
+  "queryError.conflict.body": {
+    "en": "This changed since you loaded it. Refresh and try again.",
+    "zh-CN": "此内容在您加载后已发生变化，请刷新后重试。",
+    "reviewedEnglishHash": "d35eb1242067232865238d35656665af2006e8db74b417e941d3bfea5209df65"
+  },
+  "queryError.conflict.title": {
+    "en": "Out of date",
+    "zh-CN": "内容已过期",
+    "reviewedEnglishHash": "c8f1506a7d60a32e0097661fdc16aa9b24609db5c78302244e8c1c884975357f"
+  },
+  "queryError.forbidden.body": {
+    "en": "You don’t have permission to do that.",
+    "zh-CN": "您没有执行此操作的权限。",
+    "reviewedEnglishHash": "fa3365ec0897984596df543894fbd51cbcee552b389ecf3ab6c13745fda44fa1"
+  },
+  "queryError.forbidden.title": {
+    "en": "Not allowed",
+    "zh-CN": "无权操作",
+    "reviewedEnglishHash": "f0406a0e7eb1742683c88500e46280322a3770d9df74ebdd651adf554a70cb30"
+  },
+  "queryError.interaction_audience_denied.body": {
+    "en": "You are not in this card's resolver audience.",
+    "zh-CN": "您不在此卡片的处理对象范围内。",
+    "reviewedEnglishHash": "1e3cdc72e518187a5751d928dbc811f57f405746ecc22368c0222550e6ba28b9"
+  },
+  "queryError.interaction_audience_denied.title": {
+    "en": "You can’t respond to this card",
+    "zh-CN": "您无法回复此卡片",
+    "reviewedEnglishHash": "0233eefc0e563aec940797a2993e3e7cd54da9f71152cb8659b0565158cbee9d"
+  },
+  "queryError.interaction_forbidden.body": {
+    "en": "You do not have permission to respond to this card.",
+    "zh-CN": "您没有回复此卡片的权限。",
+    "reviewedEnglishHash": "388ea2c908f3c80ec02bf101810c819170803578c850b512bac655eac040a763"
+  },
+  "queryError.interaction_forbidden.title": {
+    "en": "You can’t respond to this card",
+    "zh-CN": "您无法回复此卡片",
+    "reviewedEnglishHash": "0233eefc0e563aec940797a2993e3e7cd54da9f71152cb8659b0565158cbee9d"
+  },
+  "queryError.interaction_settled.body": {
+    "en": "This request is no longer waiting for a decision.",
+    "zh-CN": "此请求已不再等待决定。",
+    "reviewedEnglishHash": "fbc9848d222f91f3d282f9849b6bd7e1786617a0c3f50977bedb75fecd69fb31"
+  },
+  "queryError.interaction_settled.title": {
+    "en": "Already handled",
+    "zh-CN": "已处理",
+    "reviewedEnglishHash": "5fdd085dd4df0be02e9944f468459f5b45acd589af8cb7b9ea7c23320bda9106"
+  },
+  "queryError.interaction_submit_failed.body": {
+    "en": "Couldn't submit. Try again.",
+    "zh-CN": "无法提交，请重试。",
+    "reviewedEnglishHash": "41322b9f8c170ab4deb76134f64c8a165292a29b65052491f0cddee90d73b722"
+  },
+  "queryError.interaction_submit_failed.title": {
+    "en": "Couldn't submit",
+    "zh-CN": "无法提交",
+    "reviewedEnglishHash": "9488e0e98b1c0ab96102264e92cb314df5ae08cf3cf570375a3e76b80e30d95c"
+  },
+  "queryError.invalid.body": {
+    "en": "Some details aren’t valid. Review them and try again.",
+    "zh-CN": "部分信息无效，请检查后重试。",
+    "reviewedEnglishHash": "654c53b83245a4b956b4ecab8130889e428ff1824d239cf6b149e4f3ed0c6119"
+  },
+  "queryError.invalid.title": {
+    "en": "Check your input",
+    "zh-CN": "请检查输入",
+    "reviewedEnglishHash": "29ea6afd1a52f475240bd022bc006ce774188de7b5a8e5b3fd29444162c4b0e5"
+  },
+  "queryError.loading": {
+    "en": "Loading",
+    "zh-CN": "正在加载",
+    "reviewedEnglishHash": "dc380888c4e2c7762212480ff86eb39150ec70b45009c33bc6adcbd0041384b1"
+  },
+  "queryError.not_found.body": {
+    "en": "This item doesn’t exist or was moved.",
+    "zh-CN": "此项目不存在或已被移动。",
+    "reviewedEnglishHash": "9a15e2f020b8138e0468849843faa082b572b540af807ad8a147b34a8c74fef0"
+  },
+  "queryError.not_found.title": {
+    "en": "Not found",
+    "zh-CN": "未找到",
+    "reviewedEnglishHash": "e3ebaa16dd9d9b9fc107c42183fb6cf9d22927e1af03dbbdfa0ccc38e4e4ac31"
+  },
+  "queryError.reconnecting": {
+    "en": "Reconnecting",
+    "zh-CN": "正在重新连接",
+    "reviewedEnglishHash": "afb118fcb16c3727d83bb343ea009c7367ed3c0e6de14a5dcdb3fff5bab6edf5"
+  },
+  "queryError.retry": {
+    "en": "Retry",
+    "zh-CN": "重试",
+    "reviewedEnglishHash": "942087cc2d41e01304b7195558d093d10c72af8e838c7556d6a02d471ee71852"
+  },
+  "queryError.retrying": {
+    "en": "Retrying…",
+    "zh-CN": "正在重试…",
+    "reviewedEnglishHash": "a16c8b1c95956fbabce3ed5506c7e1b4a2d10c86f7adfc7ae084f2d3df9f5174"
+  },
+  "queryError.stale": {
+    "en": "Updating paused while reconnecting…",
+    "zh-CN": "正在重新连接，更新已暂停…",
+    "reviewedEnglishHash": "686e97456019d4ef3118633570deea8020892357e8470d5b88ccfa5827f1c5aa"
+  },
+  "queryError.tenant_app_starting.body": {
+    "en": "Paperclip is starting up. Please try again in a few seconds.",
+    "zh-CN": "Paperclip CN 正在启动，请稍等几秒后重试。",
+    "reviewedEnglishHash": "7be6b805d7ecd4b55711d021ad482f99d2a4adca95cf3190de4ab0072d2f6f62"
+  },
+  "queryError.tenant_app_starting.title": {
+    "en": "Paperclip is starting",
+    "zh-CN": "Paperclip CN 正在启动",
+    "reviewedEnglishHash": "1c437ed98980eca28673a07c466c2e0c46559f2f6331b9a0c784103d79f3dffd"
+  },
+  "queryError.tenant_app_unavailable.body": {
+    "en": "Paperclip is restarting or updating. Please try again in a moment.",
+    "zh-CN": "Paperclip CN 正在重启或更新，请稍后重试。",
+    "reviewedEnglishHash": "03614221d4403b620a685c453d4108bb0d826335dbd4d16627659a986e71099d"
+  },
+  "queryError.tenant_app_unavailable.title": {
+    "en": "Reconnecting to Paperclip",
+    "zh-CN": "正在重新连接 Paperclip CN",
+    "reviewedEnglishHash": "b11ca004872daeedd657693b88f40f8c780c512098a1c996005183832bf51c0a"
+  },
+  "queryError.transient.body": {
+    "en": "Paperclip is temporarily unavailable. Please try again in a moment.",
+    "zh-CN": "Paperclip CN 暂时不可用，请稍后重试。",
+    "reviewedEnglishHash": "f317fafe9113f830d8951662dc8064585368a820253f295330585dea52d9a852"
+  },
+  "queryError.transient.title": {
+    "en": "Connection interrupted",
+    "zh-CN": "连接中断",
+    "reviewedEnglishHash": "183383d6bc23ecf9d92767d5bac077f983f1aa7e1767550951289a544075142e"
+  },
+  "queryError.unknown.body": {
+    "en": "An unexpected error occurred. Please try again.",
+    "zh-CN": "发生意外错误，请重试。",
+    "reviewedEnglishHash": "e198269c2a19003dedcf8333af44926db7865c1717e393a8cfc3015902344592"
+  },
+  "queryError.unknown.title": {
+    "en": "Something went wrong",
+    "zh-CN": "发生错误",
+    "reviewedEnglishHash": "ab827e3fe17da220a9a652087a35d20adda002aa4df887c5d813b2b1e95228f9"
+  }
+}

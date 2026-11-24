@@ -183,6 +183,18 @@ Use these default translations consistently:
 | Heartbeats | 心跳 |
 | token as usage unit | 词元 |
 | token as credential | 令牌 |
+| generic credential | 凭据 |
+| Binding | 绑定 |
+| Git branch | 分支 |
+| delivery receipt | 送达回执 |
+| billing / charge (money) | 计费 / 费用 |
+
+Resolve ambiguous words from their owning UI and English meaning. A task run is
+运行, not 跑步. A generic runner can be 运行器; product names such as Paperclip
+Runner, Dot, Claude, and Codex stay intact. A board can mean a governance actor
+(董事会) or a visual work board (看板). Do not replace either meaning globally.
+Likewise, dismissing a receipt closes or hides it; declining an approval rejects
+the requested action. Preserve that distinction in buttons and notices.
 
 Context can refine verbs:
 
@@ -270,6 +282,8 @@ English fallback can be used while absorbing upstream changes, but it is migrati
 - avoid literal translation that preserves awkward English grammar
 - keep labels short enough for compact controls
 - preserve interpolation and plural semantics rather than concatenating fragments
+- translate complete sentences; when emphasis splits JSX text, use one semantic
+  rich-text translation so Chinese can change word order without losing emphasis
 
 ### Currency
 

@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { createHash, randomUUID } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { createPromptContextFixture } from "@penclipai/adapter-utils/test-fixtures/prompt-context";
@@ -33,6 +34,51 @@ import {
 // A local stand-in for a sandbox runner: runs the managed-runtime staging
 // scripts (mkdir/tar/find) as real child processes so the remote ACP lane can
 // be exercised end-to-end against the host filesystem.
+function protectJsonShellTokens(args: string[]): {
+  args: string[];
+  hasTokens: boolean;
+  restore: (value: string) => string;
+} {
+  if (process.platform !== "win32" || (args[0] !== "-c" && args[0] !== "-lc") || typeof args[1] !== "string") {
+    return { args, hasTokens: false, restore: (value) => value };
+  }
+  const tokens: Array<[string, string]> = [];
+  const script = args[1].replace(/'([^']*)'/g, (rawToken, payload: string) => {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(payload);
+    } catch {
+      return rawToken;
+    }
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return rawToken;
+    let token = `__paperclip_acp_json_payload_${tokens.length}__`;
+    while (args[1].includes(token)) token = `${token}_`;
+    const placeholder = `'${token}'`;
+    tokens.push([placeholder, rawToken]);
+    return placeholder;
+  });
+  return {
+    args: [args[0], script, ...args.slice(2)],
+    hasTokens: tokens.length > 0,
+    // Use a callback replacement so dollar signs in an original JSON payload
+    // are restored byte-for-byte rather than interpreted as replacement text.
+    restore: (value) => {
+      const restored = tokens.reduce(
+        (result, [placeholder, rawToken]) => result.replaceAll(placeholder, () => rawToken),
+        value,
+      );
+      for (const [_placeholder, rawToken] of tokens) {
+        const offset = restored.indexOf(rawToken);
+        if (offset < 0 || createHash("sha256").update(restored.slice(offset, offset + rawToken.length)).digest("hex") !==
+          createHash("sha256").update(rawToken).digest("hex")) {
+          throw new Error("JSON shell-token restoration changed fixture payload bytes.");
+        }
+      }
+      return restored;
+    },
+  };
+}
+
 function createLocalSandboxRunner() {
   let counter = 0;
   return {
@@ -46,19 +92,48 @@ function createLocalSandboxRunner() {
       onLog?: (stream: "stdout" | "stderr", chunk: string) => Promise<void>;
     }) => {
       counter += 1;
+      const protectedArgs = protectJsonShellTokens(input.args ?? []);
       const prepared = prepareTestPosixShell({
         command: input.command,
-        args: input.args ?? [],
+        args: protectedArgs.args,
         env: input.env ?? {},
       });
-      return await runChildProcess(`claude-acp-sandbox-run-${counter}`, prepared.command, prepared.args, {
-        cwd: input.cwd ?? process.cwd(),
-        env: prepared.env,
-        stdin: input.stdin,
-        timeoutSec: Math.max(1, Math.ceil((input.timeoutMs ?? 30_000) / 1000)),
-        graceSec: 5,
-        onLog: input.onLog ?? (async () => {}),
-      });
+      const ownedHelperScript = protectedArgs.hasTokens && prepared.args.length === 1 && typeof prepared.args[0] === "string"
+        ? prepared.args[0]
+        : null;
+      const convertedScript = !protectedArgs.hasTokens
+        ? null
+        : typeof prepared.args[1] === "string"
+          ? prepared.args[1]
+          : await fs.readFile(ownedHelperScript!, "utf8");
+      const restoredScript = convertedScript === null ? null : protectedArgs.restore(convertedScript);
+      const scriptPath = restoredScript === null
+        ? null
+        : path.join(os.tmpdir(), `paperclip-claude-acp-json-${process.pid}-${randomUUID()}.sh`);
+      try {
+        if (scriptPath && restoredScript !== null) {
+          await fs.writeFile(scriptPath, restoredScript, { encoding: "utf8", mode: 0o600 });
+          const diskScript = await fs.readFile(scriptPath, "utf8");
+          if (createHash("sha256").update(diskScript).digest("hex") !== createHash("sha256").update(restoredScript).digest("hex")) {
+            throw new Error("JSON shell-token fixture script did not persist byte-for-byte.");
+          }
+          prepared.args = input.args?.[0] === "-lc"
+            ? ["-l", scriptPath, ...(input.args ?? []).slice(2)]
+            : [scriptPath, ...(input.args ?? []).slice(2)];
+        }
+        return await runChildProcess(`claude-acp-sandbox-run-${counter}`, prepared.command, prepared.args, {
+          cwd: input.cwd ?? process.cwd(),
+          env: prepared.env,
+          stdin: input.stdin,
+          timeoutSec: Math.max(1, Math.ceil((input.timeoutMs ?? 30_000) / 1000)),
+          graceSec: 5,
+          onLog: input.onLog ?? (async () => {}),
+        });
+      } finally {
+        await Promise.all([scriptPath, ownedHelperScript].filter((file): file is string => Boolean(file)).map(
+          (file) => fs.rm(file, { force: true }).catch(() => undefined),
+        ));
+      }
     },
   };
 }
@@ -929,6 +1004,232 @@ describe("claude_local ACP lane", () => {
     );
     // C4 — no XDG_* variable is introduced for in-sandbox credential discovery.
     expect(Object.keys(meta[0]?.env ?? {}).filter((key) => key.startsWith("XDG_"))).toEqual([]);
+    const toolShellPrefix = String(meta[0]?.env?.CLAUDE_CODE_SHELL_PREFIX ?? "");
+    expect(toolShellPrefix).toBe(path.posix.join(path.posix.dirname(remappedConfigDir), "tool-shell-prefix.sh"));
+    // The sandbox command retains its POSIX chmod guard; NTFS does not expose
+    // that executable mode faithfully through stat() on this fixture host.
+    if (process.platform !== "win32") expect((await fs.stat(toolShellPrefix)).mode & 0o777).toBe(0o700);
+  });
+
+  it.each([
+    { permissionMode: undefined, hostSettings: true, defaultMode: "bypassPermissions", isSandbox: "1" },
+    { permissionMode: "approve-all", hostSettings: false, defaultMode: "bypassPermissions", isSandbox: "1" },
+    { permissionMode: "default", hostSettings: true, defaultMode: "bypassPermissions", isSandbox: "1" },
+    { permissionMode: "approve-reads", hostSettings: true, defaultMode: "default", isSandbox: undefined },
+    { permissionMode: "deny-all", hostSettings: true, defaultMode: "default", isSandbox: undefined },
+  ])(
+    "starts sandbox Claude in $defaultMode mode when the ACPX permission mode is $permissionMode",
+    async ({ permissionMode, hostSettings, defaultMode, isSandbox }) => {
+      const root = await makeTempRoot("paperclip-claude-acp-permission-mode-");
+      const localCwd = path.join(root, "worktree");
+      const remoteCwd = path.join(root, "remote-workspace");
+      const sharedClaudeConfig = path.join(root, "shared-claude-config");
+      await fs.mkdir(localCwd, { recursive: true });
+      await fs.mkdir(remoteCwd, { recursive: true });
+      await fs.mkdir(sharedClaudeConfig, { recursive: true });
+      if (hostSettings) {
+        await fs.writeFile(
+          path.join(sharedClaudeConfig, "settings.json"),
+          JSON.stringify({ theme: "dark", permissions: { defaultMode: "acceptEdits", allow: ["Bash(*)"] } }),
+          "utf8",
+        );
+      }
+      process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
+      process.env.PAPERCLIP_INSTANCE_ID = "test";
+      process.env.CLAUDE_CONFIG_DIR = sharedClaudeConfig;
+
+      const meta: AdapterInvocationMeta[] = [];
+      let effectiveDefaultMode: unknown;
+      const runtime = new FakeRuntime({});
+      const startTurn = runtime.startTurn.bind(runtime);
+      runtime.startTurn = (turnInput) => {
+        const turn = startTurn(turnInput);
+        return {
+          ...turn,
+          result: (async () => {
+            const readSettings = async (file: string) =>
+              JSON.parse(await fs.readFile(file, "utf8").catch(() => "{}"));
+            const local = await readSettings(path.join(turnInput.handle.cwd ?? remoteCwd, ".claude", "settings.local.json"));
+            const user = await readSettings(path.join(String(meta[0]?.env?.CLAUDE_CONFIG_DIR ?? ""), "settings.json"));
+            effectiveDefaultMode = local.permissions?.defaultMode ?? user.permissions?.defaultMode;
+            return await turn.result;
+          })(),
+        };
+      };
+      const execute = createClaudeAcpExecutor({
+        createRuntime: (options: FakeRuntimeOptions) => {
+          Object.assign(runtime.options, options);
+          return runtime as never;
+        },
+      });
+      const result = await execute(
+        buildContext(localCwd, {
+          config: {
+            engine: "acp",
+            cwd: localCwd,
+            agentCommand: "node ./fake-acp.js",
+            stateDir: path.join(root, "state"),
+            promptTemplate: "Do the assigned work.",
+            ...(permissionMode ? { permissionMode } : {}),
+          },
+          context: {
+            issueId: "issue-1",
+            paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+          },
+          executionTarget: {
+            kind: "remote",
+            transport: "sandbox",
+            providerKey: "fake-plugin",
+            remoteCwd,
+            runner: createLocalSandboxRunner(),
+          } as never,
+          authToken: "real-run-jwt",
+          onMeta: async (payload: AdapterInvocationMeta) => {
+            meta.push(payload);
+          },
+        }),
+      );
+
+      expect(result.exitCode).toBe(0);
+      const remoteConfigDir = String(meta[0]?.env?.CLAUDE_CONFIG_DIR ?? "");
+      const remoteSettings = JSON.parse(await fs.readFile(path.join(remoteConfigDir, "settings.json"), "utf8"));
+      expect(remoteSettings.permissions).toEqual({ defaultMode });
+      expect(remoteSettings.theme).toBe(hostSettings ? "dark" : undefined);
+      expect(meta[0]?.env?.IS_SANDBOX).toBe(isSandbox);
+      expect(effectiveDefaultMode).toBe(defaultMode);
+      const hostLocalSettings = JSON.parse(await fs.readFile(path.join(localCwd, ".claude", "settings.local.json"), "utf8"));
+      expect(hostLocalSettings.permissions.defaultMode).toBe("default");
+    },
+  );
+
+  it.each([
+    { name: "a host edit during the run", editHost: true },
+    { name: "an agent edit in the sandbox", editHost: false },
+  ])("keeps $name to the workspace Claude settings and never copies bypassPermissions home", async ({ editHost }) => {
+    const root = await makeTempRoot("paperclip-claude-acp-local-settings-");
+    const localCwd = path.join(root, "worktree");
+    const remoteCwd = path.join(root, "remote-workspace");
+    await fs.mkdir(localCwd, { recursive: true });
+    await fs.mkdir(remoteCwd, { recursive: true });
+    process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
+    process.env.PAPERCLIP_INSTANCE_ID = "test";
+    process.env.CLAUDE_CONFIG_DIR = path.join(root, "shared-claude-config");
+
+    const hostSettingsPath = path.join(localCwd, ".claude", "settings.local.json");
+    let hostSettingsBeforeEdit: string | undefined;
+    const runtime = new FakeRuntime({});
+    const startTurn = runtime.startTurn.bind(runtime);
+    runtime.startTurn = (turnInput) => {
+      const turn = startTurn(turnInput);
+      return {
+        ...turn,
+        result: (async () => {
+          const target = editHost
+            ? hostSettingsPath
+            : path.join(turnInput.handle.cwd ?? remoteCwd, ".claude", "settings.local.json");
+          const currentRaw = await fs.readFile(target, "utf8");
+          if (editHost) hostSettingsBeforeEdit = currentRaw;
+          const current = JSON.parse(currentRaw);
+          await fs.writeFile(target, JSON.stringify({ ...current, theme: "edited" }), "utf8");
+          return await turn.result;
+        })(),
+      };
+    };
+    const execute = createClaudeAcpExecutor({
+      createRuntime: (options: FakeRuntimeOptions) => {
+        Object.assign(runtime.options, options);
+        return runtime as never;
+      },
+    });
+    const result = await execute(
+      buildContext(localCwd, {
+        config: {
+          engine: "acp",
+          cwd: localCwd,
+          agentCommand: "node ./fake-acp.js",
+          stateDir: path.join(root, "state"),
+          promptTemplate: "Do the assigned work.",
+        },
+        context: {
+          issueId: "issue-1",
+          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+        },
+        executionTarget: {
+          kind: "remote",
+          transport: "sandbox",
+          providerKey: "fake-plugin",
+          remoteCwd,
+          runner: createLocalSandboxRunner(),
+        } as never,
+        authToken: "real-run-jwt",
+      }),
+    );
+
+    expect(result.exitCode).toBe(0);
+    const remoteSettingsPath = path.join(remoteCwd, ".claude", "settings.local.json");
+    const remoteSettingsRaw = await fs.readFile(remoteSettingsPath, "utf8");
+    const remoteSettings = JSON.parse(remoteSettingsRaw);
+    // The temporary bypass override must be reset before workspace restore.
+    // Otherwise an unchanged remote file would overwrite a concurrent host edit.
+    expect(remoteSettings.permissions.defaultMode).toBe("default");
+    expect(remoteSettings.theme).toBe(editHost ? undefined : "edited");
+    if (editHost) expect(remoteSettingsRaw).toBe(hostSettingsBeforeEdit);
+    const hostSettings = JSON.parse(await fs.readFile(hostSettingsPath, "utf8"));
+    expect(hostSettings.theme).toBe("edited");
+    expect(hostSettings.permissions.defaultMode).toBe("default");
+  });
+
+  it("keeps an operator CLAUDE_CODE_SHELL_PREFIX and installs no tool shell prefix", async () => {
+    const root = await makeTempRoot("paperclip-claude-acp-operator-prefix-");
+    const localCwd = path.join(root, "worktree");
+    const remoteCwd = path.join(root, "remote-workspace");
+    const sharedClaudeConfig = path.join(root, "shared-claude-config");
+    await fs.mkdir(localCwd, { recursive: true });
+    await fs.mkdir(remoteCwd, { recursive: true });
+    await fs.mkdir(sharedClaudeConfig, { recursive: true });
+    await fs.writeFile(path.join(sharedClaudeConfig, "CLAUDE.md"), "# shared guidance\n", "utf8");
+    process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
+    process.env.PAPERCLIP_INSTANCE_ID = "test";
+    process.env.CLAUDE_CONFIG_DIR = sharedClaudeConfig;
+
+    const meta: AdapterInvocationMeta[] = [];
+    const execute = createClaudeAcpExecutor({
+      createRuntime: (options: FakeRuntimeOptions) => new FakeRuntime(options) as never,
+    });
+    const result = await execute(
+      buildContext(localCwd, {
+        config: {
+          engine: "acp",
+          cwd: localCwd,
+          agentCommand: "node ./fake-acp.js",
+          stateDir: path.join(root, "state"),
+          promptTemplate: "Do the assigned work.",
+          env: { CLAUDE_CODE_SHELL_PREFIX: "/opt/operator/audit-shell.sh" },
+        },
+        context: {
+          issueId: "issue-1",
+          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+        },
+        executionTarget: {
+          kind: "remote",
+          transport: "sandbox",
+          providerKey: "fake-plugin",
+          remoteCwd,
+          runner: createLocalSandboxRunner(),
+        } as never,
+        authToken: "real-run-jwt",
+        onMeta: async (payload: AdapterInvocationMeta) => {
+          meta.push(payload);
+        },
+      }),
+    );
+
+    expect(result.exitCode).toBe(0);
+    expect(meta[0]?.env?.CLAUDE_CODE_SHELL_PREFIX).toBe("/opt/operator/audit-shell.sh");
+    const remoteConfigDir = String(meta[0]?.env?.CLAUDE_CONFIG_DIR ?? "");
+    await expect(
+      fs.stat(path.join(path.dirname(remoteConfigDir), "tool-shell-prefix.sh")),
+    ).rejects.toMatchObject({ code: "ENOENT" });
   }, remoteSandboxTestTimeoutMs);
 
   it("test_claude_acp_seam_registers_workspace_sync_back", async () => {

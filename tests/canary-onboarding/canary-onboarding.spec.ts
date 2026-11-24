@@ -95,27 +95,35 @@ test("the exact published canary installs and reaches Connect a model", async ({
   await page.getByRole("button", { name: "Next", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Connect a model" })).toBeVisible();
 
-  // Choosing a name persists one durable setup record. It is not runnable:
-  // its setup lifecycle hold keeps it paused until a model is connected, so
-  // this public-repository gate remains provider-free.
-  const setupAgents = await getJson<SetupAgent[]>(
-    page.request,
-    `/api/companies/${company!.id}/agents`,
-  );
-  expect(setupAgents).toHaveLength(1);
-  const [setupAgent] = setupAgents;
-  expect(setupAgent).toMatchObject({
-    name: agentName,
-    status: "paused",
-    pauseReason: "setup",
-    lifecycleState: "paused",
-    metadata: { setupAdapterPending: true },
-  });
-  expect(setupAgent.lifecycleHolds).toContain("setup");
+  await expect.poll(
+    () => getJson<SetupAgent[]>(
+      page.request,
+      `/api/companies/${company!.id}/agents`,
+    ),
+    { message: "Connect a model must retain one paused setup record" },
+  ).toEqual([
+    expect.objectContaining({
+      name: agentName,
+      status: "paused",
+      pauseReason: "setup",
+      lifecycleState: "paused",
+      lifecycleHolds: expect.arrayContaining(["setup"]),
+      metadata: expect.objectContaining({ setupAdapterPending: true }),
+      runtimeConfig: expect.objectContaining({
+        heartbeat: expect.objectContaining({ enabled: false }),
+      }),
+    }),
+  ]);
   expect(
     await getJson<Array<{ id: string }>>(
       page.request,
       `/api/companies/${company!.id}/issues`,
+    ),
+  ).toEqual([]);
+  expect(
+    await getJson<Array<{ id: string }>>(
+      page.request,
+      `/api/companies/${company!.id}/heartbeat-runs`,
     ),
   ).toEqual([]);
   expect(pageErrors, pageErrors.join("\n")).toEqual([]);

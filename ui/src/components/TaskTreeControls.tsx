@@ -79,6 +79,7 @@ export function TaskTreeControlDialog({
   scope,
   affectedCount,
   affectedAgentCount,
+  warnings = [],
   loading,
   error,
   pending,
@@ -94,6 +95,7 @@ export function TaskTreeControlDialog({
   scope: "leaf" | "subtree";
   affectedCount: number;
   affectedAgentCount: number;
+  warnings?: string[];
   loading: boolean;
   error?: string | null;
   pending: boolean;
@@ -131,7 +133,9 @@ export function TaskTreeControlDialog({
               ? "Loading…"
               : cancel
                 ? `${tasks} will be cancelled.`
-                : `${tasks} will ${mode === "restore" ? "be restored" : "resume"}.`}
+                : mode === "restore"
+                  ? `${tasks} will be restored.`
+                  : `The pause will be removed from ${tasks}.`}
           </DialogDescription>
         </DialogHeader>
         {error ? (
@@ -152,13 +156,16 @@ export function TaskTreeControlDialog({
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
-              checked={wakeAgents}
+              checked={wakeAgents && affectedAgentCount > 0}
               disabled={pending || loading || affectedAgentCount === 0}
               onChange={(event) => onWakeAgentsChange(event.target.checked)}
             />
             {translateInstant("Wake affected agents (")}{affectedAgentCount})
           </label>
         ) : null}
+        {!loading ? warnings.map((warning) => (
+          <p key={warning} className="text-sm text-muted-foreground">{warning}</p>
+        )) : null}
         <DialogFooter>
           <Button
             variant="outline"

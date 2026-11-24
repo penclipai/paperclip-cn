@@ -44,6 +44,7 @@ describe("telemetry privacy at the wire boundary", () => {
     ["github", "https://username:secret-token@github.com/private-org/private-repo"],
     ["url", "https://example.test/private-bundle?token=secret-token"],
     ["catalog", "https://username:secret-token@example.test/private-bundle"],
+    ["catalog", "https://catalog.example/public?token=query-secret#fragment-secret"],
   ])("protects unverified or credential-bearing %s sources even when marked public", async (sourceType, sourceRef) => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true });
     vi.stubGlobal("fetch", fetchMock);
@@ -58,16 +59,26 @@ describe("telemetry privacy at the wire boundary", () => {
     expect(raw).not.toContain(sourceRef);
     expect(raw).not.toContain("private-repo");
     expect(raw).not.toContain("secret-token");
+    expect(raw).not.toContain("query-secret");
+    expect(raw).not.toContain("fragment-secret");
     if (sourceRef.includes("@")) expect(hash).toHaveBeenCalledWith(new URL(sourceRef.replace("username:secret-token@", "")).href);
   });
 
-  it("preserves a verified public catalog identifier", async () => {
+  it.each([
+    ["forged catalog identifier", "catalog", "private-catalog/company"],
+    ["non-URL catalog ref", "catalog", "catalog/private?token=identifier-secret"],
+    ["local path", "local_path", "C:\\operators\\private-company\\bundle"],
+    ["canonical public catalog identifier", "catalog", "public-catalog/company"],
+  ] as const)("hashes every %s even when marked public", async (_label, sourceType, sourceRef) => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true });
     vi.stubGlobal("fetch", fetchMock);
     const tc = client();
-    trackCompanyImported(tc, { sourceType: "catalog", sourceRef: "public-catalog/company", isPrivate: false });
+    trackCompanyImported(tc, { sourceType, sourceRef, isPrivate: false });
     await tc.flush();
-    const body = JSON.parse(String(fetchMock.mock.calls[0][1].body));
-    expect(body.events[0].dimensions).toMatchObject({ source_ref: "public-catalog/company", source_ref_hashed: false });
+    const raw = String(fetchMock.mock.calls[0][1].body);
+    const dims = JSON.parse(raw).events[0].dimensions;
+    expect(dims.source_ref_hashed).toBe(true);
+    expect(dims.source_ref).toMatch(/^[0-9a-f]{16}$/);
+    expect(raw).not.toContain(sourceRef);
   });
 });

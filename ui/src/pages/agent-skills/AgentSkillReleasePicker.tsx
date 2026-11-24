@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import type { CompanySkillVersion } from "@penclipai/shared";
+import type { CompanySkillVersionSummary } from "@penclipai/shared";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -20,7 +20,7 @@ const DEFAULT_LABEL = "Default — current (recommended)";
  * local calendar day so the picker reads `released 2026-07-21`.
  */
 export function formatReleaseDate(
-  value: CompanySkillVersion["releasedAt"],
+  value: CompanySkillVersionSummary["releasedAt"],
 ): string | null {
   if (!value) return null;
   const raw = typeof value === "string" ? value : value.toISOString();
@@ -34,26 +34,25 @@ export function formatReleaseDate(
 }
 
 /** Release display name, e.g. `V7 — Roster champion` (no date). */
-export function releaseName(release: CompanySkillVersion): string {
+export function releaseName(release: CompanySkillVersionSummary): string {
   return release.releaseName ?? release.label ?? release.releaseId ?? "Release";
 }
 
 /** Full option label, e.g. `V7 — Roster champion · released 2026-07-21`. */
-export function releaseOptionLabel(release: CompanySkillVersion): string {
+export function releaseOptionLabel(release: CompanySkillVersionSummary): string {
   const name = releaseName(release);
   const date = formatReleaseDate(release.releasedAt);
   return date ? `${name} · released ${date}` : name;
 }
 
 /** Compact badge label for a pinned release, e.g. `V7`. */
-export function releaseShortLabel(release: CompanySkillVersion): string {
-  const name =
-    release.releaseName ?? release.label ?? release.releaseId ?? "Release";
+export function releaseShortLabel(release: CompanySkillVersionSummary): string {
+  const name = release.releaseName ?? release.label ?? release.releaseId ?? "Release";
   return name.split(" — ")[0]!.trim();
 }
 
 export interface AgentSkillReleasePickerProps {
-  releases: CompanySkillVersion[];
+  releases: CompanySkillVersionSummary[];
   /** Currently pinned version id, or null for the live default. */
   value: string | null;
   disabled?: boolean;

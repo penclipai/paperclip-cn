@@ -91,7 +91,7 @@
   },
   "One conversation per agent. Pick up where you left off.": {
     "en": "One conversation per agent. Pick up where you left off.",
-    "zh-CN": "每个智能体进行一次对话。从上次离开的地方继续。",
+    "zh-CN": "每个智能体各有一段对话。从上次中断处继续。",
     "reviewedEnglishHash": "2daf9fb3f16c6376d032c2d6bcdcb5bd687101a0c9f85fdcc74a4ce38a352579"
   },
   "One-line promise for the skill": {
@@ -151,7 +151,7 @@
   },
   "Open Activity": {
     "en": "Open Activity",
-    "zh-CN": "开放活动",
+    "zh-CN": "打开活动",
     "reviewedEnglishHash": "b2a9770667ad274c7149f533934b74b9f989cce95e0157ab45ca6138b0d7859f"
   },
   "Open AgentMail ↗": {
@@ -186,7 +186,7 @@
   },
   "Open Connectors": {
     "en": "Open Connectors",
-    "zh-CN": "开放式连接器",
+    "zh-CN": "打开连接器",
     "reviewedEnglishHash": "d985974b1d0546ecc8b8e1b581211804637df37e6cb22c65cff93dd44bec09bc"
   },
   "Open Dialog": {
@@ -501,7 +501,7 @@
   },
   "Open the provider dashboard to complete this request.": {
     "en": "Open the provider dashboard to complete this request.",
-    "zh-CN": "请打开服务提供商的控制台以完成此请求。",
+    "zh-CN": "请打开提供方控制台以完成此请求。",
     "reviewedEnglishHash": "a3a5acdb0167e9021a6a97e98ab13e0f97ac28bd01e6f9d32b1034b25bb3bc1a"
   },
   "Open this project to the company?": {
@@ -511,12 +511,12 @@
   },
   "Open this run's task.run trace query in Honeycomb": {
     "en": "Open this run's task.run trace query in Honeycomb",
-    "zh-CN": "在Honeycomb中打开此运行的task.run跟踪查询",
+    "zh-CN": "在 Honeycomb 中打开此运行的 task.run 追踪查询",
     "reviewedEnglishHash": "b056c2702cac3eda87eef019569e37da9693273783e92405bba0d55069efdaba"
   },
   "Open to company": {
     "en": "Open to company",
-    "zh-CN": "至公司",
+    "zh-CN": "向公司开放",
     "reviewedEnglishHash": "c5148ca7cfd73101a12366e33d4d22c722273a755e8691d779950d20248b5ebe"
   },
   "Open todo tasks": {
@@ -546,7 +546,7 @@
   },
   "OpenAI Responses · Codex": {
     "en": "OpenAI Responses · Codex",
-    "zh-CN": "OpenAI 回应·法典",
+    "zh-CN": "OpenAI Responses · Codex",
     "reviewedEnglishHash": "d0086ddd983a3167b2447cec688bd67c35d33ca33add2f160717a70743adfda0"
   },
   "OpenClaw Gateway": {
@@ -591,7 +591,7 @@
   },
   "Opening conversation…": {
     "en": "Opening conversation…",
-    "zh-CN": "开启对话。",
+    "zh-CN": "正在打开对话…",
     "reviewedEnglishHash": "12a7ad1d379e91a60b5524e4142ca14345615eb8d10e985b67fe1d537278619e"
   },
   "Opening organization...": {
@@ -686,7 +686,7 @@
   },
   "Optional branch, tag, or SHA Cursor should start from.": {
     "en": "Optional branch, tag, or SHA Cursor should start from.",
-    "zh-CN": "Cursor 应从中开始的可选分支、标签或 SHA。",
+    "zh-CN": "供 Cursor 作为起点使用的可选分支、标签或 SHA。",
     "reviewedEnglishHash": "669cb7285502f8c11d00e28b76943033894f0d1b01a6a0e49832fc37ee057887"
   },
   "Optional company description": {
@@ -766,7 +766,7 @@
   },
   "Or use an organization secret": {
     "en": "Or use an organization secret",
-    "zh-CN": "或者使用组织秘密",
+    "zh-CN": "或者使用组织密钥",
     "reviewedEnglishHash": "961df787a0b10638d8aa99a041429dab5a3d9608b3e5f99ef842c9a74e199b65"
   },
   "Org": {
@@ -826,7 +826,7 @@
   },
   "Organization secret": {
     "en": "Organization secret",
-    "zh-CN": "组织秘密",
+    "zh-CN": "组织密钥",
     "reviewedEnglishHash": "7b4e3d0ed470b51e4d80a75bda5686dd72a3bfa419e1ef6c7b9678cbce29d066"
   },
   "Organization stores one shared value. Each user lets every member supply their own value under My secrets.": {
@@ -921,7 +921,7 @@
   },
   "Overage": {
     "en": "Overage",
-    "zh-CN": "超龄",
+    "zh-CN": "超额",
     "reviewedEnglishHash": "c4b024e7eff8afbba21001ab83c66d4248faf6cad2eb601614934a56618ae547"
   },
   "Overall": {

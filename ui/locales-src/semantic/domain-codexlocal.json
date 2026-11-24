@@ -1,7 +1,47 @@
 {
+  "codexLocal.autoCreatePullRequest": {
+    "en": "Auto-create pull request",
+    "zh-CN": "自动创建拉取请求",
+    "reviewedEnglishHash": "623023a25c2562d32f1de5682bd7d716788478b0a5a9867c6375a016d08e016c"
+  },
+  "codexLocal.cursorCloudEnvLabel": {
+    "en": "Cursor cloud environment",
+    "zh-CN": "Cursor 云端环境",
+    "reviewedEnglishHash": "136438ee268dadb5a01b4631517a857f52122125badae874327a6fb6c0677f1a"
+  },
+  "codexLocal.cursorCloudEnvPlaceholder": {
+    "en": "Use instead of a repository",
+    "zh-CN": "用于替代仓库",
+    "reviewedEnglishHash": "f3c8a03bb6ec35e28e706c5fba23f2c78217c64acf839510f0cbfed0228d19db"
+  },
+  "codexLocal.cursorCloudNotice": {
+    "en": "Experimental. Cursor hosts this agent’s execution environment. A Paperclip computer is not required. Cursor manages command permissions; effective model identity is unavailable. Agent environment settings support only CURSOR_API_KEY. Configure hosted secrets in your Cursor Cloud environment.",
+    "zh-CN": "实验性功能。Cursor 托管此智能体的执行环境，无需 Paperclip 计算机。Cursor 会管理命令权限，且无法获取实际模型标识。智能体环境变量设置仅支持 CURSOR_API_KEY，请在 Cursor Cloud 环境中配置托管密钥。",
+    "reviewedEnglishHash": "c209a48e451a179457269e6a519460eb7b2e020c521adc3134bc2ccec2e83e11"
+  },
+  "codexLocal.cursorCloudRepoHint": {
+    "en": "Select a repository or a named Cursor cloud environment.",
+    "zh-CN": "选择一个仓库或已命名的 Cursor 云端环境。",
+    "reviewedEnglishHash": "c3d5b2e84c18cf82d9161250a300103034f3f089344cec8efb9c6e44decc353f"
+  },
   "codexLocal.fastModeUnsupportedModels": {
     "en": "Fast mode currently only works on {{models}} or manual model IDs. Paperclip will ignore this toggle until the model is switched.",
     "zh-CN": "快速模式目前仅适用于 {{models}} 或手动模型 ID。在切换模型前，Paperclip 会忽略此开关。",
     "reviewedEnglishHash": "b3edffd3f7707cbad0abed4e23888420892dfd6da8d5105cad42190533dfefc6"
+  },
+  "codexLocal.museConnection": {
+    "en": "Muse connection",
+    "zh-CN": "Muse 连接",
+    "reviewedEnglishHash": "3925ebf9575f61a7c73a954de2fedab9f32a7ab6b1e850575f1c74ff04dbda45"
+  },
+  "codexLocal.museConnectionHint": {
+    "en": "Pairing, receiver contact, background reply, and agent setup are verified separately.",
+    "zh-CN": "配对、接收联系人、后台回复和智能体设置会分别验证。",
+    "reviewedEnglishHash": "282cc81cbffcb9b290a3d37570fe3683fa20a457a56512bc3ef85926d0eeec6e"
+  },
+  "codexLocal.museExternallyBilledHint": {
+    "en": "Muse does not report usage or cost. Paperclip cannot enforce a Muse spend ceiling; known company and agent budget limits still apply.",
+    "zh-CN": "Muse 不上报用量或费用。Paperclip 无法强制执行 Muse 支出上限，但已知的公司与智能体预算限制仍会生效。",
+    "reviewedEnglishHash": "237af1766a4a1cb5ac44b84d324e53ce3628640ca553f14262ebeb99d395fabf"
   }
 }

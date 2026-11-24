@@ -206,9 +206,9 @@ When you add a new public package:
 The repository release guard validates package manifests, package identity, and
 the release dependency graph before any package is published. It does not
 inspect npm package settings. Before a release, audit the npm-side
-trusted-publisher relationships for every `"publishFromCi": true` package; the
-current manifest has 32, but always enumerate the current manifest rather than
-relying on that number. When a PR needs bootstrap work, commitperclip also posts
+trusted-publisher relationships for every `"publishFromCi": true` package.
+Enumerate the current manifest instead of relying on a fixed package count.
+When a PR needs bootstrap work, commitperclip also posts
 an informational notice naming the exact command, so contributors know a
 maintainer action is pending rather than something they can fix.
 

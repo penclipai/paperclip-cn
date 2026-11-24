@@ -30,7 +30,7 @@ const bash = process.platform === "win32"
   : "bash";
 
 test("canary promotion waits for the standard manifest and keeps its serialized channel", () => {
-  assert.match(job, /needs: \[merge-and-push\]/);
+  assert.match(job, /needs: \[reuse_canary_image, merge-and-push\]/);
   assert.match(job, /group: docker-canary-channel-promotion/);
   assert.match(job, /cancel-in-progress: false/);
 });

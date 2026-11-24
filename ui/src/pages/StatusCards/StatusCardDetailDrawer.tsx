@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 
 import { statusCardsApi, type StatusCardDryRun } from "@/api/statusCards";
+import { describeError } from "@/api/errors";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { MarkdownBody } from "@/components/MarkdownBody";
 import { useSummaryDraftStream } from "@/components/useSummaryDraftStream";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +70,7 @@ import {
   updateKindLabel,
 } from "./format";
 import type { StatusCardView } from "./types";
+import { taskStatusIconProps } from "@/lib/task-status-presentation";
 
 export function StatusCardDetailDrawer({
   card,
@@ -127,6 +130,7 @@ export function StatusCardDetailDrawer({
     queryFn: () => statusCardsApi.updates(card!.id),
     enabled: Boolean(card && open),
   });
+  const updatesView = useQueryView(updatesQuery);
   const summaryRevisionsQuery = useQuery({
     queryKey: card
       ? queryKeys.statusCards.summaryRevisions(card.id)
@@ -146,6 +150,7 @@ export function StatusCardDetailDrawer({
         (card.queries.length > 0 || (card.mentionedIssueIds?.length ?? 0) > 0),
     ),
   });
+  const dryRunView = useQueryView(dryRunQuery);
   const lifecycle = card ? deriveStatusCardLifecycle(card) : "fresh";
   const generatingIssue = useMemo<SummarySlotIssueRef | null>(
     () =>
@@ -184,9 +189,7 @@ export function StatusCardDetailDrawer({
       setActionNote("Refresh queued — the Summarizer is updating this card.");
     },
     onError: (err) =>
-      setActionError(
-        err instanceof Error ? err.message : "Could not refresh the card.",
-      ),
+      setActionError(describeError(err, { action: "refresh the card" }).body),
   });
 
   const recompileMutation = useMutation({
@@ -200,9 +203,7 @@ export function StatusCardDetailDrawer({
       setActionNote("Run queued — the Summarizer is updating this card.");
     },
     onError: (err) =>
-      setActionError(
-        err instanceof Error ? err.message : "Could not run the card.",
-      ),
+      setActionError(describeError(err, { action: "run the card" }).body),
   });
 
   const saveSettingsMutation = useMutation({
@@ -236,9 +237,7 @@ export function StatusCardDetailDrawer({
       ]);
     },
     onError: (err) =>
-      setActionError(
-        err instanceof Error ? err.message : "Could not save settings.",
-      ),
+      setActionError(describeError(err, { action: "save the settings" }).body),
   });
 
   if (!card) return null;
@@ -334,7 +333,9 @@ export function StatusCardDetailDrawer({
                     refreshMutation.isPending && "animate-spin",
                   )}
                 />
-                {refreshMutation.isPending ? translateInstant("Refreshing…") : translateInstant("Refresh")}
+                {refreshMutation.isPending
+                  ? translateInstant("Refreshing…")
+                  : translateInstant("Refresh")}
               </Button>
             )}
           </div>
@@ -413,7 +414,7 @@ export function StatusCardDetailDrawer({
                         <SelectItem value="__latest__" className="text-xs">
                           {t("statusCards.detail.revision")}{" "}
                           {latestRevisionNumber}{" "}
-                          {" "}{t("statusCards.detail.latest")}
+                          {t("statusCards.detail.latest")}
                         </SelectItem>
                         <SelectSeparator />
                         {summaryRevisions.slice(0, 30).map((update) => (
@@ -434,7 +435,7 @@ export function StatusCardDetailDrawer({
                   ) : latestRevisionNumber > 0 ? (
                     <span className="text-xs text-muted-foreground">
                       {t("statusCards.detail.revision")} {latestRevisionNumber}{" "}
-                      {" "}{t("statusCards.detail.latest")}
+                      {t("statusCards.detail.latest")}
                     </span>
                   ) : null}
                 </div>
@@ -515,7 +516,10 @@ export function StatusCardDetailDrawer({
                       ? "Integrated in this revision"
                       : "Integrated in this update"}{" "}
                     ({displayedChanges.length}{" "}
-                    {displayedChanges.length === 1 ? translateInstant("issueRecoveryAction.repair.change") : translateInstant("issueRecoveryAction.repair.changes")})
+                    {displayedChanges.length === 1
+                      ? translateInstant("issueRecoveryAction.repair.change")
+                      : translateInstant("issueRecoveryAction.repair.changes")}
+                    )
                   </h3>
                   <div className="space-y-1.5">
                     {displayedChanges.map((change) => (
@@ -529,10 +533,10 @@ export function StatusCardDetailDrawer({
             <TabsContent value="history" className="mt-0 space-y-3">
               {/* History and cost live together: the today rollup up top, then
                   every recorded update (each update is one summary revision). */}
-              {updatesQuery.isLoading ? (
+              {updatesQuery.isLoading || updatesView.kind === "reconnecting" ? (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />{" "}
-                  {" "}{t("statusCards.detail.loadingHistory")}
+                  {t("statusCards.detail.loadingHistory")}
                 </div>
               ) : updates.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
@@ -542,8 +546,10 @@ export function StatusCardDetailDrawer({
                 <>
                   <div className="text-xs text-muted-foreground">
                     {t("statusCards.common.today")} {todayRollup.updateCount}{" "}
-                    {todayRollup.updateCount === 1 ? translateInstant("companyImport.action.update") : "updates"} ·{" "}
-                    {formatTokens(todayRollup.totalTokens)} ·{" "}
+                    {todayRollup.updateCount === 1
+                      ? translateInstant("companyImport.action.update")
+                      : "updates"}{" "}
+                    · {formatTokens(todayRollup.totalTokens)} ·{" "}
                     {formatCents(todayRollup.totalCostCents)}
                     {card.refreshPolicy.dailyTokenCap
                       ? ` · daily cap ${formatTokens(card.refreshPolicy.dailyTokenCap)}`
@@ -603,20 +609,19 @@ export function StatusCardDetailDrawer({
                 <div className="rounded-md border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
                   {t("statusCards.detail.settingUp")}
                 </div>
-              ) : dryRunQuery.isLoading ? (
+              ) : dryRunQuery.isLoading ||
+                dryRunView.kind === "reconnecting" ? (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />{" "}
-                  {" "}{t("statusCards.detail.matchingIssues")}
+                  {t("statusCards.detail.matchingIssues")}
                 </div>
-              ) : dryRunQuery.isError ? (
-                <InlineBanner
-                  tone="danger"
-                  title={t("statusCards.detail.matchedIssuesError")}
-                >
-                  {dryRunQuery.error instanceof Error
-                    ? dryRunQuery.error.message
-                    : "Try again."}
-                </InlineBanner>
+              ) : dryRunView.kind === "error" ? (
+                <QueryErrorState
+                  error={dryRunView.error}
+                  action="load matched issues"
+                  onRetry={dryRunView.retry}
+                  retrying={dryRunView.isFetching}
+                />
               ) : (
                 <MatchedIssueList
                   queries={dryRunQuery.data?.queries ?? []}
@@ -789,7 +794,7 @@ function WatchedIssueRow({ issue }: { issue: CompanySearchIssueSummary }) {
       >
         {issue.identifier ?? issue.id.slice(0, 8)}
       </Link>
-      <IssueStatusBadge status={issue.status} externalConversationState={issue.externalConversationState} />
+      <IssueStatusBadge {...taskStatusIconProps(issue)} />
       <span className="min-w-0 flex-1 truncate">{issue.title}</span>
       <span className="shrink-0 text-muted-foreground">
         {relativeTime(issue.updatedAt)}

@@ -11,7 +11,7 @@
   },
   "newIssue.approver": {
     "en": "Approver",
-    "zh-CN": "批准人",
+    "zh-CN": "审批人",
     "reviewedEnglishHash": "3ebb5648c8bcb2934590555c69356e279c2e677846fd48cb8a6a4fcc8a6b8dc3"
   },
   "newIssue.assignedBacklogNote.afterBacklog": {
@@ -251,12 +251,12 @@
   },
   "newIssue.noApprover": {
     "en": "No approver",
-    "zh-CN": "无批准人",
+    "zh-CN": "无审批人",
     "reviewedEnglishHash": "31322c37bc66685b88babd9641db8bdc9e6819275edcdea00338841a864ceb53"
   },
   "newIssue.noApproversFound": {
     "en": "No approvers found.",
-    "zh-CN": "未找到批准人。",
+    "zh-CN": "未找到审批人。",
     "reviewedEnglishHash": "f1a7922d68280d262359888601ef7c04beadd381e2d6c3222d8e5bf4f342967e"
   },
   "newIssue.noAssignee": {
@@ -336,7 +336,7 @@
   },
   "newIssue.searchApprovers": {
     "en": "Search approvers...",
-    "zh-CN": "搜索批准人...",
+    "zh-CN": "搜索审批人...",
     "reviewedEnglishHash": "14a9f9899a8f96a7a803134d59ba110928b8e96e83dd9355e952685f502cd093"
   },
   "newIssue.searchAssignees": {

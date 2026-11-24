@@ -1,4 +1,3 @@
-import { translateInstant } from "@/i18n";
 import { AgentIdentity } from "@/components/AgentIdentity";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -24,7 +23,7 @@ import { StatusIcon } from "./StatusIcon";
 import { PriorityIcon } from "./PriorityIcon";
 import { SHOW_TASK_PRIORITY_UI } from "../lib/ui-flags";
 import { Identity } from "./Identity";
-import type { Issue, IssueStatus } from "@penclipai/shared";
+import type { Issue, IssueDisplayStatus, IssueStatus } from "@penclipai/shared";
 import { AlertTriangle } from "lucide-react";
 import { isSuccessfulRunHandoffRequired } from "../lib/successful-run-handoff";
 import { collectSubtreeLiveCounts } from "../lib/liveIssueIds";
@@ -45,11 +44,12 @@ export const boardStatuses = [
   "backlog",
   "todo",
   "in_progress",
+  "monitoring",
   "in_review",
   "blocked",
   "done",
   "cancelled",
-] as const satisfies readonly IssueStatus[];
+] as const satisfies readonly IssueDisplayStatus[];
 
 const defaultKanbanColumnTone = {
   rail: "border-border bg-muted/20",
@@ -64,7 +64,7 @@ const defaultKanbanColumnTone = {
 // Every column carries a status-hued tint (matching the app-wide status
 // vocabulary: gray backlog, amber todo, blue in-progress, violet review,
 // red blocked, green done) so no column reads as accidentally unstyled.
-export const kanbanColumnTones: Partial<Record<IssueStatus, typeof defaultKanbanColumnTone>> = {
+export const kanbanColumnTones: Partial<Record<IssueDisplayStatus, typeof defaultKanbanColumnTone>> = {
   backlog: {
     rail: "border-border bg-muted/30",
     railOver: "bg-muted/50 ring-1 ring-neutral-400/25",
@@ -130,8 +130,8 @@ export const kanbanColumnTones: Partial<Record<IssueStatus, typeof defaultKanban
   },
 };
 
-export function getKanbanColumnTone(status: IssueStatus) {
-  return kanbanColumnTones[status] ?? defaultKanbanColumnTone;
+export function getKanbanColumnTone(status: IssueDisplayStatus) {
+  return kanbanColumnTones[status === "monitoring" ? "in_progress" : status] ?? defaultKanbanColumnTone;
 }
 
 function statusLabel(status: string): string {
@@ -140,9 +140,10 @@ function statusLabel(status: string): string {
 
 export function resolveKanbanTargetStatus(overId: string, issues: Issue[]): IssueStatus | null {
   if ((boardStatuses as readonly string[]).includes(overId)) {
-    return overId as IssueStatus;
+    return overId === "monitoring" ? null : overId as IssueStatus;
   }
-  return issues.find((issue) => issue.id === overId)?.status ?? null;
+  const target = issues.find((issue) => issue.id === overId);
+  return target?.displayStatus === "monitoring" ? null : target?.status ?? null;
 }
 
 interface Agent {
@@ -177,7 +178,7 @@ function KanbanColumn({
   revealIncrement,
   onShowMore,
 }: {
-  status: IssueStatus;
+  status: IssueDisplayStatus;
   issues: Issue[];
   agents?: Agent[];
   liveIssueIds?: Set<string>;
@@ -189,7 +190,7 @@ function KanbanColumn({
   onShowMore: () => void;
 }) {
   const { t } = useTranslation();
-  const { setNodeRef, isOver } = useDroppable({ id: status });
+  const { setNodeRef, isOver } = useDroppable({ id: status, disabled: status === "monitoring" });
 
   const isEmpty = issues.length === 0;
   const visibleIssues = collapsed ? [] : issues.slice(0, visibleCount);
@@ -260,16 +261,12 @@ function KanbanColumn({
             className="mt-1 flex w-full items-center justify-center rounded-md border border-dashed border-border bg-background/70 px-2 py-2 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
             onClick={onShowMore}
           >
-            {t("kanban.showMore", { defaultValue: "Show {{count}} more", count: nextRevealCount })}
+            Show {nextRevealCount} more
           </button>
         ) : null}
         {issues.length > 0 && (hiddenCount > 0 || issues.length >= visibleCount) ? (
           <p className="px-1 pt-1 text-(length:--text-micro) text-muted-foreground">
-            {t("kanban.showingCount", {
-              defaultValue: "Showing {{shown}} of {{total}}",
-              shown: visibleIssues.length,
-              total: issues.length,
-            })}
+            Showing {visibleIssues.length} of {issues.length}
           </p>
         ) : null}
       </div>
@@ -296,7 +293,6 @@ function KanbanCard({
   compact?: boolean;
   className?: string;
 }) {
-  const { t } = useTranslation();
   const {
     attributes,
     listeners,
@@ -319,6 +315,7 @@ function KanbanCard({
   return (
     <Card
       ref={setNodeRef}
+      data-issue-row-details={issue.id}
       style={style}
       {...attributes}
       {...listeners}
@@ -344,14 +341,14 @@ function KanbanCard({
             {issue.identifier ?? issue.id.slice(0, 8)}
           </span>
           {isSuccessfulRunHandoffRequired(issue) ? (
-            <span
-              className="inline-flex items-center gap-1 rounded-full border border-amber-400/45 bg-amber-50/60 px-1.5 py-0.5 text-(length:--text-nano) font-medium text-amber-700 dark:border-amber-300/35 dark:bg-amber-400/10 dark:text-amber-300"
-              title={t("kanban.nextStepTitle", { defaultValue: "This task needs a next step" })}
-              aria-label={t("kanban.nextStepAriaLabel", { defaultValue: "Needs next step" })}
+            <Badge variant="outline"
+              className="border-amber-400/45 bg-amber-50/60 px-1.5 text-(length:--text-nano) text-amber-700 dark:border-amber-300/35 dark:bg-amber-400/10 dark:text-amber-300"
+              title="This task needs a next step"
+              aria-label="Needs next step"
             >
               <AlertTriangle className="h-3 w-3" />
-              {t("kanban.nextStepBadge", { defaultValue: "Next step" })}
-            </span>
+              Next step
+            </Badge>
           ) : null}
           {isLive && (
             <span className="inline-flex shrink-0 items-center gap-1 text-(length:--text-nano) font-medium text-blue-600 dark:text-blue-400">
@@ -368,7 +365,8 @@ function KanbanCard({
               title={`${subtreeLiveCount} sub-task${subtreeLiveCount === 1 ? "" : "s"} running below`}
             >
               <span className="h-2 w-2 shrink-0 rounded-full border border-muted-foreground/60" aria-hidden="true" />
-              {subtreeLiveCount} {translateInstant("live below")}</Badge>
+              {subtreeLiveCount} live below
+            </Badge>
           )}
         </div>
         <p className={`${compact ? "mb-1.5 text-xs" : "mb-2 text-sm"} leading-snug line-clamp-2`}>{issue.title}</p>
@@ -418,13 +416,14 @@ export function KanbanBoard({
   );
 
   const columnIssues = useMemo(() => {
-    const grouped: Record<IssueStatus, Issue[]> = {} as Record<IssueStatus, Issue[]>;
+    const grouped: Record<IssueDisplayStatus, Issue[]> = {} as Record<IssueDisplayStatus, Issue[]>;
     for (const status of boardStatuses) {
       grouped[status] = [];
     }
     for (const issue of issues) {
-      if (grouped[issue.status]) {
-        grouped[issue.status].push(issue);
+      const status = issue.displayStatus ?? issue.status;
+      if (grouped[status]) {
+        grouped[status].push(issue);
       }
     }
     return grouped;

@@ -6,7 +6,7 @@
   },
   "Hard-stop spend limits for agents and projects. Provider subscription quota stays separate and appears under Providers.": {
     "en": "Hard-stop spend limits for agents and projects. Provider subscription quota stays separate and appears under Providers.",
-    "zh-CN": "用于管理智能体和项目的硬性预算上限。服务商订阅配额会单独显示在“服务商”页签中。",
+    "zh-CN": "用于管理智能体和项目的硬性预算上限。提供方订阅配额会单独显示在“提供方”页签中。",
     "reviewedEnglishHash": "666a3a619c81b1059c1cf039d61a9f781b7521aab19842aadfd6c8bd47146a16"
   },
   "Harness": {
@@ -86,7 +86,7 @@
   },
   "Hi! Thanks for bringing me on to lead": {
     "en": "Hi! Thanks for bringing me on to lead",
-    "zh-CN": "嗨！感谢您带领我",
+    "zh-CN": "您好！感谢您邀请我来负责",
     "reviewedEnglishHash": "619a01f01d06c806b73296786ea4f8318b90959f3abf14c4988e7bc1b4ca0ea8"
   },
   "Hidden": {
@@ -211,7 +211,7 @@
   },
   "Hold": {
     "en": "Hold",
-    "zh-CN": "抓住",
+    "zh-CN": "暂停",
     "reviewedEnglishHash": "8e685d5409b3a543b1cadcc35b095d64847867539c12b21a36d55991ca0cdce1"
   },
   "Home": {
@@ -291,7 +291,7 @@
   },
   "have access to that credential.": {
     "en": "have access to that credential.",
-    "zh-CN": "有权访问该凭证。",
+    "zh-CN": "有权访问该凭据。",
     "reviewedEnglishHash": "8efcfada57f5ea94026bec0808a85e63e1af3db59d09a3a771039e6882f86c74"
   },
   "header is required. Existing token secrets cannot be retrieved again, so only tokens issued in this page session can fill a snippet.": {

@@ -24,12 +24,18 @@ import type {
 } from "@penclipai/shared";
 import { checkOAuthEndpointUrl } from "@penclipai/shared";
 import { Link } from "@/lib/router";
+import { describeError } from "@/api/errors";
 import { toolsApi } from "@/api/tools";
 import { queryKeys } from "@/lib/queryKeys";
 import { useCompany } from "@/context/CompanyContext";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -96,34 +102,46 @@ export function ActionTestDialog({
     queryFn: () => toolsApi.listTestAgents(connectionId),
     enabled: open && !!connectionId,
   });
+  const testAgentsView = useQueryView(testAgentsQuery);
   const agents = useMemo(
-    () => [...(testAgentsQuery.data?.agents ?? [])].sort(
-      (a, b) => a.orgDepth - b.orgDepth || a.name.localeCompare(b.name),
-    ),
+    () =>
+      [...(testAgentsQuery.data?.agents ?? [])].sort(
+        (a, b) => a.orgDepth - b.orgDepth || a.name.localeCompare(b.name),
+      ),
     [testAgentsQuery.data],
   );
   const [requestedAgentId, setRequestedAgentId] = useState<string | null>(null);
-  const agentId = requestedAgentId && agents.some((agent) => agent.id === requestedAgentId)
-    ? requestedAgentId
-    : agents[0]?.id ?? null;
-  const selectedAgentBase = agents.find((agent) => agent.id === agentId) ?? null;
+  const agentId =
+    requestedAgentId && agents.some((agent) => agent.id === requestedAgentId)
+      ? requestedAgentId
+      : (agents[0]?.id ?? null);
+  const selectedAgentBase =
+    agents.find((agent) => agent.id === agentId) ?? null;
   const accessQuery = useQuery({
-    queryKey: queryKeys.tools.testAgentAccess(connectionId, agentId ?? "__none__"),
+    queryKey: queryKeys.tools.testAgentAccess(
+      connectionId,
+      agentId ?? "__none__",
+    ),
     queryFn: () => toolsApi.getTestAgentAccess(connectionId, agentId!),
     enabled: open && !!connectionId && !!agentId,
     staleTime: TEST_ACCESS_STALE_TIME_MS,
     gcTime: TEST_ACCESS_GC_TIME_MS,
     refetchOnWindowFocus: false,
   });
-  const selectedAgent = useMemo<TestAgentWithAccess | null>(() => (
-    selectedAgentBase && accessQuery.data
-      ? { ...selectedAgentBase, effectiveAccess: accessQuery.data.access }
-      : null
-  ), [accessQuery.data, selectedAgentBase]);
+  const accessView = useQueryView(accessQuery);
+  const selectedAgent = useMemo<TestAgentWithAccess | null>(
+    () =>
+      selectedAgentBase && accessQuery.data
+        ? { ...selectedAgentBase, effectiveAccess: accessQuery.data.access }
+        : null,
+    [accessQuery.data, selectedAgentBase],
+  );
   const decision = useMemo<ToolConnectionTestDecision>(() => {
-    const tool = selectedAgent?.effectiveAccess.tools.find((candidate) => (
-      candidate.toolName === entry.toolName || candidate.gatewayToolName === entry.toolName
-    ));
+    const tool = selectedAgent?.effectiveAccess.tools.find(
+      (candidate) =>
+        candidate.toolName === entry.toolName ||
+        candidate.gatewayToolName === entry.toolName,
+    );
     return tool?.decision ?? "off";
   }, [entry.toolName, selectedAgent]);
   const title = entry.title ?? entry.toolName;
@@ -132,35 +150,58 @@ export function ActionTestDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-(--sz-85vh) overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{translateInstant("Test")}{" "}{title}</DialogTitle>
+          <DialogTitle>
+            {translateInstant("Test")} {title}
+          </DialogTitle>
           <DialogDescription>
-            {translateInstant("Run a real action with the same permissions and credentials an agent would use.")}</DialogDescription>
+            {translateInstant(
+              "Run a real action with the same permissions and credentials an agent would use.",
+            )}
+          </DialogDescription>
         </DialogHeader>
 
-        {testAgentsQuery.isLoading ? (
-          <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground" role="status">
+        {testAgentsQuery.isLoading || testAgentsView.kind === "reconnecting" ? (
+          <div
+            className="flex items-center gap-2 py-6 text-sm text-muted-foreground"
+            role="status"
+          >
             <Loader2 className="h-4 w-4 animate-spin" />
-            {translateInstant("secrets.loadingAgents")}</div>
-        ) : testAgentsQuery.isError ? (
-          <TestLoadError
-            message={translateInstant("We couldn't load the agents available for testing.")}
-            onRetry={() => { void testAgentsQuery.refetch(); }}
+            {translateInstant("secrets.loadingAgents", { defaultValue: "Loading agents…" })}
+          </div>
+        ) : testAgentsView.kind === "error" ? (
+          <QueryErrorState
+            className="my-6"
+            error={testAgentsQuery.error}
+            action="load the agents available for testing"
+            onRetry={testAgentsView.retry}
+            retrying={testAgentsView.isFetching}
           />
         ) : agents.length === 0 ? (
-          <p className="py-6 text-sm text-muted-foreground">{translateInstant("No agents are available to test as.")}</p>
-        ) : accessQuery.isError && !accessQuery.data ? (
-          <TestLoadError
-            message={translateInstant("connectionUi.actionTest.couldNotLoadPermissions", { agent: selectedAgentBase?.name ?? translateInstant("connectionUi.actionTest.thisAgent") })}
-            onRetry={() => { void accessQuery.refetch(); }}
+          <p className="py-6 text-sm text-muted-foreground">
+            {translateInstant("No agents are available to test as.", { defaultValue: "No agents are available to test as." })}
+          </p>
+        ) : accessView.kind === "error" ? (
+          <QueryErrorState
+            className="my-6"
+            error={accessQuery.error}
+            action={`load ${selectedAgentBase?.name ?? "this agent"}'s permissions`}
+            onRetry={accessView.retry}
+            retrying={accessView.isFetching}
           />
         ) : !selectedAgent ? (
-          <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground" role="status">
+          <div
+            className="flex items-center gap-2 py-6 text-sm text-muted-foreground"
+            role="status"
+          >
             <Loader2 className="h-4 w-4 animate-spin" />
-            {translateInstant("Loading agent permissions…")}</div>
+            {translateInstant("Loading agent permissions…")}
+          </div>
         ) : (
           <div className="space-y-5">
             <div className="rounded-md border border-border bg-muted/30 p-4">
-              <p className="text-xs font-medium text-muted-foreground">{translateInstant("Act as")}</p>
+              <p className="text-xs font-medium text-muted-foreground">
+                {translateInstant("Act as")}
+              </p>
               <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
                 <AgentPicker
                   agents={agents}
@@ -191,15 +232,23 @@ export function ActionTestDialog({
 
 const DECISION_META: Record<ToolConnectionTestDecision, DecisionMeta> = {
   allowed: {
-    get label() { return translateInstant("Allowed"); },
-    className: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+    get label() {
+      return translateInstant("Allowed");
+    },
+    className:
+      "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
   },
   ask_first: {
-    get label() { return translateInstant("Ask first"); },
-    className: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+    get label() {
+      return translateInstant("Ask first");
+    },
+    className:
+      "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
   },
   off: {
-    get label() { return translateInstant("Off"); },
+    get label() {
+      return translateInstant("Off");
+    },
     className: "border-border bg-muted text-muted-foreground",
   },
 };
@@ -215,17 +264,6 @@ function DecisionBadge({ decision }: { decision: ToolConnectionTestDecision }) {
     >
       {meta.label}
     </span>
-  );
-}
-
-function TestLoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
-  useTranslation();
-  return (
-    <div className="py-8 text-center">
-      <p className="text-sm font-medium text-foreground">{message}</p>
-      <Button className="mt-3" size="sm" variant="outline" onClick={onRetry}>
-        {translateInstant("Try again")}</Button>
-    </div>
   );
 }
 
@@ -255,7 +293,13 @@ function AgentPicker({
   );
 
   return (
-    <Popover open={open} onOpenChange={(next) => { setOpen(next); if (!next) setSearch(""); }}>
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) setSearch("");
+      }}
+    >
       <PopoverTrigger asChild>
         <button
           type="button"
@@ -271,7 +315,9 @@ function AgentPicker({
           <div className="relative">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
-              aria-label={translateInstant("apps.detail.test.agentPicker.searchAria")}
+              aria-label={translateInstant(
+                "apps.detail.test.agentPicker.searchAria",
+              )}
               placeholder={translateInstant("Search agents…")}
               className="h-8 pl-8 text-sm"
               value={search}
@@ -282,7 +328,9 @@ function AgentPicker({
         </div>
         <div className="max-h-60 overflow-y-auto p-1">
           {filtered.length === 0 ? (
-            <p className="px-3 py-4 text-center text-xs text-muted-foreground">{translateInstant("apps.detail.test.agentPicker.noMatches")}</p>
+            <p className="px-3 py-4 text-center text-xs text-muted-foreground">
+              {translateInstant("apps.detail.test.agentPicker.noMatches")}
+            </p>
           ) : (
             filtered.map((agent) => {
               const detail = agent.title?.trim() || agent.role;
@@ -303,12 +351,18 @@ function AgentPicker({
                   <Check
                     className={cn(
                       "mt-0.5 h-4 w-4 shrink-0",
-                      agent.id === selectedAgent.id ? "text-primary" : "text-transparent",
+                      agent.id === selectedAgent.id
+                        ? "text-primary"
+                        : "text-transparent",
                     )}
                   />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium text-foreground">{agent.name}</span>
-                    <span className="block truncate text-xs text-muted-foreground">{detail}</span>
+                    <span className="block truncate text-sm font-medium text-foreground">
+                      {agent.name}
+                    </span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {detail}
+                    </span>
                   </span>
                 </button>
               );
@@ -316,21 +370,51 @@ function AgentPicker({
           )}
         </div>
         <div className="border-t border-border px-3 py-2 text-(length:--text-micro) text-muted-foreground">
-          <p>{translateInstant("apps.detail.test.agentPicker.footer.availableAgents")}</p>
-          <p>{translateInstant("Pick one to preview what they'd see in")}{" "}{appName}{translateInstant(".")}</p>
+          <p>
+            {translateInstant(
+              "apps.detail.test.agentPicker.footer.availableAgents",
+            )}
+          </p>
+          <p>
+            {translateInstant("Pick one to preview what they'd see in")}{" "}
+            {appName}
+            {translateInstant(".")}
+          </p>
         </div>
         <div className="border-t border-border p-3">
-          <p className="text-xs font-semibold text-foreground">{translateInstant("apps.detail.test.agentPicker.badges.title")}</p>
+          <p className="text-xs font-semibold text-foreground">
+            {translateInstant("apps.detail.test.agentPicker.badges.title")}
+          </p>
           <ul className="mt-1.5 space-y-1 text-xs text-muted-foreground">
-            <li><span className="font-medium text-foreground">{translateInstant("Allowed")}</span>{" "}{translateInstant("— runs immediately when you press Run.")}</li>
-            <li><span className="font-medium text-foreground">{translateInstant("Ask first")}</span>{" "}{translateInstant("— Run is parked in Review for your OK.")}</li>
             <li>
-              <span className="font-medium text-foreground">{translateInstant("Off")}</span>{" "}{translateInstant("— won't run. Change it in")}{" "}
-              <Link className="text-primary hover:underline" to={appTabHref(connectionId, "permissions")}>
-                {translateInstant("Permissions")}</Link>{translateInstant(".")}</li>
+              <span className="font-medium text-foreground">
+                {translateInstant("Allowed")}
+              </span>{" "}
+              {translateInstant("— runs immediately when you press Run.")}
+            </li>
+            <li>
+              <span className="font-medium text-foreground">
+                {translateInstant("Ask first")}
+              </span>{" "}
+              {translateInstant("— Run is parked in Review for your OK.")}
+            </li>
+            <li>
+              <span className="font-medium text-foreground">
+                {translateInstant("Off")}
+              </span>{" "}
+              {translateInstant("— won't run. Change it in")}{" "}
+              <Link
+                className="text-primary hover:underline"
+                to={appTabHref(connectionId, "permissions")}
+              >
+                {translateInstant("Permissions")}
+              </Link>
+              {translateInstant(".")}
+            </li>
           </ul>
           <p className="mt-2 text-(length:--text-micro) text-muted-foreground">
-            {translateInstant("apps.detail.test.agentPicker.badges.note")}</p>
+            {translateInstant("apps.detail.test.agentPicker.badges.note")}
+          </p>
         </div>
       </PopoverContent>
     </Popover>
@@ -348,14 +432,24 @@ type RunOutcome = {
   ranAt: Date;
 };
 
-function testOutcomeStorageKey(connectionId: string, entry: ToolCatalogEntry, agentId: string): string {
+function testOutcomeStorageKey(
+  connectionId: string,
+  entry: ToolCatalogEntry,
+  agentId: string,
+): string {
   return `paperclip:test-call:${connectionId}:${agentId}:${entry.id}:${entry.toolName}`;
 }
 
-function loadStoredAskFirstOutcome(connectionId: string, entry: ToolCatalogEntry, agent: ToolConnectionTestAgent): RunOutcome | null {
+function loadStoredAskFirstOutcome(
+  connectionId: string,
+  entry: ToolCatalogEntry,
+  agent: ToolConnectionTestAgent,
+): RunOutcome | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = window.sessionStorage.getItem(testOutcomeStorageKey(connectionId, entry, agent.id));
+    const raw = window.sessionStorage.getItem(
+      testOutcomeStorageKey(connectionId, entry, agent.id),
+    );
     if (!raw) return null;
     const parsed = JSON.parse(raw) as {
       result?: ToolConnectionTestCallResult;
@@ -363,7 +457,11 @@ function loadStoredAskFirstOutcome(connectionId: string, entry: ToolCatalogEntry
       durationMs?: number;
       ranAt?: string;
     };
-    if (!parsed.result || parsed.result.decision !== "ask_first" || typeof parsed.result.actionRequestId !== "string") {
+    if (
+      !parsed.result ||
+      parsed.result.decision !== "ask_first" ||
+      typeof parsed.result.actionRequestId !== "string"
+    ) {
       return null;
     }
     return {
@@ -377,7 +475,12 @@ function loadStoredAskFirstOutcome(connectionId: string, entry: ToolCatalogEntry
   }
 }
 
-function storeAskFirstOutcome(connectionId: string, entry: ToolCatalogEntry, agentId: string, outcome: RunOutcome | null) {
+function storeAskFirstOutcome(
+  connectionId: string,
+  entry: ToolCatalogEntry,
+  agentId: string,
+  outcome: RunOutcome | null,
+) {
   if (typeof window === "undefined") return;
   const key = testOutcomeStorageKey(connectionId, entry, agentId);
   try {
@@ -385,7 +488,10 @@ function storeAskFirstOutcome(connectionId: string, entry: ToolCatalogEntry, age
       window.sessionStorage.removeItem(key);
       return;
     }
-    window.sessionStorage.setItem(key, JSON.stringify({ ...outcome, ranAt: outcome.ranAt.toISOString() }));
+    window.sessionStorage.setItem(
+      key,
+      JSON.stringify({ ...outcome, ranAt: outcome.ranAt.toISOString() }),
+    );
   } catch {
     // Session storage is only a same-tab convenience. If it is unavailable, the
     // request is still visible in Review and the backend lifecycle remains intact.
@@ -398,16 +504,30 @@ function splitRequiredOptional(schema: JsonSchemaNode): JsonSchemaNode {
   const props = schema.properties ?? {};
   const next: Record<string, JsonSchemaNode> = {};
   for (const [key, prop] of Object.entries(props)) {
-    const presented = key === "code" && prop.type === "string" && !prop.format ? { ...prop, format: "textarea" } : prop;
-    next[key] = required.has(key) ? presented : { ...presented, "x-paperclip-advanced": true };
+    const presented =
+      key === "code" && prop.type === "string" && !prop.format
+        ? { ...prop, format: "textarea" }
+        : prop;
+    next[key] = required.has(key)
+      ? presented
+      : { ...presented, "x-paperclip-advanced": true };
   }
   return { ...schema, properties: next };
 }
 
-const GUT_CHECK: Record<ToolConnectionTestDecision, (app: string, agent: string) => string> = {
-  allowed: (app, agent) => translateInstant("connectionUi.actionTest.gutCheck.allowed", { app, agent }),
-  ask_first: () => translateInstant("connectionUi.actionTest.gutCheck.askFirst"),
-  off: (_app, agent) => translateInstant("connectionUi.actionTest.gutCheck.off", { agent }),
+const GUT_CHECK: Record<
+  ToolConnectionTestDecision,
+  (app: string, agent: string) => string
+> = {
+  allowed: (app, agent) =>
+    translateInstant("connectionUi.actionTest.gutCheck.allowed", {
+      app,
+      agent,
+    }),
+  ask_first: () =>
+    translateInstant("connectionUi.actionTest.gutCheck.askFirst"),
+  off: (_app, agent) =>
+    translateInstant("connectionUi.actionTest.gutCheck.off", { agent }),
 };
 
 function ActionTester({
@@ -430,12 +550,20 @@ function ActionTester({
   useTranslation();
   const queryClient = useQueryClient();
   const { selectedCompanyId } = useCompany();
-  const rawSchema = (entry.inputSchema ?? { type: "object", properties: {} }) as JsonSchemaNode;
-  const formSchema = useMemo(() => splitRequiredOptional(rawSchema), [rawSchema]);
-  const [values, setValues] = useState<Record<string, unknown>>(() => getDefaultValues(rawSchema));
+  const rawSchema = (entry.inputSchema ?? {
+    type: "object",
+    properties: {},
+  }) as JsonSchemaNode;
+  const formSchema = useMemo(
+    () => splitRequiredOptional(rawSchema),
+    [rawSchema],
+  );
+  const [values, setValues] = useState<Record<string, unknown>>(() =>
+    getDefaultValues(rawSchema),
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [outcome, setOutcome] = useState<RunOutcome | null>(() =>
-    loadStoredAskFirstOutcome(connectionId, entry, agent)
+    loadStoredAskFirstOutcome(connectionId, entry, agent),
   );
 
   // Running card state — keep the spinner visible ≥200ms (anti-flicker).
@@ -448,7 +576,10 @@ function ActionTester({
 
   useEffect(() => {
     if (!running) return;
-    const id = window.setInterval(() => setElapsedMs(Date.now() - startedAtRef.current), 100);
+    const id = window.setInterval(
+      () => setElapsedMs(Date.now() - startedAtRef.current),
+      100,
+    );
     return () => window.clearInterval(id);
   }, [running]);
 
@@ -466,14 +597,28 @@ function ActionTester({
       const durationMs = Date.now() - startedAtRef.current;
       const finish = () => {
         if (cancelledRef.current) return;
-        const nextOutcome = { result, agentName: agent.name, durationMs, ranAt: new Date() };
+        const nextOutcome = {
+          result,
+          agentName: agent.name,
+          durationMs,
+          ranAt: new Date(),
+        };
         setRunning(false);
         setOutcome(nextOutcome);
         storeAskFirstOutcome(connectionId, entry, agent.id, nextOutcome);
-        queryClient.invalidateQueries({ queryKey: queryKeys.tools.connectionActivity(connectionId) });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.tools.connectionActivity(connectionId),
+        });
         if (selectedCompanyId) {
-          queryClient.invalidateQueries({ queryKey: queryKeys.tools.actionRequests(selectedCompanyId, "pending") });
-          queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId) });
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.tools.actionRequests(
+              selectedCompanyId,
+              "pending",
+            ),
+          });
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.apps.attention(selectedCompanyId),
+          });
         }
       };
       const remaining = 200 - durationMs;
@@ -539,41 +684,76 @@ function ActionTester({
           advancedLabel="More options"
         />
       ) : (
-        <p className="text-xs text-muted-foreground">{translateInstant("apps.detail.test.form.noInputs")}</p>
+        <p className="text-xs text-muted-foreground">
+          {translateInstant("apps.detail.test.form.noInputs")}
+        </p>
       )}
 
-      <p className="text-xs text-muted-foreground">{GUT_CHECK[decision](appName, agent.name)}</p>
+      <p className="text-xs text-muted-foreground">
+        {GUT_CHECK[decision](appName, agent.name)}
+      </p>
 
       <div className="flex items-center gap-2">
-        <Button onClick={onRun} disabled={running || !!outcome?.result.upstreamPending?.resumeTool || outcome?.result.decision === "ask_first"} size="sm">
+        <Button
+          onClick={onRun}
+          disabled={
+            running ||
+            !!outcome?.result.upstreamPending?.resumeTool ||
+            outcome?.result.decision === "ask_first"
+          }
+          size="sm"
+        >
           {running ? (
             <>
-              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Running…
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> {translateInstant("Running…", { defaultValue: "Running…" })}
             </>
           ) : (
             <>
-              <Play className="h-3.5 w-3.5" /> {outcome ? translateInstant("apps.detail.test.run.runAgain") : translateInstant("Run")}
+              <Play className="h-3.5 w-3.5" />{" "}
+              {outcome
+                ? translateInstant("apps.detail.test.run.runAgain")
+                : translateInstant("Run")}
             </>
           )}
         </Button>
         <Button onClick={onReset} disabled={running} size="sm" variant="ghost">
-          {translateInstant("Reset")}</Button>
+          {translateInstant("Reset")}
+        </Button>
       </div>
 
-      {(outcome?.result.decision === "ask_first" || outcome?.result.upstreamPending?.resumeTool) && <p className="text-xs text-muted-foreground">{translateInstant("Finish the existing request below. Use Reset only when you intend to start a new call.")}</p>}
-
-      {running && (
-        <RunningCard entry={entry} appName={appName} agentName={agent.name} elapsedMs={elapsedMs} onCancel={onCancelRunning} />
+      {(outcome?.result.decision === "ask_first" ||
+        outcome?.result.upstreamPending?.resumeTool) && (
+        <p className="text-xs text-muted-foreground">
+          {translateInstant(
+            "Finish the existing request below. Use Reset only when you intend to start a new call.",
+          )}
+        </p>
       )}
 
-      {run.isError && !running && (
+      {running && (
+        <RunningCard
+          entry={entry}
+          appName={appName}
+          agentName={agent.name}
+          elapsedMs={elapsedMs}
+          onCancel={onCancelRunning}
+        />
+      )}
+
+      {run.error && !running && (
         <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
-          {translateInstant("Couldn't reach")}{" "}{agent.name}{translateInstant(".")}{" "}{run.error instanceof Error ? run.error.message : translateInstant("Please try again.")}
+          {translateInstant("Couldn't reach", { defaultValue: "Couldn't reach" })} {agent.name}{translateInstant(".", { defaultValue: "." })} {describeError(run.error).body}
         </div>
       )}
 
       {outcome && !running && (
-        <ResultPanel outcome={outcome} entry={entry} appName={appName} connectionId={connectionId} agent={agent} />
+        <ResultPanel
+          outcome={outcome}
+          entry={entry}
+          appName={appName}
+          connectionId={connectionId}
+          agent={agent}
+        />
       )}
     </div>
   );
@@ -597,19 +777,31 @@ function RunningCard({
   onCancel: () => void;
 }) {
   useTranslation();
-  const verb = entry.isReadOnly ? translateInstant("Reading from") : entry.isWrite ? translateInstant("Writing to") : translateInstant("Calling");
+  const verb = entry.isReadOnly
+    ? translateInstant("Reading from")
+    : entry.isWrite
+      ? translateInstant("Writing to")
+      : translateInstant("Calling");
   return (
     <div className="rounded-md border border-border bg-muted/30 p-4">
       <div className="flex items-center gap-2">
         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-        <span className="text-sm font-medium text-foreground">{translateInstant("Running…")}</span>
+        <span className="text-sm font-medium text-foreground">
+          {translateInstant("Running…")}
+        </span>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
-        {verb} {appName} as {agentName}{translateInstant(".")}</p>
+        {verb} {appName} as {agentName}
+        {translateInstant(".")}
+      </p>
       <div className="mt-3 flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">{translateInstant("Started")}{" "}{seconds(elapsedMs)}{" "}{translateInstant("ago · Press cancel to stop")}</span>
+        <span className="text-xs text-muted-foreground">
+          {translateInstant("Started")} {seconds(elapsedMs)}{" "}
+          {translateInstant("ago · Press cancel to stop")}
+        </span>
         <Button onClick={onCancel} size="sm" variant="outline">
-          {translateInstant("Cancel")}</Button>
+          {translateInstant("Cancel")}
+        </Button>
       </div>
     </div>
   );
@@ -634,14 +826,32 @@ function ResultPanel({
 }) {
   useTranslation();
   const { result } = outcome;
-  if (result.upstreamPending) return <ProviderPendingResult pending={result.upstreamPending} appName={appName} connectionId={connectionId} agent={agent} />;
+  if (result.upstreamPending)
+    return (
+      <ProviderPendingResult
+        pending={result.upstreamPending}
+        appName={appName}
+        connectionId={connectionId}
+        agent={agent}
+      />
+    );
   if (result.decision === "ask_first") {
-    return <AskFirstResult outcome={outcome} entry={entry} appName={appName} connectionId={connectionId} agent={agent} />;
+    return (
+      <AskFirstResult
+        outcome={outcome}
+        entry={entry}
+        appName={appName}
+        connectionId={connectionId}
+        agent={agent}
+      />
+    );
   }
   if (result.decision === "off") {
+    const offMessage =
+      result.error?.message ?? "This action is off and won't run."; // query-error-ok: the tool call's own result error, not a query or mutation error
     return (
       <div className="rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
-        {result.error?.message ?? translateInstant("apps.detail.test.result.off")}
+        {offMessage}
       </div>
     );
   }
@@ -650,85 +860,302 @@ function ResultPanel({
   // result envelope). Surface that as a failure card, not the green translateInstant("Worked") one.
   const toolError = result.error ?? mcpToolError(result.result);
   if (toolError) {
-    return <ErrorResult outcome={outcome} appName={appName} connectionId={connectionId} error={toolError} />;
+    return (
+      <ErrorResult
+        outcome={outcome}
+        appName={appName}
+        connectionId={connectionId}
+        error={toolError}
+      />
+    );
   }
-  return <AllowedResult outcome={outcome} entry={entry} appName={appName} connectionId={connectionId} />;
+  return (
+    <AllowedResult
+      outcome={outcome}
+      entry={entry}
+      appName={appName}
+      connectionId={connectionId}
+    />
+  );
 }
 
-function ProviderPendingResult({ pending, appName, connectionId, agent }: { pending: ToolUpstreamPending; appName: string; connectionId: string; agent?: TestAgentWithAccess }) {
+function ProviderPendingResult({
+  pending,
+  appName,
+  connectionId,
+  agent,
+}: {
+  pending: ToolUpstreamPending;
+  appName: string;
+  connectionId: string;
+  agent?: TestAgentWithAccess;
+}) {
   useTranslation();
-  const [resumed, setResumed] = useState<{ outcome: RunOutcome; entry: ToolCatalogEntry; action: "accept" | "decline" | "cancel" } | null>(null);
-  const resumeError = resumed && (resumed.outcome.result.error ?? mcpToolError(resumed.outcome.result.result));
-  const stoppedByUser = resumed && resumeError?.reasonCode === "tool_error" &&
-    ((resumed.action === "decline" && /request was declined by the user/i.test(resumeError.message)) ||
-      (resumed.action === "cancel" && /request was cancelled by the user/i.test(resumeError.message)));
-  if (stoppedByUser) return <div role="status" className="space-y-2 rounded-md border border-border bg-muted/40 p-4 text-sm">
-    <p className="font-medium">{resumed.action === "decline" ? translateInstant("issueThreadInteraction.requestDeclined") : translateInstant("Request cancelled")}</p>
-    <p>{resumeError.message}</p>
-    <p className="text-muted-foreground">{translateInstant("The original call was not repeated.")}</p>
-    {pending.executionId && <p>{translateInstant("Execution:")}{" "}<code className="break-all">{pending.executionId}</code></p>}
-  </div>;
-  if (resumed) return <ResultPanel outcome={resumed.outcome} entry={resumed.entry} appName={appName} connectionId={connectionId} agent={agent} />;
+  const [resumed, setResumed] = useState<{
+    outcome: RunOutcome;
+    entry: ToolCatalogEntry;
+    action: "accept" | "decline" | "cancel";
+  } | null>(null);
+  const resumeError =
+    resumed &&
+    (resumed.outcome.result.error ??
+      mcpToolError(resumed.outcome.result.result));
+  const stoppedByUser =
+    resumed &&
+    resumeError?.reasonCode === "tool_error" &&
+    ((resumed.action === "decline" &&
+      /request was declined by the user/i.test(resumeError.message)) || // query-error-ok: classifies the tool result, nothing is rendered here
+      (resumed.action === "cancel" &&
+        /request was cancelled by the user/i.test(resumeError.message))); // query-error-ok: classifies the tool result, nothing is rendered here
+  const resumeMessage = stoppedByUser ? resumeError.message : null; // query-error-ok: the tool call's own result error, not a query or mutation error
+  if (stoppedByUser)
+    return (
+      <div
+        role="status"
+        className="space-y-2 rounded-md border border-border bg-muted/40 p-4 text-sm"
+      >
+        <p className="font-medium">
+          {resumed.action === "decline"
+            ? "Request declined"
+            : translateInstant("Request cancelled")}
+        </p>
+        <p>{resumeMessage}</p>
+        <p className="text-muted-foreground">
+          {translateInstant("The original call was not repeated.", { defaultValue: "The original call was not repeated." })}
+        </p>
+        {pending.executionId && (
+          <p>
+            {translateInstant("Execution:", { defaultValue: "Execution:" })} <code className="break-all">{pending.executionId}</code>
+          </p>
+        )}
+      </div>
+    );
+  if (resumed)
+    return (
+      <ResultPanel
+        outcome={resumed.outcome}
+        entry={resumed.entry}
+        appName={appName}
+        connectionId={connectionId}
+        agent={agent}
+      />
+    );
   return (
-    <div role="status" className="space-y-3 rounded-md border border-border bg-muted/40 p-4 text-sm">
-      <p className="font-medium">{pending.kind === "approval" ? translateInstant("Approval needed") : translateInstant("Authorization needed")} {translateInstant("in")}{" "}{appName}</p>
-      <p className="text-muted-foreground">{translateInstant("Paperclip allowed this call. The provider needs your input before it can continue.")}</p>
+    <div
+      role="status"
+      className="space-y-3 rounded-md border border-border bg-muted/40 p-4 text-sm"
+    >
+      <p className="font-medium">
+        {pending.kind === "approval"
+          ? translateInstant("Approval needed")
+          : translateInstant("Authorization needed")}{" "}
+        {translateInstant("in")} {appName}
+      </p>
+      <p className="text-muted-foreground">
+        {translateInstant(
+          "Paperclip allowed this call. The provider needs your input before it can continue.",
+        )}
+      </p>
       {pending.links.map((link) => {
         const checked = checkOAuthEndpointUrl(link.url);
-        return checked.ok ? <Button key={checked.url} variant="outline" asChild><a href={checked.url} target="_blank" rel="noopener noreferrer">{translateInstant("Continue at")}{" "}{checked.host}</a></Button> : null;
+        return checked.ok ? (
+          <Button key={checked.url} variant="outline" asChild>
+            <a href={checked.url} target="_blank" rel="noopener noreferrer">
+              {translateInstant("Continue at")} {checked.host}
+            </a>
+          </Button>
+        ) : null;
       })}
-      {pending.message && <p className="whitespace-pre-wrap break-words">{pending.message}</p>}
-      {pending.links.length === 0 && !pending.resumeTool && <p>{translateInstant("Open the provider dashboard to complete this request.")}</p>}
-      {pending.executionId && <p>{translateInstant("Execution:")}{" "}<code className="break-all">{pending.executionId}</code></p>}
-      {pending.elicitationId && <p>{translateInstant("Request:")}{" "}<code className="break-all">{pending.elicitationId}</code></p>}
-      {pending.expiresAt && <p>{translateInstant("Approval expires")}{" "}{new Date(pending.expiresAt).toLocaleTimeString()}{translateInstant(".")}</p>}
-      {pending.resumeTool && agent ? <ProviderResumeControls pending={pending} connectionId={connectionId} agent={agent} onResult={setResumed} /> :
-      <p className="text-muted-foreground">{pending.resumeTool
-        ? translateInstant("connectionUi.actionTest.afterApproval", { action: pending.resumeTool })
-        : translateInstant("After authorizing, check the provider's result before using Run again. Paperclip will not repeat the call automatically.")}</p>}
+      {pending.message && (
+        <p className="whitespace-pre-wrap break-words">{pending.message}</p>
+      )}
+      {pending.links.length === 0 && !pending.resumeTool && (
+        <p>
+          {translateInstant(
+            "Open the provider dashboard to complete this request.",
+          )}
+        </p>
+      )}
+      {pending.executionId && (
+        <p>
+          {translateInstant("Execution:")}{" "}
+          <code className="break-all">{pending.executionId}</code>
+        </p>
+      )}
+      {pending.elicitationId && (
+        <p>
+          {translateInstant("Request:")}{" "}
+          <code className="break-all">{pending.elicitationId}</code>
+        </p>
+      )}
+      {pending.expiresAt && (
+        <p>
+          {translateInstant("Approval expires")}{" "}
+          {new Date(pending.expiresAt).toLocaleTimeString()}
+          {translateInstant(".")}
+        </p>
+      )}
+      {pending.resumeTool && agent ? (
+        <ProviderResumeControls
+          pending={pending}
+          connectionId={connectionId}
+          agent={agent}
+          onResult={setResumed}
+        />
+      ) : (
+        <p className="text-muted-foreground">
+          {pending.resumeTool
+            ? translateInstant("connectionUi.actionTest.afterApproval", {
+                action: pending.resumeTool,
+              })
+            : translateInstant(
+                "After authorizing, check the provider's result before using Run again. Paperclip will not repeat the call automatically.",
+              )}
+        </p>
+      )}
     </div>
   );
 }
 
-function ProviderResumeControls({ pending, connectionId, agent, onResult }: {
-  pending: ToolUpstreamPending; connectionId: string; agent: TestAgentWithAccess;
-  onResult: (result: { outcome: RunOutcome; entry: ToolCatalogEntry; action: "accept" | "decline" | "cancel" }) => void;
+function ProviderResumeControls({
+  pending,
+  connectionId,
+  agent,
+  onResult,
+}: {
+  pending: ToolUpstreamPending;
+  connectionId: string;
+  agent: TestAgentWithAccess;
+  onResult: (result: {
+    outcome: RunOutcome;
+    entry: ToolCatalogEntry;
+    action: "accept" | "decline" | "cancel";
+  }) => void;
 }) {
   useTranslation();
-  const catalog = useQuery({ queryKey: queryKeys.tools.catalog(connectionId), queryFn: () => toolsApi.listCatalog(connectionId) });
-  const entry = catalog.data?.catalog.find((item) => item.toolName === pending.resumeTool && item.status === "active");
-  const schema = (pending.requestedSchema ?? { type: "object", properties: {} }) as JsonSchemaNode;
-  const [content, setContent] = useState<Record<string, unknown>>(() => getDefaultValues(schema));
+  const catalog = useQuery({
+    queryKey: queryKeys.tools.catalog(connectionId),
+    queryFn: () => toolsApi.listCatalog(connectionId),
+  });
+  const catalogView = useQueryView(catalog);
+  const entry = catalog.data?.catalog.find(
+    (item) => item.toolName === pending.resumeTool && item.status === "active",
+  );
+  const schema = (pending.requestedSchema ?? {
+    type: "object",
+    properties: {},
+  }) as JsonSchemaNode;
+  const [content, setContent] = useState<Record<string, unknown>>(() =>
+    getDefaultValues(schema),
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const resume = useMutation({
     mutationFn: async (action: "accept" | "decline" | "cancel") => {
       const started = Date.now();
-      const result = await toolsApi.runTestCall(connectionId, { agentId: agent.id, toolName: entry!.toolName,
-        parameters: { executionId: pending.executionId, action, ...(action === "accept" ? { content: JSON.stringify(content) } : {}) } });
-      return { result, durationMs: Date.now() - started, agentName: agent.name, ranAt: new Date() };
-    }, onSuccess: (outcome, action) => { if (entry) onResult({ outcome, entry, action }); },
+      const result = await toolsApi.runTestCall(connectionId, {
+        agentId: agent.id,
+        toolName: entry!.toolName,
+        parameters: {
+          executionId: pending.executionId,
+          action,
+          ...(action === "accept" ? { content: JSON.stringify(content) } : {}),
+        },
+      });
+      return {
+        result,
+        durationMs: Date.now() - started,
+        agentName: agent.name,
+        ranAt: new Date(),
+      };
+    },
+    onSuccess: (outcome, action) => {
+      if (entry) onResult({ outcome, entry, action });
+    },
   });
-  const expired = !!pending.expiresAt && Date.parse(pending.expiresAt) <= Date.now();
-  const permission = agent.effectiveAccess.tools.find((tool) => tool.toolName === entry?.toolName)?.decision ?? "off";
+  const expired =
+    !!pending.expiresAt && Date.parse(pending.expiresAt) <= Date.now();
+  const permission =
+    agent.effectiveAccess.tools.find(
+      (tool) => tool.toolName === entry?.toolName,
+    )?.decision ?? "off";
   const submit = (action: "accept" | "decline" | "cancel") => {
-    const validation = action === "accept" ? validateJsonSchemaForm(schema, content) : {};
+    const validation =
+      action === "accept" ? validateJsonSchemaForm(schema, content) : {};
     setErrors(validation);
     if (!Object.keys(validation).length) resume.mutate(action);
   };
-  return <div className="space-y-3">
-    <p className="text-muted-foreground">{translateInstant("Review the provider's request, then resume this execution as")}{" "}{agent.name}{translateInstant(". The original action will not be started again.")}</p>
-    <div className="flex items-center gap-2"><span>{translateInstant("Resume permission")}</span><DecisionBadge decision={permission} /></div>
-    {Object.keys(schema.properties ?? {}).length > 0 && <JsonSchemaForm schema={schema} values={content} onChange={setContent} errors={errors} disabled={resume.isPending} />}
-    <div className="flex flex-wrap gap-2">
-      <Button disabled={!entry || expired || permission === "off" || resume.isPending} onClick={() => submit("accept")}>{resume.isPending ? translateInstant("Resuming…") : "Approve and resume"}</Button>
-      <Button variant="outline" disabled={!entry || expired || permission === "off" || resume.isPending} onClick={() => submit("decline")}>{translateInstant("Decline")}</Button>
-      <Button variant="ghost" disabled={!entry || expired || permission === "off" || resume.isPending} onClick={() => submit("cancel")}>{translateInstant("Cancel request")}</Button>
+  return (
+    <div className="space-y-3">
+      <p className="text-muted-foreground">
+        {translateInstant(
+          "Review the provider's request, then resume this execution as",
+        )}{" "}
+        {agent.name}
+        {translateInstant(". The original action will not be started again.")}
+      </p>
+      <div className="flex items-center gap-2">
+        <span>{translateInstant("Resume permission")}</span>
+        <DecisionBadge decision={permission} />
+      </div>
+      {Object.keys(schema.properties ?? {}).length > 0 && (
+        <JsonSchemaForm
+          schema={schema}
+          values={content}
+          onChange={setContent}
+          errors={errors}
+          disabled={resume.isPending}
+        />
+      )}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          disabled={
+            !entry || expired || permission === "off" || resume.isPending
+          }
+          onClick={() => submit("accept")}
+        >
+          {resume.isPending
+            ? translateInstant("Resuming…")
+            : "Approve and resume"}
+        </Button>
+        <Button
+          variant="outline"
+          disabled={
+            !entry || expired || permission === "off" || resume.isPending
+          }
+          onClick={() => submit("decline")}
+        >
+          {translateInstant("Decline")}
+        </Button>
+        <Button
+          variant="ghost"
+          disabled={
+            !entry || expired || permission === "off" || resume.isPending
+          }
+          onClick={() => submit("cancel")}
+        >
+          {translateInstant("Cancel request")}
+        </Button>
+      </div>
+      {expired && (
+        <p>
+          {translateInstant("This provider approval expired. Check the provider before starting a new action.", { defaultValue: "This provider approval expired. Check the provider before starting a new action." })}
+        </p>
+      )}
+      {permission === "off" && (
+        <p>{translateInstant("Allow the resume action in Permissions before continuing.", { defaultValue: "Allow the resume action in Permissions before continuing." })}</p>
+      )}
+      {catalogView.kind === "error" && (
+        <QueryErrorState
+          size="inline"
+          error={catalog.error}
+          action="load the resume action"
+          onRetry={catalogView.retry}
+          retrying={catalogView.isFetching}
+        />
+      )}
+      {resume.error && <p role="alert">{describeError(resume.error).body}</p>}
     </div>
-    {expired && <p>{translateInstant("This provider approval expired. Check the provider before starting a new action.")}</p>}
-    {permission === "off" && <p>{translateInstant("Allow the resume action in Permissions before continuing.")}</p>}
-    {catalog.isError && <p role="alert">{translateInstant("Could not load the resume action. Close this test and try again.")}</p>}
-    {resume.isError && <p role="alert">{resume.error instanceof Error ? resume.error.message : "Could not resume. Check the provider before trying again."}</p>}
-  </div>;
+  );
 }
 
 /**
@@ -737,18 +1164,27 @@ function ProviderResumeControls({ pending, connectionId, agent, onResult }: {
  * the result envelope. Pull a renderable error out of that shape, or null when
  * the result is a clean success.
  */
-function mcpToolError(value: unknown): { message: string; reasonCode: string | null } | null {
+function mcpToolError(
+  value: unknown,
+): { message: string; reasonCode: string | null } | null {
   if (!value || typeof value !== "object") return null;
   const envelope = value as Record<string, unknown>;
-  const data = envelope.data && typeof envelope.data === "object" ? (envelope.data as Record<string, unknown>) : null;
+  const data =
+    envelope.data && typeof envelope.data === "object"
+      ? (envelope.data as Record<string, unknown>)
+      : null;
   const isError = data?.isError === true || envelope.isError === true;
   if (!isError) return null;
   // Prefer what the app actually said (normalized content text) over the generic
   // gateway wrapper string, falling back to a friendly default.
   const message =
-    (typeof envelope.content === "string" && envelope.content.trim() !== "" && envelope.content)
-    || (typeof envelope.error === "string" && envelope.error.trim() !== "" && envelope.error)
-    || "The app returned an error result.";
+    (typeof envelope.content === "string" &&
+      envelope.content.trim() !== "" &&
+      envelope.content) ||
+    (typeof envelope.error === "string" &&
+      envelope.error.trim() !== "" &&
+      envelope.error) ||
+    "The app returned an error result.";
   return { message, reasonCode: "tool_error" };
 }
 
@@ -757,7 +1193,9 @@ function mcpToolError(value: unknown): { message: string; reasonCode: string | n
 /** Pull a row array out of a tool result for the "n rows came back" heuristic. */
 function asRows(value: unknown): Record<string, unknown>[] | null {
   const isObjArray = (v: unknown): v is Record<string, unknown>[] =>
-    Array.isArray(v) && v.length > 0 && v.every((i) => i !== null && typeof i === "object" && !Array.isArray(i));
+    Array.isArray(v) &&
+    v.length > 0 &&
+    v.every((i) => i !== null && typeof i === "object" && !Array.isArray(i));
   if (isObjArray(value)) return value;
   if (value && typeof value === "object") {
     for (const key of ["rows", "values", "items", "data", "results"]) {
@@ -772,61 +1210,121 @@ function isEmptyResult(value: unknown): boolean {
   if (value === null || value === undefined) return true;
   if (Array.isArray(value)) return value.length === 0;
   if (typeof value === "string") return value.trim() === "";
-  if (typeof value === "object") return Object.keys(value as object).length === 0;
+  if (typeof value === "object")
+    return Object.keys(value as object).length === 0;
   return false;
 }
 
 /** The gateway keeps the original MCP blocks inside `data`; the top-level
  * `content` is only a flattened convenience string. Prefer structured output,
  * then parse individual text blocks when they happen to contain JSON. */
-function resultPreview(value: unknown): { items: Array<{ label: string | null; value: unknown }>; summary: unknown; rawFallback?: boolean } {
+function resultPreview(value: unknown): {
+  items: Array<{ label: string | null; value: unknown }>;
+  summary: unknown;
+  rawFallback?: boolean;
+} {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return { items: [{ label: null, value }], summary: value };
   }
   const wrapper = value as Record<string, unknown>;
-  const data = wrapper.data && typeof wrapper.data === "object" && !Array.isArray(wrapper.data)
-    ? wrapper.data as Record<string, unknown>
-    : null;
-  const result = data && (Array.isArray(data.content) || data.structuredContent != null) ? data : wrapper;
+  const data =
+    wrapper.data &&
+    typeof wrapper.data === "object" &&
+    !Array.isArray(wrapper.data)
+      ? (wrapper.data as Record<string, unknown>)
+      : null;
+  const result =
+    data && (Array.isArray(data.content) || data.structuredContent != null)
+      ? data
+      : wrapper;
   const blocks = Array.isArray(result.content) ? result.content : null;
   if (!blocks && result.structuredContent == null) {
     return { items: [{ label: null, value }], summary: value };
   }
 
   const parseText = (text: string): unknown => {
-    try { return JSON.parse(text); } catch { return text; }
+    try {
+      return JSON.parse(text);
+    } catch {
+      return text;
+    }
   };
   const structured = result.structuredContent;
   const items: Array<{ label: string | null; value: unknown }> = [];
-  const structuredValue = typeof structured === "string" ? parseText(structured) : structured;
+  const structuredValue =
+    typeof structured === "string" ? parseText(structured) : structured;
   if (structured !== null && structured !== undefined) {
     items.push({ label: null, value: structuredValue });
   }
   for (const block of blocks ?? []) {
     if (!block || typeof block !== "object" || Array.isArray(block)) {
-      return { items: [{ label: null, value }], summary: value, rawFallback: true };
+      return {
+        items: [{ label: null, value }],
+        summary: value,
+        rawFallback: true,
+      };
     }
     const content = block as Record<string, unknown>;
     if (content.type === "text" && typeof content.text === "string") {
       const parsed = parseText(content.text);
-      if (structured === null || structured === undefined || safeStringify(parsed) !== safeStringify(structuredValue)) {
-        items.push({ label: (blocks?.length ?? 0) > 1 || (structured !== null && structured !== undefined) ? "Text" : null, value: parsed });
+      if (
+        structured === null ||
+        structured === undefined ||
+        safeStringify(parsed) !== safeStringify(structuredValue)
+      ) {
+        items.push({
+          label:
+            (blocks?.length ?? 0) > 1 ||
+            (structured !== null && structured !== undefined)
+              ? "Text"
+              : null,
+          value: parsed,
+        });
       }
     } else if (content.type === "image" || content.type === "audio") {
-      items.push({ label: content.type === "image" ? translateInstant("Image") : "Audio", value: typeof content.mimeType === "string" ? content.mimeType : "Media attachment" });
+      items.push({
+        label: content.type === "image" ? translateInstant("Image") : "Audio",
+        value:
+          typeof content.mimeType === "string"
+            ? content.mimeType
+            : "Media attachment",
+      });
     } else if (content.type === "resource_link") {
-      items.push({ label: "Resource", value: content.title ?? content.name ?? content.uri ?? "Resource link" });
-    } else if (content.type === "resource" && content.resource && typeof content.resource === "object") {
+      items.push({
+        label: "Resource",
+        value: content.title ?? content.name ?? content.uri ?? "Resource link",
+      });
+    } else if (
+      content.type === "resource" &&
+      content.resource &&
+      typeof content.resource === "object"
+    ) {
       const resource = content.resource as Record<string, unknown>;
-      items.push({ label: "Resource", value: typeof resource.text === "string" ? parseText(resource.text) : resource.uri ?? "Embedded resource" });
+      items.push({
+        label: "Resource",
+        value:
+          typeof resource.text === "string"
+            ? parseText(resource.text)
+            : (resource.uri ?? "Embedded resource"),
+      });
     } else {
-      return { items: [{ label: null, value }], summary: value, rawFallback: true };
+      return {
+        items: [{ label: null, value }],
+        summary: value,
+        rawFallback: true,
+      };
     }
   }
   if (items.length === 0 && typeof wrapper.content === "string") {
     items.push({ label: null, value: parseText(wrapper.content) });
   }
-  return { items, summary: structured !== null && structured !== undefined ? structuredValue : items[0]?.value };
+  return {
+    items,
+    summary:
+      structured !== null && structured !== undefined
+        ? structuredValue
+        : items[0]?.value,
+  };
 }
 
 function writeVerb(entry: ToolCatalogEntry): string | null {
@@ -837,11 +1335,16 @@ function writeVerb(entry: ToolCatalogEntry): string | null {
   return null;
 }
 
-function successHeadline(value: unknown, entry: ToolCatalogEntry, appName: string): string {
+function successHeadline(
+  value: unknown,
+  entry: ToolCatalogEntry,
+  appName: string,
+): string {
   const verb = writeVerb(entry);
   if (!entry.isReadOnly && verb) return `Worked. Row ${verb}.`;
   const rows = asRows(value);
-  if (rows) return `Worked. ${rows.length} ${rows.length === 1 ? "row" : "rows"} came back.`;
+  if (rows)
+    return `Worked. ${rows.length} ${rows.length === 1 ? "row" : "rows"} came back.`;
   if (isEmptyResult(value)) return "Worked. No data to show.";
   return `Worked. ${appName} sent back the result.`;
 }
@@ -864,21 +1367,30 @@ function AllowedResult({
     <div className="rounded-md border border-emerald-500/40 bg-emerald-500/5 p-4">
       <div className="flex items-center gap-2">
         <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-        <span className="text-sm font-medium text-foreground">{successHeadline(preview.summary, entry, appName)}</span>
+        <span className="text-sm font-medium text-foreground">
+          {successHeadline(preview.summary, entry, appName)}
+        </span>
       </div>
       <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
         <Clock className="h-3 w-3" />
-        {translateInstant("Ran as")}{" "}{outcome.agentName} · {seconds(outcome.durationMs)} · {relTime(outcome.ranAt)}
+        {translateInstant("Ran as")} {outcome.agentName} ·{" "}
+        {seconds(outcome.durationMs)} · {relTime(outcome.ranAt)}
       </p>
 
       {preview.items.some((item) => !isEmptyResult(item.value)) && (
         <div className="mt-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{translateInstant("Preview")}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {translateInstant("Preview")}
+          </p>
           <div className="mt-1.5">
             <div className="space-y-2">
               {preview.items.map((item, index) => (
                 <div key={index}>
-                  {item.label && <p className="mb-1 text-xs font-medium text-muted-foreground">{item.label}</p>}
+                  {item.label && (
+                    <p className="mb-1 text-xs font-medium text-muted-foreground">
+                      {item.label}
+                    </p>
+                  )}
                   <PrettyPreview value={item.value} />
                 </div>
               ))}
@@ -887,14 +1399,25 @@ function AllowedResult({
         </div>
       )}
 
-      <RawResponseDisclosure value={value} initiallyOpen={preview.rawFallback} />
+      <RawResponseDisclosure
+        value={value}
+        initiallyOpen={preview.rawFallback}
+      />
 
       <p className="mt-3 text-xs text-muted-foreground">
         {translateInstant("apps.detail.test.result.activityPrefix")}{" "}
-        <Link className="text-primary hover:underline" to="/activity?mode=agents&action=tool_">
-          {translateInstant("Audit log")}</Link>
-        {translateInstant(".")}</p>
-      <p className="mt-1 text-xs text-muted-foreground">{translateInstant("Last run finished in")}{" "}{seconds(outcome.durationMs)}{translateInstant(".")}</p>
+        <Link
+          className="text-primary hover:underline"
+          to="/activity?mode=agents&action=tool_"
+        >
+          {translateInstant("Audit log")}
+        </Link>
+        {translateInstant(".")}
+      </p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {translateInstant("Last run finished in")} {seconds(outcome.durationMs)}
+        {translateInstant(".")}
+      </p>
     </div>
   );
 }
@@ -904,17 +1427,26 @@ function PrettyPreview({ value }: { value: unknown }) {
   useTranslation();
   const rows = asRows(value);
   if (rows) {
-    const columns = Array.from(new Set(rows.flatMap((r) => Object.keys(r)))).slice(0, 6);
+    const columns = Array.from(
+      new Set(rows.flatMap((r) => Object.keys(r))),
+    ).slice(0, 6);
     const shown = rows.slice(0, 6);
-    const needsCards = columns.length > 4 || shown.some((row) =>
-      columns.some((column) => cellText(row[column]).length > 80)
-    );
+    const needsCards =
+      columns.length > 4 ||
+      shown.some((row) =>
+        columns.some((column) => cellText(row[column]).length > 80),
+      );
     if (needsCards) {
       return (
         <div className="space-y-2">
-          {shown.map((row, index) => <PreviewRowCard key={index} row={row} index={index} />)}
+          {shown.map((row, index) => (
+            <PreviewRowCard key={index} row={row} index={index} />
+          ))}
           {rows.length > shown.length && (
-            <p className="text-(length:--text-micro) text-muted-foreground">… {rows.length - shown.length}{" "}{translateInstant("more rows in the raw response")}</p>
+            <p className="text-(length:--text-micro) text-muted-foreground">
+              … {rows.length - shown.length}{" "}
+              {translateInstant("more rows in the raw response")}
+            </p>
           )}
         </div>
       );
@@ -925,7 +1457,9 @@ function PrettyPreview({ value }: { value: unknown }) {
           <thead className="bg-muted/50 text-muted-foreground">
             <tr>
               {columns.map((col) => (
-                <th key={col} className="px-2.5 py-1.5 font-medium">{col}</th>
+                <th key={col} className="px-2.5 py-1.5 font-medium">
+                  {col}
+                </th>
               ))}
             </tr>
           </thead>
@@ -933,30 +1467,46 @@ function PrettyPreview({ value }: { value: unknown }) {
             {shown.map((row, i) => (
               <tr key={i}>
                 {columns.map((col) => (
-                  <td key={col} className="px-2.5 py-1.5 text-foreground">{cellText(row[col])}</td>
+                  <td key={col} className="px-2.5 py-1.5 text-foreground">
+                    {cellText(row[col])}
+                  </td>
                 ))}
               </tr>
             ))}
           </tbody>
         </table>
         {rows.length > shown.length && (
-          <p className="px-2.5 py-1.5 text-(length:--text-micro) text-muted-foreground">… {rows.length - shown.length}{" "}{translateInstant("more rows")}</p>
+          <p className="px-2.5 py-1.5 text-(length:--text-micro) text-muted-foreground">
+            … {rows.length - shown.length} {translateInstant("more rows")}
+          </p>
         )}
       </div>
     );
   }
   if (typeof value === "string") {
-    return <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md border border-border bg-background p-3 text-xs text-foreground">{value}</pre>;
+    return (
+      <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md border border-border bg-background p-3 text-xs text-foreground">
+        {value}
+      </pre>
+    );
   }
   if (value && typeof value === "object" && !Array.isArray(value)) {
     return (
       <dl className="max-h-64 overflow-auto divide-y divide-border rounded-md border border-border bg-background text-xs">
-        {Object.entries(value as Record<string, unknown>).map(([key, field]) => (
-          <div key={key} className="grid grid-cols-3 gap-3 px-3 py-2">
-            <dt className="min-w-0 break-words text-muted-foreground">{key}</dt>
-            <dd className="col-span-2 min-w-0 break-words whitespace-pre-wrap text-foreground">{typeof field === "object" && field !== null ? safeStringify(collapseDeep(field, 2)) : cellText(field)}</dd>
-          </div>
-        ))}
+        {Object.entries(value as Record<string, unknown>).map(
+          ([key, field]) => (
+            <div key={key} className="grid grid-cols-3 gap-3 px-3 py-2">
+              <dt className="min-w-0 break-words text-muted-foreground">
+                {key}
+              </dt>
+              <dd className="col-span-2 min-w-0 break-words whitespace-pre-wrap text-foreground">
+                {typeof field === "object" && field !== null
+                  ? safeStringify(collapseDeep(field, 2))
+                  : cellText(field)}
+              </dd>
+            </div>
+          ),
+        )}
       </dl>
     );
   }
@@ -967,18 +1517,37 @@ function PrettyPreview({ value }: { value: unknown }) {
   );
 }
 
-function PreviewRowCard({ row, index }: { row: Record<string, unknown>; index: number }) {
+function PreviewRowCard({
+  row,
+  index,
+}: {
+  row: Record<string, unknown>;
+  index: number;
+}) {
   useTranslation();
-  const titleKey = ["title", "name", "label"].find((key) => typeof row[key] === "string" && row[key] !== "");
-  const summaryKey = ["highlight", "description", "summary"].find((key) => typeof row[key] === "string" && row[key] !== "");
-  const url = typeof row.url === "string" && /^https?:\/\//i.test(row.url) ? row.url : null;
+  const titleKey = ["title", "name", "label"].find(
+    (key) => typeof row[key] === "string" && row[key] !== "",
+  );
+  const summaryKey = ["highlight", "description", "summary"].find(
+    (key) => typeof row[key] === "string" && row[key] !== "",
+  );
+  const url =
+    typeof row.url === "string" && /^https?:\/\//i.test(row.url)
+      ? row.url
+      : null;
   const details = Object.entries(row)
-    .filter(([key]) => key !== titleKey && key !== summaryKey && (key !== "url" || !url))
+    .filter(
+      ([key]) =>
+        key !== titleKey && key !== summaryKey && (key !== "url" || !url),
+    )
     .sort(([left], [right]) => {
       const order = ["url", "type", "status", "timestamp", "id"];
       const leftRank = order.indexOf(left);
       const rightRank = order.indexOf(right);
-      return (leftRank < 0 ? order.length : leftRank) - (rightRank < 0 ? order.length : rightRank);
+      return (
+        (leftRank < 0 ? order.length : leftRank) -
+        (rightRank < 0 ? order.length : rightRank)
+      );
     });
   return (
     <div className="min-w-0 rounded-md border border-border bg-background p-3 text-xs">
@@ -986,27 +1555,51 @@ function PreviewRowCard({ row, index }: { row: Record<string, unknown>; index: n
         <p className="min-w-0 break-words text-sm font-medium text-foreground">
           {titleKey ? cellText(row[titleKey]) : `Result ${index + 1}`}
         </p>
-        {url && <a className="shrink-0 text-primary hover:underline" href={url} target="_blank" rel="noopener noreferrer">{translateInstant("Open link")}</a>}
+        {url && (
+          <a
+            className="shrink-0 text-primary hover:underline"
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {translateInstant("Open link")}
+          </a>
+        )}
       </div>
-      {summaryKey && <p className="mt-1 line-clamp-2 break-words text-muted-foreground">{cellText(row[summaryKey]).replace(/\*\*(.*?)\*\*/g, "$1")}</p>}
+      {summaryKey && (
+        <p className="mt-1 line-clamp-2 break-words text-muted-foreground">
+          {cellText(row[summaryKey]).replace(/\*\*(.*?)\*\*/g, "$1")}
+        </p>
+      )}
       {details.length > 0 && (
         <dl className="mt-2 space-y-1">
           {details.slice(0, 3).map(([key, field]) => (
             <div key={key} className="grid grid-cols-3 gap-2">
-              <dt className="min-w-0 break-words text-muted-foreground">{key}</dt>
-              <dd className="col-span-2 min-w-0 break-all text-foreground">{cellText(field)}</dd>
+              <dt className="min-w-0 break-words text-muted-foreground">
+                {key}
+              </dt>
+              <dd className="col-span-2 min-w-0 break-all text-foreground">
+                {cellText(field)}
+              </dd>
             </div>
           ))}
         </dl>
       )}
-      {details.length > 3 && <p className="mt-2 text-muted-foreground">{details.length - 3} {translateInstant("issueProperties.more")}{" "}{details.length === 4 ? "field" : "fields"}{" "}{translateInstant("in the raw response")}</p>}
+      {details.length > 3 && (
+        <p className="mt-2 text-muted-foreground">
+          {details.length - 3} {translateInstant("issueProperties.more")}{" "}
+          {details.length === 4 ? "field" : "fields"}{" "}
+          {translateInstant("in the raw response")}
+        </p>
+      )}
     </div>
   );
 }
 
 function cellText(value: unknown): string {
   if (value === null || value === undefined) return "—";
-  if (typeof value === "object") return Array.isArray(value) ? `[${value.length}]` : "{…}";
+  if (typeof value === "object")
+    return Array.isArray(value) ? `[${value.length}]` : "{…}";
   return String(value);
 }
 
@@ -1014,7 +1607,8 @@ function cellText(value: unknown): string {
 function collapseDeep(value: unknown, maxDepth: number, depth = 0): unknown {
   if (value === null || typeof value !== "object") return value;
   if (depth >= maxDepth) return Array.isArray(value) ? "[…]" : "{…}";
-  if (Array.isArray(value)) return value.map((v) => collapseDeep(v, maxDepth, depth + 1));
+  if (Array.isArray(value))
+    return value.map((v) => collapseDeep(v, maxDepth, depth + 1));
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
     out[k] = collapseDeep(v, maxDepth, depth + 1);
@@ -1022,7 +1616,13 @@ function collapseDeep(value: unknown, maxDepth: number, depth = 0): unknown {
   return out;
 }
 
-function RawResponseDisclosure({ value, initiallyOpen = false }: { value: unknown; initiallyOpen?: boolean }) {
+function RawResponseDisclosure({
+  value,
+  initiallyOpen = false,
+}: {
+  value: unknown;
+  initiallyOpen?: boolean;
+}) {
   useTranslation();
   const [showRaw, setShowRaw] = useState(initiallyOpen);
   if (value === undefined || value === null) return null;
@@ -1033,7 +1633,9 @@ function RawResponseDisclosure({ value, initiallyOpen = false }: { value: unknow
         onClick={() => setShowRaw((prev) => !prev)}
         className="text-xs font-semibold uppercase tracking-wide text-primary hover:underline"
       >
-        {showRaw ? translateInstant("apps.detail.test.result.hideRaw") : translateInstant("apps.detail.test.result.showRaw")}
+        {showRaw
+          ? translateInstant("apps.detail.test.result.hideRaw")
+          : translateInstant("apps.detail.test.result.showRaw")}
       </button>
       {showRaw && (
         <pre className="mt-2 max-h-64 overflow-auto rounded-md border border-border bg-background p-3 text-xs text-foreground">
@@ -1057,41 +1659,63 @@ function ErrorResult({
   connectionId: string;
   error: { message: string; reasonCode: string | null };
 }) {
-  useTranslation();
-  const hints = errorHints(error.message, error.reasonCode);
+  const toolErrorMessage = error.message; // query-error-ok: the tool call's own result error, not a query or mutation error
+  const hints = errorHints(toolErrorMessage, error.reasonCode);
   const needsReconnect = isReconnectError(error.reasonCode);
   return (
     <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-4">
       <div className="flex items-center gap-2">
         <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-        <span className="text-sm font-medium text-foreground">{translateInstant("apps.detail.test.error.title")}</span>
+        <span className="text-sm font-medium text-foreground">
+          {translateInstant("apps.detail.test.error.title")}
+        </span>
       </div>
       <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
         <Clock className="h-3 w-3" />
-        {translateInstant("Tried as")}{" "}{outcome.agentName} · {seconds(outcome.durationMs)} · {relTime(outcome.ranAt)}
+        {translateInstant("Tried as")} {outcome.agentName} ·{" "}
+        {seconds(outcome.durationMs)} · {relTime(outcome.ranAt)}
       </p>
       <div className="mt-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{translateInstant("apps.testAction.appFeedback", { app: appName })}</p>
-        <p className="mt-1 break-words text-sm text-foreground">{error.message}</p>
-        {error.reasonCode && <p className="mt-0.5 text-xs text-muted-foreground">{translateInstant("code:")}{" "}{error.reasonCode}</p>}
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          What {appName} said
+        </p>
+        <p className="mt-1 break-words text-sm text-foreground">
+          {toolErrorMessage}
+        </p>
+        {error.reasonCode && (
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {translateInstant("code:", { defaultValue: "code:" })} {error.reasonCode}
+          </p>
+        )}
       </div>
       <div className="mt-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{translateInstant("apps.detail.test.error.whatToTry")}</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {translateInstant("apps.detail.test.error.whatToTry")}
+        </p>
         <ul className="mt-1 list-disc space-y-0.5 pl-4 text-sm text-foreground">
           {hints.map((hint) => (
             <li key={hint}>{hint}</li>
           ))}
         </ul>
       </div>
-      {outcome.result.result !== undefined && <RawResponseDisclosure value={outcome.result.result} initiallyOpen />}
+      {outcome.result.result !== undefined && (
+        <RawResponseDisclosure value={outcome.result.result} initiallyOpen />
+      )}
       <p className="mt-3 text-xs text-muted-foreground">
-        {needsReconnect ? "After reconnecting, run this action again." : translateInstant("apps.detail.test.error.adjustInput")}
+        {needsReconnect
+          ? "After reconnecting, run this action again."
+          : translateInstant("apps.detail.test.error.adjustInput")}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
         {translateInstant("apps.detail.test.error.activityPrefix")}{" "}
-        <Link className="text-primary hover:underline" to="/activity?mode=agents&action=tool_">
-          {translateInstant("Audit log")}</Link>
-        {translateInstant(".")}</p>
+        <Link
+          className="text-primary hover:underline"
+          to="/activity?mode=agents&action=tool_"
+        >
+          {translateInstant("Audit log")}
+        </Link>
+        {translateInstant(".")}
+      </p>
     </div>
   );
 }
@@ -1099,15 +1723,13 @@ function ErrorResult({
 // --- Ask first (T9) — live status polled from the action-request snapshot ---
 
 /** Phases that have settled — once reached, the panel stops polling. */
-const TERMINAL_PHASES: ReadonlySet<ToolConnectionTestCallStatus["phase"]> = new Set([
-  "done",
-  "denied",
-  "cancelled",
-  "expired",
-]);
+const TERMINAL_PHASES: ReadonlySet<ToolConnectionTestCallStatus["phase"]> =
+  new Set(["done", "denied", "cancelled", "expired"]);
 
 /** Compact "Where" line from the redacted parameter snapshot: `key: value` pairs. */
-function formatWhere(parameters: Record<string, unknown> | null | undefined): string | null {
+function formatWhere(
+  parameters: Record<string, unknown> | null | undefined,
+): string | null {
   if (!parameters) return null;
   const parts: string[] = [];
   for (const [key, value] of Object.entries(parameters)) {
@@ -1139,7 +1761,10 @@ function AskFirstResult({
   const [cancelled, setCancelled] = useState(false);
 
   const statusQuery = useQuery({
-    queryKey: queryKeys.tools.testCallStatus(connectionId, actionRequestId ?? "__none__"),
+    queryKey: queryKeys.tools.testCallStatus(
+      connectionId,
+      actionRequestId ?? "__none__",
+    ),
     queryFn: () => toolsApi.getTestCallStatus(connectionId, actionRequestId!),
     enabled: !!actionRequestId && !cancelled,
     // Poll until the request settles (approved+done, denied, cancelled, expired).
@@ -1150,43 +1775,83 @@ function AskFirstResult({
   });
 
   const cancel = useMutation({
-    mutationFn: () => toolsApi.declineActionRequest(selectedCompanyId!, actionRequestId!),
+    mutationFn: () =>
+      toolsApi.declineActionRequest(selectedCompanyId!, actionRequestId!),
     onSuccess: () => {
       setCancelled(true);
-      queryClient.invalidateQueries({ queryKey: queryKeys.tools.actionRequests(selectedCompanyId!, "pending") });
-      if (selectedCompanyId) queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tools.actionRequests(selectedCompanyId!, "pending"),
+      });
+      if (selectedCompanyId)
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.apps.attention(selectedCompanyId),
+        });
     },
   });
 
   const status = statusQuery.data;
-  const phase: ToolConnectionTestCallStatus["phase"] = cancelled ? "cancelled" : status?.phase ?? "waiting";
+  const phase: ToolConnectionTestCallStatus["phase"] = cancelled
+    ? "cancelled"
+    : (status?.phase ?? "waiting");
 
   // Once the call has been approved and run, mutate into the real result shape
   // so the tester sees the response (or failure) without re-running.
   if (phase === "done" && status) {
-    if (status.upstreamPending) return <ProviderPendingResult pending={status.upstreamPending} appName={appName} connectionId={connectionId} agent={agent} />;
+    if (status.upstreamPending)
+      return (
+        <ProviderPendingResult
+          pending={status.upstreamPending}
+          appName={appName}
+          connectionId={connectionId}
+          agent={agent}
+        />
+      );
     // Same as the allowed path: an approved call can still fail at the MCP tool
     // layer (isError:true in the envelope) without a top-level error.
     const toolError = status.error ?? mcpToolError(status.result);
     if (toolError) {
       const errorOutcome: RunOutcome = {
-        result: { decision: "allowed", invocationId: status.invocationId, error: toolError },
+        result: {
+          decision: "allowed",
+          invocationId: status.invocationId,
+          error: toolError,
+        },
         agentName: outcome.agentName,
         durationMs: status.durationMs ?? outcome.durationMs,
         ranAt: status.resolvedAt ? new Date(status.resolvedAt) : outcome.ranAt,
       };
-      return <ErrorResult outcome={errorOutcome} appName={appName} connectionId={connectionId} error={toolError} />;
+      return (
+        <ErrorResult
+          outcome={errorOutcome}
+          appName={appName}
+          connectionId={connectionId}
+          error={toolError}
+        />
+      );
     }
     const allowedOutcome: RunOutcome = {
-      result: { decision: "allowed", invocationId: status.invocationId, result: status.result },
+      result: {
+        decision: "allowed",
+        invocationId: status.invocationId,
+        result: status.result,
+      },
       agentName: outcome.agentName,
       durationMs: status.durationMs ?? outcome.durationMs,
       ranAt: status.resolvedAt ? new Date(status.resolvedAt) : outcome.ranAt,
     };
-    return <AllowedResult outcome={allowedOutcome} entry={entry} appName={appName} connectionId={connectionId} />;
+    return (
+      <AllowedResult
+        outcome={allowedOutcome}
+        entry={entry}
+        appName={appName}
+        connectionId={connectionId}
+      />
+    );
   }
 
-  const requestedAt = status?.requestedAt ? new Date(status.requestedAt) : outcome.ranAt;
+  const requestedAt = status?.requestedAt
+    ? new Date(status.requestedAt)
+    : outcome.ranAt;
   const where = formatWhere(status?.parameters);
   const statusLabel =
     phase === "running"
@@ -1198,31 +1863,50 @@ function AskFirstResult({
           : phase === "expired"
             ? "Expired — send it again"
             : `Waiting · ${relTime(requestedAt)}`;
-  const settled = phase === "denied" || phase === "cancelled" || phase === "expired";
+  const settled =
+    phase === "denied" || phase === "cancelled" || phase === "expired";
 
   return (
     <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-4">
       <div className="flex items-center gap-2">
         <ShieldQuestion className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-        <span className="text-sm font-medium text-foreground">{translateInstant("apps.detail.test.askFirst.title")}</span>
+        <span className="text-sm font-medium text-foreground">
+          {translateInstant("apps.detail.test.askFirst.title")}
+        </span>
       </div>
-      <p className="mt-0.5 text-xs text-muted-foreground">{outcome.agentName}{" "}{translateInstant("needs your approval before this runs.")}</p>
+      <p className="mt-0.5 text-xs text-muted-foreground">
+        {outcome.agentName}{" "}
+        {translateInstant("needs your approval before this runs.")}
+      </p>
 
       <dl className="mt-3 space-y-1.5 text-sm">
         <div className="flex gap-3">
-          <dt className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{translateInstant("Action")}</dt>
+          <dt className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {translateInstant("Action")}
+          </dt>
           <dd className="text-foreground">{entry.title ?? entry.toolName}</dd>
         </div>
         {where && (
           <div className="flex gap-3">
-            <dt className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{translateInstant("apps.detail.test.askFirst.field.where")}</dt>
+            <dt className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {translateInstant("apps.detail.test.askFirst.field.where")}
+            </dt>
             <dd className="break-words text-foreground">{where}</dd>
           </div>
         )}
         <div className="flex gap-3">
-          <dt className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{translateInstant("Status")}</dt>
-          <dd className={cn("flex items-center gap-1.5 text-foreground", settled && "text-muted-foreground")}>
-            {phase === "running" && <Loader2 className="h-3 w-3 animate-spin" />}
+          <dt className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {translateInstant("Status")}
+          </dt>
+          <dd
+            className={cn(
+              "flex items-center gap-1.5 text-foreground",
+              settled && "text-muted-foreground",
+            )}
+          >
+            {phase === "running" && (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            )}
             {statusLabel}
           </dd>
         </div>
@@ -1231,18 +1915,32 @@ function AskFirstResult({
       {!settled && (
         <p className="mt-3 text-sm text-foreground">
           {translateInstant("apps.detail.test.askFirst.reviewPrefix")}{" "}
-          <Link className="font-medium text-primary hover:underline" to={appTabHref(connectionId, "review")}>
-            {translateInstant("Review tab")}</Link>{" "}
-          {translateInstant("apps.detail.test.askFirst.reviewSuffix")}</p>
+          <Link
+            className="font-medium text-primary hover:underline"
+            to={appTabHref(connectionId, "review")}
+          >
+            {translateInstant("Review tab")}
+          </Link>{" "}
+          {translateInstant("apps.detail.test.askFirst.reviewSuffix")}
+        </p>
       )}
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <Button asChild size="sm" variant="outline">
-          <Link to={appTabHref(connectionId, "review")}>{translateInstant("apps.detail.test.askFirst.openReview")}</Link>
+          <Link to={appTabHref(connectionId, "review")}>
+            {translateInstant("apps.detail.test.askFirst.openReview")}
+          </Link>
         </Button>
         {phase === "waiting" && actionRequestId && selectedCompanyId && (
-          <Button size="sm" variant="ghost" onClick={() => cancel.mutate()} disabled={cancel.isPending}>
-            {cancel.isPending ? translateInstant("Cancelling…") : translateInstant("apps.detail.test.askFirst.cancelRequest")}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => cancel.mutate()}
+            disabled={cancel.isPending}
+          >
+            {cancel.isPending
+              ? translateInstant("Cancelling…")
+              : translateInstant("apps.detail.test.askFirst.cancelRequest")}
           </Button>
         )}
       </div>
@@ -1275,9 +1973,10 @@ function OffExplanation({
   // for large companies.
   const others = allAgents.filter((a) => a.id !== agent.id);
 
-  const whyBody = entry.status === "quarantined"
-    ? "This action is new and hasn't been turned on yet."
-    : `${agent.name}'s access profile sets this action to Off.`;
+  const whyBody =
+    entry.status === "quarantined"
+      ? "This action is new and hasn't been turned on yet."
+      : `${agent.name}'s access profile sets this action to Off.`;
 
   // "Last changed by {Actor} · {relativeTime}" — only the access config carries
   // this; a quarantined action has never been configured, so there's nothing to
@@ -1294,28 +1993,55 @@ function OffExplanation({
         <div className="flex items-start gap-2">
           <Ban className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
           <div className="text-sm text-muted-foreground">
-            <p className="font-medium text-foreground">{title}{" "}{translateInstant("is off for")}{" "}{agent.name}{translateInstant(".")}</p>
-            <p className="mt-0.5">{translateInstant("apps.detail.test.off.description")}</p>
+            <p className="font-medium text-foreground">
+              {title} {translateInstant("is off for")} {agent.name}
+              {translateInstant(".")}
+            </p>
+            <p className="mt-0.5">
+              {translateInstant("apps.detail.test.off.description")}
+            </p>
             <p className="mt-2">
-              {translateInstant("Want to test it? Turn it on for")}{" "}{agent.name} {translateInstant("in")}{" "}
-              <Link className="font-medium text-primary hover:underline" to={appTabHref(connectionId, "permissions")}>
-                {translateInstant("Permissions")}</Link>{" "}
-              {translateInstant("apps.detail.test.off.permissionsSuffix")}</p>
+              {translateInstant("Want to test it? Turn it on for")} {agent.name}{" "}
+              {translateInstant("in")}{" "}
+              <Link
+                className="font-medium text-primary hover:underline"
+                to={appTabHref(connectionId, "permissions")}
+              >
+                {translateInstant("Permissions")}
+              </Link>{" "}
+              {translateInstant("apps.detail.test.off.permissionsSuffix")}
+            </p>
           </div>
         </div>
         <Button asChild size="sm">
-          <Link to={permHref}>{translateInstant("apps.detail.test.off.openPermissions")}</Link>
+          <Link to={permHref}>
+            {translateInstant("apps.detail.test.off.openPermissions")}
+          </Link>
         </Button>
-        <p className="text-xs text-muted-foreground">{translateInstant("No call will be made — this action is off for")}{" "}{agent.name}{translateInstant(".")}</p>
+        <p className="text-xs text-muted-foreground">
+          {translateInstant("No call will be made — this action is off for")}{" "}
+          {agent.name}
+          {translateInstant(".")}
+        </p>
       </div>
 
       <aside>
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{translateInstant("apps.detail.test.off.sidebar.title")}</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {translateInstant("apps.detail.test.off.sidebar.title")}
+        </p>
         <p className="mt-1.5 text-xs text-muted-foreground">{whyBody}</p>
-        {auditHint && <p className="mt-1.5 text-(length:--text-micro) text-muted-foreground">{auditHint}</p>}
+        {auditHint && (
+          <p className="mt-1.5 text-(length:--text-micro) text-muted-foreground">
+            {auditHint}
+          </p>
+        )}
         {others.length > 0 && (
           <div className="mt-3">
-            <p className="text-(length:--text-micro) font-medium text-muted-foreground">{translateInstant("apps.detail.test.off.sidebar.tryDifferentAgent")}</p>
+            <p className="text-(length:--text-micro) font-medium text-muted-foreground">
+              {translateInstant(
+                "apps.detail.test.off.sidebar.tryDifferentAgent",
+              )}
+            </p>
             <div className="mt-1 flex flex-wrap gap-1.5">
               {others.slice(0, 4).map((other) => (
                 <button
@@ -1353,15 +2079,25 @@ function safeStringify(value: unknown): string {
  * INVALID_ARGUMENT / RATE_LIMIT) with the locked generic fallback otherwise.
  */
 function isReconnectError(reasonCode: string | null | undefined): boolean {
-  return reasonCode === "grant_credential_invalid" || reasonCode === "oauth_insufficient_scope";
+  return (
+    reasonCode === "grant_credential_invalid" ||
+    reasonCode === "oauth_insufficient_scope"
+  );
 }
 
-export function errorHints(message: string, reasonCode: string | null | undefined): string[] {
+export function errorHints(
+  message: string,
+  reasonCode: string | null | undefined,
+): string[] {
   if (reasonCode === "grant_credential_invalid") {
-    return ["Ask the connection owner to reconnect it from Connectors with a fresh key or server URL."];
+    return [
+      "Ask the connection owner to reconnect it from Connectors with a fresh key or server URL.",
+    ];
   }
   if (reasonCode === "oauth_insufficient_scope") {
-    return ["Reconnect the app and allow the permissions required for this action."];
+    return [
+      "Reconnect the app and allow the permissions required for this action.",
+    ];
   }
   const haystack = `${reasonCode ?? ""} ${message}`.toUpperCase();
   if (haystack.includes("NOT_FOUND")) {
@@ -1370,20 +2106,34 @@ export function errorHints(message: string, reasonCode: string | null | undefine
       "Make sure this agent has access to that resource in the connected account.",
     ];
   }
-  if (haystack.includes("PERMISSION") || haystack.includes("FORBIDDEN") || haystack.includes("UNAUTHORIZED")) {
+  if (
+    haystack.includes("PERMISSION") ||
+    haystack.includes("FORBIDDEN") ||
+    haystack.includes("UNAUTHORIZED")
+  ) {
     return [
       "The connected account may not have permission for this action.",
       "Reconnect the app from Setup if its access was recently changed.",
     ];
   }
-  if (haystack.includes("INVALID_ARGUMENT") || haystack.includes("INVALID") || haystack.includes("BAD_REQUEST")) {
+  if (
+    haystack.includes("INVALID_ARGUMENT") ||
+    haystack.includes("INVALID") ||
+    haystack.includes("BAD_REQUEST")
+  ) {
     return [
       "Check the field formats above — a value may be the wrong type or shape.",
       "Open “More options” to confirm any advanced fields are filled in correctly.",
     ];
   }
-  if (haystack.includes("RATE_LIMIT") || haystack.includes("RESOURCE_EXHAUSTED") || haystack.includes("429")) {
-    return ["The app is rate-limiting calls right now — wait a moment and run it again."];
+  if (
+    haystack.includes("RATE_LIMIT") ||
+    haystack.includes("RESOURCE_EXHAUSTED") ||
+    haystack.includes("429")
+  ) {
+    return [
+      "The app is rate-limiting calls right now — wait a moment and run it again.",
+    ];
   }
   // Locked generic fallback (copy-spec decision #2).
   return ["Check the inputs above and try again."];

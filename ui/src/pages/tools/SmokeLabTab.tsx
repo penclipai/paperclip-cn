@@ -34,6 +34,7 @@ import {
   runHealth,
   type CellStatus,
 } from "./smoke-lab-matrix";
+import { describeError } from "@/api/errors";
 
 // Public, non-secret fixture credentials for the fake OAuth provider. Kept in
 // sync with SMOKE_LAB_DEMO_EMAIL / SMOKE_LAB_DEMO_PASSWORD in
@@ -45,7 +46,10 @@ function formatTime(value: string | Date | null | undefined): string {
   if (!value) return "—";
   const date = new Date(value as string | Date);
   if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(date);
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
 }
 
 function serviceTone(status: string): "success" | "warn" | "error" | "muted" {
@@ -58,10 +62,25 @@ function CellGlyph({ status }: { status: CellStatus }) {
   const pass = translateInstant("tools.smokeLab.status.pass");
   const fail = translateInstant("tools.smokeLab.status.fail");
   const skipped = translateInstant("tools.smokeLab.status.skipped");
-  if (status === "pass") return <Check className="mx-auto h-4 w-4 text-emerald-600 dark:text-emerald-400" aria-label={pass} />;
-  if (status === "fail") return <X className="mx-auto h-4 w-4 text-destructive" aria-label={fail} />;
-  if (status === "skipped") return <Minus className="mx-auto h-4 w-4 text-amber-500" aria-label={skipped} />;
-  return <span className="mx-auto block h-1.5 w-1.5 rounded-full bg-muted-foreground/30" aria-label={translateInstant("tools.smokeLab.status.notRun")} />;
+  if (status === "pass")
+    return (
+      <Check
+        className="mx-auto h-4 w-4 text-emerald-600 dark:text-emerald-400"
+        aria-label={pass}
+      />
+    );
+  if (status === "fail")
+    return <X className="mx-auto h-4 w-4 text-destructive" aria-label={fail} />;
+  if (status === "skipped")
+    return (
+      <Minus className="mx-auto h-4 w-4 text-amber-500" aria-label={skipped} />
+    );
+  return (
+    <span
+      className="mx-auto block h-1.5 w-1.5 rounded-full bg-muted-foreground/30"
+      aria-label={translateInstant("tools.smokeLab.status.notRun")}
+    />
+  );
 }
 
 const HEALTH_STYLES: Record<string, string> = {
@@ -102,44 +121,73 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
     refetchInterval: enabled && !!activeRunId ? 10_000 : false,
   });
 
-  const steps = useMemo<SmokeRunStep[]>(() => runDetailQuery.data?.steps ?? [], [runDetailQuery.data]);
+  const steps = useMemo<SmokeRunStep[]>(
+    () => runDetailQuery.data?.steps ?? [],
+    [runDetailQuery.data],
+  );
   const matrix = useMemo(() => buildSmokeMatrix(steps), [steps]);
   const activeRun = runDetailQuery.data?.run;
 
   function refresh() {
     qc.invalidateQueries({ queryKey: queryKeys.smokeLab.services(companyId) });
     qc.invalidateQueries({ queryKey: queryKeys.smokeLab.runs(companyId) });
-    if (activeRunId) qc.invalidateQueries({ queryKey: queryKeys.smokeLab.run(companyId, activeRunId) });
+    if (activeRunId)
+      qc.invalidateQueries({
+        queryKey: queryKeys.smokeLab.run(companyId, activeRunId),
+      });
   }
 
   const startMutation = useMutation({
     mutationFn: () => smokeLabApi.startServices(companyId),
     onSuccess: () => {
-      pushToast({ title: t("tools.smokeLab.toast.servicesStarted"), tone: "success" });
+      pushToast({
+        title: t("tools.smokeLab.toast.servicesStarted"),
+        tone: "success",
+      });
       refresh();
     },
-    onError: (e: Error) => pushToast({ title: t("tools.smokeLab.toast.startServicesFailed"), body: e.message, tone: "error" }),
+    onError: (e: Error) =>
+      pushToast({
+        title: translateInstant("tools.smokeLab.toast.startServicesFailed", { defaultValue: "Couldn't start services" }),
+        body: describeError(e).body,
+        tone: "error",
+      }),
   });
 
   const stopMutation = useMutation({
     mutationFn: () => smokeLabApi.stopServices(companyId),
     onSuccess: () => {
-      pushToast({ title: t("tools.smokeLab.toast.servicesStopped"), tone: "info" });
+      pushToast({
+        title: t("tools.smokeLab.toast.servicesStopped"),
+        tone: "info",
+      });
       refresh();
     },
-    onError: (e: Error) => pushToast({ title: t("tools.smokeLab.toast.stopServicesFailed"), body: e.message, tone: "error" }),
+    onError: (e: Error) =>
+      pushToast({
+        title: translateInstant("tools.smokeLab.toast.stopServicesFailed", { defaultValue: "Couldn't stop services" }),
+        body: describeError(e).body,
+        tone: "error",
+      }),
   });
 
   const installMutation = useMutation({
     mutationFn: () => smokeLabApi.installFixtures(companyId),
     onSuccess: (r) => {
       pushToast({
-        title: r.created ? t("tools.smokeLab.toast.fixturesInstalled") : t("tools.smokeLab.toast.fixturesPresent"),
+        title: r.created
+          ? t("tools.smokeLab.toast.fixturesInstalled")
+          : t("tools.smokeLab.toast.fixturesPresent"),
         tone: "success",
       });
       refresh();
     },
-    onError: (e: Error) => pushToast({ title: t("tools.smokeLab.toast.installFixturesFailed"), body: e.message, tone: "error" }),
+    onError: (e: Error) =>
+      pushToast({
+        title: translateInstant("tools.smokeLab.toast.installFixturesFailed", { defaultValue: "Couldn't install fixtures" }),
+        body: describeError(e).body,
+        tone: "error",
+      }),
   });
 
   const resetMutation = useMutation({
@@ -149,11 +197,17 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
       setSelectedRunId(null);
       refresh();
     },
-    onError: (e: Error) => pushToast({ title: t("tools.smokeLab.toast.resetFailed"), body: e.message, tone: "error" }),
+    onError: (e: Error) =>
+      pushToast({
+        title: translateInstant("tools.smokeLab.toast.resetFailed", { defaultValue: "Couldn't reset" }),
+        body: describeError(e).body,
+        tone: "error",
+      }),
   });
 
   const runSmokeMutation = useMutation({
-    mutationFn: () => smokeLabApi.createRun(companyId, { trigger: "manual", summary: {} }),
+    mutationFn: () =>
+      smokeLabApi.createRun(companyId, { trigger: "manual", summary: {} }),
     onSuccess: (r) => {
       pushToast({
         title: t("tools.smokeLab.toast.runStarted"),
@@ -163,7 +217,12 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
       setSelectedRunId(r.run.id);
       refresh();
     },
-    onError: (e: Error) => pushToast({ title: t("tools.smokeLab.toast.startRunFailed"), body: e.message, tone: "error" }),
+    onError: (e: Error) =>
+      pushToast({
+        title: translateInstant("tools.smokeLab.toast.startRunFailed", { defaultValue: "Couldn't start a run" }),
+        body: describeError(e).body,
+        tone: "error",
+      }),
   });
 
   const anyMutating =
@@ -179,11 +238,16 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
       <div className="rounded-lg border border-border bg-card p-6">
         <div className="flex items-center gap-2 text-foreground">
           <FlaskConical className="h-5 w-5 text-muted-foreground" />
-          <h2 className="text-base font-semibold">{t("tools.smokeLab.disabled.title")}</h2>
+          <h2 className="text-base font-semibold">
+            {t("tools.smokeLab.disabled.title")}
+          </h2>
         </div>
         <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
-          The Smoke Lab is an experimental developer surface for exercising the integration paths
-          against deterministic local fixtures. Turn on <code className="rounded bg-muted px-1 py-0.5 text-xs">{t("tools.smokeLab.title")}</code>{" "}
+          The Smoke Lab is an experimental developer surface for exercising the
+          integration paths against deterministic local fixtures. Turn on{" "}
+          <code className="rounded bg-muted px-1 py-0.5 text-xs">
+            {t("tools.smokeLab.title")}
+          </code>{" "}
           under Settings → Experimental to enable it.
         </p>
       </div>
@@ -191,7 +255,11 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
   }
 
   if (!loaded) {
-    return <div className="p-6 text-sm text-muted-foreground">{t("tools.smokeLab.loading")}</div>;
+    return (
+      <div className="p-6 text-sm text-muted-foreground">
+        {t("tools.smokeLab.loading")}
+      </div>
+    );
   }
 
   const services = servicesQuery.data?.services ?? [];
@@ -203,7 +271,9 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
       <header>
         <div className="flex flex-wrap items-center gap-2">
           <FlaskConical className="h-5 w-5 text-muted-foreground" />
-          <h1 className="text-xl font-bold text-foreground">{t("tools.smokeLab.title")}</h1>
+          <h1 className="text-xl font-bold text-foreground">
+            {t("tools.smokeLab.title")}
+          </h1>
           <Badge variant="outline">{t("tools.common.experimental")}</Badge>
           <a
             href="https://github.com/paperclipai/paperclip/blob/master/doc/connections/SMOKE-LAB-TUTORIAL.md"
@@ -211,7 +281,9 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
             rel="noreferrer"
             className="ml-auto inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
           >
-            <BookOpen className="h-4 w-4" /> {translateInstant("tools.smokeLab.tutorial")}</a>
+            <BookOpen className="h-4 w-4" />{" "}
+            {translateInstant("tools.smokeLab.tutorial")}
+          </a>
         </div>
         <p className="mt-1.5 max-w-3xl text-sm text-muted-foreground">
           {translateInstant("tools.smokeLab.description")}{" "}
@@ -221,8 +293,10 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
             rel="noreferrer"
             className="font-medium text-primary hover:underline"
           >
-            {translateInstant("tools.smokeLab.tutorialLower")}</a>
-          {translateInstant(".")}</p>
+            {translateInstant("tools.smokeLab.tutorialLower")}
+          </a>
+          {translateInstant(".")}
+        </p>
       </header>
 
       {/* Services */}
@@ -230,7 +304,9 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <ServerCog className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold text-foreground">{t("tools.smokeLab.services.title")}</h2>
+            <h2 className="text-sm font-semibold text-foreground">
+              {t("tools.smokeLab.services.title")}
+            </h2>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button
@@ -238,38 +314,49 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
               onClick={() => startMutation.mutate()}
               disabled={anyMutating}
             >
-              <Power className="h-4 w-4" /> {translateInstant("Start services")}</Button>
+              <Power className="h-4 w-4" /> {translateInstant("Start services")}
+            </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={() => stopMutation.mutate()}
               disabled={anyMutating}
             >
-              {translateInstant("Stop")}</Button>
+              {translateInstant("Stop")}
+            </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={() => installMutation.mutate()}
               disabled={anyMutating}
             >
-              {translateInstant("tools.smokeLab.services.installFixtures")}</Button>
+              {translateInstant("tools.smokeLab.services.installFixtures")}
+            </Button>
             <Button
               size="sm"
               variant="ghost"
               onClick={() => resetMutation.mutate()}
               disabled={anyMutating}
             >
-              <RotateCcw className="h-4 w-4" /> {translateInstant("Reset")}</Button>
+              <RotateCcw className="h-4 w-4" /> {translateInstant("Reset")}
+            </Button>
           </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
           {services.map((service) => (
-            <div key={service.id} className="rounded-lg border border-border bg-card p-4">
+            <div
+              key={service.id}
+              className="rounded-lg border border-border bg-card p-4"
+            >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="text-sm font-semibold text-foreground">{service.label}</p>
-                  <p className="text-xs text-muted-foreground">{service.detail ?? service.id}</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {service.label}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {service.detail ?? service.id}
+                  </p>
                 </div>
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium">
                   <span
@@ -284,9 +371,12 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
                   />
                   <span
                     className={cn(
-                      serviceTone(service.status) === "success" && "text-emerald-600 dark:text-emerald-400",
-                      serviceTone(service.status) === "error" && "text-destructive",
-                      serviceTone(service.status) === "muted" && "text-muted-foreground",
+                      serviceTone(service.status) === "success" &&
+                        "text-emerald-600 dark:text-emerald-400",
+                      serviceTone(service.status) === "error" &&
+                        "text-destructive",
+                      serviceTone(service.status) === "muted" &&
+                        "text-muted-foreground",
                     )}
                   >
                     {service.status}
@@ -295,27 +385,44 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
               </div>
               <dl className="mt-3 space-y-1 text-xs">
                 <div className="flex items-baseline gap-2">
-                  <dt className="w-16 shrink-0 text-muted-foreground">{t("tools.smokeLab.services.url")}</dt>
+                  <dt className="w-16 shrink-0 text-muted-foreground">
+                    {t("tools.smokeLab.services.url")}
+                  </dt>
                   <dd className="min-w-0 break-all font-mono text-foreground">
-                    {service.url ?? <span className="text-muted-foreground">{t("tools.smokeLab.services.notRunning")}</span>}
+                    {service.url ?? (
+                      <span className="text-muted-foreground">
+                        {t("tools.smokeLab.services.notRunning")}
+                      </span>
+                    )}
                   </dd>
                 </div>
               </dl>
             </div>
           ))}
           {services.length === 0 && (
-            <p className="text-sm text-muted-foreground">{t("tools.smokeLab.services.empty")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("tools.smokeLab.services.empty")}
+            </p>
           )}
         </div>
 
         {/* Demo credentials for the fake OAuth login */}
         <div className="rounded-lg border border-dashed border-border bg-muted/30 p-3">
-          <p className="text-xs font-semibold text-foreground">{t("tools.smokeLab.credentials.title")}</p>
+          <p className="text-xs font-semibold text-foreground">
+            {t("tools.smokeLab.credentials.title")}
+          </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {translateInstant("tools.smokeLab.credentials.description")}</p>
+            {translateInstant("tools.smokeLab.credentials.description")}
+          </p>
           <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 font-mono text-xs text-foreground">
-            <span>{translateInstant("tools.smokeLab.credentials.email")}{" "}{DEMO_EMAIL}</span>
-            <span>{translateInstant("tools.smokeLab.credentials.password")}{" "}{DEMO_PASSWORD}</span>
+            <span>
+              {translateInstant("tools.smokeLab.credentials.email")}{" "}
+              {DEMO_EMAIL}
+            </span>
+            <span>
+              {translateInstant("tools.smokeLab.credentials.password")}{" "}
+              {DEMO_PASSWORD}
+            </span>
           </div>
         </div>
       </section>
@@ -323,21 +430,40 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
       {/* Results matrix */}
       <section className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold text-foreground">{t("tools.smokeLab.matrix.title")}</h2>
+          <h2 className="text-sm font-semibold text-foreground">
+            {t("tools.smokeLab.matrix.title")}
+          </h2>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-1"><Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> {translateInstant("tools.smokeLab.status.pass")}</span>
-            <span className="inline-flex items-center gap-1"><X className="h-3.5 w-3.5 text-destructive" /> {translateInstant("tools.smokeLab.status.fail")}</span>
-            <span className="inline-flex items-center gap-1"><Minus className="h-3.5 w-3.5 text-amber-500" /> {translateInstant("tools.smokeLab.status.skipped")}</span>
-            <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" /> {translateInstant("tools.smokeLab.status.notRun")}</span>
+            <span className="inline-flex items-center gap-1">
+              <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />{" "}
+              {translateInstant("tools.smokeLab.status.pass")}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <X className="h-3.5 w-3.5 text-destructive" />{" "}
+              {translateInstant("tools.smokeLab.status.fail")}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Minus className="h-3.5 w-3.5 text-amber-500" />{" "}
+              {translateInstant("tools.smokeLab.status.skipped")}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" />{" "}
+              {translateInstant("tools.smokeLab.status.notRun")}
+            </span>
           </div>
         </div>
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full border-collapse text-xs">
             <thead>
               <tr className="border-b border-border bg-muted/40">
-                <th className="sticky left-0 z-10 bg-muted/40 px-3 py-2 text-left font-semibold text-foreground">{t("tools.smokeLab.matrix.path")}</th>
+                <th className="sticky left-0 z-10 bg-muted/40 px-3 py-2 text-left font-semibold text-foreground">
+                  {t("tools.smokeLab.matrix.path")}
+                </th>
                 {LIFECYCLE_STAGES.map((stage) => (
-                  <th key={stage.key} className="px-2 py-2 text-center font-medium text-muted-foreground">
+                  <th
+                    key={stage.key}
+                    className="px-2 py-2 text-center font-medium text-muted-foreground"
+                  >
                     {t(stage.labelKey, { defaultValue: stage.labelDefault })}
                   </th>
                 ))}
@@ -346,11 +472,22 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
             <tbody>
               {SMOKE_PATHS.map((path) => (
                 <tr key={path} className="border-b border-border last:border-0">
-                  <th scope="row" className="sticky left-0 z-10 bg-card px-3 py-2 text-left">
-                    <span className="font-mono font-semibold text-foreground">{path}</span>
-                    <span className="ml-2 text-foreground">{t(SMOKE_PATH_LABELS[path].titleKey, { defaultValue: SMOKE_PATH_LABELS[path].titleDefault })}</span>
+                  <th
+                    scope="row"
+                    className="sticky left-0 z-10 bg-card px-3 py-2 text-left"
+                  >
+                    <span className="font-mono font-semibold text-foreground">
+                      {path}
+                    </span>
+                    <span className="ml-2 text-foreground">
+                      {t(SMOKE_PATH_LABELS[path].titleKey, {
+                        defaultValue: SMOKE_PATH_LABELS[path].titleDefault,
+                      })}
+                    </span>
                     <span className="block text-(length:--text-micro) font-normal text-muted-foreground">
-                      {t(SMOKE_PATH_LABELS[path].detailKey, { defaultValue: SMOKE_PATH_LABELS[path].detailDefault })}
+                      {t(SMOKE_PATH_LABELS[path].detailKey, {
+                        defaultValue: SMOKE_PATH_LABELS[path].detailDefault,
+                      })}
                     </span>
                   </th>
                   {LIFECYCLE_STAGES.map((stage) => {
@@ -368,7 +505,8 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
         </div>
         {steps.length === 0 && (
           <p className="text-xs text-muted-foreground">
-            {translateInstant("tools.smokeLab.matrix.empty")}</p>
+            {translateInstant("tools.smokeLab.matrix.empty")}
+          </p>
         )}
       </section>
 
@@ -376,26 +514,37 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
       <section className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-foreground">{t("tools.smokeLab.runs.title")}</h2>
+            <h2 className="text-sm font-semibold text-foreground">
+              {t("tools.smokeLab.runs.title")}
+            </h2>
             <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-              <span className={cn("h-2 w-2 rounded-full", HEALTH_STYLES[health])} />
+              <span
+                className={cn("h-2 w-2 rounded-full", HEALTH_STYLES[health])}
+              />
               {health === "unknown" ? t("tools.smokeLab.runs.noneYet") : health}
               {failing.length > 0 && ` · failing: ${failing.join(", ")}`}
             </span>
           </div>
-          <Button size="sm" onClick={() => runSmokeMutation.mutate()} disabled={anyMutating}>
+          <Button
+            size="sm"
+            onClick={() => runSmokeMutation.mutate()}
+            disabled={anyMutating}
+          >
             {runSmokeMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Play className="h-4 w-4" />
             )}
-            {translateInstant("tools.smokeLab.runs.start")}</Button>
+            {translateInstant("tools.smokeLab.runs.start")}
+          </Button>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-(--gtc-64)">
           <div className="rounded-lg border border-border">
             {runs.length === 0 && (
-              <p className="p-4 text-sm text-muted-foreground">{t("tools.smokeLab.runs.empty")}</p>
+              <p className="p-4 text-sm text-muted-foreground">
+                {t("tools.smokeLab.runs.empty")}
+              </p>
             )}
             <ul className="divide-y divide-border">
               {runs.map((run: SmokeRun) => {
@@ -411,8 +560,12 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
                       )}
                     >
                       <span className="min-w-0">
-                        <span className="block text-xs font-medium text-foreground">{formatTime(run.startedAt)}</span>
-                        <span className="block text-(length:--text-micro) text-muted-foreground">{run.trigger}</span>
+                        <span className="block text-xs font-medium text-foreground">
+                          {formatTime(run.startedAt)}
+                        </span>
+                        <span className="block text-(length:--text-micro) text-muted-foreground">
+                          {run.trigger}
+                        </span>
                       </span>
                       <StatusBadge status={run.status} />
                     </button>
@@ -424,22 +577,31 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
 
           <div className="min-w-0 rounded-lg border border-border">
             {!activeRun && (
-              <p className="p-4 text-sm text-muted-foreground">{t("tools.smokeLab.runs.select")}</p>
+              <p className="p-4 text-sm text-muted-foreground">
+                {t("tools.smokeLab.runs.select")}
+              </p>
             )}
             {activeRun && (
               <div className="flex flex-col">
                 <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2.5">
                   <span className="text-xs text-muted-foreground">
-                    {translateInstant("Started")}{" "}{formatTime(activeRun.startedAt)} · finished {formatTime(activeRun.finishedAt)}
+                    {translateInstant("Started")}{" "}
+                    {formatTime(activeRun.startedAt)} · finished{" "}
+                    {formatTime(activeRun.finishedAt)}
                   </span>
                   <StatusBadge status={activeRun.status} />
                 </div>
                 {steps.length === 0 ? (
-                  <p className="p-4 text-sm text-muted-foreground">{t("tools.smokeLab.runs.noSteps")}</p>
+                  <p className="p-4 text-sm text-muted-foreground">
+                    {t("tools.smokeLab.runs.noSteps")}
+                  </p>
                 ) : (
                   <ul className="divide-y divide-border">
                     {steps.map((step) => (
-                      <li key={step.id} className="flex items-start gap-3 px-4 py-2.5">
+                      <li
+                        key={step.id}
+                        className="flex items-start gap-3 px-4 py-2.5"
+                      >
                         <span className="mt-0.5">
                           {step.status === "pass" ? (
                             <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
@@ -451,20 +613,28 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
                         </span>
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-medium text-foreground">
-                            <span className="font-mono">{step.path}</span> · {step.scenarioStep}
+                            <span className="font-mono">{step.path}</span> ·{" "}
+                            {step.scenarioStep}
                           </p>
                           {step.detail && (
-                            <p className="mt-0.5 break-words text-(length:--text-micro) text-muted-foreground">{step.detail}</p>
+                            <p className="mt-0.5 break-words text-(length:--text-micro) text-muted-foreground">
+                              {step.detail}
+                            </p>
                           )}
-                          {step.screenshotArtifactRef && typeof step.screenshotArtifactRef.url === "string" && (
-                            <a
-                              href={step.screenshotArtifactRef.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="mt-1 inline-block text-(length:--text-micro) font-medium text-primary hover:underline"
-                            >
-                              {translateInstant("tools.smokeLab.runs.viewScreenshot")}</a>
-                          )}
+                          {step.screenshotArtifactRef &&
+                            typeof step.screenshotArtifactRef.url ===
+                              "string" && (
+                              <a
+                                href={step.screenshotArtifactRef.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="mt-1 inline-block text-(length:--text-micro) font-medium text-primary hover:underline"
+                              >
+                                {translateInstant(
+                                  "tools.smokeLab.runs.viewScreenshot",
+                                )}
+                              </a>
+                            )}
                         </div>
                         {typeof step.durationMs === "number" && (
                           <span className="shrink-0 text-(length:--text-micro) tabular-nums text-muted-foreground">

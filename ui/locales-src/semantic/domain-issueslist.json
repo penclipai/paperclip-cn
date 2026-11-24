@@ -291,7 +291,7 @@
   },
   "issuesList.tokens": {
     "en": "tokens",
-    "zh-CN": "token",
+    "zh-CN": "词元",
     "reviewedEnglishHash": "c51e455b41df6c017327e16001dd064b8b6733faeaa69b23d9bd79c8079237d5"
   },
   "issuesList.updatedAtTime": {

@@ -13,9 +13,16 @@ import { ProjectTile } from "../components/ProjectTile";
 import { StatusBadge } from "../components/StatusBadge";
 import { MembershipAction } from "../components/MembershipAction";
 import { StarToggle } from "../components/StarToggle";
+import { ArtifactEmptyGraphic } from "@/components/artifacts/v1/ArtifactEmptyGraphic";
 import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
-import { formatDate, formatNumber, formatProjectBudget, projectUrl } from "../lib/utils";
+import { QueryErrorState, useQueryView } from "../components/QueryView";
+import {
+  formatDate,
+  formatNumber,
+  formatProjectBudget,
+  projectUrl,
+} from "../lib/utils";
 import {
   isStarred,
   resourceMembershipState,
@@ -27,19 +34,28 @@ import { ArrowUpDown, Check, Hexagon, Plus } from "lucide-react";
 import { Lock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 type ProjectSortField = "name" | "updated" | "created" | "targetDate";
 type ProjectSortDir = "asc" | "desc";
 
-const PROJECT_SORT_OPTIONS: Array<{ field: ProjectSortField; labelKey: string }> = [
+const PROJECT_SORT_OPTIONS: Array<{
+  field: ProjectSortField;
+  labelKey: string;
+}> = [
   { field: "name", labelKey: "Name" },
   { field: "updated", labelKey: "Updated" },
   { field: "created", labelKey: "Created" },
   { field: "targetDate", labelKey: "newProject.targetDatePlaceholder" },
 ];
 function compareProjectNames(left: Project, right: Project) {
-  const nameDiff = left.name.localeCompare(right.name, undefined, { sensitivity: "base" });
+  const nameDiff = left.name.localeCompare(right.name, undefined, {
+    sensitivity: "base",
+  });
   return nameDiff !== 0 ? nameDiff : left.id.localeCompare(right.id);
 }
 
@@ -62,7 +78,11 @@ function compareOptionalTime(
   return sortDir === "asc" ? leftTime - rightTime : rightTime - leftTime;
 }
 
-function sortProjects(projects: Project[], sortField: ProjectSortField, sortDir: ProjectSortDir) {
+function sortProjects(
+  projects: Project[],
+  sortField: ProjectSortField,
+  sortDir: ProjectSortDir,
+) {
   return [...projects].sort((left, right) => {
     let comparison = 0;
     if (sortField === "name") {
@@ -70,9 +90,24 @@ function sortProjects(projects: Project[], sortField: ProjectSortField, sortDir:
       return sortDir === "asc" ? comparison : -comparison;
     }
 
-    if (sortField === "updated") comparison = compareOptionalTime(left.updatedAt, right.updatedAt, sortDir);
-    else if (sortField === "created") comparison = compareOptionalTime(left.createdAt, right.createdAt, sortDir);
-    else comparison = compareOptionalTime(left.targetDate, right.targetDate, sortDir);
+    if (sortField === "updated")
+      comparison = compareOptionalTime(
+        left.updatedAt,
+        right.updatedAt,
+        sortDir,
+      );
+    else if (sortField === "created")
+      comparison = compareOptionalTime(
+        left.createdAt,
+        right.createdAt,
+        sortDir,
+      );
+    else
+      comparison = compareOptionalTime(
+        left.targetDate,
+        right.targetDate,
+        sortDir,
+      );
 
     if (comparison === 0) comparison = compareProjectNames(left, right);
     return comparison;
@@ -92,28 +127,25 @@ export function Projects() {
     setBreadcrumbs([{ label: translateInstant("Projects") }]);
   }, [setBreadcrumbs]);
 
-  const { data: allProjects, isLoading, error } = useQuery({
+  const projectsQuery = useQuery({
     queryKey: queryKeys.projects.list(selectedCompanyId!),
     queryFn: () => projectsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
+  const { data: allProjects, isLoading } = projectsQuery;
+  const projectsView = useQueryView(projectsQuery);
   const membershipsQuery = useResourceMemberships(selectedCompanyId);
   const membershipMutation = useResourceMembershipMutation(selectedCompanyId);
-  const projects = useMemo(
-    () => allProjects ?? [],
-    [allProjects],
-  );
-  const sortedProjects = useMemo(
-    () => {
-      const words = query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
-      const matching = projects.filter(project => {
-        const text = `${project.name} ${project.description ?? ""}`.toLocaleLowerCase();
-        return words.every(word => text.includes(word));
-      });
-      return sortProjects(matching, sortField, sortDir);
-    },
-    [projects, query, sortDir, sortField],
-  );
+  const projects = useMemo(() => allProjects ?? [], [allProjects]);
+  const sortedProjects = useMemo(() => {
+    const words = query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+    const matching = projects.filter((project) => {
+      const text =
+        `${project.name} ${project.description ?? ""}`.toLocaleLowerCase();
+      return words.every((word) => text.includes(word));
+    });
+    return sortProjects(matching, sortField, sortDir);
+  }, [projects, query, sortDir, sortField]);
   const groupedProjects = useMemo(() => {
     const groups = {
       mine: [] as typeof sortedProjects,
@@ -121,21 +153,46 @@ export function Projects() {
     };
 
     for (const project of sortedProjects) {
-      const state = resourceMembershipState(membershipsQuery.data, "project", project.id);
+      const state = resourceMembershipState(
+        membershipsQuery.data,
+        "project",
+        project.id,
+      );
       if (state === "left") groups.other.push(project);
       else groups.mine.push(project);
     }
 
     return groups;
   }, [membershipsQuery.data, sortedProjects]);
-  const sortLabel = translateInstant(PROJECT_SORT_OPTIONS.find((option) => option.field === sortField)?.labelKey ?? "Name");
+  const sortLabel = translateInstant(
+    PROJECT_SORT_OPTIONS.find((option) => option.field === sortField)
+      ?.labelKey ?? "Name",
+  );
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Hexagon} message={translateInstant("Select an organization to view projects.")} />;
+    return (
+      <EmptyState
+        icon={Hexagon}
+        message={translateInstant("Select an organization to view projects.")}
+      />
+    );
   }
 
-  if (isLoading) {
+  // Keep a loaded list on screen through a failed refetch; only a real
+  // failure, or an outage before the first load, replaces the page.
+  if (isLoading || projectsView.kind === "reconnecting") {
     return <PageSkeleton variant="list" />;
+  }
+  if (projectsView.kind === "error") {
+    return (
+      <QueryErrorState
+        size="page"
+        error={projectsView.error}
+        action="load projects"
+        onRetry={projectsView.retry}
+        retrying={projectsView.isFetching}
+      />
+    );
   }
 
   return (
@@ -143,9 +200,16 @@ export function Projects() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="sm" className="w-fit text-xs" title={translateInstant("Sort")}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-fit text-xs"
+              title={translateInstant("Sort")}
+            >
               <ArrowUpDown className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
-              <span>{translateInstant("searchFilters.sortPrefix")}{" "}{sortLabel}</span>
+              <span>
+                {translateInstant("searchFilters.sortPrefix")} {sortLabel}
+              </span>
             </Button>
           </PopoverTrigger>
           <PopoverContent align="start" className="w-44 p-0">
@@ -161,18 +225,26 @@ export function Projects() {
                   }`}
                   onClick={() => {
                     if (sortField === option.field) {
-                      setSortDir((current) => (current === "asc" ? "desc" : "asc"));
+                      setSortDir((current) =>
+                        current === "asc" ? "desc" : "asc",
+                      );
                       return;
                     }
                     setSortField(option.field);
-                    setSortDir(option.field === "name" || option.field === "targetDate" ? "asc" : "desc");
+                    setSortDir(
+                      option.field === "name" || option.field === "targetDate"
+                        ? "asc"
+                        : "desc",
+                    );
                   }}
                 >
                   <span>{translateInstant(option.labelKey)}</span>
                   {sortField === option.field ? (
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Check className="h-3 w-3" />
-                      {sortDir === "asc" ? translateInstant("Asc") : translateInstant("Desc")}
+                      {sortDir === "asc"
+                        ? translateInstant("Asc")
+                        : translateInstant("Desc")}
                     </span>
                   ) : null}
                 </button>
@@ -182,28 +254,35 @@ export function Projects() {
         </Popover>
         <Button size="sm" variant="outline" onClick={openNewProject}>
           <Plus className="h-4 w-4 mr-1" />
-          {translateInstant("Add Project")}</Button>
+          {translateInstant("Add Project")}
+        </Button>
       </div>
-
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
 
       {!isLoading && projects.length === 0 && (
         <EmptyState
           icon={Hexagon}
+          graphic={<ArtifactEmptyGraphic stack />}
           message={translateInstant("No projects yet.")}
           action={translateInstant("Add Project")}
+          hideActionIcon
           onAction={openNewProject}
         />
       )}
 
-      {projects.length > 0 && sortedProjects.length === 0 && <p className="text-sm text-muted-foreground">No projects match your search.</p>}
+      {projects.length > 0 && sortedProjects.length === 0 && (
+        <p className="text-sm text-muted-foreground">
+          No projects match your search.
+        </p>
+      )}
 
       {sortedProjects.length > 0 && (
         <div className="space-y-6">
-          {([
-            [translateInstant("My Projects"), groupedProjects.mine],
-            [translateInstant("Other Projects"), groupedProjects.other],
-          ] as const).map(([label, sectionProjects]) => {
+          {(
+            [
+              [translateInstant("My Projects"), groupedProjects.mine],
+              [translateInstant("Other Projects"), groupedProjects.other],
+            ] as const
+          ).map(([label, sectionProjects]) => {
             if (sectionProjects.length === 0) return null;
 
             return (
@@ -211,35 +290,76 @@ export function Projects() {
                 <div className="flex items-center justify-between">
                   <h2 className="text-sm font-medium">{label}</h2>
                   <span className="text-xs text-muted-foreground">
-                    {translateInstant("projects.projectCount", { count: sectionProjects.length })}
+                    {translateInstant("projects.projectCount", {
+                      count: sectionProjects.length,
+                    })}
                   </span>
                 </div>
                 <Card className="block py-0 overflow-hidden divide-y divide-border">
                   {sectionProjects.map((project) => {
-                    const state = resourceMembershipState(membershipsQuery.data, "project", project.id);
-                    const pending = membershipMutation.isPending &&
-                      membershipMutation.variables?.resourceType === "project" &&
+                    const state = resourceMembershipState(
+                      membershipsQuery.data,
+                      "project",
+                      project.id,
+                    );
+                    const pending =
+                      membershipMutation.isPending &&
+                      membershipMutation.variables?.resourceType ===
+                        "project" &&
                       membershipMutation.variables.resourceId === project.id;
-                    const starPending = pending && membershipMutation.variables?.starred !== undefined;
-                    const joinLeavePending = pending && membershipMutation.variables?.starred === undefined;
-                    const starred = isStarred(membershipsQuery.data, "project", project.id);
+                    const starPending =
+                      pending &&
+                      membershipMutation.variables?.starred !== undefined;
+                    const joinLeavePending =
+                      pending &&
+                      membershipMutation.variables?.starred === undefined;
+                    const starred = isStarred(
+                      membershipsQuery.data,
+                      "project",
+                      project.id,
+                    );
                     return (
                       <EntityRow
                         key={project.id}
-                        leading={<ProjectTile color={project.color ?? null} icon={project.icon ?? null} size="sm" />}
+                        leading={
+                          <ProjectTile
+                            color={project.color ?? null}
+                            icon={project.icon ?? null}
+                            size="sm"
+                          />
+                        }
                         title={project.name}
                         subtitle={project.description ?? undefined}
                         reserveSubtitleSpace
                         to={projectUrl(project)}
-                        className={state === "left" ? "group text-foreground/55" : "group"}
+                        className={
+                          state === "left"
+                            ? "group text-foreground/55"
+                            : "group"
+                        }
                         trailing={
                           <div className="flex items-center gap-3">
-                            {project.visibility === "private" ? <Lock className="size-4 shrink-0 text-muted-foreground" aria-label={translateInstant("Private project")} /> : null}
+                            {project.visibility === "private" ? (
+                              <Lock
+                                className="size-4 shrink-0 text-muted-foreground"
+                                aria-label={translateInstant("Private project")}
+                              />
+                            ) : null}
                             <span
                               className="hidden text-xs text-muted-foreground tabular-nums sm:inline"
-                              title={translateInstant("projects.taskCount", { count: project.taskCount ?? 0, formattedCount: formatNumber(project.taskCount ?? 0) })}
+                              title={translateInstant("projects.taskCount", {
+                                count: project.taskCount ?? 0,
+                                formattedCount: formatNumber(
+                                  project.taskCount ?? 0,
+                                ),
+                              })}
                             >
-                              {translateInstant("projects.taskCount", { count: project.taskCount ?? 0, formattedCount: formatNumber(project.taskCount ?? 0) })}
+                              {translateInstant("projects.taskCount", {
+                                count: project.taskCount ?? 0,
+                                formattedCount: formatNumber(
+                                  project.taskCount ?? 0,
+                                ),
+                              })}
                             </span>
                             {project.budget && (
                               <span className="hidden text-xs text-muted-foreground tabular-nums sm:inline">
@@ -255,32 +375,42 @@ export function Projects() {
                             <MembershipAction
                               state={state}
                               pending={joinLeavePending}
-                              pendingState={joinLeavePending ? membershipMutation.variables?.state : null}
+                              pendingState={
+                                joinLeavePending
+                                  ? membershipMutation.variables?.state
+                                  : null
+                              }
                               resourceName={project.name}
-                              onJoin={() => membershipMutation.mutate({
-                                resourceType: "project",
-                                resourceId: project.id,
-                                resourceName: project.name,
-                                state: "joined",
-                              })}
-                              onLeave={() => membershipMutation.mutate({
-                                resourceType: "project",
-                                resourceId: project.id,
-                                resourceName: project.name,
-                                state: "left",
-                              })}
+                              onJoin={() =>
+                                membershipMutation.mutate({
+                                  resourceType: "project",
+                                  resourceId: project.id,
+                                  resourceName: project.name,
+                                  state: "joined",
+                                })
+                              }
+                              onLeave={() =>
+                                membershipMutation.mutate({
+                                  resourceType: "project",
+                                  resourceId: project.id,
+                                  resourceName: project.name,
+                                  state: "left",
+                                })
+                              }
                             />
                             <StarToggle
                               size="row"
                               starred={starred}
                               pending={starPending}
                               resourceName={project.name}
-                              onToggle={(next) => membershipMutation.mutate({
-                                resourceType: "project",
-                                resourceId: project.id,
-                                resourceName: project.name,
-                                starred: next,
-                              })}
+                              onToggle={(next) =>
+                                membershipMutation.mutate({
+                                  resourceType: "project",
+                                  resourceId: project.id,
+                                  resourceName: project.name,
+                                  starred: next,
+                                })
+                              }
                             />
                           </div>
                         }

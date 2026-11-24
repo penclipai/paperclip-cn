@@ -5,6 +5,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams, useSearchParams } from "@/lib/router";
 import { accessApi } from "../api/access";
 import { authApi } from "../api/auth";
+import { describeError } from "../api/errors";
+import { QueryErrorState, useQueryView } from "../components/QueryView";
 import { queryKeys } from "../lib/queryKeys";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,14 +26,13 @@ export function BoardClaimPage() {
   const sessionQuery = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
-    retry: false,
   });
   const statusQuery = useQuery({
     queryKey: ["board-claim", token, code],
     queryFn: () => accessApi.getBoardClaimStatus(token, code),
     enabled: token.length > 0 && code.length > 0,
-    retry: false,
   });
+  const statusView = useQueryView(statusQuery);
 
   const claimMutation = useMutation({
     mutationFn: () => accessApi.claimBoard(token, code),
@@ -52,14 +53,17 @@ export function BoardClaimPage() {
     return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{translateInstant("boardClaim.loading")}</div>;
   }
 
-  if (statusQuery.error) {
+  if (statusView.kind === "error") {
     return (
       <div className="mx-auto max-w-xl py-10">
         <Card className="block p-6">
-          <h1 className="text-lg font-semibold">{translateInstant("boardClaim.unavailableTitle")}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {statusQuery.error instanceof Error ? statusQuery.error.message : translateInstant("boardClaim.unavailableBody")}
-          </p>
+          <QueryErrorState
+            size="panel"
+            error={statusView.error}
+            action="load the board claim challenge"
+            onRetry={statusView.retry}
+            retrying={statusView.isFetching}
+          />
         </Card>
       </div>
     );
@@ -107,9 +111,9 @@ export function BoardClaimPage() {
         <p className="mt-2 text-sm text-muted-foreground">
           {translateInstant("This will promote your user to instance admin and migrate organization ownership access from local trusted mode.")}</p>
 
-        {claimMutation.error && (
+        {claimMutation.isError && (
           <p className="mt-3 text-sm text-destructive">
-            {claimMutation.error instanceof Error ? claimMutation.error.message : translateInstant("boardClaim.failedToClaim")}
+            {describeError(claimMutation.error).body}
           </p>
         )}
 

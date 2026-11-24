@@ -16,7 +16,7 @@
   },
   "Waiting for Dot to read and confirm the harmless mailbox challenge.": {
     "en": "Waiting for Dot to read and confirm the harmless mailbox challenge.",
-    "zh-CN": "等待Dot读取并确认无害的邮箱挑战。",
+    "zh-CN": "正在等待 Dot 读取并确认无害的邮箱验证请求。",
     "reviewedEnglishHash": "783cf6da77b775aaa1b164e9795960d7ba9b2ccb8b4f52fc2b16d111acb17bf2"
   },
   "Waiting for GitHub installation or administrator approval…": {
@@ -31,7 +31,7 @@
   },
   "Waiting for output...": {
     "en": "Waiting for output...",
-    "zh-CN": "等待输出中...",
+    "zh-CN": "正在等待输出…",
     "reviewedEnglishHash": "0f90c2a1f7998681bbb23edf31ad171ac53767a64f31ce2ef6c440376da8792f"
   },
   "Waiting for remaining file consent": {
@@ -46,12 +46,12 @@
   },
   "Waiting for result...": {
     "en": "Waiting for result...",
-    "zh-CN": "等待结果中...",
+    "zh-CN": "正在等待结果…",
     "reviewedEnglishHash": "3baf0a61c565f0a4638c937dec8c8551dcc08f6143048cf7d68cdc78c0575610"
   },
   "Waiting for run output...": {
     "en": "Waiting for run output...",
-    "zh-CN": "等待运行输出中...",
+    "zh-CN": "正在等待运行输出…",
     "reviewedEnglishHash": "f38cf8a6ba74336fe629ad7821e7a90ad488aefb66dbc53e29ceaa92350804f3"
   },
   "Waiting for sign-in": {
@@ -61,7 +61,7 @@
   },
   "Waiting for sign-in…": {
     "en": "Waiting for sign-in…",
-    "zh-CN": "等待登录...",
+    "zh-CN": "正在等待登录…",
     "reviewedEnglishHash": "20ff194db3253bd173e9add97ec20055a3ff3dd12129af58aa6d0f440b854785"
   },
   "Waiting for transcript parsing...": {
@@ -241,12 +241,12 @@
   },
   "What": {
     "en": "What",
-    "zh-CN": "来自",
+    "zh-CN": "什么",
     "reviewedEnglishHash": "f8cf83a76a98df2dd4799b4d0d4f6ffc9af9a3a72d8648f94ca7cdea4b52fde7"
   },
   "What each agent consumed in the selected period.": {
     "en": "What each agent consumed in the selected period.",
-    "zh-CN": "查看各智能体在所选时间范围内的成本。",
+    "zh-CN": "各智能体在所选时段的消耗情况。",
     "reviewedEnglishHash": "bea79d519a4c815b7d5cbf24475db9c731ba2457163a88cf6e053ada38e9429b"
   },
   "What errored": {
@@ -386,7 +386,7 @@
   },
   "Why should these tasks change? (optional)": {
     "en": "Why should these tasks change? (optional)",
-    "zh-CN": "为什么这些任务要改变？ （选修的）",
+    "zh-CN": "为什么要更改这些任务？（可选）",
     "reviewedEnglishHash": "cdac7ad621af061b283243432e796a09d18dfee190c87d4f4a2c086d0b29b9d5"
   },
   "Will be materialized into the stable Paperclip-managed Claude prompt bundle on the next run.": {
@@ -406,12 +406,12 @@
   },
   "Withdrawn by": {
     "en": "Withdrawn by",
-    "zh-CN": "提现人：",
+    "zh-CN": "撤回人：",
     "reviewedEnglishHash": "305109dc492182d2521c122a8d19e850886db55458f65323a5656db1fa528de3"
   },
   "Withheld paths:": {
     "en": "Withheld paths:",
-    "zh-CN": "保留路径：",
+    "zh-CN": "已隐藏路径：",
     "reviewedEnglishHash": "a8fad72e092e48ded15495ef5ade8a82c0eac80fd6f6480be9ae1f223b7a4483"
   },
   "Within-turn checklist": {
@@ -461,7 +461,7 @@
   },
   "Worked for {{duration}}": {
     "en": "Worked for {{duration}}",
-    "zh-CN": "处理了 {{duration}}",
+    "zh-CN": "已工作 {{duration}}",
     "reviewedEnglishHash": "31464f8cfd9b58d7f88d098bf52c573c9b77565182eedf588248a51223646b04"
   },
   "Worker Process": {
@@ -566,7 +566,7 @@
   },
   "Worktrees ·": {
     "en": "Worktrees ·",
-    "zh-CN": "工作树·",
+    "zh-CN": "工作树 ·",
     "reviewedEnglishHash": "0b4b48f7b678f72f055acd447d6fe1bc350673bc58842c96273f450b10331dbb"
   },
   "Writable": {
@@ -596,12 +596,12 @@
   },
   "Write only what should be visible in the provider conversation.": {
     "en": "Write only what should be visible in the provider conversation.",
-    "zh-CN": "只写在提供者对话中应该可见的内容。",
+    "zh-CN": "只写应在提供方对话中显示的内容。",
     "reviewedEnglishHash": "c5a8ffd5cb40311852f5a0466bffa5b424a26572289f57390cc1d93b745a3fd3"
   },
   "Write something...": {
     "en": "Write something...",
-    "zh-CN": "写点什么...",
+    "zh-CN": "写点什么…",
     "reviewedEnglishHash": "ff2fd355e960a31c6de1faf192566438cfb3d2262f8486e388120e6db674934c"
   },
   "Write your answer": {

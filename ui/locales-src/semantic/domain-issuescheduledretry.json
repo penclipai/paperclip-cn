@@ -11,7 +11,7 @@
   },
   "issueScheduledRetry.badge.continuationScheduled": {
     "en": "Continuation scheduled",
-    "zh-CN": "已计划 continuation",
+    "zh-CN": "已计划续跑",
     "reviewedEnglishHash": "b51d6ab8c06fa08133220503a36a41ec010a333fc7b702c46fd26a4660665f41"
   },
   "issueScheduledRetry.badge.retryScheduled": {
@@ -46,7 +46,7 @@
   },
   "issueScheduledRetry.helper.pullContinuationForward": {
     "en": "Pulls continuation forward immediately",
-    "zh-CN": "立即提前执行 continuation",
+    "zh-CN": "立即提前执行续跑",
     "reviewedEnglishHash": "0e8e38b538ba2fe614f1e09173fb033c2212e4a7413702015fe196605109a507"
   },
   "issueScheduledRetry.helper.pullRetryForward": {
@@ -116,7 +116,7 @@
   },
   "issueScheduledRetry.scheduledContinuation": {
     "en": "Scheduled continuation",
-    "zh-CN": "已计划 continuation",
+    "zh-CN": "已计划续跑",
     "reviewedEnglishHash": "90d74172f1254f32271eb3b74c838476da58174c1f444237d5665fb2ecf7ce5e"
   },
   "issueScheduledRetry.scheduledRetry": {
@@ -141,7 +141,7 @@
   },
   "issueScheduledRetry.titleAction.continuation": {
     "en": "Automatic continuation",
-    "zh-CN": "自动 continuation",
+    "zh-CN": "自动续跑",
     "reviewedEnglishHash": "82ce2ec6bb89515ecfa4ef4671db07be121ff59ef65fae9a1ac3b9c9ff5b3793"
   },
   "issueScheduledRetry.titleAction.retry": {

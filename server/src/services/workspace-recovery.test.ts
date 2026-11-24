@@ -354,7 +354,7 @@ describe("automatic retained workspace recovery", () => {
     const localEnvironment = await environmentService(db).ensureLocalEnvironment(f.companyId);
     const prepared = await prepareHeartbeatWorkspace(db, {
       run: successor, agent,
-      task: { issueRef: issue, issueId: f.issueId, context: { issueId: f.issueId }, responsibleUserId: "local-board",
+      task: { issueRef: issue, issueId: f.issueId, wasIssueAssignee: issue.assigneeAgentId === agent.id, context: { issueId: f.issueId }, responsibleUserId: "local-board",
         previousSessionParams: null, freshWorkspace: readiness },
       policy: { trustPreset: { kind: "standard", preset: "standard", boundary: null, sourcePresets: {} },
         isolatedWorkspacesEnabled: false, effectiveExecutionWorkspaceMode: "shared_workspace",
@@ -715,9 +715,12 @@ describe("automatic retained workspace recovery", () => {
     // This is the verified platform boundary. Signature and identity validation
     // have independent coverage in native-workspace-platform-proof.test.ts.
     const proof = vi.spyOn(workerProof, "requestWorkspaceWorkerStopProof").mockResolvedValue({
-      v: 1, iss: "paperclip-cloud", aud: "paperclip-workspace-worker-stop/v1", sub: "test-stack", stopped: true,
-      iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 30,
-      runId: f.runId, ownerToken: prior.token, worker,
+      status: "verified",
+      proof: {
+        v: 1, iss: "paperclip-cloud", aud: "paperclip-workspace-worker-stop/v1", sub: "test-stack", stopped: true,
+        iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 30,
+        runId: f.runId, ownerToken: prior.token, worker,
+      },
     });
     try {
       await recoverRetainedWorkspace(f.input);

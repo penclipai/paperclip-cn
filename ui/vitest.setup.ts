@@ -2,7 +2,10 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import { beforeEach } from "vitest";
 
-import { SUPPORTED_UI_LOCALES } from "@penclipai/shared";
+// Keep test setup's dependency closure limited to the locale contract. The
+// shared package barrel also exports server-only helpers, which makes the
+// conservative incremental selector treat UI setup as opaque.
+import { SUPPORTED_UI_LOCALES } from "@penclipai/shared/branding";
 
 import enCommon from "./public/locales/en/common.json";
 import zhCnCommon from "./public/locales/zh-CN/common.json";

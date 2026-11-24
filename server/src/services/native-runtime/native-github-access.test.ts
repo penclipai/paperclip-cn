@@ -4,8 +4,8 @@ import { mkdtemp, mkdir, readFile, rm, writeFile, access } from "node:fs/promise
 import { existsSync } from "node:fs";
 import { promisify } from "node:util";
 import type { CommandManagedDuplexChannel, CommandManagedRuntimeRunner } from "@penclipai/adapter-utils/command-managed-runtime";
+import type { DuplexObservabilityRecorder } from "@penclipai/adapter-utils/duplex-observability";
 import { startAdapterExecutionTargetPaperclipBridge } from "@penclipai/adapter-utils/execution-target";
-
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { createInterface } from "node:readline";
@@ -62,7 +62,7 @@ function localDuplexChannel(command: readonly string[], cwd: string): CommandMan
 async function broker(resolveCredentials = vi.fn(async (binding: ReturnType<typeof run>) => ({
   status: "available", env: { GH_TOKEN: `fixture-${binding.runId}` },
 })), remote = false, bridgeUnavailable = false, onLog?: (stream: "stdout" | "stderr", chunk: string) => Promise<void>,
-duplex?: { enabled?: boolean; capability: boolean; unavailable?: boolean }) {
+duplex?: { enabled?: boolean; capability: boolean; unavailable?: boolean; recorder?: DuplexObservabilityRecorder }) {
   const root = await mkdtemp(path.join(tmpdir(), "native-github-reuse-"));
   const bin = path.join(root, "real-bin");
   const remoteRoot = toPosixFixturePath(root);
@@ -170,7 +170,7 @@ duplex?: { enabled?: boolean; capability: boolean; unavailable?: boolean }) {
   });
   const target = remote ? { kind: "remote" as const, transport: "sandbox" as const, providerKey: "test",
     remoteCwd: root, runner: { execute, ...(duplex ? { openDuplexChannel } : {}) }, streamRunLogs: false,
-    ...(duplex ? { enableSandboxDuplexBridge: duplex.enabled, effectiveCapabilities: {
+    ...(duplex ? { enableSandboxDuplexBridge: duplex.enabled, duplexObservabilityRecorder: duplex.recorder, effectiveCapabilities: {
       reusableLeases: true, nativeSyncIn: false, nativeSyncOut: false, persistentProcessSessions: false,
       independentControlCommands: true, incrementalSessionOutput: false, concurrentSyncOperations: false,
       duplexCommandStream: duplex.capability, runnerWebSocketIngress: false,
@@ -245,9 +245,13 @@ it.each([false, true])("resolves managed GitHub credentials from OpenCode shell 
   expect(childEnvironment.githubTokenPresent).toBe(false);
 }, 30000);
 it("uses the selected duplex transport across credential rotation without file polling", async () => {
-  const b = await broker(undefined, true, false, undefined, { enabled: true, capability: true });
+  const recorder = { recordSpan: vi.fn(), incrementCounter: vi.fn(), emitEvent: vi.fn() };
+  const b = await broker(undefined, true, false, undefined, { enabled: true, capability: true, recorder });
   expect(b.bridgeModes).toEqual(["http2_v1"]);
   expect(b.openDuplexChannel).toHaveBeenCalledOnce();
+  expect(recorder.recordSpan).toHaveBeenCalledWith(expect.objectContaining({ name: "sandbox.duplex.channel_open", dimensions: {
+    provider: "other", transport: "http2", outcome: "ok",
+  } }));
   const commandsAfterStartup = b.execute.mock.calls.length;
   expect((await request(b)).status).toBe(403);
   const releaseA = b.activate(run("a"));
@@ -258,6 +262,8 @@ it("uses the selected duplex transport across credential rotation without file p
   releaseA();
   expect(await (await request(b)).json()).toMatchObject({ env: { GH_TOKEN: "fixture-b" } });
   expect(b.resolveCredentials.mock.calls.map(([binding]) => binding.runId)).toEqual(["a", "b"]);
+  expect(recorder.recordSpan).toHaveBeenCalledWith(expect.objectContaining({ name: "sandbox.duplex.request" }));
+  expect(recorder.emitEvent).not.toHaveBeenCalledWith(expect.objectContaining({ dimensions: expect.objectContaining({ transport: "file" }) }));
   expect(b.execute.mock.calls).toHaveLength(commandsAfterStartup);
   releaseB();
   await b.stop();

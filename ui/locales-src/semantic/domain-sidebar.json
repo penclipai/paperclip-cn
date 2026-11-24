@@ -233,5 +233,10 @@
     "en": "Workspaces",
     "zh-CN": "工作区",
     "reviewedEnglishHash": "1377264ba3b0a7172621971b49ac3e82e33b64b14328d9275d02807e67ea8460"
+  },
+  "sidebar.unreadChats": {
+    "en": "unread chats",
+    "zh-CN": "未读对话",
+    "reviewedEnglishHash": "81025be613f09710fde2043ed724a5987bd1754424e13f0fd9769e0aa89e29df"
   }
 }

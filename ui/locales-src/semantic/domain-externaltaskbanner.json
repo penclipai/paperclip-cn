@@ -1,0 +1,27 @@
+{
+  "externalTaskBanner.sendFailed": {
+    "en": "Couldn’t send this update yet.",
+    "zh-CN": "这条更新暂时未能发送。",
+    "reviewedEnglishHash": "0df18df04915cbfa77b31b6a9905429651890b9c26af26d854f07a2a8af6f680"
+  },
+  "externalTaskBanner.sendingOnReconnect": {
+    "en": "Sending when reconnected…",
+    "zh-CN": "连接恢复后将自动发送…",
+    "reviewedEnglishHash": "8639e646e6ceb392f820ab5bad22b7512e7e2db40a1e27f4e265b18cef5034df"
+  },
+  "externalTaskBanner.draftKept": {
+    "en": "Your draft is kept; retrying here reuses the same request identity.",
+    "zh-CN": "草稿已保留。在此重试不会重复发送。",
+    "reviewedEnglishHash": "f76614767261a4d76b8f58c4ffc8df4d97d32db3c9c9d24bcabb080b3a681264"
+  },
+  "externalTaskBanner.resendStopped": {
+    "en": "Your exact draft and request identity are kept. Automatic resends stopped; choose Resend now to try again without creating a duplicate.",
+    "zh-CN": "草稿已完整保留，自动重发已停止。点击“立即重发”可再试一次，不会重复发送。",
+    "reviewedEnglishHash": "227ee75a0d6397945c9321b7ddb46354d6c57d882a8c03d89ccb6d1f43bc3051"
+  },
+  "externalTaskBanner.resendingAutomatically": {
+    "en": "Your exact draft and request identity are kept. It resends on its own without creating a duplicate.",
+    "zh-CN": "草稿已完整保留，系统会自动重发，不会重复发送。",
+    "reviewedEnglishHash": "debcdc300a272c1cf35794cbffbaf58cda61830540cfdb4c27de042d81db199e"
+  }
+}

@@ -22,6 +22,7 @@ import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useDialogActions } from "../context/DialogContext";
 import { searchApi } from "../api/search";
+import { useQueryView } from "../components/QueryView";
 import { agentsApi } from "../api/agents";
 import { authApi } from "../api/auth";
 import { issuesApi } from "../api/issues";
@@ -307,7 +308,7 @@ export function Search() {
   const displayQuery = committedQuery.trim();
   const queryEnabled = !!selectedCompanyId && (trimmedQuery.length > 0 || hasSearchFilters(activeFilters));
 
-  const { data, isFetching, error, refetch } = useQuery<CompanySearchResponse>({
+  const searchQuery = useQuery<CompanySearchResponse>({
     queryKey: [
       ...queryKeys.companySearch.search(
         selectedCompanyId ?? "__no-company__",
@@ -330,6 +331,7 @@ export function Search() {
     enabled: queryEnabled,
     placeholderData: (previousData) => previousData,
   });
+  const { data, isFetching } = searchQuery;
 
   const agentsById = useMemo<ReadonlyMap<string, Pick<Agent, "id" | "name" | "appearance">>>(() => {
     const map = new Map<string, Pick<Agent, "id" | "name" | "appearance">>();
@@ -502,11 +504,14 @@ export function Search() {
     [draftQuery, inputFocused],
   );
   const showInitialState = !displayQuery && !hasSearchFilters(activeFilters);
-  const isLoading = queryEnabled && isFetching && !data;
+  const searchView = useQueryView(searchQuery);
+  // Loaded results stay on screen through a failed refetch (`stale`); an
+  // outage before the first result shows the search skeleton (`reconnecting`).
+  const isLoading = queryEnabled && (searchView.kind === "loading" || searchView.kind === "reconnecting");
   const hasResults = !!data && totalResults > 0;
   const isEmpty = !!data && !isFetching && totalResults === 0;
-  const hasError = !!error && !isLoading;
-  const apiError = hasError ? shapeError(error) : null;
+  const hasError = queryEnabled && searchView.kind === "error";
+  const apiError = hasError ? shapeError(searchView.error) : null;
   const apiMessage = data?.results === undefined && data ? null : null;
   void apiMessage;
 
@@ -678,7 +683,7 @@ export function Search() {
                 showAllScope={showAllScope}
                 navigateIssuesFallback={navigateIssuesFallback}
                 openNewIssue={() => openNewIssue({ title: searchDisplayLabel })}
-                refetch={() => void refetch()}
+                refetch={searchView.retry}
                 recentSearches={recentSearches}
                 onRecentClick={handleRecentClick}
                 results={data?.results ?? []}

@@ -4,11 +4,16 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import type { AdapterExecutionTarget } from "@penclipai/adapter-utils/execution-target";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 import { afterEach, describe, expect, it } from "vitest";
 import { prepareCompatibleClaudeCommand } from "./sandbox-cli-version.js";
 
 const runFile = promisify(execFile);
 const roots: string[] = [];
+
+function normalizeFixtureCommand(value: string): string {
+  return process.platform === "win32" ? value.replaceAll("\\", "/") : value;
+}
 
 afterEach(async () => {
   await Promise.all(roots.splice(0).map(root => rm(root, { recursive: true, force: true })));
@@ -43,8 +48,17 @@ async function fixture(version: string, installer = "success") {
           if (installer == "throw") throw new Error("registry-secret");
         }
         try {
-          const result = await runFile(input.command, input.args ?? [], {
-            cwd: input.cwd ?? root, env: { ...process.env, ...env, ...input.env }, timeout: input.timeoutMs,
+          // The fixture binaries intentionally are POSIX shebang scripts. Route
+          // them through the same test-only shell seam as a remote sandbox so
+          // Windows exercises their CLI/version and installer contracts rather
+          // than Windows' inability to launch a shebang file directly.
+          const prepared = prepareTestPosixShell({
+            command: "sh",
+            args: ["-c", 'exec "$@"', "paperclip-claude-version-fixture", input.command, ...(input.args ?? [])],
+            env: { ...process.env, ...env, ...input.env },
+          });
+          const result = await runFile(prepared.command, prepared.args, {
+            cwd: input.cwd ?? root, env: prepared.env, timeout: input.timeoutMs,
           });
           return { ...result, exitCode: 0, signal: null, timedOut: false, pid: null, startedAt };
         } catch (error) {
@@ -61,9 +75,9 @@ async function fixture(version: string, installer = "success") {
 describe("managed sandbox Claude CLI compatibility", () => {
   it("updates an existing outdated CLI to the exact required version and verifies it", async () => {
     const { input, receipt } = await fixture("2.1.263");
-    expect(await prepareCompatibleClaudeCommand(input)).toMatchObject({ version: "2.1.280", command: path.join(input.cwd, ".paperclip-runtime/claude-cli/2.1.280/bin/claude"), check: { code: "claude_runtime_prepared", level: "info" } });
+    expect(await prepareCompatibleClaudeCommand(input)).toMatchObject({ version: "2.1.280", command: path.posix.join(input.cwd, ".paperclip-runtime/claude-cli/2.1.280/bin/claude"), check: { code: "claude_runtime_prepared", level: "info" } });
     expect(await readFile(path.join(input.cwd, "version"), "utf8")).toBe("2.1.263");
-    expect((await readFile(receipt, "utf8")).trim()).toBe(`install --global --prefix ${path.join(input.cwd, ".paperclip-runtime/claude-cli/2.1.280")} @anthropic-ai/claude-code@2.1.280`);
+    expect(normalizeFixtureCommand((await readFile(receipt, "utf8")).trim())).toBe(normalizeFixtureCommand(`install --global --prefix ${path.join(input.cwd, ".paperclip-runtime/claude-cli/2.1.280")} @anthropic-ai/claude-code@2.1.280`));
   });
 
   it.each(["2.1.280", "2.1.286"])("keeps a compatible CLI %s without installing", async version => {
@@ -75,7 +89,7 @@ describe("managed sandbox Claude CLI compatibility", () => {
   it.each(["fail", "unchanged"])("preserves the failed version gate after an installer result of %s", async installer => {
     const { input, receipt } = await fixture("2.1.263", installer);
     expect(await prepareCompatibleClaudeCommand(input)).toMatchObject({ command: "claude", version: "2.1.263", check: { code: "claude_runtime_preparation_failed", level: "warn" } });
-    expect((await readFile(receipt, "utf8")).trim()).toBe(`install --global --prefix ${path.join(input.cwd, ".paperclip-runtime/claude-cli/2.1.280")} @anthropic-ai/claude-code@2.1.280`);
+    expect(normalizeFixtureCommand((await readFile(receipt, "utf8")).trim())).toBe(normalizeFixtureCommand(`install --global --prefix ${path.join(input.cwd, ".paperclip-runtime/claude-cli/2.1.280")} @anthropic-ai/claude-code@2.1.280`));
   });
 
   it.each([
@@ -108,7 +122,16 @@ describe("managed sandbox Claude CLI compatibility", () => {
 
   it("does not install into a local execution target", async () => {
     const { input, receipt } = await fixture("2.1.263");
-    expect(await prepareCompatibleClaudeCommand({ ...input, target: null })).toEqual({ command: "claude", version: "2.1.263" });
+    if (process.platform === "win32") {
+      // Use the native PowerShell CLI: unlike the POSIX shebang fixture, it
+      // can be spawned directly by Windows and prints a parseable semver for
+      // the same deliberately-outdated local no-install assertion.
+      expect(await prepareCompatibleClaudeCommand({
+        ...input, command: "pwsh", target: null, minimumVersion: "999.0.0",
+      })).toMatchObject({ command: "pwsh", version: expect.stringMatching(/^\d+\.\d+\.\d+$/) });
+    } else {
+      expect(await prepareCompatibleClaudeCommand({ ...input, target: null })).toEqual({ command: "claude", version: "2.1.263" });
+    }
     await expect(readFile(receipt)).rejects.toMatchObject({ code: "ENOENT" });
   });
 });

@@ -5,6 +5,7 @@ import { Link, useLocation, useNavigate, useParams } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isUuidLike, type ProjectWorkspace } from "@penclipai/shared";
 import { ArrowLeft, Check, ExternalLink, Loader2, Sparkles } from "lucide-react";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -280,6 +281,7 @@ export function ProjectWorkspaceDetail() {
     queryFn: () => projectsApi.get(routeProjectRef, lookupCompanyId),
     enabled: canFetchProject,
   });
+  const projectView = useQueryView(projectQuery);
 
   const project = projectQuery.data ?? null;
   const workspace = useMemo(
@@ -394,12 +396,18 @@ export function ProjectWorkspaceDetail() {
     },
   });
 
-  if (projectQuery.isLoading) return <p className="text-sm text-muted-foreground">{translateInstant("projectWorkspace.loadingWorkspace")}</p>;
-  if (projectQuery.error) {
+  if (projectQuery.isLoading || projectView.kind === "reconnecting") {
+    return <p className="text-sm text-muted-foreground">{translateInstant("projectWorkspace.loadingWorkspace")}</p>;
+  }
+  if (projectView.kind === "error") {
     return (
-      <p className="text-sm text-destructive">
-        {projectQuery.error instanceof Error ? projectQuery.error.message : translateInstant("projectWorkspace.failedToLoadWorkspace")}
-      </p>
+      <QueryErrorState
+        size="page"
+        error={projectQuery.error}
+        action="load this workspace"
+        onRetry={projectView.retry}
+        retrying={projectView.isFetching}
+      />
     );
   }
   if (!project || !workspace || !form || !initialState) {

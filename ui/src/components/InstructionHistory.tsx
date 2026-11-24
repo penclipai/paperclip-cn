@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import type { AgentInstructionsFileDetail } from "@penclipai/shared";
 import { agentsApi } from "../api/agents";
+import { describeError } from "../api/errors";
 import { Button } from "./ui/button";
+import { QueryErrorState, useQueryView } from "./QueryView";
 
 export function InstructionHistory({
   agentId,
@@ -56,7 +58,11 @@ export function InstructionHistory({
       onRestored(file);
     },
   });
-  const error = history.error ?? diff.error ?? restore.error;
+  // Read the two reads through the shared view so cached history stays visible
+  // while a transient refetch fails;a no-data failure shows copy with Retry.
+
+  const historyView = useQueryView(history);
+  const diffView = useQueryView(diff);
   return (
     <div className="space-y-3">
       <Button
@@ -66,16 +72,33 @@ export function InstructionHistory({
         aria-expanded={open}
         onClick={() => setOpen(!open)}
       >
-        {translateInstant("History")}</Button>
+        {translateInstant("History", { defaultValue: "History" })}
+      </Button>
       {open && (
         <div className="space-y-3">
-          {history.isLoading && (
-            <p className="text-sm text-muted-foreground">{translateInstant("caseComponents.revisions.loading")}</p>
+          {historyView.kind === "error" && (
+            <QueryErrorState
+              size="panel"
+              error={historyView.error}
+              action="load revision history"
+              onRetry={historyView.retry}
+              retrying={historyView.isFetching}
+            />
           )}
-          {error && (
-            <p role="alert" className="text-sm text-destructive">
-              {error.message}
-            </p>
+          {diffView.kind === "error" && (
+            <QueryErrorState
+              size="panel"
+              error={diffView.error}
+              action="load the revision diff"
+              onRetry={diffView.retry}
+              retrying={diffView.isFetching}
+            />
+          )}
+{restore.isError && ( // query-error-ok: mutation result
+            <p role="alert" className="text-sm text-destructive">{describeError(restore.error).body}</p>
+          )}
+          {(historyView.kind === "loading" || historyView.kind === "reconnecting") && (
+            <p role="status" className="text-sm text-muted-foreground">{translateInstant("caseComponents.revisions.loading")}</p>
           )}
           {history.data?.pages
             .flatMap((page) => page.revisions)
@@ -103,7 +126,8 @@ export function InstructionHistory({
               disabled={history.isFetchingNextPage}
               onClick={() => void history.fetchNextPage()}
             >
-              {translateInstant("Older revisions")}</Button>
+              {translateInstant("Older revisions", { defaultValue: "Older revisions" })}
+            </Button>
           )}
           {diff.data && (
             <>
@@ -112,7 +136,8 @@ export function InstructionHistory({
                 {diff.data.from.content}
               </pre>
               <p className="text-sm text-muted-foreground">
-                {translateInstant("Changes from selected revision to current")}</p>
+                {translateInstant("Changes from selected revision to current", { defaultValue: "Changes from selected revision to current" })}
+              </p>
               <pre className="whitespace-pre-wrap break-words rounded-md border border-border p-3 font-mono text-sm">
                 {diff.data.removed && `Removed:\n${diff.data.removed}\n`}
                 {diff.data.added && `Added:\n${diff.data.added}`}
@@ -129,10 +154,12 @@ export function InstructionHistory({
                 }
                 onClick={() => restore.mutate()}
               >
-                {translateInstant("routineHistory.restoreAsNewRevision")}</Button>
+                {translateInstant("routineHistory.restoreAsNewRevision", { defaultValue: "Restore as new revision" })}
+              </Button>
               {disabled && (
                 <p className="text-sm text-muted-foreground">
-                  {translateInstant("Save or cancel your edits before restoring.")}</p>
+                  {translateInstant("Save or cancel your edits before restoring.", { defaultValue: "Save or cancel your edits before restoring." })}
+                </p>
               )}
             </>
           )}

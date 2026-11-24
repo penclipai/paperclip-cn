@@ -1,5 +1,14 @@
 import type { IssueAttachment, IssueDocumentSummary, IssueWorkProduct } from "@penclipai/shared";
-import { getAttachmentArtifactWorkProductMetadata } from "@penclipai/shared";
+import { getAttachmentArtifactWorkProductMetadata, isArtifactReviewDocumentKey, isSystemIssueDocumentKey } from "@penclipai/shared";
+
+/**
+ * Documents authored here; Plans and file reviews retain their own workflows.
+ * A cached row without a string key cannot be authored, so it is never general.
+ */
+export function isGeneralTaskDocumentKey(key: string | null | undefined): boolean {
+  if (typeof key !== "string") return false;
+  return key.trim().toLowerCase() !== "plan" && !isArtifactReviewDocumentKey(key) && !isSystemIssueDocumentKey(key);
+}
 
 /**
  * Selectors for the properties pane's Artifacts tab (PAP-491): which

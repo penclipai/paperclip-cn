@@ -21,7 +21,7 @@
   },
   "dashboard.budgetOverridesAwaitingReview": {
     "en": "{{count}} budget overrides awaiting board review",
-    "zh-CN": "{{count}} 条预算特许等待董事会审核",
+    "zh-CN": "{{count}} 项预算豁免等待董事会审核",
     "reviewedEnglishHash": "367bb3a84d4ec91fe78985a1f6a701971151166d899da96082086b86406e8497"
   },
   "dashboard.budgetSummary": {

@@ -255,7 +255,7 @@ for (const journey of [
         })}\n`,
       );
       await mkdir(emptyCodexHome, { recursive: true });
-      const env = {
+      const env: NodeJS.ProcessEnv = {
         ...process.env,
         PAPERCLIP_RECOVERY_CEO_LINEAGE: journey === "ceo_lineage" ? "1" : "0",
         IN_FEED_FIXTURE_KEY: "not-a-real-model-key",

@@ -178,6 +178,20 @@ describe("ProposalsTab", () => {
     mockSecretsApi.rejectProposal.mockResolvedValue(makeSecretProposal({ status: "rejected" }));
   });
 
+  it("uses the standard retry state when proposals fail before data arrives", async () => {
+    mockSecretsApi.listProposals.mockRejectedValueOnce(new Error("Proposal service unavailable"));
+    const { container } = await renderTab();
+    await waitForReact(() => container.textContent?.includes("Couldn't load proposals") ?? false);
+
+    expect(container.textContent).toContain("Proposal service unavailable");
+    const retry = findButton("Retry");
+    expect(retry).toBeTruthy();
+
+    mockSecretsApi.listProposals.mockResolvedValueOnce([]);
+    await act(async () => retry!.click());
+    await waitForReact(() => mockSecretsApi.listProposals.mock.calls.length === 2);
+  });
+
   it("shows a fingerprint and provenance but never the value", async () => {
     mockSecretsApi.listProposals.mockResolvedValue([makeSecretProposal()]);
     await renderTab();

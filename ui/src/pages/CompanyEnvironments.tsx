@@ -1,14 +1,20 @@
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, Link2, Lock, Play, Plus, RefreshCw, RotateCcw, Terminal, Trash2, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  Link2,
+  Lock,
+  Play,
+  Plus,
+  RefreshCw,
+  RotateCcw,
+  Terminal,
+  Trash2,
+  X,
+} from "lucide-react";
 import { FitAddon } from "@xterm/addon-fit";
 import { Terminal as XTermTerminal } from "@xterm/xterm";
 import "@xterm/xterm/css/xterm.css";
@@ -31,6 +37,7 @@ import {
 } from "@/api/environments";
 import { agentsApi } from "@/api/agents";
 import { ApiError } from "@/api/client";
+import { describeError } from "@/api/errors";
 import { instanceSettingsApi } from "@/api/instanceSettings";
 import { secretsApi } from "@/api/secrets";
 import {
@@ -43,12 +50,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  QueryErrorState,
+  QueryPlaceholder,
+  useQueryView,
+} from "@/components/QueryView";
 import { Button } from "@/components/ui/button";
 import {
   EnvironmentVariablesEditor,
   type EnvironmentVariablesEditorHandle,
 } from "@/components/environment-variables-editor";
-import { JsonSchemaForm, getDefaultValues, validateJsonSchemaForm } from "@/components/JsonSchemaForm";
+import {
+  JsonSchemaForm,
+  getDefaultValues,
+  validateJsonSchemaForm,
+} from "@/components/JsonSchemaForm";
 import {
   SecretRefHintsContext,
   type SecretRefHint,
@@ -57,14 +73,14 @@ import {
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useCompany } from "@/context/CompanyContext";
 import { useToast } from "@/context/ToastContext";
-import { environmentDisplayLabel, isPlatformManagedEnvironment } from "@/lib/managed-sandbox-environment";
+import {
+  environmentDisplayLabel,
+  isPlatformManagedEnvironment,
+} from "@/lib/managed-sandbox-environment";
 import { queryKeys } from "@/lib/queryKeys";
 import { Link, useNavigate, useParams } from "@/lib/router";
 import { buildSameOriginWebSocketUrl } from "@/lib/websocket-url";
-import {
-  Field,
-  ToggleField,
-} from "../components/agent-config-primitives";
+import { Field, ToggleField } from "../components/agent-config-primitives";
 
 type EnvironmentFormState = {
   name: string;
@@ -98,7 +114,9 @@ function environmentEditPath(environmentId: string) {
 // Keep in sync with environmentDeleteBlockMessage in server/src/routes/environments.ts —
 // the server enforces these gates with a 409; this copy lets the modal explain
 // the block before the user hits it.
-function environmentDeleteBlockMessage(impact: EnvironmentDeleteBlastRadius): string | null {
+function environmentDeleteBlockMessage(
+  impact: EnvironmentDeleteBlastRadius,
+): string | null {
   if (impact.staticReferences.isManagedLocal) {
     return "Cannot delete the managed local environment.";
   }
@@ -109,6 +127,13 @@ function environmentDeleteBlockMessage(impact: EnvironmentDeleteBlastRadius): st
     return "Cannot delete this environment while a sandbox cleanup is pending. Wait for the cleanup sweep to destroy the orphan sandbox, then retry.";
   }
   if (impact.reusableSandboxLeaseCount > 0) {
+    if (
+      impact.reusableSandboxLeaseHolders.some(
+        (holder) => holder.leasePolicy === "retain_on_failure",
+      )
+    ) {
+      return "Cannot delete this environment while it keeps a failed run's workspace copy (a stopped sandbox kept for file recovery). Deleting the environment with consent destroys that sandbox and the files only it holds.";
+    }
     return "Cannot delete this environment while it has a reusable sandbox lease. Remove the associated execution workspace or issue so Paperclip can destroy the sandbox, then retry.";
   }
   return null;
@@ -129,9 +154,14 @@ function buildEnvironmentPayload(form: EnvironmentFormState) {
             remoteWorkspacePath: form.sshRemoteWorkspacePath.trim(),
             privateKey: form.sshPrivateKey.trim() || null,
             privateKeySecretRef:
-              form.sshPrivateKey.trim().length > 0 || !form.sshPrivateKeySecretId
+              form.sshPrivateKey.trim().length > 0 ||
+              !form.sshPrivateKeySecretId
                 ? null
-                : { type: "secret_ref" as const, secretId: form.sshPrivateKeySecretId, version: "latest" as const },
+                : {
+                    type: "secret_ref" as const,
+                    secretId: form.sshPrivateKeySecretId,
+                    version: "latest" as const,
+                  },
             knownHosts: form.sshKnownHosts.trim() || null,
             strictHostKeyChecking: form.sshStrictHostKeyChecking,
           }
@@ -172,7 +202,8 @@ function normalizeNonLocalEnvironmentId(
   environments: readonly Environment[],
 ): string {
   if (!environmentId) return "";
-  const environment = environments.find((candidate) => candidate.id === environmentId) ?? null;
+  const environment =
+    environments.find((candidate) => candidate.id === environmentId) ?? null;
   return isLocalEnvironment(environment) ? "" : environmentId;
 }
 
@@ -188,13 +219,16 @@ function readSshConfig(environment: Environment) {
           : "22",
     username: typeof config.username === "string" ? config.username : "",
     remoteWorkspacePath:
-      typeof config.remoteWorkspacePath === "string" ? config.remoteWorkspacePath : "",
+      typeof config.remoteWorkspacePath === "string"
+        ? config.remoteWorkspacePath
+        : "",
     privateKey: "",
     privateKeySecretId:
       config.privateKeySecretRef &&
       typeof config.privateKeySecretRef === "object" &&
       !Array.isArray(config.privateKeySecretRef) &&
-      typeof (config.privateKeySecretRef as { secretId?: unknown }).secretId === "string"
+      typeof (config.privateKeySecretRef as { secretId?: unknown }).secretId ===
+        "string"
         ? String((config.privateKeySecretRef as { secretId: string }).secretId)
         : "",
     knownHosts: typeof config.knownHosts === "string" ? config.knownHosts : "",
@@ -209,14 +243,17 @@ function readSandboxConfig(environment: Environment) {
   const config = environment.config ?? {};
   const { provider: rawProvider, ...providerConfig } = config;
   return {
-    provider: typeof rawProvider === "string" && rawProvider.trim().length > 0
-      ? rawProvider
-      : "fake",
+    provider:
+      typeof rawProvider === "string" && rawProvider.trim().length > 0
+        ? rawProvider
+        : "fake",
     config: providerConfig,
   };
 }
 
-function createEnvironmentFormFromEnvironment(environment: Environment): EnvironmentFormState {
+function createEnvironmentFormFromEnvironment(
+  environment: Environment,
+): EnvironmentFormState {
   if (environment.driver === "ssh") {
     const ssh = readSshConfig(environment);
     return {
@@ -258,7 +295,8 @@ function createEnvironmentFormFromEnvironment(environment: Environment): Environ
   };
 }
 
-const DISCARD_ENVIRONMENT_CHANGES_MESSAGE = "Discard unsaved environment changes?";
+const DISCARD_ENVIRONMENT_CHANGES_MESSAGE =
+  "Discard unsaved environment changes?";
 
 function stableJsonStringify(value: unknown): string {
   if (Array.isArray(value)) {
@@ -269,7 +307,10 @@ function stableJsonStringify(value: unknown): string {
       .filter(([, entryValue]) => entryValue !== undefined)
       .sort(([left], [right]) => left.localeCompare(right));
     return `{${entries
-      .map(([key, entryValue]) => `${JSON.stringify(key)}:${stableJsonStringify(entryValue)}`)
+      .map(
+        ([key, entryValue]) =>
+          `${JSON.stringify(key)}:${stableJsonStringify(entryValue)}`,
+      )
       .join(",")}}`;
   }
   return JSON.stringify(value) ?? "undefined";
@@ -282,11 +323,13 @@ function environmentFormKey(form: EnvironmentFormState): string {
 
 function normalizeJsonSchema(schema: unknown): JsonSchema | null {
   return schema && typeof schema === "object" && !Array.isArray(schema)
-    ? schema as JsonSchema
+    ? (schema as JsonSchema)
     : null;
 }
 
-function summarizeSandboxConfig(config: Record<string, unknown>): string | null {
+function summarizeSandboxConfig(
+  config: Record<string, unknown>,
+): string | null {
   for (const key of ["template", "image", "region", "workspacePath"]) {
     const value = config[key];
     if (typeof value === "string" && value.trim().length > 0) {
@@ -296,23 +339,30 @@ function summarizeSandboxConfig(config: Record<string, unknown>): string | null 
   return null;
 }
 
-const ACTIVE_CUSTOM_IMAGE_SETUP_STATUSES = new Set<EnvironmentCustomImageSetupSession["status"]>([
-  "starting",
-  "waiting_for_user",
-  "capturing",
-]);
+const ACTIVE_CUSTOM_IMAGE_SETUP_STATUSES = new Set<
+  EnvironmentCustomImageSetupSession["status"]
+>(["starting", "waiting_for_user", "capturing"]);
 
-function isActiveCustomImageSetupSession(session: EnvironmentCustomImageSetupSession | null | undefined) {
-  return Boolean(session && ACTIVE_CUSTOM_IMAGE_SETUP_STATUSES.has(session.status));
+function isActiveCustomImageSetupSession(
+  session: EnvironmentCustomImageSetupSession | null | undefined,
+) {
+  return Boolean(
+    session && ACTIVE_CUSTOM_IMAGE_SETUP_STATUSES.has(session.status),
+  );
 }
 
-function readEnvironmentSandboxProvider(environment: Environment): string | null {
-  return environment.driver === "sandbox" && typeof environment.config.provider === "string"
+function readEnvironmentSandboxProvider(
+  environment: Environment,
+): string | null {
+  return environment.driver === "sandbox" &&
+    typeof environment.config.provider === "string"
     ? environment.config.provider
     : null;
 }
 
-function formatDateTime(value: string | Date | null | undefined): string | null {
+function formatDateTime(
+  value: string | Date | null | undefined,
+): string | null {
   if (!value) return null;
   const date = value instanceof Date ? value : new Date(value);
   return Number.isNaN(date.getTime()) ? null : date.toLocaleString();
@@ -351,8 +401,11 @@ function formatBootSourceDriftSummary(
   return `Base image changed: ${parts.join("; ")}`;
 }
 
-function readConnectionCommand(payload: EnvironmentCustomImageConnectionPayload | null | undefined): string | null {
-  return typeof payload?.command === "string" && payload.command.trim().length > 0
+function readConnectionCommand(
+  payload: EnvironmentCustomImageConnectionPayload | null | undefined,
+): string | null {
+  return typeof payload?.command === "string" &&
+    payload.command.trim().length > 0
     ? payload.command
     : null;
 }
@@ -403,10 +456,15 @@ type CustomImageTerminalConnectionState =
   | "closed"
   | "error";
 
-function appendTerminalQuery(path: string, params: Record<string, string | number>) {
+function appendTerminalQuery(
+  path: string,
+  params: Record<string, string | number>,
+) {
   const separator = path.includes("?") ? "&" : "?";
   return `${path}${separator}${new URLSearchParams(
-    Object.fromEntries(Object.entries(params).map(([key, value]) => [key, String(value)])),
+    Object.fromEntries(
+      Object.entries(params).map(([key, value]) => [key, String(value)]),
+    ),
   ).toString()}`;
 }
 
@@ -414,14 +472,16 @@ function parseTerminalFrame(raw: string): Record<string, unknown> | null {
   try {
     const parsed = JSON.parse(raw) as unknown;
     return parsed && typeof parsed === "object" && !Array.isArray(parsed)
-      ? parsed as Record<string, unknown>
+      ? (parsed as Record<string, unknown>)
       : null;
   } catch {
     return null;
   }
 }
 
-function customImageTerminalStatusCopy(state: CustomImageTerminalConnectionState) {
+function customImageTerminalStatusCopy(
+  state: CustomImageTerminalConnectionState,
+) {
   switch (state) {
     case "connecting":
       return "Connecting";
@@ -439,13 +499,15 @@ function customImageTerminalStatusCopy(state: CustomImageTerminalConnectionState
 
 function customImageTerminalCloseReasonCopy(reason: unknown) {
   if (
-    reason !== "expired"
-    && reason !== "ssh_closed"
-    && reason !== "server_shutdown"
-    && reason !== "setup_finished"
-    && reason !== "setup_cancelled"
+    reason !== "expired" &&
+    reason !== "ssh_closed" &&
+    reason !== "server_shutdown" &&
+    reason !== "setup_finished" &&
+    reason !== "setup_cancelled"
   ) {
-    return typeof reason === "string" && reason.trim() ? "Terminal closed." : null;
+    return typeof reason === "string" && reason.trim()
+      ? "Terminal closed."
+      : null;
   }
 
   switch (reason) {
@@ -472,12 +534,15 @@ function EnvironmentCustomImageBrowserTerminal({
   sessionId: string;
 }) {
   useTranslation();
-  const [connectionState, setConnectionState] = useState<CustomImageTerminalConnectionState>("idle");
+  const [connectionState, setConnectionState] =
+    useState<CustomImageTerminalConnectionState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const terminalElementRef = useRef<HTMLDivElement | null>(null);
   const xtermRef = useRef<XTermTerminal | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
-  const terminalInputDisposableRef = useRef<{ dispose: () => void } | null>(null);
+  const terminalInputDisposableRef = useRef<{ dispose: () => void } | null>(
+    null,
+  );
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const fitFrameRef = useRef<number | null>(null);
   const socketRef = useRef<WebSocket | null>(null);
@@ -487,7 +552,11 @@ function EnvironmentCustomImageBrowserTerminal({
   const closeSocket = useCallback((reason = "operator_closed") => {
     const socket = socketRef.current;
     socketRef.current = null;
-    if (socket && socket.readyState !== WebSocket.CLOSED && socket.readyState !== WebSocket.CLOSING) {
+    if (
+      socket &&
+      socket.readyState !== WebSocket.CLOSED &&
+      socket.readyState !== WebSocket.CLOSING
+    ) {
       socket.close(1000, reason);
     }
   }, []);
@@ -500,21 +569,31 @@ function EnvironmentCustomImageBrowserTerminal({
     };
   }, []);
 
-  const sendTerminalResize = useCallback((force = false) => {
-    const socket = socketRef.current;
-    if (!socket || socket.readyState !== WebSocket.OPEN) return;
+  const sendTerminalResize = useCallback(
+    (force = false) => {
+      const socket = socketRef.current;
+      if (!socket || socket.readyState !== WebSocket.OPEN) return;
 
-    const dimensions = getTerminalDimensions();
-    const previous = lastSentResizeRef.current;
-    if (!force && previous?.cols === dimensions.cols && previous.rows === dimensions.rows) return;
+      const dimensions = getTerminalDimensions();
+      const previous = lastSentResizeRef.current;
+      if (
+        !force &&
+        previous?.cols === dimensions.cols &&
+        previous.rows === dimensions.rows
+      )
+        return;
 
-    lastSentResizeRef.current = dimensions;
-    socket.send(JSON.stringify({
-      type: "resize",
-      cols: dimensions.cols,
-      rows: dimensions.rows,
-    }));
-  }, [getTerminalDimensions]);
+      lastSentResizeRef.current = dimensions;
+      socket.send(
+        JSON.stringify({
+          type: "resize",
+          cols: dimensions.cols,
+          rows: dimensions.rows,
+        }),
+      );
+    },
+    [getTerminalDimensions],
+  );
 
   const fitTerminal = useCallback(() => {
     const fitAddon = fitAddonRef.current;
@@ -565,7 +644,7 @@ function EnvironmentCustomImageBrowserTerminal({
       cursorStyle: "bar",
       cursorWidth: 2,
       customGlyphs: true,
-      fontFamily: CUSTOM_IMAGE_TERMINAL_FONT_FAMILY,
+      fontFamily: `${getComputedStyle(element).getPropertyValue("--font-mono").trim()}, ${CUSTOM_IMAGE_TERMINAL_FONT_FAMILY}`,
       fontSize: 12,
       letterSpacing: 0,
       lineHeight: 1.35,
@@ -595,10 +674,14 @@ function EnvironmentCustomImageBrowserTerminal({
 
     terminal.focus();
     requestFitTerminal();
-    const fitTimeouts = [50, 250].map((delay) => window.setTimeout(fitTerminal, delay));
-    const fontsReady = "fonts" in document
-      ? (document as Document & { fonts?: { ready?: Promise<unknown> } }).fonts?.ready
-      : null;
+    const fitTimeouts = [50, 250].map((delay) =>
+      window.setTimeout(fitTerminal, delay),
+    );
+    const fontsReady =
+      "fonts" in document
+        ? (document as Document & { fonts?: { ready?: Promise<unknown> } })
+            .fonts?.ready
+        : null;
     if (fontsReady) {
       void fontsReady.then(() => fitTerminal());
     }
@@ -655,7 +738,11 @@ function EnvironmentCustomImageBrowserTerminal({
     try {
       fitTerminal();
       const dimensions = getTerminalDimensions();
-      const terminalToken = await environmentsApi.createCustomImageTerminalSessionToken(sessionId, {});
+      const terminalToken =
+        await environmentsApi.createCustomImageTerminalSessionToken(
+          sessionId,
+          {},
+        );
       const websocketPath = appendTerminalQuery(terminalToken.websocketPath, {
         cols: dimensions.cols,
         rows: dimensions.rows,
@@ -666,7 +753,9 @@ function EnvironmentCustomImageBrowserTerminal({
       socket.onopen = () => {
         if (socketRef.current !== socket) return;
         xtermRef.current?.focus();
-        socket.send(JSON.stringify({ type: "auth", token: terminalToken.token }));
+        socket.send(
+          JSON.stringify({ type: "auth", token: terminalToken.token }),
+        );
         sendTerminalResize(true);
       };
 
@@ -689,7 +778,11 @@ function EnvironmentCustomImageBrowserTerminal({
 
         if (frame.type === "error") {
           setConnectionState("error");
-          setErrorMessage(typeof frame.message === "string" ? frame.message : "Terminal connection failed.");
+          setErrorMessage(
+            typeof frame.message === "string"
+              ? frame.message
+              : "Terminal connection failed.",
+          );
           return;
         }
 
@@ -702,7 +795,11 @@ function EnvironmentCustomImageBrowserTerminal({
       socket.onclose = () => {
         if (socketRef.current !== socket) return;
         socketRef.current = null;
-        setConnectionState((current) => current === "connected" || current === "connecting" ? "closed" : current);
+        setConnectionState((current) =>
+          current === "connected" || current === "connecting"
+            ? "closed"
+            : current,
+        );
       };
 
       socket.onerror = () => {
@@ -712,9 +809,16 @@ function EnvironmentCustomImageBrowserTerminal({
       };
     } catch (error) {
       setConnectionState("error");
-      setErrorMessage(error instanceof Error ? error.message : "Terminal session could not be opened.");
+      setErrorMessage(describeError(error).body);
     }
-  }, [closeSocket, fitTerminal, getTerminalDimensions, resetTerminalScreen, sendTerminalResize, sessionId]);
+  }, [
+    closeSocket,
+    fitTerminal,
+    getTerminalDimensions,
+    resetTerminalScreen,
+    sendTerminalResize,
+    sessionId,
+  ]);
 
   useEffect(() => {
     if (!autoConnect || connectionState !== "idle") return;
@@ -734,17 +838,27 @@ function EnvironmentCustomImageBrowserTerminal({
   const terminalInteractive = connectionState === "connected";
 
   return (
-    <div className="mt-3 rounded-md border border-border/70 bg-background" data-testid={`custom-image-terminal-${sessionId}`}>
+    <div
+      className="mt-3 rounded-md border border-border/70 bg-background"
+      data-testid={`custom-image-terminal-${sessionId}`}
+    >
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 px-3 py-2">
         <div className="flex min-w-0 items-center gap-2 text-xs">
           <Terminal className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="font-medium">{translateInstant("companySettings.customImage.browserTerminal")}</span>
-          <span className="text-muted-foreground">{customImageTerminalStatusCopy(connectionState)}</span>
+          <span className="font-medium">
+            {translateInstant("companySettings.customImage.browserTerminal")}
+          </span>
+          <span className="text-muted-foreground">
+            {customImageTerminalStatusCopy(connectionState)}
+          </span>
         </div>
         <div className="flex items-center gap-2">
           {terminalInteractive ? (
             <Button size="sm" variant="ghost" onClick={disconnectTerminal}>
-              {translateInstant("companySettings.customImage.disconnectTerminal")}</Button>
+              {translateInstant(
+                "companySettings.customImage.disconnectTerminal",
+              )}
+            </Button>
           ) : (
             <Button
               size="sm"
@@ -753,7 +867,11 @@ function EnvironmentCustomImageBrowserTerminal({
               disabled={connectionState === "connecting"}
             >
               <Terminal className="mr-1.5 h-3.5 w-3.5" />
-              {connectionState === "closed" || connectionState === "error" ? translateInstant("companySettings.customImage.reconnectTerminal") : translateInstant("companySettings.customImage.openTerminal")}
+              {connectionState === "closed" || connectionState === "error"
+                ? translateInstant(
+                    "companySettings.customImage.reconnectTerminal",
+                  )
+                : translateInstant("companySettings.customImage.openTerminal")}
             </Button>
           )}
         </div>
@@ -762,7 +880,9 @@ function EnvironmentCustomImageBrowserTerminal({
         <div
           ref={terminalElementRef}
           data-testid={`custom-image-terminal-screen-${sessionId}`}
-          aria-label={translateInstant("companySettings.customImage.browserTerminalAria")}
+          aria-label={translateInstant(
+            "companySettings.customImage.browserTerminalAria",
+          )}
           role="application"
           tabIndex={0}
           onFocus={() => xtermRef.current?.focus()}
@@ -779,8 +899,14 @@ function EnvironmentCustomImageBrowserTerminal({
   );
 }
 
-function capabilityState(capability: EnvironmentProviderCapability | null | undefined) {
-  if (!capability || capability.status !== "supported" || !capability.supportsInteractiveSetup) {
+function capabilityState(
+  capability: EnvironmentProviderCapability | null | undefined,
+) {
+  if (
+    !capability ||
+    capability.status !== "supported" ||
+    !capability.supportsInteractiveSetup
+  ) {
     return {
       kind: "unsupported" as const,
       label: "Unsupported provider",
@@ -792,7 +918,8 @@ function capabilityState(capability: EnvironmentProviderCapability | null | unde
     return {
       kind: "capture_unavailable" as const,
       label: "Setup capture unavailable",
-      reason: "This provider advertises setup, but image capture is unavailable.",
+      reason:
+        "This provider advertises setup, but image capture is unavailable.",
     };
   }
 
@@ -803,7 +930,9 @@ function capabilityState(capability: EnvironmentProviderCapability | null | unde
   };
 }
 
-function sessionStatusCopy(status: EnvironmentCustomImageSetupSession["status"]) {
+function sessionStatusCopy(
+  status: EnvironmentCustomImageSetupSession["status"],
+) {
   switch (status) {
     case "starting":
       return "Setup starting";
@@ -842,7 +971,9 @@ function formatRelinkDriftValue(value: unknown): string {
 // Turns the sanitized 409 drift body into the operator warning. Value-bearing
 // drift shows the changed field; an unclassified result warns that the snapshot
 // will override the current base image.
-function relinkDriftWarning(conflict: EnvironmentCustomImageRelinkConflict): string {
+function relinkDriftWarning(
+  conflict: EnvironmentCustomImageRelinkConflict,
+): string {
   if (conflict.classification === "boot_source_drift") {
     const valued = conflict.driftedPaths.find(
       (entry) => entry.from !== undefined || entry.to !== undefined,
@@ -870,13 +1001,15 @@ function EnvironmentImageTemplatePanel({
   const { pushToast } = useToast();
   const queryClient = useQueryClient();
   const state = capabilityState(providerCapability);
-  const overviewKey = queryKeys.environments.customImageTemplate(environment.id);
+  const overviewKey = queryKeys.environments.customImageTemplate(
+    environment.id,
+  );
 
   const overviewQuery = useQuery({
     queryKey: overviewKey,
-    queryFn: () => environmentsApi.customImageTemplate(environment.id, companyId),
+    queryFn: () =>
+      environmentsApi.customImageTemplate(environment.id, companyId),
     enabled: state.kind === "supported",
-    retry: false,
   });
 
   const activeSessionId = overviewQuery.data?.activeSession?.id ?? null;
@@ -885,9 +1018,13 @@ function EnvironmentImageTemplatePanel({
       ? queryKeys.environments.customImageSetupSession(activeSessionId)
       : ["environment-custom-image-setup-sessions", "none", environment.id],
     queryFn: () => environmentsApi.customImageSetupSession(activeSessionId!),
-    enabled: Boolean(activeSessionId && isActiveCustomImageSetupSession(overviewQuery.data?.activeSession)),
-    retry: false,
+    enabled: Boolean(
+      activeSessionId &&
+        isActiveCustomImageSetupSession(overviewQuery.data?.activeSession),
+    ),
   });
+  const overviewView = useQueryView(overviewQuery);
+  const sessionView = useQueryView(sessionQuery);
 
   function setSessionResult(result: EnvironmentCustomImageSetupSessionResult) {
     queryClient.setQueryData(
@@ -902,35 +1039,39 @@ function EnvironmentImageTemplatePanel({
 
   const startSetupMutation = useMutation({
     mutationFn: (input: { templateId?: string | null } = {}) =>
-      environmentsApi.startCustomImageSetupSession(
-        environment.id,
-        companyId,
-        { templateId: input.templateId ?? null },
-      ),
+      environmentsApi.startCustomImageSetupSession(environment.id, companyId, {
+        templateId: input.templateId ?? null,
+      }),
     onSuccess: (result) => {
-      queryClient.setQueryData(overviewKey, (current: typeof overviewQuery.data) => ({
-        activeTemplate: current?.activeTemplate ?? null,
-        activeSession: result.session,
-        latestSession: result.session,
-      }));
+      queryClient.setQueryData(
+        overviewKey,
+        (current: typeof overviewQuery.data) => ({
+          activeTemplate: current?.activeTemplate ?? null,
+          activeSession: result.session,
+          latestSession: result.session,
+        }),
+      );
       setSessionResult(result);
       pushToast({
-        title: translateInstant("companySettings.customImage.setupStartedTitle"),
+        title: translateInstant(
+          "companySettings.customImage.setupStartedTitle",
+        ),
         body: "Connect details are available while the session is active.",
         tone: "success",
       });
     },
     onError: (error) => {
       pushToast({
-        title: translateInstant("companySettings.customImage.setupStartFailedTitle"),
-        body: error instanceof Error ? error.message : "Setup session could not be started.",
+        title: translateInstant("companySettings.customImage.setupStartFailedTitle", { defaultValue: "Failed to start setup" }),
+        body: describeError(error).body,
         tone: "error",
       });
     },
   });
 
   const finishSetupMutation = useMutation({
-    mutationFn: (sessionId: string) => environmentsApi.finishCustomImageSetupSession(sessionId, {}),
+    mutationFn: (sessionId: string) =>
+      environmentsApi.finishCustomImageSetupSession(sessionId, {}),
     onSuccess: (result) => {
       queryClient.setQueryData(overviewKey, {
         activeTemplate: result.template,
@@ -940,15 +1081,17 @@ function EnvironmentImageTemplatePanel({
       setSessionResult({ session: result.session, connectionPayload: null });
       invalidateOverview();
       pushToast({
-        title: translateInstant("companySettings.customImage.templateCapturedTitle"),
+        title: translateInstant(
+          "companySettings.customImage.templateCapturedTitle",
+        ),
         body: "Future runs can use the promoted template.",
         tone: "success",
       });
     },
     onError: (error) => {
       pushToast({
-        title: translateInstant("companySettings.customImage.templateCaptureFailedTitle"),
-        body: error instanceof Error ? error.message : "Template capture failed.",
+        title: translateInstant("companySettings.customImage.templateCaptureFailedTitle", { defaultValue: "Failed to capture template" }),
+        body: describeError(error).body,
         tone: "error",
       });
     },
@@ -956,49 +1099,62 @@ function EnvironmentImageTemplatePanel({
 
   const cancelSetupMutation = useMutation({
     mutationFn: (sessionId: string) =>
-      environmentsApi.cancelCustomImageSetupSession(sessionId, { reason: "operator cancelled" }),
+      environmentsApi.cancelCustomImageSetupSession(sessionId, {
+        reason: "operator cancelled",
+      }),
     onSuccess: (session) => {
-      queryClient.setQueryData(overviewKey, (current: typeof overviewQuery.data) => ({
-        activeTemplate: current?.activeTemplate ?? null,
-        activeSession: null,
-        latestSession: session,
-      }));
+      queryClient.setQueryData(
+        overviewKey,
+        (current: typeof overviewQuery.data) => ({
+          activeTemplate: current?.activeTemplate ?? null,
+          activeSession: null,
+          latestSession: session,
+        }),
+      );
       setSessionResult({ session, connectionPayload: null });
       invalidateOverview();
       pushToast({
-        title: translateInstant("companySettings.customImage.setupCancelledTitle"),
+        title: translateInstant(
+          "companySettings.customImage.setupCancelledTitle",
+        ),
         body: "The active template was not changed.",
         tone: "success",
       });
     },
     onError: (error) => {
       pushToast({
-        title: translateInstant("companySettings.customImage.setupCancelFailedTitle"),
-        body: error instanceof Error ? error.message : "Setup session could not be cancelled.",
+        title: translateInstant("companySettings.customImage.setupCancelFailedTitle", { defaultValue: "Failed to cancel setup" }),
+        body: describeError(error).body,
         tone: "error",
       });
     },
   });
 
   const rollbackTemplateMutation = useMutation({
-    mutationFn: () => environmentsApi.rollbackCustomImageTemplate(environment.id, companyId),
+    mutationFn: () =>
+      environmentsApi.rollbackCustomImageTemplate(environment.id, companyId),
     onSuccess: (result) => {
-      queryClient.setQueryData(overviewKey, (current: typeof overviewQuery.data) => ({
-        activeTemplate: result.activeTemplate,
-        activeSession: null,
-        latestSession: current?.latestSession ?? null,
-      }));
+      queryClient.setQueryData(
+        overviewKey,
+        (current: typeof overviewQuery.data) => ({
+          activeTemplate: result.activeTemplate,
+          activeSession: null,
+          latestSession: current?.latestSession ?? null,
+        }),
+      );
       invalidateOverview();
       pushToast({
-        title: translateInstant("companySettings.customImage.templateRolledBackTitle"),
+        title: translateInstant(
+          "companySettings.customImage.templateRolledBackTitle",
+        ),
         body: "Future runs will use the previous template.",
         tone: "success",
       });
     },
     onError: (error) => {
       pushToast({
-        title: translateInstant("companySettings.customImage.templateRollbackFailedTitle"),
-        body: error instanceof Error ? error.message : "Rollback failed.",
+        title: translateInstant("companySettings.customImage.templateRollbackFailedTitle", { defaultValue: "Failed to roll back template" }),
+        body: describeError(error).body,
         tone: "error",
       });
     },
@@ -1009,28 +1165,44 @@ function EnvironmentImageTemplatePanel({
     // drift detail; the operator must confirm before the flagged retry.
     mutationFn: async () => {
       try {
-        return await environmentsApi.relinkCustomImageTemplate(environment.id, companyId);
+        return await environmentsApi.relinkCustomImageTemplate(
+          environment.id,
+          companyId,
+        );
       } catch (error) {
         if (error instanceof ApiError && error.status === 409) {
-          const conflict = (error.body as { details?: EnvironmentCustomImageRelinkConflict } | null)?.details;
-          const warning = conflict ? relinkDriftWarning(conflict) : error.message;
+          const conflict = (
+            error.body as {
+              details?: EnvironmentCustomImageRelinkConflict;
+            } | null
+          )?.details;
+          const warning = conflict
+            ? relinkDriftWarning(conflict)
+            : describeError(error).body;
           if (!window.confirm(`${warning}\n\nRelink this image anyway?`)) {
             throw new RelinkConfirmationDeclined();
           }
-          return await environmentsApi.relinkCustomImageTemplate(environment.id, companyId, {
-            confirmBootSourceDrift: true,
-          });
+          return await environmentsApi.relinkCustomImageTemplate(
+            environment.id,
+            companyId,
+            {
+              confirmBootSourceDrift: true,
+            },
+          );
         }
         throw error;
       }
     },
     onSuccess: (result) => {
-      queryClient.setQueryData(overviewKey, (current: typeof overviewQuery.data) => ({
-        activeTemplate: result.template,
-        activeTemplateMatchesConfig: true,
-        activeSession: current?.activeSession ?? null,
-        latestSession: current?.latestSession ?? null,
-      }));
+      queryClient.setQueryData(
+        overviewKey,
+        (current: typeof overviewQuery.data) => ({
+          activeTemplate: result.template,
+          activeTemplateMatchesConfig: true,
+          activeSession: current?.activeSession ?? null,
+          latestSession: current?.latestSession ?? null,
+        }),
+      );
       invalidateOverview();
       pushToast({
         title: translateInstant("Template relinked"),
@@ -1042,31 +1214,37 @@ function EnvironmentImageTemplatePanel({
       if (error instanceof RelinkConfirmationDeclined) return;
       pushToast({
         title: translateInstant("Failed to relink template"),
-        body: error instanceof Error ? error.message : "Relink failed.",
+        body: describeError(error).body,
         tone: "error",
       });
     },
   });
 
   const disableTemplateMutation = useMutation({
-    mutationFn: () => environmentsApi.disableCustomImageTemplate(environment.id, companyId),
+    mutationFn: () =>
+      environmentsApi.disableCustomImageTemplate(environment.id, companyId),
     onSuccess: (template) => {
-      queryClient.setQueryData(overviewKey, (current: typeof overviewQuery.data) => ({
-        activeTemplate: null,
-        activeSession: null,
-        latestSession: current?.latestSession ?? null,
-      }));
+      queryClient.setQueryData(
+        overviewKey,
+        (current: typeof overviewQuery.data) => ({
+          activeTemplate: null,
+          activeSession: null,
+          latestSession: current?.latestSession ?? null,
+        }),
+      );
       invalidateOverview();
       pushToast({
-        title: translateInstant("companySettings.customImage.templateDisabledTitle"),
+        title: translateInstant(
+          "companySettings.customImage.templateDisabledTitle",
+        ),
         body: "Future runs will use the base provider configuration.",
         tone: "success",
       });
     },
     onError: (error) => {
       pushToast({
-        title: translateInstant("companySettings.customImage.templateDisableFailedTitle"),
-        body: error instanceof Error ? error.message : "Disable failed.",
+        title: translateInstant("companySettings.customImage.templateDisableFailedTitle", { defaultValue: "Failed to disable template" }),
+        body: describeError(error).body,
         tone: "error",
       });
     },
@@ -1074,24 +1252,34 @@ function EnvironmentImageTemplatePanel({
 
   if (state.kind !== "supported") {
     return (
-      <div className="mt-3 border-t border-border/60 pt-3 text-xs" data-testid={`custom-image-template-state-${environment.id}`}>
+      <div
+        className="mt-3 border-t border-border/60 pt-3 text-xs"
+        data-testid={`custom-image-template-state-${environment.id}`}
+      >
         <div className="font-medium text-foreground">{state.label}</div>
         <div className="mt-1 text-muted-foreground">{state.reason}</div>
       </div>
     );
   }
 
-  if (overviewQuery.isLoading) {
+  if (overviewQuery.isLoading || overviewView.kind === "reconnecting") {
     return (
       <div className="mt-3 border-t border-border/60 pt-3 text-xs text-muted-foreground">
-        {translateInstant("companySettings.customImage.loading")}</div>
+        {translateInstant("companySettings.customImage.loading")}
+      </div>
     );
   }
 
-  if (overviewQuery.isError) {
+  if (overviewView.kind === "error") {
     return (
-      <div className="mt-3 border-t border-border/60 pt-3 text-xs text-destructive">
-        {overviewQuery.error instanceof Error ? overviewQuery.error.message : translateInstant("companySettings.customImage.loadFailed")}
+      <div className="mt-3 border-t border-border/60 pt-3">
+        <QueryErrorState
+          size="inline"
+          error={overviewQuery.error}
+          action="load the template setup"
+          onRetry={overviewView.retry}
+          retrying={overviewView.isFetching}
+        />
       </div>
     );
   }
@@ -1101,21 +1289,29 @@ function EnvironmentImageTemplatePanel({
   const refreshedSession = sessionQuery.data?.session ?? null;
   const session = refreshedSession ?? overview?.activeSession ?? null;
   const latestSession = !isActiveCustomImageSetupSession(session)
-    ? session ?? overview?.latestSession ?? null
-    : overview?.latestSession ?? null;
-  const connectionPayload = session?.status === "waiting_for_user"
-    ? sessionQuery.data?.connectionPayload ?? null
-    : null;
+    ? (session ?? overview?.latestSession ?? null)
+    : (overview?.latestSession ?? null);
+  const connectionPayload =
+    session?.status === "waiting_for_user"
+      ? (sessionQuery.data?.connectionPayload ?? null)
+      : null;
   const connectionCommand = readConnectionCommand(connectionPayload);
-  const connectionFallbackMessage = session?.status === "waiting_for_user"
-    ? setupConnectionFallbackMessage({
-        payload: connectionPayload,
-        refreshError: sessionQuery.isError ? sessionQuery.error : null,
-        isLoading: sessionQuery.isLoading,
-      })
-    : null;
-  const sessionExpiresAt = formatDateTime(connectionPayload?.expiresAt ?? session?.expiresAt ?? null);
-  const capturedAt = formatDateTime(activeTemplate?.capturedAt ?? activeTemplate?.createdAt ?? null);
+  const connectionFallbackMessage =
+    session?.status === "waiting_for_user"
+      ? setupConnectionFallbackMessage({
+          payload: connectionPayload,
+          refreshError:
+            sessionView.kind === "error" ? sessionQuery.error : null,
+          isLoading:
+            sessionQuery.isLoading || sessionView.kind === "reconnecting",
+        })
+      : null;
+  const sessionExpiresAt = formatDateTime(
+    connectionPayload?.expiresAt ?? session?.expiresAt ?? null,
+  );
+  const capturedAt = formatDateTime(
+    activeTemplate?.capturedAt ?? activeTemplate?.createdAt ?? null,
+  );
   const lastUsedAt = formatDateTime(activeTemplate?.lastUsedAt ?? null);
   const isMutating =
     startSetupMutation.isPending ||
@@ -1128,12 +1324,18 @@ function EnvironmentImageTemplatePanel({
   if (session && isActiveCustomImageSetupSession(session)) {
     const isCapturing = session.status === "capturing";
     return (
-      <div className="mt-3 border-t border-border/60 pt-3" data-testid={`custom-image-template-state-${environment.id}`}>
+      <div
+        className="mt-3 border-t border-border/60 pt-3"
+        data-testid={`custom-image-template-state-${environment.id}`}
+      >
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
-            <div className="text-xs font-medium">{sessionStatusCopy(session.status)}</div>
+            <div className="text-xs font-medium">
+              {sessionStatusCopy(session.status)}
+            </div>
             <div className="text-xs text-muted-foreground">
-              {providerDisplayName}{sessionExpiresAt ? ` · expires ${sessionExpiresAt}` : ""}
+              {providerDisplayName}
+              {sessionExpiresAt ? ` · expires ${sessionExpiresAt}` : ""}
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -1144,7 +1346,8 @@ function EnvironmentImageTemplatePanel({
               disabled={isMutating || session.status !== "waiting_for_user"}
             >
               <Check className="mr-1.5 h-3.5 w-3.5" />
-              {translateInstant("companySettings.customImage.finished")}</Button>
+              {translateInstant("companySettings.customImage.finished")}
+            </Button>
             <Button
               size="sm"
               variant="ghost"
@@ -1152,20 +1355,27 @@ function EnvironmentImageTemplatePanel({
               disabled={isMutating}
             >
               <X className="mr-1.5 h-3.5 w-3.5" />
-              {translateInstant("Cancel")}</Button>
+              {translateInstant("Cancel")}
+            </Button>
           </div>
         </div>
         {isCapturing ? (
           <div className="mt-2 text-xs text-muted-foreground">
-            {translateInstant("companyEnvironments.captureInProgress")}</div>
+            {translateInstant("companyEnvironments.captureInProgress")}
+          </div>
         ) : null}
-        {session.status === "waiting_for_user" && connectionPayload?.type === "ssh" ? (
-          <EnvironmentCustomImageBrowserTerminal autoConnect sessionId={session.id} />
+        {session.status === "waiting_for_user" &&
+        connectionPayload?.type === "ssh" ? (
+          <EnvironmentCustomImageBrowserTerminal
+            autoConnect
+            sessionId={session.id}
+          />
         ) : null}
         {session.status === "waiting_for_user" && connectionCommand ? (
           <details className="mt-2 rounded-md border border-border/60 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
             <summary className="cursor-pointer select-none font-medium text-foreground">
-              {translateInstant("companyEnvironments.sshFallback")}</summary>
+              {translateInstant("companyEnvironments.sshFallback")}
+            </summary>
             <code className="mt-2 block overflow-x-auto whitespace-nowrap text-(length:--text-micro) leading-5">
               {connectionCommand}
             </code>
@@ -1177,7 +1387,9 @@ function EnvironmentImageTemplatePanel({
           </div>
         ) : null}
         {session.failureReason ? (
-          <div className="mt-2 text-xs text-destructive">{session.failureReason}</div>
+          <div className="mt-2 text-xs text-destructive">
+            {session.failureReason}
+          </div>
         ) : null}
       </div>
     );
@@ -1186,20 +1398,29 @@ function EnvironmentImageTemplatePanel({
   if (activeTemplate) {
     const templateRef = activeTemplate.templateRef?.trim() || null;
     const templateOutOfSync = overview?.activeTemplateMatchesConfig === false;
-    const bootSourceDriftSummary = formatBootSourceDriftSummary(overview?.activeTemplateDrift);
+    const bootSourceDriftSummary = formatBootSourceDriftSummary(
+      overview?.activeTemplateDrift,
+    );
     return (
-      <div className="mt-3 border-t border-border/60 pt-3" data-testid={`custom-image-template-state-${environment.id}`}>
+      <div
+        className="mt-3 border-t border-border/60 pt-3"
+        data-testid={`custom-image-template-state-${environment.id}`}
+      >
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
-            <div className="text-xs font-medium">{translateInstant("companySettings.customImage.activeTemplate")}</div>
+            <div className="text-xs font-medium">
+              {translateInstant("companySettings.customImage.activeTemplate")}
+            </div>
             <div className="text-xs text-muted-foreground">
               {providerDisplayName} · {activeTemplate.templateKind}
               {" · "}
               <span
                 className="break-all font-mono text-foreground"
-                title={templateRef
-                  ? `Provider ${activeTemplate.templateKind} ref ${templateRef} (Paperclip template ${activeTemplate.id})`
-                  : activeTemplate.id}
+                title={
+                  templateRef
+                    ? `Provider ${activeTemplate.templateKind} ref ${templateRef} (Paperclip template ${activeTemplate.id})`
+                    : activeTemplate.id
+                }
               >
                 {templateRef ?? `id ${formatShortId(activeTemplate.id)}`}
               </span>
@@ -1221,11 +1442,14 @@ function EnvironmentImageTemplatePanel({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => startSetupMutation.mutate({ templateId: activeTemplate.id })}
+              onClick={() =>
+                startSetupMutation.mutate({ templateId: activeTemplate.id })
+              }
               disabled={isMutating}
             >
               <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
-              {translateInstant("Refresh")}</Button>
+              {translateInstant("Refresh")}
+            </Button>
             <Button
               size="sm"
               variant="outline"
@@ -1234,7 +1458,8 @@ function EnvironmentImageTemplatePanel({
               data-testid={`custom-image-template-relink-${environment.id}`}
             >
               <Link2 className="mr-1.5 h-3.5 w-3.5" />
-              {translateInstant("Relink")}</Button>
+              {translateInstant("Relink")}
+            </Button>
             <Button
               size="sm"
               variant="ghost"
@@ -1242,7 +1467,8 @@ function EnvironmentImageTemplatePanel({
               disabled={isMutating}
             >
               <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-              {translateInstant("companySettings.customImage.rollback")}</Button>
+              {translateInstant("companySettings.customImage.rollback")}
+            </Button>
             <Button
               size="sm"
               variant="ghost"
@@ -1250,7 +1476,8 @@ function EnvironmentImageTemplatePanel({
               disabled={isMutating}
             >
               <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-              {translateInstant("Disable")}</Button>
+              {translateInstant("Disable")}
+            </Button>
           </div>
         </div>
       </div>
@@ -1258,17 +1485,24 @@ function EnvironmentImageTemplatePanel({
   }
 
   return (
-    <div className="mt-3 border-t border-border/60 pt-3" data-testid={`custom-image-template-state-${environment.id}`}>
+    <div
+      className="mt-3 border-t border-border/60 pt-3"
+      data-testid={`custom-image-template-state-${environment.id}`}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
-          <div className="text-xs font-medium">{translateInstant("companySettings.customImage.notConfigured")}</div>
+          <div className="text-xs font-medium">
+            {translateInstant("companySettings.customImage.notConfigured")}
+          </div>
           <div className="text-xs text-muted-foreground">
             {latestSession
               ? sessionStatusCopy(latestSession.status)
               : `Capture a custom ${providerDisplayName} image with your tools already logged in.`}
           </div>
           {latestSession?.failureReason ? (
-            <div className="text-xs text-destructive">{latestSession.failureReason}</div>
+            <div className="text-xs text-destructive">
+              {latestSession.failureReason}
+            </div>
           ) : null}
         </div>
         <Button
@@ -1278,38 +1512,56 @@ function EnvironmentImageTemplatePanel({
           disabled={isMutating}
         >
           <Play className="mr-1.5 h-3.5 w-3.5" />
-          {translateInstant("companySettings.customImage.configureImage")}</Button>
+          {translateInstant("companySettings.customImage.configureImage")}
+        </Button>
       </div>
     </div>
   );
 }
 
-export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps) {
+export function CompanyEnvironments({
+  mode = "list",
+}: CompanyEnvironmentsProps) {
   useTranslation();
-  const { environmentId: routeEnvironmentId } = useParams<{ environmentId?: string }>();
+  const { environmentId: routeEnvironmentId } = useParams<{
+    environmentId?: string;
+  }>();
   const navigate = useNavigate();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToast();
   const queryClient = useQueryClient();
   const isEnvironmentFormPage = mode === "create" || mode === "edit";
-  const editingEnvironmentId = mode === "edit" ? routeEnvironmentId ?? null : null;
-  const [environmentForm, setEnvironmentForm] = useState<EnvironmentFormState>(createEmptyEnvironmentForm);
-  const environmentVariablesEditorRef = useRef<EnvironmentVariablesEditorHandle | null>(null);
+  const editingEnvironmentId =
+    mode === "edit" ? (routeEnvironmentId ?? null) : null;
+  const [environmentForm, setEnvironmentForm] = useState<EnvironmentFormState>(
+    createEmptyEnvironmentForm,
+  );
+  const environmentVariablesEditorRef =
+    useRef<EnvironmentVariablesEditorHandle | null>(null);
   const initializedFormKeyRef = useRef<string | null>(null);
   // Fingerprint of the form as initialized; null until the form page has loaded its data.
-  const [environmentFormBaselineKey, setEnvironmentFormBaselineKey] = useState<string | null>(null);
-  const [environmentVariablesDirty, setEnvironmentVariablesDirty] = useState(false);
-  const [probeResults, setProbeResults] = useState<Record<string, EnvironmentProbeResult | null>>({});
-  const [testingEnvironmentId, setTestingEnvironmentId] = useState<string | null>(null);
+  const [environmentFormBaselineKey, setEnvironmentFormBaselineKey] = useState<
+    string | null
+  >(null);
+  const [environmentVariablesDirty, setEnvironmentVariablesDirty] =
+    useState(false);
+  const [probeResults, setProbeResults] = useState<
+    Record<string, EnvironmentProbeResult | null>
+  >({});
+  const [testingEnvironmentId, setTestingEnvironmentId] = useState<
+    string | null
+  >(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   // "" means "inherit the instance default", mirroring the agent config form's
   // environment override select.
-  const [reassignEnvironmentTargetId, setReassignEnvironmentTargetId] = useState("");
+  const [reassignEnvironmentTargetId, setReassignEnvironmentTargetId] =
+    useState("");
   const environmentHasUnsavedChanges =
     isEnvironmentFormPage &&
     (environmentVariablesDirty ||
-      (environmentFormBaselineKey !== null && environmentFormKey(environmentForm) !== environmentFormBaselineKey));
+      (environmentFormBaselineKey !== null &&
+        environmentFormKey(environmentForm) !== environmentFormBaselineKey));
 
   useEffect(() => {
     const crumbs = [
@@ -1318,30 +1570,39 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
         ? { label: translateInstant("Environments"), href: ENVIRONMENTS_PATH }
         : { label: translateInstant("Environments") },
     ];
-    if (mode === "create") crumbs.push({ label: translateInstant("companySettings.addEnvironment") });
-    if (mode === "edit") crumbs.push({ label: translateInstant("companySettings.editEnvironment") });
+    if (mode === "create")
+      crumbs.push({
+        label: translateInstant("companySettings.addEnvironment"),
+      });
+    if (mode === "edit")
+      crumbs.push({
+        label: translateInstant("companySettings.editEnvironment"),
+      });
     setBreadcrumbs(crumbs);
   }, [isEnvironmentFormPage, mode, setBreadcrumbs]);
 
   const { data: instanceSettings } = useQuery({
     queryKey: queryKeys.instance.settings,
     queryFn: () => instanceSettingsApi.get(),
-    retry: false,
   });
 
   const { data: experimentalSettings } = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
     queryFn: () => instanceSettingsApi.getExperimental(),
-    retry: false,
   });
   const environmentsEnabled = experimentalSettings?.enableEnvironments === true;
-  const managedSandboxOnly = experimentalSettings?.enableManagedSandboxOnly === true;
+  const managedSandboxOnly =
+    experimentalSettings?.enableManagedSandboxOnly === true;
 
-  const { data: environments } = useQuery({
-    queryKey: selectedCompanyId ? queryKeys.environments.list(selectedCompanyId) : ["environments", "none"],
+  const environmentsQuery = useQuery({
+    queryKey: selectedCompanyId
+      ? queryKeys.environments.list(selectedCompanyId)
+      : ["environments", "none"],
     queryFn: () => environmentsApi.list(selectedCompanyId!),
     enabled: Boolean(selectedCompanyId) && environmentsEnabled,
   });
+  const { data: environments } = environmentsQuery;
+  const environmentsView = useQueryView(environmentsQuery);
   const savedEnvironments = environments ?? [];
   // Delete preflight: the blast radius names what still references the
   // environment, and the agent list identifies which of this company's agents
@@ -1352,13 +1613,16 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
       : ["environment-delete-blast-radius", "none"],
     queryFn: () => environmentsApi.deleteBlastRadius(editingEnvironmentId!),
     enabled: deleteDialogOpen && Boolean(editingEnvironmentId),
-    retry: false,
   });
+  const deleteBlastRadiusView = useQueryView(deleteBlastRadiusQuery);
   const companyAgentsQuery = useQuery({
-    queryKey: selectedCompanyId ? queryKeys.agents.list(selectedCompanyId) : ["agents", "none"],
+    queryKey: selectedCompanyId
+      ? queryKeys.agents.list(selectedCompanyId)
+      : ["agents", "none"],
     queryFn: () => agentsApi.list(selectedCompanyId!),
     enabled: deleteDialogOpen && Boolean(selectedCompanyId),
   });
+  const companyAgentsView = useQueryView(companyAgentsQuery);
   // Descriptors for the edited environment's secret refs. Environments are
   // instance-scoped while secrets are company-scoped, so a ref may point at
   // a secret this company's picker cannot list; these hints let the picker
@@ -1369,16 +1633,18 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
       : ["environment-secret-refs", "none"],
     queryFn: () => environmentsApi.secretRefs(editingEnvironmentId!),
     enabled: Boolean(editingEnvironmentId) && environmentsEnabled,
-    retry: false,
   });
+  const environmentSecretRefsView = useQueryView(environmentSecretRefsQuery);
   const environmentSecretRefHints = useMemo<SecretRefHintsContextValue>(() => {
     // A new environment has no persisted refs, so the empty map is
     // authoritative. For an existing environment the map is only "ready"
     // once the descriptor request resolved — the picker must not call a
     // reference missing off a pending or failed lookup.
     if (!editingEnvironmentId) return { status: "ready", hints: {} };
-    if (environmentSecretRefsQuery.isError) return { status: "error", hints: {} };
-    if (!environmentSecretRefsQuery.data) return { status: "loading", hints: {} };
+    if (environmentSecretRefsView.kind === "error")
+      return { status: "error", hints: {} };
+    if (!environmentSecretRefsQuery.data)
+      return { status: "loading", hints: {} };
     const hints: Record<string, SecretRefHint> = {};
     for (const ref of environmentSecretRefsQuery.data.refs) {
       hints[ref.secretId] = {
@@ -1389,26 +1655,37 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
       };
     }
     return { status: "ready", hints };
-  }, [editingEnvironmentId, environmentSecretRefsQuery.data, environmentSecretRefsQuery.isError]);
+  }, [
+    editingEnvironmentId,
+    environmentSecretRefsQuery.data,
+    environmentSecretRefsView.kind,
+  ]);
   const { data: environmentCapabilities } = useQuery({
-    queryKey: selectedCompanyId ? ["environment-capabilities", selectedCompanyId] : ["environment-capabilities", "none"],
+    queryKey: selectedCompanyId
+      ? ["environment-capabilities", selectedCompanyId]
+      : ["environment-capabilities", "none"],
     queryFn: () => environmentsApi.capabilities(selectedCompanyId!),
     enabled: Boolean(selectedCompanyId) && environmentsEnabled,
   });
 
   const { data: secrets } = useQuery({
-    queryKey: selectedCompanyId ? ["company-secrets", selectedCompanyId] : ["company-secrets", "none"],
+    queryKey: selectedCompanyId
+      ? ["company-secrets", selectedCompanyId]
+      : ["company-secrets", "none"],
     queryFn: () => secretsApi.list(selectedCompanyId!),
     enabled: Boolean(selectedCompanyId),
   });
   const createSecret = useMutation({
     mutationFn: (input: { name: string; value: string }) => {
-      if (!selectedCompanyId) throw new Error("Select an organization to create secrets");
+      if (!selectedCompanyId)
+        throw new Error("Select an organization to create secrets");
       return secretsApi.create(selectedCompanyId, input);
     },
     onSuccess: async () => {
       if (!selectedCompanyId) return;
-      await queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedCompanyId) });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.secrets.list(selectedCompanyId),
+      });
     },
   });
 
@@ -1419,7 +1696,11 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
   const managedEnvironmentEnvVarsMutation = useMutation({
     mutationFn: async (envVars: EnvironmentFormState["envVars"]) => {
       if (!editingEnvironmentId) throw new Error("No environment selected");
-      return await environmentsApi.update(editingEnvironmentId, { envVars }, selectedCompanyId);
+      return await environmentsApi.update(
+        editingEnvironmentId,
+        { envVars },
+        selectedCompanyId,
+      );
     },
     onSuccess: async (environment) => {
       if (selectedCompanyId) {
@@ -1441,7 +1722,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
     onError: (error) => {
       pushToast({
         title: translateInstant("Failed to save environment variables"),
-        body: error instanceof Error ? error.message : "Environment variables save failed.",
+        body: describeError(error).body,
         tone: "error",
       });
     },
@@ -1452,10 +1733,15 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
       const body = buildEnvironmentPayload(form);
 
       if (editingEnvironmentId) {
-        return await environmentsApi.update(editingEnvironmentId, body, selectedCompanyId);
+        return await environmentsApi.update(
+          editingEnvironmentId,
+          body,
+          selectedCompanyId,
+        );
       }
 
-      if (!selectedCompanyId) throw new Error("Select a company to create environments");
+      if (!selectedCompanyId)
+        throw new Error("Select a company to create environments");
       return await environmentsApi.create(selectedCompanyId!, body);
     },
     onSuccess: async (environment) => {
@@ -1476,11 +1762,14 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
       draftEnvironmentProbeMutation.reset();
       navigate(ENVIRONMENTS_PATH, { replace: true });
       pushToast({
-        title: wasEditing ? translateInstant("companySettings.environmentUpdated") : translateInstant("companySettings.environmentCreated"),
+        title: wasEditing
+          ? translateInstant("companySettings.environmentUpdated")
+          : translateInstant("companySettings.environmentCreated"),
         body: `${environment.name} is ready.`,
         tone: "success",
       });
-      const reconciliation = (environment as EnvironmentUpdateResult).customImageReconciliation;
+      const reconciliation = (environment as EnvironmentUpdateResult)
+        .customImageReconciliation;
       if (reconciliation?.action === "relinked") {
         pushToast({
           title: translateInstant("Custom image kept active"),
@@ -1497,8 +1786,8 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
     },
     onError: (error) => {
       pushToast({
-        title: translateInstant("companySettings.failedToSaveEnvironment"),
-        body: error instanceof Error ? error.message : "Environment save failed.",
+        title: translateInstant("companySettings.failedToSaveEnvironment", { defaultValue: "Failed to save environment" }),
+        body: describeError(error).body,
         tone: "error",
       });
     },
@@ -1508,7 +1797,9 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
     mutationFn: async (defaultEnvironmentId: string | null) =>
       await instanceSettingsApi.update({ defaultEnvironmentId }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.instance.settings });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.instance.settings,
+      });
       pushToast({
         title: translateInstant("companySettings.defaultEnvironmentUpdated"),
         body: "Agent inheritance now follows the updated instance default.",
@@ -1517,8 +1808,8 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
     },
     onError: (error) => {
       pushToast({
-        title: translateInstant("companySettings.defaultEnvironmentUpdateFailed"),
-        body: error instanceof Error ? error.message : "Default environment update failed.",
+        title: translateInstant("companySettings.defaultEnvironmentUpdateFailed", { defaultValue: "Failed to update default environment" }),
+        body: describeError(error).body,
         tone: "error",
       });
     },
@@ -1542,24 +1833,33 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
         );
       }
       return input.destroyReusableLeases
-        ? await environmentsApi.remove(input.environment.id, { destroyReusableSandboxLeases: true })
+        ? await environmentsApi.remove(input.environment.id, {
+            destroyReusableSandboxLeases: true,
+          })
         : await environmentsApi.remove(input.environment.id);
     },
     onSuccess: async (environment, input) => {
       if (selectedCompanyId) {
-        await queryClient.invalidateQueries({ queryKey: queryKeys.environments.list(selectedCompanyId) });
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.environments.list(selectedCompanyId),
+        });
         if (input.reassignAgentIds.length > 0) {
-          await queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedCompanyId) });
+          await queryClient.invalidateQueries({
+            queryKey: queryKeys.agents.list(selectedCompanyId),
+          });
         }
       }
-      queryClient.removeQueries({ queryKey: ["environment-delete-blast-radius", environment.id] });
+      queryClient.removeQueries({
+        queryKey: ["environment-delete-blast-radius", environment.id],
+      });
       setDeleteDialogOpen(false);
       initializedFormKeyRef.current = null;
       setEnvironmentForm(createEmptyEnvironmentForm());
       setEnvironmentFormBaselineKey(null);
       setEnvironmentVariablesDirty(false);
       navigate(ENVIRONMENTS_PATH, { replace: true });
-      const destroyedCount = environment.destroyedReusableSandboxLeaseCount ?? 0;
+      const destroyedCount =
+        environment.destroyedReusableSandboxLeaseCount ?? 0;
       pushToast({
         title: translateInstant("Environment deleted"),
         body:
@@ -1573,26 +1873,31 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
       // Agents reassigned before the failure keep their new target; refresh so
       // the dialog reflects the actual remaining usage.
       if (selectedCompanyId && input.reassignAgentIds.length > 0) {
-        await queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedCompanyId) });
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.agents.list(selectedCompanyId),
+        });
       }
       await queryClient.invalidateQueries({
         queryKey: ["environment-delete-blast-radius", input.environment.id],
       });
       pushToast({
         title: translateInstant("Failed to delete environment"),
-        body: error instanceof Error ? error.message : "Environment delete failed.",
+        body: describeError(error).body,
         tone: "error",
       });
     },
   });
 
   const environmentProbeMutation = useMutation({
-    mutationFn: async (environmentId: string) => await environmentsApi.probe(environmentId, selectedCompanyId),
+    mutationFn: async (environmentId: string) =>
+      await environmentsApi.probe(environmentId, selectedCompanyId),
     onMutate: (environmentId) => {
       setTestingEnvironmentId(environmentId);
     },
     onSettled: (_probe, _error, environmentId) => {
-      setTestingEnvironmentId((current) => (current === environmentId ? null : current));
+      setTestingEnvironmentId((current) =>
+        current === environmentId ? null : current,
+      );
     },
     onSuccess: (probe, environmentId) => {
       setProbeResults((current) => ({
@@ -1600,25 +1905,29 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
         [environmentId]: probe,
       }));
       pushToast({
-        title: probe.ok ? translateInstant("companySettings.environmentProbePassed") : translateInstant("companySettings.environmentProbeFailed"),
+        title: probe.ok
+          ? translateInstant("companySettings.environmentProbePassed")
+          : translateInstant("companySettings.environmentProbeFailed"),
         body: probe.summary,
         tone: probe.ok ? "success" : "error",
       });
     },
     onError: (error, environmentId) => {
-      const failedEnvironment = (environments ?? []).find((environment) => environment.id === environmentId);
+      const failedEnvironment = (environments ?? []).find(
+        (environment) => environment.id === environmentId,
+      );
       setProbeResults((current) => ({
         ...current,
         [environmentId]: {
           ok: false,
           driver: failedEnvironment?.driver ?? "local",
-          summary: error instanceof Error ? error.message : "Environment probe failed.",
+          summary: describeError(error).body,
           details: null,
         },
       }));
       pushToast({
-        title: translateInstant("companySettings.environmentProbeFailed"),
-        body: error instanceof Error ? error.message : "Environment probe failed.",
+        title: translateInstant("companySettings.environmentProbeFailed", { defaultValue: "Environment probe failed" }),
+        body: describeError(error).body,
         tone: "error",
       });
     },
@@ -1626,21 +1935,24 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
 
   const draftEnvironmentProbeMutation = useMutation({
     mutationFn: async (form: EnvironmentFormState) => {
-      if (!selectedCompanyId) throw new Error("Select a company to test environments");
+      if (!selectedCompanyId)
+        throw new Error("Select a company to test environments");
       const body = buildEnvironmentPayload(form);
       return await environmentsApi.probeConfig(selectedCompanyId, body);
     },
     onSuccess: (probe) => {
       pushToast({
-        title: probe.ok ? translateInstant("companySettings.draftProbePassed") : translateInstant("companySettings.draftProbeFailed"),
+        title: probe.ok
+          ? translateInstant("companySettings.draftProbePassed")
+          : translateInstant("companySettings.draftProbeFailed"),
         body: probe.summary,
         tone: probe.ok ? "success" : "error",
       });
     },
     onError: (error) => {
       pushToast({
-        title: translateInstant("companySettings.draftProbeFailed"),
-        body: error instanceof Error ? error.message : "Environment probe failed.",
+        title: translateInstant("companySettings.draftProbeFailed", { defaultValue: "Draft probe failed" }),
+        body: describeError(error).body,
         tone: "error",
       });
     },
@@ -1656,7 +1968,8 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
   }, [selectedCompanyId]);
 
   const resetEnvironmentMutation = environmentMutation.reset;
-  const resetDraftEnvironmentProbeMutation = draftEnvironmentProbeMutation.reset;
+  const resetDraftEnvironmentProbeMutation =
+    draftEnvironmentProbeMutation.reset;
 
   useEffect(() => {
     if (!isEnvironmentFormPage) {
@@ -1666,9 +1979,10 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
       return;
     }
 
-    const formKey = mode === "create"
-      ? `create:${selectedCompanyId ?? "none"}`
-      : `edit:${selectedCompanyId ?? "none"}:${editingEnvironmentId ?? "missing"}`;
+    const formKey =
+      mode === "create"
+        ? `create:${selectedCompanyId ?? "none"}`
+        : `edit:${selectedCompanyId ?? "none"}:${editingEnvironmentId ?? "missing"}`;
 
     if (initializedFormKeyRef.current === formKey) return;
 
@@ -1685,7 +1999,9 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
     }
 
     const environment = editingEnvironmentId
-      ? (environments ?? []).find((candidate) => candidate.id === editingEnvironmentId) ?? null
+      ? ((environments ?? []).find(
+          (candidate) => candidate.id === editingEnvironmentId,
+        ) ?? null)
       : null;
     if (!environment) return;
 
@@ -1776,12 +2092,20 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
   }
 
   function flushEnvironmentForm(): EnvironmentFormState {
-    const flushedEnvVars = environmentVariablesEditorRef.current?.flushPendingDraft();
-    return flushedEnvVars ? { ...environmentForm, envVars: flushedEnvVars } : environmentForm;
+    const flushedEnvVars =
+      environmentVariablesEditorRef.current?.flushPendingDraft();
+    return flushedEnvVars
+      ? { ...environmentForm, envVars: flushedEnvVars }
+      : environmentForm;
   }
 
-  const discoveredPluginSandboxProviders = Object.entries(environmentCapabilities?.sandboxProviders ?? {})
-    .filter(([provider, capability]) => provider !== "fake" && capability.supportsRunExecution)
+  const discoveredPluginSandboxProviders = Object.entries(
+    environmentCapabilities?.sandboxProviders ?? {},
+  )
+    .filter(
+      ([provider, capability]) =>
+        provider !== "fake" && capability.supportsRunExecution,
+    )
     .map(([provider, capability]) => ({
       provider,
       displayName: capability.displayName || provider,
@@ -1793,67 +2117,99 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
   const pluginSandboxProviders =
     environmentForm.sandboxProvider.trim().length > 0 &&
     environmentForm.sandboxProvider !== "fake" &&
-    !discoveredPluginSandboxProviders.some((provider) => provider.provider === environmentForm.sandboxProvider)
+    !discoveredPluginSandboxProviders.some(
+      (provider) => provider.provider === environmentForm.sandboxProvider,
+    )
       ? [
           ...discoveredPluginSandboxProviders,
-          { provider: environmentForm.sandboxProvider, displayName: environmentForm.sandboxProvider, description: undefined, configSchema: null },
+          {
+            provider: environmentForm.sandboxProvider,
+            displayName: environmentForm.sandboxProvider,
+            description: undefined,
+            configSchema: null,
+          },
         ]
       : discoveredPluginSandboxProviders;
 
-  const selectedSandboxProvider = pluginSandboxProviders.find(
-    (provider) => provider.provider === environmentForm.sandboxProvider,
-  ) ?? null;
+  const selectedSandboxProvider =
+    pluginSandboxProviders.find(
+      (provider) => provider.provider === environmentForm.sandboxProvider,
+    ) ?? null;
   const selectedSandboxSchema = selectedSandboxProvider?.configSchema ?? null;
   const sandboxConfigErrors =
     environmentForm.driver === "sandbox" && selectedSandboxSchema
-      ? validateJsonSchemaForm(selectedSandboxSchema as any, environmentForm.sandboxConfig)
+      ? validateJsonSchemaForm(
+          selectedSandboxSchema as any,
+          environmentForm.sandboxConfig,
+        )
       : {};
 
   useEffect(() => {
     if (environmentForm.driver !== "sandbox") return;
-    if (environmentForm.sandboxProvider.trim().length > 0 && environmentForm.sandboxProvider !== "fake") return;
+    if (
+      environmentForm.sandboxProvider.trim().length > 0 &&
+      environmentForm.sandboxProvider !== "fake"
+    )
+      return;
     const firstProvider = discoveredPluginSandboxProviders[0]?.provider;
     if (!firstProvider) return;
     const firstSchema = discoveredPluginSandboxProviders[0]?.configSchema;
-    setEnvironmentForm((current) => (
-      current.driver !== "sandbox" || (current.sandboxProvider.trim().length > 0 && current.sandboxProvider !== "fake")
+    setEnvironmentForm((current) =>
+      current.driver !== "sandbox" ||
+      (current.sandboxProvider.trim().length > 0 &&
+        current.sandboxProvider !== "fake")
         ? current
         : {
             ...current,
             sandboxProvider: firstProvider,
-            sandboxConfig: firstSchema ? getDefaultValues(firstSchema as any) : {},
-          }
-    ));
-  }, [discoveredPluginSandboxProviders, environmentForm.driver, environmentForm.sandboxProvider]);
+            sandboxConfig: firstSchema
+              ? getDefaultValues(firstSchema as any)
+              : {},
+          },
+    );
+  }, [
+    discoveredPluginSandboxProviders,
+    environmentForm.driver,
+    environmentForm.sandboxProvider,
+  ]);
 
   const environmentFormValid =
     environmentForm.name.trim().length > 0 &&
     (environmentForm.driver !== "ssh" ||
-      (
-        environmentForm.sshHost.trim().length > 0 &&
+      (environmentForm.sshHost.trim().length > 0 &&
         environmentForm.sshUsername.trim().length > 0 &&
-        environmentForm.sshRemoteWorkspacePath.trim().length > 0
-      )) &&
+        environmentForm.sshRemoteWorkspacePath.trim().length > 0)) &&
     (environmentForm.driver !== "sandbox" ||
-      environmentForm.sandboxProvider.trim().length > 0 &&
-      environmentForm.sandboxProvider !== "fake" &&
-      Object.keys(sandboxConfigErrors).length === 0);
+      (environmentForm.sandboxProvider.trim().length > 0 &&
+        environmentForm.sandboxProvider !== "fake" &&
+        Object.keys(sandboxConfigErrors).length === 0));
 
   const editingEnvironment = editingEnvironmentId
-    ? savedEnvironments.find((environment) => environment.id === editingEnvironmentId) ?? null
+    ? (savedEnvironments.find(
+        (environment) => environment.id === editingEnvironmentId,
+      ) ?? null)
     : null;
-  const editingSandboxProvider = editingEnvironment ? readEnvironmentSandboxProvider(editingEnvironment) : null;
+  const editingSandboxProvider = editingEnvironment
+    ? readEnvironmentSandboxProvider(editingEnvironment)
+    : null;
   const editingSandboxCapability = editingSandboxProvider
     ? environmentCapabilities?.sandboxProviders?.[editingSandboxProvider]
     : null;
-  const editingSandboxDisplayName = editingSandboxCapability?.displayName ?? editingSandboxProvider ?? "sandbox";
-  const nonLocalEnvironments = savedEnvironments.filter((environment) => !isLocalEnvironment(environment));
+  const editingSandboxDisplayName =
+    editingSandboxCapability?.displayName ??
+    editingSandboxProvider ??
+    "sandbox";
+  const nonLocalEnvironments = savedEnvironments.filter(
+    (environment) => !isLocalEnvironment(environment),
+  );
   const instanceDefaultEnvironmentId = normalizeNonLocalEnvironmentId(
     instanceSettings?.defaultEnvironmentId ?? null,
     savedEnvironments,
   );
   const instanceDefaultEnvironment =
-    savedEnvironments.find((environment) => environment.id === instanceDefaultEnvironmentId) ?? null;
+    savedEnvironments.find(
+      (environment) => environment.id === instanceDefaultEnvironmentId,
+    ) ?? null;
 
   const deleteBlastRadius = deleteBlastRadiusQuery.data ?? null;
   // Reusable sandbox leases are a soft blocker: with explicit consent the
@@ -1861,18 +2217,30 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
   const reusableLeaseOnlyBlock =
     deleteBlastRadius !== null &&
     deleteBlastRadius.deleteBlockedReasons.length > 0 &&
-    deleteBlastRadius.deleteBlockedReasons.every((reason) => reason === "reusable_sandbox_lease");
+    deleteBlastRadius.deleteBlockedReasons.every(
+      (reason) => reason === "reusable_sandbox_lease",
+    );
   const deleteBlockMessage =
-    deleteBlastRadius && !reusableLeaseOnlyBlock ? environmentDeleteBlockMessage(deleteBlastRadius) : null;
-  const deleteUsageLoading = deleteBlastRadiusQuery.isPending || companyAgentsQuery.isPending;
-  const deleteUsageError = deleteBlastRadiusQuery.isError || companyAgentsQuery.isError;
+    deleteBlastRadius && !reusableLeaseOnlyBlock
+      ? environmentDeleteBlockMessage(deleteBlastRadius)
+      : null;
+  const deleteUsageLoading =
+    deleteBlastRadiusQuery.isPending ||
+    companyAgentsQuery.isPending ||
+    deleteBlastRadiusView.kind === "reconnecting" ||
+    companyAgentsView.kind === "reconnecting";
+  const deleteUsageError =
+    deleteBlastRadiusView.kind === "error" ||
+    companyAgentsView.kind === "error";
   // Environments are instance-scoped while the agent list is company-scoped, so
   // this covers only the agents the current company context can reassign.
   // References the list cannot see (other companies, terminated agents) fall
   // back to the instance default via the FK's on-delete-set-null.
   const agentsUsingEnvironment = editingEnvironmentId
     ? (companyAgentsQuery.data ?? []).filter(
-        (agent) => agent.status !== "terminated" && agent.defaultEnvironmentId === editingEnvironmentId,
+        (agent) =>
+          agent.status !== "terminated" &&
+          agent.defaultEnvironmentId === editingEnvironmentId,
       )
     : [];
   const reassignTargetEnvironments = nonLocalEnvironments.filter(
@@ -1880,7 +2248,10 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
   );
   const deleteImpactNotes: string[] = [];
   if (deleteBlastRadius && !deleteBlockMessage) {
-    if (deleteBlastRadius.staticReferences.agentDefaultCount > agentsUsingEnvironment.length) {
+    if (
+      deleteBlastRadius.staticReferences.agentDefaultCount >
+      agentsUsingEnvironment.length
+    ) {
       deleteImpactNotes.push(
         "Other references to this environment (agents in other organizations or terminated agents) fall back to the instance default.",
       );
@@ -1900,15 +2271,25 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
       );
     }
     if (deleteBlastRadius.activeRuntimeUse.hasActiveRuntimeUse) {
-      deleteImpactNotes.push("Active runs or sandbox leases currently resolve to this environment.");
+      deleteImpactNotes.push(
+        "Active runs or sandbox leases currently resolve to this environment.",
+      );
     }
   }
   // One row per workspace holding blocking sandbox leases (several leases can
   // share a workspace). A lease whose workspace FK was nulled groups alone.
+  const retainedFailureSourceCount = (
+    deleteBlastRadius?.reusableSandboxLeaseHolders ?? []
+  ).filter((holder) => holder.leasePolicy === "retain_on_failure").length;
   const reusableLeaseHolderGroups = (() => {
     const groups = new Map<
       string,
-      { workspaceId: string | null; label: string; issueLabels: string[]; leaseCount: number }
+      {
+        workspaceId: string | null;
+        label: string;
+        issueLabels: string[];
+        leaseCount: number;
+      }
     >();
     for (const holder of deleteBlastRadius?.reusableSandboxLeaseHolders ?? []) {
       const key = holder.executionWorkspaceId ?? `lease:${holder.leaseId}`;
@@ -1916,15 +2297,16 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
       const existing = groups.get(key);
       if (existing) {
         existing.leaseCount += 1;
-        if (issueLabel && !existing.issueLabels.includes(issueLabel)) existing.issueLabels.push(issueLabel);
+        if (issueLabel && !existing.issueLabels.includes(issueLabel))
+          existing.issueLabels.push(issueLabel);
       } else {
         groups.set(key, {
           workspaceId: holder.executionWorkspaceId,
           label:
-            holder.executionWorkspaceName
-            ?? holder.issueIdentifier
-            ?? holder.issueTitle
-            ?? "Workspace no longer on record",
+            holder.executionWorkspaceName ??
+            holder.issueIdentifier ??
+            holder.issueTitle ??
+            "Workspace no longer on record",
           issueLabels: issueLabel ? [issueLabel] : [],
           leaseCount: 1,
         });
@@ -1934,484 +2316,300 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
   })();
 
   if (!selectedCompanyId) {
-    return <div className="text-sm text-muted-foreground">{translateInstant("Select an organization context to manage environment secrets and bindings.")}</div>;
+    return (
+      <div className="text-sm text-muted-foreground">
+        {translateInstant(
+          "Select an organization context to manage environment secrets and bindings.",
+        )}
+      </div>
+    );
   }
 
   if (!environmentsEnabled) {
     return (
       <div className="max-w-6xl space-y-4">
         <div className="text-sm text-muted-foreground">
-          {translateInstant("companySettings.environmentsDisabled")}</div>
+          {translateInstant("companySettings.environmentsDisabled")}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl space-y-6" data-testid="instance-settings-environments-section">
+    <div
+      className="max-w-6xl space-y-6"
+      data-testid="instance-settings-environments-section"
+    >
       {!isEnvironmentFormPage ? (
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <label className="flex flex-wrap items-center gap-3 text-sm font-medium">
-            <span>{translateInstant("companySettings.defaultEnvironment")}</span>
-            <span>
-              <select
-                aria-label={translateInstant("agentConfig.defaultEnvironment")}
-                className="min-w-(--sz-12rem) max-w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm font-normal outline-none"
-                value={instanceDefaultEnvironmentId}
-                onChange={(event) =>
-                  defaultEnvironmentMutation.mutate(event.target.value || null)}
-                disabled={defaultEnvironmentMutation.isPending}
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <label className="flex flex-wrap items-center gap-3 text-sm font-medium">
+              <span>
+                {translateInstant("companySettings.defaultEnvironment")}
+              </span>
+              <span>
+                <select
+                  aria-label={translateInstant(
+                    "agentConfig.defaultEnvironment",
+                  )}
+                  className="min-w-(--sz-12rem) max-w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm font-normal outline-none"
+                  value={instanceDefaultEnvironmentId}
+                  onChange={(event) =>
+                    defaultEnvironmentMutation.mutate(
+                      event.target.value || null,
+                    )
+                  }
+                  disabled={defaultEnvironmentMutation.isPending}
+                >
+                  {managedSandboxOnly ? (
+                    // Managed-sandbox-only instances never execute locally, so
+                    // the implicit local fallback is not a legal default. The
+                    // placeholder only renders while no default is stamped yet.
+                    instanceDefaultEnvironmentId === "" ? (
+                      <option value="" disabled>
+                        {translateInstant("Select environment")}
+                      </option>
+                    ) : null
+                  ) : (
+                    <option value="">{translateInstant("Local")}</option>
+                  )}
+                  {nonLocalEnvironments.map((environment) => (
+                    <option key={environment.id} value={environment.id}>
+                      {environmentDisplayLabel(environment)}
+                    </option>
+                  ))}
+                </select>
+              </span>
+            </label>
+            <Button size="icon-sm" variant="ghost" asChild>
+              <Link
+                to={`${ENVIRONMENTS_PATH}/new`}
+                aria-label={translateInstant("companySettings.addEnvironment")}
+                title={translateInstant("companySettings.addEnvironment")}
               >
-                {managedSandboxOnly ? (
-                  // Managed-sandbox-only instances never execute locally, so
-                  // the implicit local fallback is not a legal default. The
-                  // placeholder only renders while no default is stamped yet.
-                  instanceDefaultEnvironmentId === "" ? (
-                    <option value="" disabled>
-                      {translateInstant("Select environment")}</option>
-                  ) : null
-                ) : (
-                  <option value="">{translateInstant("Local")}</option>
-                )}
-                {nonLocalEnvironments.map((environment) => (
-                  <option key={environment.id} value={environment.id}>
-                    {environmentDisplayLabel(environment)}
-                  </option>
-                ))}
-              </select>
-            </span>
-          </label>
-          <Button size="icon-sm" variant="ghost" asChild>
-            <Link to={`${ENVIRONMENTS_PATH}/new`} aria-label={translateInstant("companySettings.addEnvironment")} title={translateInstant("companySettings.addEnvironment")}>
-              <Plus className="h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-
-        <div className="space-y-1">
-          {savedEnvironments.map((environment) => {
-            const probe = probeResults[environment.id] ?? null;
-            const sandboxProvider = readEnvironmentSandboxProvider(environment);
-            const sandboxProviderCapability = sandboxProvider
-              ? environmentCapabilities?.sandboxProviders?.[sandboxProvider]
-              : null;
-            const sandboxProviderDisplayName =
-              sandboxProviderCapability?.displayName ?? sandboxProvider ?? "sandbox";
-            return (
-              <div
-                key={environment.id}
-                className="py-3"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-2 text-sm font-medium">
-                      <span>
-                        {environment.name}
-                        {isPlatformManagedEnvironment(environment) ? null : (
-                          <span className="text-muted-foreground"> · {environment.driver}</span>
-                        )}
-                      </span>
-                      {isPlatformManagedEnvironment(environment) ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">
-                          <Lock className="h-3 w-3" aria-hidden />
-                          {translateInstant("Managed by Paperclip")}</span>
-                      ) : null}
-                    </div>
-                    {environment.description ? (
-                      <div className="text-xs text-muted-foreground">{environment.description}</div>
-                    ) : null}
-                    {environment.driver === "ssh" ? (
-                      <div className="text-xs text-muted-foreground">
-                        {typeof environment.config.host === "string" ? environment.config.host : translateInstant("companySettings.sshHostFallback")} ·{" "}
-                        {typeof environment.config.username === "string" ? environment.config.username : translateInstant("companySettings.sshUserFallback")}
-                      </div>
-                    ) : environment.driver === "sandbox" ? (
-                      <div className="text-xs text-muted-foreground">
-                        {(() => {
-                          const summary = summarizeSandboxConfig(environment.config as Record<string, unknown>);
-                          // The managed row's badge already says "Managed by
-                          // Paperclip"; repeating provider vocabulary like
-                          // "sandbox provider" next to the default environment
-                          // is noise the product avoids.
-                          if (isPlatformManagedEnvironment(environment)) {
-                            return summary ?? "Provisioned and maintained for you.";
-                          }
-                          return `${sandboxProviderDisplayName} sandbox provider${summary ? ` · ${summary}` : ""}`;
-                        })()}
-                      </div>
-                    ) : (
-                      <div className="text-xs text-muted-foreground">{translateInstant("companySettings.runsOnThisPaperclipHost")}</div>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {environment.driver !== "local" ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => environmentProbeMutation.mutate(environment.id)}
-                        disabled={testingEnvironmentId === environment.id}
-                      >
-                        {testingEnvironmentId === environment.id
-                          ? translateInstant("Testing...")
-                          : environment.driver === "ssh"
-                            ? translateInstant("companySettings.testConnection")
-                            : translateInstant("companySettings.testProvider")}
-                      </Button>
-                    ) : null}
-                    <Button size="sm" variant="ghost" asChild>
-                      <Link to={environmentEditPath(environment.id)}>{translateInstant("Edit")}</Link>
-                    </Button>
-                  </div>
-                </div>
-                {probe ? (
-                  <div
-                    className={
-                      probe.ok
-                        ? "mt-3 rounded bg-green-500/5 px-2.5 py-2 text-xs text-green-700"
-                        : "mt-3 rounded bg-destructive/5 px-2.5 py-2 text-xs text-destructive"
-                    }
-                  >
-                    <div className="font-medium">{probe.summary}</div>
-                    {probe.details?.error && typeof probe.details.error === "string" ? (
-                      <div className="mt-1 font-mono text-(length:--text-micro)">{probe.details.error}</div>
-                    ) : null}
-                  </div>
-                ) : null}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      ) : null}
-
-      {isEnvironmentFormPage && mode === "edit" && environments === undefined ? (
-        <div className="text-sm text-muted-foreground">
-          {translateInstant("companySettings.loadingEnvironment")}</div>
-      ) : null}
-
-      {isEnvironmentFormPage && mode === "edit" && environments !== undefined && !editingEnvironment ? (
-        <div className="space-y-3 text-sm">
-          <div className="font-medium">{translateInstant("companySettings.environmentNotFound")}</div>
-          <div className="text-muted-foreground">{translateInstant("The environment may have been removed or is not available in this organization.")}</div>
-          <Button size="sm" variant="outline" asChild>
-            <Link to={ENVIRONMENTS_PATH}>{translateInstant("companySettings.backToEnvironments")}</Link>
-          </Button>
-        </div>
-      ) : null}
-
-      {isEnvironmentFormPage && mode === "edit" && editingEnvironment && isPlatformManagedEnvironment(editingEnvironment) ? (
-        <SecretRefHintsContext.Provider value={environmentSecretRefHints}>
-        <div data-testid="managed-environment-form-page">
-          <div className="pb-4">
-            <div className="mb-4">
-              <Button size="sm" variant="ghost" asChild>
-                <Link to={ENVIRONMENTS_PATH}>
-                  <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
-                  {translateInstant("companySettings.environments")}</Link>
-              </Button>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-lg font-semibold">{editingEnvironment.name}</h1>
-              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                <Lock className="h-3 w-3" aria-hidden />
-                {translateInstant("Managed by Paperclip")}</span>
-            </div>
-            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-              {editingEnvironment.description ?? "Your agent runs on a computer managed by Paperclip."}
-            </p>
-            <p className="mt-1 max-w-3xl text-xs text-muted-foreground">
-              {translateInstant("This environment is provisioned and maintained for you. You can add environment variables for your agents; its name and configuration are managed by Paperclip.")}</p>
-          </div>
-          <div className="py-4">
-            <Field
-              label={translateInstant("companySettings.environmentVariables")}
-              hint="Injected into runs that resolve through this environment. Use plain values or organization secrets."
-            >
-              <EnvironmentVariablesEditor
-                ref={environmentVariablesEditorRef}
-                value={environmentForm.envVars}
-                secrets={secrets ?? []}
-                onCreateSecret={async (name, value) => await createSecret.mutateAsync({ name, value })}
-                onChange={(env) =>
-                  setEnvironmentForm((current) => ({ ...current, envVars: env ?? {} }))}
-                onDirtyChange={setEnvironmentVariablesDirty}
-              />
-            </Field>
-            {managedEnvironmentEnvVarsMutation.isError ? (
-              <div className="mt-3 text-xs text-destructive">
-                {managedEnvironmentEnvVarsMutation.error instanceof Error
-                  ? managedEnvironmentEnvVarsMutation.error.message
-                  : translateInstant("Failed to save environment variables")}
-              </div>
-            ) : null}
-          </div>
-          <div className="flex flex-wrap justify-end gap-2 py-4">
-            <Button
-              variant="outline"
-              onClick={closeEnvironmentForm}
-              disabled={managedEnvironmentEnvVarsMutation.isPending}
-            >
-              {translateInstant("Cancel")}</Button>
-            <Button
-              onClick={() => managedEnvironmentEnvVarsMutation.mutate(flushEnvironmentForm().envVars)}
-              disabled={managedEnvironmentEnvVarsMutation.isPending}
-            >
-              {managedEnvironmentEnvVarsMutation.isPending ? translateInstant("Saving...") : "Save environment variables"}
+                <Plus className="h-4 w-4" />
+              </Link>
             </Button>
           </div>
+
+          {environmentsQuery.isLoading ||
+          environmentsView.kind === "reconnecting" ? (
+            <QueryPlaceholder label="Loading environments" />
+          ) : environmentsView.kind === "error" ? (
+            <QueryErrorState
+              error={environmentsQuery.error}
+              action="load environments"
+              onRetry={environmentsView.retry}
+              retrying={environmentsView.isFetching}
+            />
+          ) : (
+            <div className="space-y-1">
+              {savedEnvironments.map((environment) => {
+                const probe = probeResults[environment.id] ?? null;
+                const sandboxProvider =
+                  readEnvironmentSandboxProvider(environment);
+                const sandboxProviderCapability = sandboxProvider
+                  ? environmentCapabilities?.sandboxProviders?.[sandboxProvider]
+                  : null;
+                const sandboxProviderDisplayName =
+                  sandboxProviderCapability?.displayName ??
+                  sandboxProvider ??
+                  "sandbox";
+                return (
+                  <div key={environment.id} className="py-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2 text-sm font-medium">
+                          <span>
+                            {environment.name}
+                            {isPlatformManagedEnvironment(
+                              environment,
+                            ) ? null : (
+                              <span className="text-muted-foreground">
+                                {" "}
+                                · {environment.driver}
+                              </span>
+                            )}
+                          </span>
+                          {isPlatformManagedEnvironment(environment) ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">
+                              <Lock className="h-3 w-3" aria-hidden />
+                              {translateInstant("Managed by Paperclip")}
+                            </span>
+                          ) : null}
+                        </div>
+                        {environment.description ? (
+                          <div className="text-xs text-muted-foreground">
+                            {environment.description}
+                          </div>
+                        ) : null}
+                        {environment.driver === "ssh" ? (
+                          <div className="text-xs text-muted-foreground">
+                            {typeof environment.config.host === "string"
+                              ? environment.config.host
+                              : translateInstant(
+                                  "companySettings.sshHostFallback",
+                                )}{" "}
+                            ·{" "}
+                            {typeof environment.config.username === "string"
+                              ? environment.config.username
+                              : translateInstant(
+                                  "companySettings.sshUserFallback",
+                                )}
+                          </div>
+                        ) : environment.driver === "sandbox" ? (
+                          <div className="text-xs text-muted-foreground">
+                            {(() => {
+                              const summary = summarizeSandboxConfig(
+                                environment.config as Record<string, unknown>,
+                              );
+                              // The managed row's badge already says "Managed by
+                              // Paperclip"; repeating provider vocabulary like
+                              // "sandbox provider" next to the default environment
+                              // is noise the product avoids.
+                              if (isPlatformManagedEnvironment(environment)) {
+                                return (
+                                  summary ??
+                                  "Provisioned and maintained for you."
+                                );
+                              }
+                              return `${sandboxProviderDisplayName} sandbox provider${summary ? ` · ${summary}` : ""}`;
+                            })()}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground">
+                            {translateInstant(
+                              "companySettings.runsOnThisPaperclipHost",
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {environment.driver !== "local" ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              environmentProbeMutation.mutate(environment.id)
+                            }
+                            disabled={testingEnvironmentId === environment.id}
+                          >
+                            {testingEnvironmentId === environment.id
+                              ? translateInstant("Testing...")
+                              : environment.driver === "ssh"
+                                ? translateInstant(
+                                    "companySettings.testConnection",
+                                  )
+                                : translateInstant(
+                                    "companySettings.testProvider",
+                                  )}
+                          </Button>
+                        ) : null}
+                        <Button size="sm" variant="ghost" asChild>
+                          <Link to={environmentEditPath(environment.id)}>
+                            {translateInstant("Edit")}
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                    {probe ? (
+                      <div
+                        className={
+                          probe.ok
+                            ? "mt-3 rounded bg-green-500/5 px-2.5 py-2 text-xs text-green-700"
+                            : "mt-3 rounded bg-destructive/5 px-2.5 py-2 text-xs text-destructive"
+                        }
+                      >
+                        <div className="font-medium">{probe.summary}</div>
+                        {probe.details?.error &&
+                        typeof probe.details.error === "string" ? (
+                          <div className="mt-1 font-mono text-(length:--text-micro)">
+                            {probe.details.error}
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
-        </SecretRefHintsContext.Provider>
       ) : null}
 
       {isEnvironmentFormPage &&
-      (mode === "create" || (editingEnvironment && !isPlatformManagedEnvironment(editingEnvironment))) ? (
-        <SecretRefHintsContext.Provider value={environmentSecretRefHints}>
-        <div data-testid="environment-form-page">
-          <div className="pb-4">
-            <div className="mb-4 flex items-center justify-between gap-2">
-              <Button size="sm" variant="ghost" asChild>
-                <Link to={ENVIRONMENTS_PATH}>
-                  <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
-                  {translateInstant("companySettings.environments")}</Link>
-              </Button>
-              {editingEnvironment ? (
-                <Button
-                  size="icon-sm"
-                  variant="ghost"
-                  className="text-muted-foreground hover:text-destructive"
-                  aria-label={`Delete ${editingEnvironment.name}`}
-                  title={translateInstant("Delete environment")}
-                  data-testid="environment-delete-button"
-                  onClick={() => {
-                    setReassignEnvironmentTargetId("");
-                    setDeleteDialogOpen(true);
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              ) : null}
-            </div>
-            <h1 className="text-lg font-semibold">{editingEnvironmentId ? translateInstant("companySettings.editEnvironment") : translateInstant("companySettings.addEnvironment")}</h1>
-            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-              {translateInstant("companySettings.environmentDialogDescription")}</p>
+      mode === "edit" &&
+      environments === undefined ? (
+        environmentsView.kind === "error" ? (
+          <QueryErrorState
+            error={environmentsQuery.error}
+            action="load the environment"
+            onRetry={environmentsView.retry}
+            retrying={environmentsView.isFetching}
+          />
+        ) : (
+          <div className="text-sm text-muted-foreground">
+            {translateInstant("companySettings.loadingEnvironment", { defaultValue: "Loading environment..." })}
           </div>
+        )
+      ) : null}
 
-          <div className="py-4">
-            <div className="space-y-4">
-              <Field label={translateInstant("Name")} hint="Operator-facing name for this execution target.">
-                <input
-                  className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
-                  type="text"
-                  value={environmentForm.name}
-                  onChange={(e) => setEnvironmentForm((current) => ({ ...current, name: e.target.value }))}
-                />
-              </Field>
-              <Field label={translateInstant("Description")} hint="Optional note about what this machine is for.">
-                <input
-                  className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
-                  type="text"
-                  value={environmentForm.description}
-                  onChange={(e) => setEnvironmentForm((current) => ({ ...current, description: e.target.value }))}
-                />
-              </Field>
-              <Field label={translateInstant("companySettings.driver")} hint="Sandbox stores plugin-backed provider config on the shared environment seam. SSH stores a remote machine target.">
-                <select
-                  className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
-                  value={environmentForm.driver}
-                  onChange={(e) =>
-                    setEnvironmentForm((current) => ({
-                      ...current,
-                      sandboxProvider:
-                        e.target.value === "sandbox"
-                          ? current.sandboxProvider.trim() || discoveredPluginSandboxProviders[0]?.provider || ""
-                          : current.sandboxProvider,
-                      sandboxConfig:
-                        e.target.value === "sandbox"
-                          ? (
-                              current.sandboxProvider.trim().length > 0 && current.driver === "sandbox"
-                                ? current.sandboxConfig
-                                : discoveredPluginSandboxProviders[0]?.configSchema
-                                  ? getDefaultValues(discoveredPluginSandboxProviders[0].configSchema as any)
-                                  : {}
-                            )
-                          : current.sandboxConfig,
-                      driver: e.target.value === "sandbox" ? "sandbox" : "ssh",
-                    }))}
-                >
-                  {sandboxCreationEnabled || environmentForm.driver === "sandbox" ? (
-                    <option value="sandbox">{translateInstant("companySettings.sandbox")}</option>
-                  ) : null}
-                  <option value="ssh">SSH</option>
-                  {environmentForm.driver === "local" ? (
-                    <option value="local">{translateInstant("Local")}</option>
-                  ) : null}
-                </select>
-              </Field>
+      {isEnvironmentFormPage &&
+      mode === "edit" &&
+      environments !== undefined &&
+      !editingEnvironment ? (
+        <div className="space-y-3 text-sm">
+          <div className="font-medium">
+            {translateInstant("companySettings.environmentNotFound")}
+          </div>
+          <div className="text-muted-foreground">
+            {translateInstant(
+              "The environment may have been removed or is not available in this organization.",
+            )}
+          </div>
+          <Button size="sm" variant="outline" asChild>
+            <Link to={ENVIRONMENTS_PATH}>
+              {translateInstant("companySettings.backToEnvironments")}
+            </Link>
+          </Button>
+        </div>
+      ) : null}
 
-              {environmentForm.driver === "ssh" ? (
-                <div className="grid gap-3 md:grid-cols-2">
-                  <Field label={translateInstant("companySettings.host")} hint="DNS name or IP address for the remote machine.">
-                    <input
-                      className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
-                      type="text"
-                      value={environmentForm.sshHost}
-                      onChange={(e) => setEnvironmentForm((current) => ({ ...current, sshHost: e.target.value }))}
-                    />
-                  </Field>
-                  <Field label={translateInstant("companySettings.port")} hint="Defaults to 22.">
-                    <input
-                      className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
-                      type="number"
-                      min={1}
-                      max={65535}
-                      value={environmentForm.sshPort}
-                      onChange={(e) => setEnvironmentForm((current) => ({ ...current, sshPort: e.target.value }))}
-                    />
-                  </Field>
-                  <Field label={translateInstant("companySettings.username")} hint="SSH username.">
-                    <input
-                      className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
-                      type="text"
-                      value={environmentForm.sshUsername}
-                      onChange={(e) => setEnvironmentForm((current) => ({ ...current, sshUsername: e.target.value }))}
-                    />
-                  </Field>
-                  {/*
-                    This path lives on the user's own remote SSH host, not on a
-                    Paperclip execution host, so it stays visible under the
-                    managed-sandbox-only policy. The policy hides host paths that
-                    the platform-managed environment owns; an SSH environment the
-                    user configured is outside that contract.
-                  */}
-                  <Field label={translateInstant("companySettings.remoteWorkspacePath")} hint="Absolute path that Paperclip will verify during SSH connection tests.">
-                    <input
-                      className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
-                      type="text"
-                      placeholder="/Users/paperclip/workspace"
-                      value={environmentForm.sshRemoteWorkspacePath}
-                      onChange={(e) =>
-                        setEnvironmentForm((current) => ({ ...current, sshRemoteWorkspacePath: e.target.value }))}
-                    />
-                  </Field>
-                  <Field label={translateInstant("companySettings.privateKey")} hint="Optional PEM private key. Leave blank to rely on the server's SSH agent or default keychain.">
-                    <div className="space-y-2">
-                      <select
-                        className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
-                        value={environmentForm.sshPrivateKeySecretId}
-                        onChange={(e) =>
-                          setEnvironmentForm((current) => ({
-                            ...current,
-                            sshPrivateKeySecretId: e.target.value,
-                            sshPrivateKey: e.target.value ? "" : current.sshPrivateKey,
-                          }))}
-                      >
-                        <option value="">{translateInstant("companySettings.noSavedSecret")}</option>
-                        {(secrets ?? []).map((secret) => (
-                          <option key={secret.id} value={secret.id}>{secret.name}</option>
-                        ))}
-                      </select>
-                      <textarea
-                        className="h-32 w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-xs font-mono outline-none"
-                        value={environmentForm.sshPrivateKey}
-                        disabled={!!environmentForm.sshPrivateKeySecretId}
-                        onChange={(e) => setEnvironmentForm((current) => ({ ...current, sshPrivateKey: e.target.value }))}
-                      />
-                    </div>
-                  </Field>
-                  <Field label={translateInstant("Known hosts")} hint="Optional known_hosts block used when strict host key checking is enabled.">
-                    <textarea
-                      className="h-32 w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-xs font-mono outline-none"
-                      value={environmentForm.sshKnownHosts}
-                      onChange={(e) => setEnvironmentForm((current) => ({ ...current, sshKnownHosts: e.target.value }))}
-                    />
-                  </Field>
-                  <div className="md:col-span-2">
-                    <ToggleField
-                      label={translateInstant("companySettings.strictHostKeyChecking")}
-                      hint="Keep this on unless you deliberately want probe-time host key acceptance disabled."
-                      checked={environmentForm.sshStrictHostKeyChecking}
-                      onChange={(checked) =>
-                        setEnvironmentForm((current) => ({ ...current, sshStrictHostKeyChecking: checked }))}
-                    />
-                  </div>
-                </div>
-              ) : null}
-
-              {environmentForm.driver === "sandbox" ? (
-                <div className="space-y-3">
-                  <Field label={translateInstant("Provider")} hint="Installed run-capable sandbox provider plugins appear here.">
-                    <select
-                      className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
-                      value={environmentForm.sandboxProvider}
-                      onChange={(e) => {
-                        const nextProviderKey = e.target.value;
-                        const nextProvider = pluginSandboxProviders.find((provider) => provider.provider === nextProviderKey) ?? null;
-                        setEnvironmentForm((current) => ({
-                          ...current,
-                          sandboxProvider: nextProviderKey,
-                          sandboxConfig:
-                            current.sandboxProvider === nextProviderKey
-                              ? current.sandboxConfig
-                              : nextProvider?.configSchema
-                                ? getDefaultValues(nextProvider.configSchema as any)
-                                : {},
-                        }));
-                      }}
-                    >
-                      {pluginSandboxProviders.map((provider) => (
-                        <option key={provider.provider} value={provider.provider}>
-                          {provider.displayName}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                  {selectedSandboxProvider?.description ? (
-                    <div className="text-xs text-muted-foreground">
-                      {selectedSandboxProvider.description}
-                    </div>
-                  ) : null}
-                  {selectedSandboxSchema ? (
-                    <JsonSchemaForm
-                      schema={selectedSandboxSchema as any}
-                      values={environmentForm.sandboxConfig}
-                      onChange={(values) =>
-                        setEnvironmentForm((current) => ({ ...current, sandboxConfig: values }))}
-                      errors={sandboxConfigErrors}
-                    />
-                  ) : (
-                    <div className="text-xs text-muted-foreground">
-                      {translateInstant("This provider does not declare additional configuration fields.")}</div>
-                  )}
-                  <ToggleField
-                    label={translateInstant("companyEnvironments.streamLogs")}
-                    hint="Stream the agent CLI's output live while runs execute (recommended). Turn off to deliver output only when the run finishes."
-                    checked={environmentForm.sandboxConfig.streamRunLogs !== false}
-                    onChange={(checked) =>
-                      setEnvironmentForm((current) => ({
-                        ...current,
-                        sandboxConfig: { ...current.sandboxConfig, streamRunLogs: checked },
-                      }))}
-                  />
-                </div>
-              ) : null}
-
-              {editingEnvironment &&
-              editingEnvironment.driver === "sandbox" &&
-              environmentForm.driver === "sandbox" &&
-              selectedCompanyId ? (
-                <div className="space-y-2 py-3">
-                  <div className="text-sm font-medium">{translateInstant("companySettings.customImage.title")}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {translateInstant("companySettings.customImage.description")}</div>
-                  <EnvironmentImageTemplatePanel
-                    environment={editingEnvironment}
-                    companyId={selectedCompanyId}
-                    providerCapability={editingSandboxCapability}
-                    providerDisplayName={editingSandboxDisplayName}
-                  />
-                </div>
-              ) : null}
-
+      {isEnvironmentFormPage &&
+      mode === "edit" &&
+      editingEnvironment &&
+      isPlatformManagedEnvironment(editingEnvironment) ? (
+        <SecretRefHintsContext.Provider value={environmentSecretRefHints}>
+          <div data-testid="managed-environment-form-page">
+            <div className="pb-4">
+              <div className="mb-4">
+                <Button size="sm" variant="ghost" asChild>
+                  <Link to={ENVIRONMENTS_PATH}>
+                    <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+                    {translateInstant("companySettings.environments")}
+                  </Link>
+                </Button>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-lg font-semibold">
+                  {editingEnvironment.name}
+                </h1>
+                <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                  <Lock className="h-3 w-3" aria-hidden />
+                  {translateInstant("Managed by Paperclip")}
+                </span>
+              </div>
+              <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+                {editingEnvironment.description ??
+                  "Your agent runs on a computer managed by Paperclip."}
+              </p>
+              <p className="mt-1 max-w-3xl text-xs text-muted-foreground">
+                {translateInstant(
+                  "This environment is provisioned and maintained for you. You can add environment variables for your agents; its name and configuration are managed by Paperclip.",
+                )}
+              </p>
+            </div>
+            <div className="py-4">
               <Field
                 label={translateInstant("companySettings.environmentVariables")}
                 hint="Injected into runs that resolve through this environment. Use plain values or organization secrets."
@@ -2420,189 +2618,687 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                   ref={environmentVariablesEditorRef}
                   value={environmentForm.envVars}
                   secrets={secrets ?? []}
-                  onCreateSecret={async (name, value) => await createSecret.mutateAsync({ name, value })}
+                  onCreateSecret={async (name, value) =>
+                    await createSecret.mutateAsync({ name, value })
+                  }
                   onChange={(env) =>
-                    setEnvironmentForm((current) => ({ ...current, envVars: env ?? {} }))}
+                    setEnvironmentForm((current) => ({
+                      ...current,
+                      envVars: env ?? {},
+                    }))
+                  }
                   onDirtyChange={setEnvironmentVariablesDirty}
                 />
               </Field>
-
-              {environmentMutation.isError ? (
-                <div className="text-xs text-destructive">
-                  {environmentMutation.error instanceof Error
-                    ? environmentMutation.error.message
-                    : translateInstant("companySettings.failedToSaveEnvironment")}
-                </div>
-              ) : null}
-              {draftEnvironmentProbeMutation.data ? (
-                <div className={draftEnvironmentProbeMutation.data.ok ? "text-xs text-green-600" : "text-xs text-destructive"}>
-                  {draftEnvironmentProbeMutation.data.summary}
+              {managedEnvironmentEnvVarsMutation.error ? (
+                <div className="mt-3 text-xs text-destructive">
+                  {describeError(managedEnvironmentEnvVarsMutation.error).body}
                 </div>
               ) : null}
             </div>
-          </div>
-
-          <div className="flex flex-wrap justify-end gap-2 py-4">
-            <Button
-              variant="outline"
-              onClick={closeEnvironmentForm}
-              disabled={environmentMutation.isPending}
-            >
-              {translateInstant("Cancel")}</Button>
-            {environmentForm.driver !== "local" ? (
+            <div className="flex flex-wrap justify-end gap-2 py-4">
               <Button
                 variant="outline"
-                onClick={() => draftEnvironmentProbeMutation.mutate(flushEnvironmentForm())}
-                disabled={draftEnvironmentProbeMutation.isPending || !environmentFormValid}
+                onClick={closeEnvironmentForm}
+                disabled={managedEnvironmentEnvVarsMutation.isPending}
               >
-                {draftEnvironmentProbeMutation.isPending ? translateInstant("Testing...") : translateInstant("Test")}
+                {translateInstant("Cancel")}
               </Button>
-            ) : null}
-            <Button
-              onClick={() => environmentMutation.mutate(flushEnvironmentForm())}
-              disabled={environmentMutation.isPending || !environmentFormValid}
-            >
-              {environmentMutation.isPending
-                ? editingEnvironmentId
+              <Button
+                onClick={() =>
+                  managedEnvironmentEnvVarsMutation.mutate(
+                    flushEnvironmentForm().envVars,
+                  )
+                }
+                disabled={managedEnvironmentEnvVarsMutation.isPending}
+              >
+                {managedEnvironmentEnvVarsMutation.isPending
                   ? translateInstant("Saving...")
-                  : translateInstant("Creating...")
-                : editingEnvironmentId
-                  ? translateInstant("companySettings.saveEnvironment")
-                  : translateInstant("companySettings.createEnvironment")}
-            </Button>
+                  : "Save environment variables"}
+              </Button>
+            </div>
           </div>
+        </SecretRefHintsContext.Provider>
+      ) : null}
 
-          {editingEnvironment ? (
-            <AlertDialog
-              open={deleteDialogOpen}
-              onOpenChange={(open) => {
-                if (!open && deleteEnvironmentMutation.isPending) return;
-                setDeleteDialogOpen(open);
-              }}
-            >
-              <AlertDialogContent data-testid="environment-delete-dialog">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{translateInstant("Delete")}{" "}{editingEnvironment.name}?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {deleteUsageLoading
-                      ? "Checking what uses this environment..."
-                      : deleteUsageError
-                        ? "Could not check what uses this environment. Close this dialog and retry."
-                        : deleteBlockMessage
-                          ?? ([
-                            reusableLeaseOnlyBlock && deleteBlastRadius
-                              ? `${deleteBlastRadius.reusableSandboxLeaseCount === 1 ? "1 reusable sandbox" : `${deleteBlastRadius.reusableSandboxLeaseCount} reusable sandboxes`} will be destroyed; the workspaces holding them stay open and provision a fresh sandbox on their next run.`
-                              : null,
-                            agentsUsingEnvironment.length > 0
-                              ? `${agentsUsingEnvironment.length === 1 ? "1 agent uses" : `${agentsUsingEnvironment.length} agents use`} this environment as their default. Choose the environment those agents should be reassigned to.`
-                              : null,
-                          ]
-                            .filter(Boolean)
-                            .join(" ")
-                            || "This environment will be permanently deleted and future runs stop resolving to it.")}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                {reusableLeaseHolderGroups.length > 0 ? (
-                  <div className="space-y-1.5" data-testid="environment-delete-lease-holders">
-                    <div className="text-xs font-medium text-muted-foreground">{translateInstant("Sandbox leases held by")}</div>
-                    <ul className="space-y-1">
-                      {reusableLeaseHolderGroups.map((group) => (
-                        <li key={group.workspaceId ?? group.label} className="text-sm">
-                          {group.workspaceId ? (
-                            <Link
-                              className="underline underline-offset-2 hover:text-foreground"
-                              to={`/execution-workspaces/${group.workspaceId}`}
-                            >
-                              {group.label}
-                            </Link>
-                          ) : (
-                            <span>{group.label}</span>
-                          )}
-                          <span className="text-xs text-muted-foreground">
-                            {" "}
-                            · {group.leaseCount === 1 ? "1 sandbox lease" : `${group.leaseCount} sandbox leases`}
-                            {group.issueLabels.length > 0 ? ` · ${group.issueLabels.join(", ")}` : ""}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="text-xs text-muted-foreground">
-                      {reusableLeaseOnlyBlock
-                        ? "Deleting destroys these sandboxes; the workspaces stay open."
-                        : "Close these workspaces to let Paperclip destroy their sandboxes, then retry the delete."}
-                    </div>
-                  </div>
+      {isEnvironmentFormPage &&
+      (mode === "create" ||
+        (editingEnvironment &&
+          !isPlatformManagedEnvironment(editingEnvironment))) ? (
+        <SecretRefHintsContext.Provider value={environmentSecretRefHints}>
+          <div data-testid="environment-form-page">
+            <div className="pb-4">
+              <div className="mb-4 flex items-center justify-between gap-2">
+                <Button size="sm" variant="ghost" asChild>
+                  <Link to={ENVIRONMENTS_PATH}>
+                    <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+                    {translateInstant("companySettings.environments")}
+                  </Link>
+                </Button>
+                {editingEnvironment ? (
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    className="text-muted-foreground hover:text-destructive"
+                    aria-label={`Delete ${editingEnvironment.name}`}
+                    title={translateInstant("Delete environment")}
+                    data-testid="environment-delete-button"
+                    onClick={() => {
+                      setReassignEnvironmentTargetId("");
+                      setDeleteDialogOpen(true);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 ) : null}
-                {!deleteUsageLoading && !deleteUsageError && !deleteBlockMessage ? (
-                  <div className="space-y-3">
-                    {agentsUsingEnvironment.length > 0 ? (
-                      <label className="block space-y-1.5 text-sm">
-                        <span className="font-medium">
-                          {translateInstant("Reassign")}{" "}{agentsUsingEnvironment.length === 1 ? translateInstant("agent") : translateInstant("agents")} {translateInstant("to")}</span>
+              </div>
+              <h1 className="text-lg font-semibold">
+                {editingEnvironmentId
+                  ? translateInstant("companySettings.editEnvironment")
+                  : translateInstant("companySettings.addEnvironment")}
+              </h1>
+              <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+                {translateInstant(
+                  "companySettings.environmentDialogDescription",
+                )}
+              </p>
+            </div>
+
+            <div className="py-4">
+              <div className="space-y-4">
+                <Field
+                  label={translateInstant("Name")}
+                  hint="Operator-facing name for this execution target."
+                >
+                  <input
+                    className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                    type="text"
+                    value={environmentForm.name}
+                    onChange={(e) =>
+                      setEnvironmentForm((current) => ({
+                        ...current,
+                        name: e.target.value,
+                      }))
+                    }
+                  />
+                </Field>
+                <Field
+                  label={translateInstant("Description")}
+                  hint="Optional note about what this machine is for."
+                >
+                  <input
+                    className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                    type="text"
+                    value={environmentForm.description}
+                    onChange={(e) =>
+                      setEnvironmentForm((current) => ({
+                        ...current,
+                        description: e.target.value,
+                      }))
+                    }
+                  />
+                </Field>
+                <Field
+                  label={translateInstant("companySettings.driver")}
+                  hint="Sandbox stores plugin-backed provider config on the shared environment seam. SSH stores a remote machine target."
+                >
+                  <select
+                    className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                    value={environmentForm.driver}
+                    onChange={(e) =>
+                      setEnvironmentForm((current) => ({
+                        ...current,
+                        sandboxProvider:
+                          e.target.value === "sandbox"
+                            ? current.sandboxProvider.trim() ||
+                              discoveredPluginSandboxProviders[0]?.provider ||
+                              ""
+                            : current.sandboxProvider,
+                        sandboxConfig:
+                          e.target.value === "sandbox"
+                            ? current.sandboxProvider.trim().length > 0 &&
+                              current.driver === "sandbox"
+                              ? current.sandboxConfig
+                              : discoveredPluginSandboxProviders[0]
+                                    ?.configSchema
+                                ? getDefaultValues(
+                                    discoveredPluginSandboxProviders[0]
+                                      .configSchema as any,
+                                  )
+                                : {}
+                            : current.sandboxConfig,
+                        driver:
+                          e.target.value === "sandbox" ? "sandbox" : "ssh",
+                      }))
+                    }
+                  >
+                    {sandboxCreationEnabled ||
+                    environmentForm.driver === "sandbox" ? (
+                      <option value="sandbox">
+                        {translateInstant("companySettings.sandbox")}
+                      </option>
+                    ) : null}
+                    <option value="ssh">SSH</option>
+                    {environmentForm.driver === "local" ? (
+                      <option value="local">{translateInstant("Local")}</option>
+                    ) : null}
+                  </select>
+                </Field>
+
+                {environmentForm.driver === "ssh" ? (
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <Field
+                      label={translateInstant("companySettings.host")}
+                      hint="DNS name or IP address for the remote machine."
+                    >
+                      <input
+                        className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                        type="text"
+                        value={environmentForm.sshHost}
+                        onChange={(e) =>
+                          setEnvironmentForm((current) => ({
+                            ...current,
+                            sshHost: e.target.value,
+                          }))
+                        }
+                      />
+                    </Field>
+                    <Field
+                      label={translateInstant("companySettings.port")}
+                      hint="Defaults to 22."
+                    >
+                      <input
+                        className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                        type="number"
+                        min={1}
+                        max={65535}
+                        value={environmentForm.sshPort}
+                        onChange={(e) =>
+                          setEnvironmentForm((current) => ({
+                            ...current,
+                            sshPort: e.target.value,
+                          }))
+                        }
+                      />
+                    </Field>
+                    <Field
+                      label={translateInstant("companySettings.username")}
+                      hint="SSH username."
+                    >
+                      <input
+                        className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                        type="text"
+                        value={environmentForm.sshUsername}
+                        onChange={(e) =>
+                          setEnvironmentForm((current) => ({
+                            ...current,
+                            sshUsername: e.target.value,
+                          }))
+                        }
+                      />
+                    </Field>
+                    {/*
+                    This path lives on the user's own remote SSH host, not on a
+                    Paperclip execution host, so it stays visible under the
+                    managed-sandbox-only policy. The policy hides host paths that
+                    the platform-managed environment owns; an SSH environment the
+                    user configured is outside that contract.
+                  */}
+                    <Field
+                      label={translateInstant(
+                        "companySettings.remoteWorkspacePath",
+                      )}
+                      hint="Absolute path that Paperclip will verify during SSH connection tests."
+                    >
+                      <input
+                        className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                        type="text"
+                        placeholder="/Users/paperclip/workspace"
+                        value={environmentForm.sshRemoteWorkspacePath}
+                        onChange={(e) =>
+                          setEnvironmentForm((current) => ({
+                            ...current,
+                            sshRemoteWorkspacePath: e.target.value,
+                          }))
+                        }
+                      />
+                    </Field>
+                    <Field
+                      label={translateInstant("companySettings.privateKey")}
+                      hint="Optional PEM private key. Leave blank to rely on the server's SSH agent or default keychain."
+                    >
+                      <div className="space-y-2">
                         <select
-                          aria-label={translateInstant("Reassign agents to environment")}
-                          data-testid="environment-delete-reassign-select"
-                          className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm font-normal outline-none"
-                          value={reassignEnvironmentTargetId}
-                          onChange={(event) => setReassignEnvironmentTargetId(event.target.value)}
+                          className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                          value={environmentForm.sshPrivateKeySecretId}
+                          onChange={(e) =>
+                            setEnvironmentForm((current) => ({
+                              ...current,
+                              sshPrivateKeySecretId: e.target.value,
+                              sshPrivateKey: e.target.value
+                                ? ""
+                                : current.sshPrivateKey,
+                            }))
+                          }
                         >
                           <option value="">
-                            {translateInstant("Default:")}{" "}{instanceDefaultEnvironment
-                              ? `${instanceDefaultEnvironment.name} · ${instanceDefaultEnvironment.driver}`
-                              : translateInstant("Local")}
+                            {translateInstant("companySettings.noSavedSecret")}
                           </option>
-                          {reassignTargetEnvironments.map((environment) => (
-                            <option key={environment.id} value={environment.id}>
-                              {environment.name} · {environment.driver}
+                          {(secrets ?? []).map((secret) => (
+                            <option key={secret.id} value={secret.id}>
+                              {secret.name}
                             </option>
                           ))}
                         </select>
-                        <span className="block text-xs text-muted-foreground">
-                          {translateInstant("Affected:")}{" "}{agentsUsingEnvironment.map((agent) => agent.name).join(", ")}
-                        </span>
-                      </label>
-                    ) : null}
-                    {deleteImpactNotes.length > 0 ? (
-                      <ul className="space-y-1 text-xs text-muted-foreground">
-                        {deleteImpactNotes.map((note) => (
-                          <li key={note}>{note}</li>
-                        ))}
-                      </ul>
-                    ) : null}
+                        <textarea
+                          className="h-32 w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-xs font-mono outline-none"
+                          value={environmentForm.sshPrivateKey}
+                          disabled={!!environmentForm.sshPrivateKeySecretId}
+                          onChange={(e) =>
+                            setEnvironmentForm((current) => ({
+                              ...current,
+                              sshPrivateKey: e.target.value,
+                            }))
+                          }
+                        />
+                      </div>
+                    </Field>
+                    <Field
+                      label={translateInstant("Known hosts")}
+                      hint="Optional known_hosts block used when strict host key checking is enabled."
+                    >
+                      <textarea
+                        className="h-32 w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-xs font-mono outline-none"
+                        value={environmentForm.sshKnownHosts}
+                        onChange={(e) =>
+                          setEnvironmentForm((current) => ({
+                            ...current,
+                            sshKnownHosts: e.target.value,
+                          }))
+                        }
+                      />
+                    </Field>
+                    <div className="md:col-span-2">
+                      <ToggleField
+                        label={translateInstant(
+                          "companySettings.strictHostKeyChecking",
+                        )}
+                        hint="Keep this on unless you deliberately want probe-time host key acceptance disabled."
+                        checked={environmentForm.sshStrictHostKeyChecking}
+                        onChange={(checked) =>
+                          setEnvironmentForm((current) => ({
+                            ...current,
+                            sshStrictHostKeyChecking: checked,
+                          }))
+                        }
+                      />
+                    </div>
                   </div>
                 ) : null}
-                <AlertDialogFooter>
-                  <AlertDialogCancel disabled={deleteEnvironmentMutation.isPending}>{translateInstant("Cancel")}</AlertDialogCancel>
-                  <AlertDialogAction
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    data-testid="environment-delete-confirm"
-                    disabled={
-                      deleteEnvironmentMutation.isPending ||
-                      deleteUsageLoading ||
-                      deleteUsageError ||
-                      Boolean(deleteBlockMessage)
+
+                {environmentForm.driver === "sandbox" ? (
+                  <div className="space-y-3">
+                    <Field
+                      label={translateInstant("Provider")}
+                      hint="Installed run-capable sandbox provider plugins appear here."
+                    >
+                      <select
+                        className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                        value={environmentForm.sandboxProvider}
+                        onChange={(e) => {
+                          const nextProviderKey = e.target.value;
+                          const nextProvider =
+                            pluginSandboxProviders.find(
+                              (provider) =>
+                                provider.provider === nextProviderKey,
+                            ) ?? null;
+                          setEnvironmentForm((current) => ({
+                            ...current,
+                            sandboxProvider: nextProviderKey,
+                            sandboxConfig:
+                              current.sandboxProvider === nextProviderKey
+                                ? current.sandboxConfig
+                                : nextProvider?.configSchema
+                                  ? getDefaultValues(
+                                      nextProvider.configSchema as any,
+                                    )
+                                  : {},
+                          }));
+                        }}
+                      >
+                        {pluginSandboxProviders.map((provider) => (
+                          <option
+                            key={provider.provider}
+                            value={provider.provider}
+                          >
+                            {provider.displayName}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                    {selectedSandboxProvider?.description ? (
+                      <div className="text-xs text-muted-foreground">
+                        {selectedSandboxProvider.description}
+                      </div>
+                    ) : null}
+                    {selectedSandboxSchema ? (
+                      <JsonSchemaForm
+                        schema={selectedSandboxSchema as any}
+                        values={environmentForm.sandboxConfig}
+                        onChange={(values) =>
+                          setEnvironmentForm((current) => ({
+                            ...current,
+                            sandboxConfig: values,
+                          }))
+                        }
+                        errors={sandboxConfigErrors}
+                      />
+                    ) : (
+                      <div className="text-xs text-muted-foreground">
+                        {translateInstant(
+                          "This provider does not declare additional configuration fields.",
+                        )}
+                      </div>
+                    )}
+                    <ToggleField
+                      label={translateInstant("companyEnvironments.streamLogs")}
+                      hint="Stream the agent CLI's output live while runs execute (recommended). Turn off to deliver output only when the run finishes."
+                      checked={
+                        environmentForm.sandboxConfig.streamRunLogs !== false
+                      }
+                      onChange={(checked) =>
+                        setEnvironmentForm((current) => ({
+                          ...current,
+                          sandboxConfig: {
+                            ...current.sandboxConfig,
+                            streamRunLogs: checked,
+                          },
+                        }))
+                      }
+                    />
+                  </div>
+                ) : null}
+
+                {editingEnvironment &&
+                editingEnvironment.driver === "sandbox" &&
+                environmentForm.driver === "sandbox" &&
+                selectedCompanyId ? (
+                  <div className="space-y-2 py-3">
+                    <div className="text-sm font-medium">
+                      {translateInstant("companySettings.customImage.title")}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {translateInstant(
+                        "companySettings.customImage.description",
+                      )}
+                    </div>
+                    <EnvironmentImageTemplatePanel
+                      environment={editingEnvironment}
+                      companyId={selectedCompanyId}
+                      providerCapability={editingSandboxCapability}
+                      providerDisplayName={editingSandboxDisplayName}
+                    />
+                  </div>
+                ) : null}
+
+                <Field
+                  label={translateInstant(
+                    "companySettings.environmentVariables",
+                  )}
+                  hint="Injected into runs that resolve through this environment. Use plain values or organization secrets."
+                >
+                  <EnvironmentVariablesEditor
+                    ref={environmentVariablesEditorRef}
+                    value={environmentForm.envVars}
+                    secrets={secrets ?? []}
+                    onCreateSecret={async (name, value) =>
+                      await createSecret.mutateAsync({ name, value })
                     }
-                    onClick={(event) => {
-                      event.preventDefault();
-                      deleteEnvironmentMutation.mutate({
-                        environment: editingEnvironment,
-                        reassignAgentIds: agentsUsingEnvironment.map((agent) => agent.id),
-                        reassignTargetId: reassignEnvironmentTargetId || null,
-                        destroyReusableLeases: reusableLeaseOnlyBlock,
-                      });
-                    }}
+                    onChange={(env) =>
+                      setEnvironmentForm((current) => ({
+                        ...current,
+                        envVars: env ?? {},
+                      }))
+                    }
+                    onDirtyChange={setEnvironmentVariablesDirty}
+                  />
+                </Field>
+
+                {environmentMutation.error ? (
+                  <div className="text-xs text-destructive">
+                    {describeError(environmentMutation.error).body}
+                  </div>
+                ) : null}
+                {draftEnvironmentProbeMutation.data ? (
+                  <div
+                    className={
+                      draftEnvironmentProbeMutation.data.ok
+                        ? "text-xs text-green-600"
+                        : "text-xs text-destructive"
+                    }
                   >
-                    {deleteEnvironmentMutation.isPending
-                      ? translateInstant("Deleting...")
-                      : reusableLeaseOnlyBlock && deleteBlastRadius
-                        ? `Destroy ${deleteBlastRadius.reusableSandboxLeaseCount === 1 ? "1 sandbox" : `${deleteBlastRadius.reusableSandboxLeaseCount} sandboxes`} and delete`
-                        : translateInstant("Delete environment")}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          ) : null}
-        </div>
+                    {draftEnvironmentProbeMutation.data.summary}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap justify-end gap-2 py-4">
+              <Button
+                variant="outline"
+                onClick={closeEnvironmentForm}
+                disabled={environmentMutation.isPending}
+              >
+                {translateInstant("Cancel")}
+              </Button>
+              {environmentForm.driver !== "local" ? (
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    draftEnvironmentProbeMutation.mutate(flushEnvironmentForm())
+                  }
+                  disabled={
+                    draftEnvironmentProbeMutation.isPending ||
+                    !environmentFormValid
+                  }
+                >
+                  {draftEnvironmentProbeMutation.isPending
+                    ? translateInstant("Testing...")
+                    : translateInstant("Test")}
+                </Button>
+              ) : null}
+              <Button
+                onClick={() =>
+                  environmentMutation.mutate(flushEnvironmentForm())
+                }
+                disabled={
+                  environmentMutation.isPending || !environmentFormValid
+                }
+              >
+                {environmentMutation.isPending
+                  ? editingEnvironmentId
+                    ? translateInstant("Saving...")
+                    : translateInstant("Creating...")
+                  : editingEnvironmentId
+                    ? translateInstant("companySettings.saveEnvironment")
+                    : translateInstant("companySettings.createEnvironment")}
+              </Button>
+            </div>
+
+            {editingEnvironment ? (
+              <AlertDialog
+                open={deleteDialogOpen}
+                onOpenChange={(open) => {
+                  if (!open && deleteEnvironmentMutation.isPending) return;
+                  setDeleteDialogOpen(open);
+                }}
+              >
+                <AlertDialogContent data-testid="environment-delete-dialog">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      {translateInstant("Delete")} {editingEnvironment.name}?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {deleteUsageLoading
+                        ? "Checking what uses this environment..."
+                        : deleteUsageError
+                          ? "Could not check what uses this environment. Close this dialog and retry."
+                          : (deleteBlockMessage ??
+                            ([
+                              reusableLeaseOnlyBlock && deleteBlastRadius
+                                ? `${deleteBlastRadius.reusableSandboxLeaseCount === 1 ? "1 reusable sandbox" : `${deleteBlastRadius.reusableSandboxLeaseCount} reusable sandboxes`} will be destroyed; the workspaces holding them stay open and provision a fresh sandbox on their next run.`
+                                : null,
+                              reusableLeaseOnlyBlock &&
+                              retainedFailureSourceCount > 0
+                                ? `${retainedFailureSourceCount === 1 ? "1 of them is" : `${retainedFailureSourceCount} of them are`} a failed run's workspace copy kept for file recovery; destroying it loses the files only it holds.`
+                                : null,
+                              agentsUsingEnvironment.length > 0
+                                ? `${agentsUsingEnvironment.length === 1 ? "1 agent uses" : `${agentsUsingEnvironment.length} agents use`} this environment as their default. Choose the environment those agents should be reassigned to.`
+                                : null,
+                            ]
+                              .filter(Boolean)
+                              .join(" ") ||
+                              "This environment will be permanently deleted and future runs stop resolving to it."))}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  {reusableLeaseHolderGroups.length > 0 ? (
+                    <div
+                      className="space-y-1.5"
+                      data-testid="environment-delete-lease-holders"
+                    >
+                      <div className="text-xs font-medium text-muted-foreground">
+                        {translateInstant("Sandbox leases held by")}
+                      </div>
+                      <ul className="space-y-1">
+                        {reusableLeaseHolderGroups.map((group) => (
+                          <li
+                            key={group.workspaceId ?? group.label}
+                            className="text-sm"
+                          >
+                            {group.workspaceId ? (
+                              <Link
+                                className="underline underline-offset-2 hover:text-foreground"
+                                to={`/execution-workspaces/${group.workspaceId}`}
+                              >
+                                {group.label}
+                              </Link>
+                            ) : (
+                              <span>{group.label}</span>
+                            )}
+                            <span className="text-xs text-muted-foreground">
+                              {" "}
+                              ·{" "}
+                              {group.leaseCount === 1
+                                ? "1 sandbox lease"
+                                : `${group.leaseCount} sandbox leases`}
+                              {group.issueLabels.length > 0
+                                ? ` · ${group.issueLabels.join(", ")}`
+                                : ""}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="text-xs text-muted-foreground">
+                        {reusableLeaseOnlyBlock
+                          ? "Deleting destroys these sandboxes; the workspaces stay open."
+                          : "Close these workspaces to let Paperclip destroy their sandboxes, then retry the delete."}
+                      </div>
+                    </div>
+                  ) : null}
+                  {!deleteUsageLoading &&
+                  !deleteUsageError &&
+                  !deleteBlockMessage ? (
+                    <div className="space-y-3">
+                      {agentsUsingEnvironment.length > 0 ? (
+                        <label className="block space-y-1.5 text-sm">
+                          <span className="font-medium">
+                            {translateInstant("Reassign")}{" "}
+                            {agentsUsingEnvironment.length === 1
+                              ? translateInstant("agent")
+                              : translateInstant("agents")}{" "}
+                            {translateInstant("to")}
+                          </span>
+                          <select
+                            aria-label={translateInstant(
+                              "Reassign agents to environment",
+                            )}
+                            data-testid="environment-delete-reassign-select"
+                            className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm font-normal outline-none"
+                            value={reassignEnvironmentTargetId}
+                            onChange={(event) =>
+                              setReassignEnvironmentTargetId(event.target.value)
+                            }
+                          >
+                            <option value="">
+                              {translateInstant("Default:")}{" "}
+                              {instanceDefaultEnvironment
+                                ? `${instanceDefaultEnvironment.name} · ${instanceDefaultEnvironment.driver}`
+                                : translateInstant("Local")}
+                            </option>
+                            {reassignTargetEnvironments.map((environment) => (
+                              <option
+                                key={environment.id}
+                                value={environment.id}
+                              >
+                                {environment.name} · {environment.driver}
+                              </option>
+                            ))}
+                          </select>
+                          <span className="block text-xs text-muted-foreground">
+                            {translateInstant("Affected:")}{" "}
+                            {agentsUsingEnvironment
+                              .map((agent) => agent.name)
+                              .join(", ")}
+                          </span>
+                        </label>
+                      ) : null}
+                      {deleteImpactNotes.length > 0 ? (
+                        <ul className="space-y-1 text-xs text-muted-foreground">
+                          {deleteImpactNotes.map((note) => (
+                            <li key={note}>{note}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </div>
+                  ) : null}
+                  <AlertDialogFooter>
+                    <AlertDialogCancel
+                      disabled={deleteEnvironmentMutation.isPending}
+                    >
+                      {translateInstant("Cancel")}
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      data-testid="environment-delete-confirm"
+                      disabled={
+                        deleteEnvironmentMutation.isPending ||
+                        deleteUsageLoading ||
+                        deleteUsageError ||
+                        Boolean(deleteBlockMessage)
+                      }
+                      onClick={(event) => {
+                        event.preventDefault();
+                        deleteEnvironmentMutation.mutate({
+                          environment: editingEnvironment,
+                          reassignAgentIds: agentsUsingEnvironment.map(
+                            (agent) => agent.id,
+                          ),
+                          reassignTargetId: reassignEnvironmentTargetId || null,
+                          destroyReusableLeases: reusableLeaseOnlyBlock,
+                        });
+                      }}
+                    >
+                      {deleteEnvironmentMutation.isPending
+                        ? translateInstant("Deleting...")
+                        : reusableLeaseOnlyBlock && deleteBlastRadius
+                          ? `Destroy ${deleteBlastRadius.reusableSandboxLeaseCount === 1 ? "1 sandbox" : `${deleteBlastRadius.reusableSandboxLeaseCount} sandboxes`} and delete`
+                          : translateInstant("Delete environment")}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            ) : null}
+          </div>
         </SecretRefHintsContext.Provider>
       ) : null}
     </div>

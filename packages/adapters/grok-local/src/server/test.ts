@@ -15,6 +15,7 @@ import {
   prepareAdapterExecutionTargetRuntime,
   ensureAdapterExecutionTargetCommandResolvable,
   ensureAdapterExecutionTargetDirectory,
+  isAdapterExecutionTargetUnavailableError,
   resolveAdapterExecutionTargetCwd,
   runAdapterExecutionTargetProcess,
 } from "@penclipai/adapter-utils/execution-target";
@@ -153,6 +154,7 @@ export async function testEnvironment(
   } catch (err) {
     checks.push({
       code: "grok_cwd_invalid",
+      ...(isAdapterExecutionTargetUnavailableError(err) ? { retryable: true } : {}),
       level: "error",
       message: err instanceof Error ? err.message : "Invalid working directory",
       detail: cwd,
@@ -242,6 +244,7 @@ export async function testEnvironment(
   } catch (err) {
     checks.push({
       code: "grok_command_unresolvable",
+      ...(isAdapterExecutionTargetUnavailableError(err) ? { retryable: true } : {}),
       level: "error",
       message: err instanceof Error ? err.message : "Command is not executable",
       detail: command,

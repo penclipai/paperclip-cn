@@ -36,7 +36,7 @@
   },
   "agentConfig.acpStateDirectoryHint": {
     "en": "Optional ACP session state directory. Defaults to Paperclip CN-managed company/agent scoped storage.",
-    "zh-CN": "可选的 ACP 会话状态目录。默认使用 Paperclip CN 管理的公司/智能体范围存储。",
+    "zh-CN": "可选的 ACP 会话状态目录。默认使用由 Paperclip CN 管理、按公司和智能体隔离的存储空间。",
     "reviewedEnglishHash": "7c5f357a7b85d9a2b94345bf973cd7cdfa2fbceb88317e33f58464c056189a17"
   },
   "agentConfig.acpWarmProcessIdleMs": {
@@ -261,7 +261,7 @@
   },
   "agentConfig.defaultEnvironmentHint": {
     "en": "Agent-level default execution target. Project and issue settings can still override this.",
-    "zh-CN": "智能体级默认执行目标。项目和任务设置仍可覆盖。",
+    "zh-CN": "智能体的默认执行目标。项目和任务设置仍可覆盖。",
     "reviewedEnglishHash": "2fb933dc5b70b80083b212f068f8d3c1241e4304993c88bccab447475439873b"
   },
   "agentConfig.deny": {
@@ -446,7 +446,7 @@
   },
   "agentConfig.help.cooldownSec": {
     "en": "Minimum seconds between consecutive heartbeat runs.",
-    "zh-CN": "两次连续心跳运行之间的最小间隔秒数。",
+    "zh-CN": "连续两次心跳运行的最短间隔（秒）。",
     "reviewedEnglishHash": "200ac57fb741a31b03b800f1980a118b394f0576c0fab1c52bdb9742d0f23742"
   },
   "agentConfig.help.cwd": {
@@ -1033,5 +1033,20 @@
     "en": "X-High",
     "zh-CN": "超高",
     "reviewedEnglishHash": "393d3e4bf2eea43ad08fcd583922c7db6a04ff13ba49467ac637a843510be575"
+  },
+  "agentConfig.lifecycleAutomatic": {
+    "en": "Automatic",
+    "zh-CN": "自动",
+    "reviewedEnglishHash": "d461a493a3753877c9486cffa3444265a33370af8a7fff242fb119b71750839c"
+  },
+  "agentConfig.lifecycleModesHint": {
+    "en": "Automatic keeps Codex and OpenCode warm on this computer for 5 minutes after a run, so a follow-up starts faster, and runs other harnesses turn by turn. Turn by turn suspends after each run. Warm keeps the same provider process available between governed runs.",
+    "zh-CN": "自动模式会在运行结束后，将本机的 Codex 和 OpenCode 进程保留 5 分钟，方便快速继续；其他执行后端则逐轮运行。逐轮模式会在每次运行后暂停进程。常驻模式会保留同一提供商进程，供后续获准的运行使用。",
+    "reviewedEnglishHash": "7bead54acf144da9f5b83aa619892a347f7ac6a247c6385c0cdcaa55a3ac24ff"
+  },
+  "agentConfig.qualifiedHarnessModelHint": {
+    "en": "Choose a qualified harness and enter its exact model ID.",
+    "zh-CN": "请选择已通过兼容性验证的执行后端，并填写准确的模型 ID。",
+    "reviewedEnglishHash": "e0faad94d56291831f3dd929e972bce77586ee83f107b4a4012f9f50c10e0414"
   }
 }

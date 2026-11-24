@@ -3,7 +3,7 @@ import type {
   CompanySearchScope,
   CompanySearchSort,
   IssuePriority,
-  IssueStatus,
+  IssueDisplayStatus,
 } from "@penclipai/shared";
 import { api } from "./client";
 
@@ -12,7 +12,7 @@ export interface CompanySearchParams {
   scope?: CompanySearchScope;
   limit?: number;
   offset?: number;
-  status?: IssueStatus[];
+  status?: IssueDisplayStatus[];
   priority?: IssuePriority[];
   assigneeAgentId?: string | null;
   assigneeUserId?: string;
@@ -34,7 +34,7 @@ export const searchApi = {
     if (params.scope) search.set("scope", params.scope);
     if (params.limit !== undefined) search.set("limit", String(params.limit));
     if (params.offset !== undefined) search.set("offset", String(params.offset));
-    appendMulti(search, "status", params.status);
+    appendMulti(search, "displayStatus", params.status);
     appendMulti(search, "priority", params.priority);
     if (params.assigneeAgentId !== undefined) search.set("assigneeAgentId", params.assigneeAgentId ?? "null");
     if (params.assigneeUserId !== undefined) search.set("assigneeUserId", params.assigneeUserId);

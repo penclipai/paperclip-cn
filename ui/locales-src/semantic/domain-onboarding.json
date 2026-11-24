@@ -6,7 +6,7 @@
   },
   "onboarding.adapterEnvironmentCheckDescription": {
     "en": "Runs a live probe that asks the adapter CLI to respond with hello.",
-    "zh-CN": "运行一次实时探测，请适配器 CLI 回复 hello。",
+    "zh-CN": "运行一次实时探测，要求适配器 CLI 回复 hello。",
     "reviewedEnglishHash": "c6c8414e2036c49efdfb277cf753c1e42ac64d2c974179c6b7a9e604144a1018"
   },
   "onboarding.adapterEnvironmentTestFailed": {
@@ -61,7 +61,7 @@
   },
   "onboarding.changeMissionLater": {
     "en": "You can always change your mission later in settings.",
-    "zh-CN": "你随时可以稍后在设置中修改使命。",
+    "zh-CN": "之后可随时在设置中修改使命。",
     "reviewedEnglishHash": "b814f459e2e4167640c698ec5204bdffe8008f0eda351dd64b35c5fc9cbc9fd1"
   },
   "onboarding.changeTeamName": {

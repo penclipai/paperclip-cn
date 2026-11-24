@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Upload } from "lucide-react";
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { FILE_DROP_TARGET_ATTRIBUTE } from "../../lib/file-drop-target";
 
 /** The target can be the host frame when its tab header is rendered by a portal. */
 export function ArtifactDropzone({ children, onUpload, enabled = true, target }: {
@@ -21,6 +22,8 @@ export function ArtifactDropzone({ children, onUpload, enabled = true, target }:
     const element = target ?? rootRef.current;
     setDragging(false);
     if (!enabled || !element) return;
+    const previousTarget = element.getAttribute(FILE_DROP_TARGET_ATTRIBUTE);
+    element.setAttribute(FILE_DROP_TARGET_ATTRIBUTE, "");
     let depth = 0;
     const hasFiles = (event: DragEvent) => Array.from(event.dataTransfer?.types ?? []).includes("Files");
     const enter = (event: DragEvent) => {
@@ -56,6 +59,8 @@ export function ArtifactDropzone({ children, onUpload, enabled = true, target }:
     element.addEventListener("dragleave", leave);
     element.addEventListener("drop", drop);
     return () => {
+      if (previousTarget === null) element.removeAttribute(FILE_DROP_TARGET_ATTRIBUTE);
+      else element.setAttribute(FILE_DROP_TARGET_ATTRIBUTE, previousTarget);
       element.removeEventListener("dragenter", enter);
       element.removeEventListener("dragover", over);
       element.removeEventListener("dragleave", leave);

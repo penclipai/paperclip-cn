@@ -34,6 +34,18 @@ const HARNESS_GROUPS = {
 const suites = Object.values(HARNESS_GROUPS).flat();
 const extraArgs = process.argv.slice(2);
 
+const nodeSuites = [
+  "scripts/__tests__/pnpm-invocation.test.mjs",
+  "scripts/__tests__/vitest-collection-batches.test.mjs",
+  "scripts/__tests__/vitest-invocation.test.mjs",
+  "scripts/__tests__/storybook-glob-compat.test.mjs",
+];
+const nodeResult = spawnSync(process.execPath, ["--test", ...nodeSuites], { stdio: "inherit", shell: false });
+if (nodeResult.error || nodeResult.status !== 0) {
+  console.error("[upstream-merge-harness] Node infrastructure checks failed", nodeResult.error?.message ?? nodeResult.status);
+  process.exit(nodeResult.status ?? 1);
+}
+
 console.log("[upstream-merge-harness] running merge-sensitive invariant suites:");
 for (const [groupName, groupSuites] of Object.entries(HARNESS_GROUPS)) {
   console.log(`- ${groupName}`);
@@ -55,7 +67,7 @@ const result = spawnSync(
 );
 
 if (result.error) {
-  console.error("[upstream-merge-harness] failed to start test runner", result.error);
+  console.error("[upstream-merge-harness] failed to start test runner", result.error.message);
   process.exit(1);
 }
 

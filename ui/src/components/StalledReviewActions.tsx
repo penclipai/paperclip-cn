@@ -26,6 +26,8 @@ interface StalledReviewActionsProps {
    * approve" is what every issue already does.
    */
   reviewPolicy?: IssueReviewPolicy | null;
+  /** Explicit task-level wording where a separate asset approval may already exist. */
+  approveLabel?: string;
   className?: string;
 }
 
@@ -51,6 +53,7 @@ export function StalledReviewActions({
   footerSlot,
   onResolved,
   reviewPolicy,
+  approveLabel = "Approve",
   className,
 }: StalledReviewActionsProps) {
   useTranslation();

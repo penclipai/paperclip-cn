@@ -360,13 +360,13 @@ function persistence(): ChatSdkStatePersistence {
 }
 
 // Actual installed adapter, App.send, ActivitySender and API serialization.
-// Only final outbound HTTP is mocked. No inbound JWT/tenant/live UI proof and
-// no service source authority is inferred from these transport-only fixtures.
+// ActivitySender owns a client distinct from app.api, and clones it for each
+// scoped conversation send. Replace only that final client post. No inbound
+// JWT/tenant/live UI proof and no service source authority is inferred from
+// these transport-only fixtures.
 describe("Teams inline images through pinned runtime/App HTTP", () => {
   const runtimes: ChatSdkEndpointRuntime[] = [];
-  const ejectHttpMiddlewares: Array<() => void> = [];
   afterEach(async () => {
-    ejectHttpMiddlewares.splice(0).forEach((eject) => eject());
     await Promise.all(runtimes.splice(0).map((runtime) => runtime.shutdown()));
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -420,19 +420,19 @@ describe("Teams inline images through pinned runtime/App HTTP", () => {
               };
             };
           };
+          activitySender: {
+            client: {
+              post(
+                url: string,
+                body: unknown,
+              ): Promise<{ data: { id?: string } }>;
+            };
+          };
         };
       }
     ).app;
     const post = vi.fn().mockResolvedValue({ data: { id: "image-receipt-1" } });
-    const middlewareId = app.api.http.use({
-      async invoke({ config }, next) {
-        if (config.method === "post") {
-          return post(config.url, config.data);
-        }
-        return next();
-      },
-    });
-    ejectHttpMiddlewares.push(() => app.api.http.eject(middlewareId));
+    vi.spyOn(app.activitySender.client, "post").mockImplementation(post);
     return { runtime, app, post, network };
   }
   const destination = (

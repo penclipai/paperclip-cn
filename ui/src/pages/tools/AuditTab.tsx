@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StatusBadge } from "@/components/StatusBadge";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { cn } from "@/lib/utils";
 import { queryKeys } from "@/lib/queryKeys";
 import {
@@ -25,7 +26,7 @@ import {
 } from "@/api/tools";
 import { agentsApi } from "@/api/agents";
 import { AgentSelect } from "@/components/AgentMultiSelect";
-import { ToolsPageHeader, LoadingState, ErrorState, RelativeTime } from "./shared";
+import { ToolsPageHeader, LoadingState, RelativeTime } from "./shared";
 
 const PAGE_SIZE = 50;
 const ALL = "__all";
@@ -379,6 +380,8 @@ export function AuditTab({ companyId }: { companyId: string }) {
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 
+  const activityView = useQueryView(activity);
+
   const events = useMemo(
     () => activity.data?.pages.flatMap((page) => page.events) ?? [],
     [activity.data],
@@ -400,7 +403,7 @@ export function AuditTab({ companyId }: { companyId: string }) {
         description={translateInstant("tools.audit.description")}
       />
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div data-canonical-toolbar="tool-audit" role="toolbar" aria-label="Tool audit filters" className="flex flex-wrap items-center gap-2">
         <Select value={app} onValueChange={setApp}>
           <SelectTrigger className="w-40">
             <SelectValue placeholder={translateInstant("tools.audit.filters.app")} />
@@ -456,10 +459,15 @@ export function AuditTab({ companyId }: { companyId: string }) {
         ) : null}
       </div>
 
-      {activity.isLoading ? (
+      {activity.isLoading || activityView.kind === "reconnecting" ? (
         <LoadingState />
-      ) : activity.error ? (
-        <ErrorState error={activity.error} onRetry={() => activity.refetch()} />
+      ) : activityView.kind === "error" ? (
+        <QueryErrorState
+          error={activity.error}
+          action="load activity"
+          onRetry={activityView.retry}
+          retrying={activityView.isFetching}
+        />
       ) : events.length === 0 ? (
         hasActiveFilters ? (
           <Card>

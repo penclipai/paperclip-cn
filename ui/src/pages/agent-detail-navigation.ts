@@ -1,4 +1,7 @@
+import { translateInstant } from "@/i18n";
 import { auditSectionHref, type AuditSection } from "./audit/audit-navigation";
+
+export type AgentAuditView = Extract<AuditSection, "activity" | "runs" | "costs" | "budgets">;
 
 export type AgentDetailView =
   | "overview"
@@ -11,6 +14,8 @@ export type AgentDetailView =
   | "permissions"
   | "api-keys"
   | "revisions"
+  | "advanced"
+  | AgentAuditView
   | "run-detail";
 
 export type AgentLocalDetailView = Exclude<AgentDetailView, "run-detail">;
@@ -23,31 +28,45 @@ export const AGENT_DETAIL_NAVIGATION: ReadonlyArray<{
     labelKey: "entityType.agent",
     items: [
       { value: "overview", labelKey: "caseDetail.tabs.overview" },
-      { value: "instructions", labelKey: "agentDetail.instructions" },
-      { value: "skills", labelKey: "agentDetail.skills" },
-    ],
-  },
-  {
-    labelKey: "agentDetail.runtime",
-    items: [
+      { value: "instructions", labelKey: "agentConfig.identity" },
       { value: "runtime", labelKey: "agentDetail.harnessRuntime" },
       { value: "secrets", labelKey: "agentDetail.secretsAndVariables" },
-      { value: "tools", labelKey: "agentDetail.tools" },
-      { value: "channels", labelKey: "agentDetail.channels" },
+      { value: "permissions", labelKey: "agentDetail.permissionsTrust" },
+      { value: "advanced", labelKey: "Advanced" },
     ],
   },
   {
-    labelKey: "agentDetail.governance",
+    labelKey: "auditFeed.title",
     items: [
-      { value: "permissions", labelKey: "agentDetail.permissionsTrust" },
-      { value: "api-keys", labelKey: "agentDetail.apiKeys" },
-      { value: "revisions", labelKey: "caseComponents.revisions.title" },
+      { value: "activity", labelKey: "Activity" },
+      { value: "runs", labelKey: "agentDetail.runs" },
+      { value: "costs", labelKey: "agentDetail.costs" },
+      { value: "budgets", labelKey: "Budgets" },
     ],
   },
 ] as const;
 
+const HIDDEN_VIEW_LABELS: Partial<Record<AgentLocalDetailView, string>> = {
+  skills: "agentDetail.skills",
+  tools: "agentDetail.tools",
+  channels: "agentDetail.channels",
+  "api-keys": "agentDetail.apiKeys",
+  revisions: "caseComponents.revisions.title",
+};
+
+export const AGENT_AUDIT_VIEWS: ReadonlySet<AgentLocalDetailView> = new Set(["activity", "runs", "costs", "budgets"]);
+
+export function isAgentAuditView(view: AgentDetailView): view is AgentAuditView {
+  return AGENT_AUDIT_VIEWS.has(view as AgentLocalDetailView);
+}
+
+export function agentDetailViewLabel(view: AgentLocalDetailView): string {
+  const item = AGENT_DETAIL_NAVIGATION.flatMap((section) => section.items).find((entry) => entry.value === view);
+  return translateInstant(item?.labelKey ?? HIDDEN_VIEW_LABELS[view] ?? "caseDetail.tabs.overview");
+}
+
 export function parseAgentDetailView(value: string | null): AgentLocalDetailView {
-  if (value === "instructions" || value === "prompts") return "instructions";
+  if (value === "identity" || value === "instructions" || value === "prompts") return "instructions";
   if (value === "skills") return "skills";
   if (value === "runtime" || value === "configure" || value === "configuration") return "runtime";
   if (value === "secrets") return "secrets";
@@ -56,14 +75,21 @@ export function parseAgentDetailView(value: string | null): AgentLocalDetailView
   if (value === "permissions" || value === "trust") return "permissions";
   if (value === "api-keys" || value === "keys") return "api-keys";
   if (value === "revisions" || value === "history") return "revisions";
+  if (value === "advanced") return "advanced";
+  const audit = agentLegacyAuditSection(value);
+  if (audit) return audit;
   return "overview";
 }
 
-export function agentDetailHref(agentRef: string, view: AgentLocalDetailView = "overview") {
-  return `/agents/${agentRef}/${view}`;
+export function agentDetailSegment(view: AgentLocalDetailView): string {
+  return view === "instructions" ? "identity" : view;
 }
 
-export function agentLegacyAuditSection(value: string | null): AuditSection | null {
+export function agentDetailHref(agentRef: string, view: AgentLocalDetailView = "overview") {
+  return `/agents/${agentRef}/${agentDetailSegment(view)}`;
+}
+
+export function agentLegacyAuditSection(value: string | null): AgentAuditView | null {
   if (value === "runs") return "runs";
   if (value === "audit" || value === "activity") return "activity";
   if (value === "cost" || value === "costs") return "costs";

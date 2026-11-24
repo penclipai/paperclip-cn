@@ -8,3 +8,4 @@ ui/locales-src/**/*.json text eol=lf
 ui/public/locales/*/common.json text eol=lf
 packages/shared/src/cliplab/palette-tokens.ts text eol=lf
 packages/shared/src/cliplab/character.ts text eol=lf
+packages/shared/src/provider-failure.generated.ts text eol=lf

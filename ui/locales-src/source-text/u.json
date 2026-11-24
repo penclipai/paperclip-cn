@@ -1,12 +1,12 @@
 {
   "% usage": {
     "en": "% usage",
-    "zh-CN": "％ 用法",
+    "zh-CN": "% 用量",
     "reviewedEnglishHash": "1a1367a9e1733abcd7e997a401ee34d34f56631c20bfef74655b142edba00887"
   },
   "% used": {
     "en": "% used",
-    "zh-CN": "已用过",
+    "zh-CN": "% 已使用",
     "reviewedEnglishHash": "19e8fbbc0d7bbb594255aa6a35489b66b1b5e9bbebe3cbf104dbdde08f9377b9"
   },
   ". Under": {
@@ -121,7 +121,7 @@
   },
   "Unattributed costs have no recorded user in this organization.": {
     "en": "Unattributed costs have no recorded user in this organization.",
-    "zh-CN": "未归属成本在此组织中没有记录的用户。",
+    "zh-CN": "未归属的成本未关联此组织中的任何已记录用户。",
     "reviewedEnglishHash": "ba96ff0be97e7e086bab5a85855caa54b943c65540929ca14d8bedb862d7e809"
   },
   "Unauthorized": {
@@ -446,7 +446,7 @@
   },
   "Usage was recorded. Test answers are not saved.": {
     "en": "Usage was recorded. Test answers are not saved.",
-    "zh-CN": "记录使用情况。测试答案不会保存。",
+    "zh-CN": "已记录用量。测试答案不会保存。",
     "reviewedEnglishHash": "0d7317a94f9653417b4b516ca69deda83e32f4b5d218794e77fea01067578261"
   },
   "Use API keys instead": {
@@ -691,7 +691,7 @@
   },
   "Uses the shared chat-style run surface from task activity.": {
     "en": "Uses the shared chat-style run surface from task activity.",
-    "zh-CN": "使用来自任务活动的共享聊天样式运行表面。",
+    "zh-CN": "使用来自任务活动的共享聊天式运行界面。",
     "reviewedEnglishHash": "75b6fd395c44f05287c3d495aa18092e99cc612cc48d7ce6d74a33ee417a0f12"
   },
   "Using {{toolLabel}}": {
@@ -846,7 +846,7 @@
   },
   "usage events are unpriced. Known spend excludes their unknown cost.": {
     "en": "usage events are unpriced. Known spend excludes their unknown cost.",
-    "zh-CN": "使用率事件未定价。已知支出不包括其未知费用。",
+    "zh-CN": "用量事件未定价。已知支出不包括其未知费用。",
     "reviewedEnglishHash": "a56858596305acb65027bfa83cee84f23d7b9d39ab12fdaef69014cba4086473"
   },
   "use your current Paperclip permissions in": {

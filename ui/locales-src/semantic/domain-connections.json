@@ -8,5 +8,10 @@
     "en": "The retained connection no longer exists or is not available to this organization.",
     "zh-CN": "保留的连接已不存在，或当前组织无法使用它。",
     "reviewedEnglishHash": "7adf54f96880049382b94541b49d46da5847e155cd0ba156a2fea59645e964c4"
+  },
+  "connections.openSignInFailed": {
+    "en": "Couldn’t open sign-in",
+    "zh-CN": "无法打开登录页面",
+    "reviewedEnglishHash": "656e4934db2f524b82d125e9e32b492804a1d6f235e4398bf2fcaf874426d0fa"
   }
 }

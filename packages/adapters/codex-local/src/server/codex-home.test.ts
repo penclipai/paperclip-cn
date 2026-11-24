@@ -4,6 +4,7 @@ import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { prepareAdapterExecutionTargetRuntime } from "@penclipai/adapter-utils/execution-target";
 import { runChildProcess } from "@penclipai/adapter-utils/server-utils";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 import { execute as executeCodex } from "./execute.js";
 import { buildProviderObservabilityLaunch } from "@penclipai/adapter-utils/agent-observability";
 import { randomUUID } from "node:crypto";
@@ -1076,11 +1077,20 @@ describe("stageCodexHomeForSync", () => {
       const other = "paperclip-observability-run-2.config.toml";
       await fs.writeFile(path.join(home, own), '[otel]\nexporter = "none"\n', { mode: 0o600 });
       await fs.writeFile(path.join(home, other), "another-active-run", { mode: 0o600 });
+      // Node exposes NTFS files as mode 0666 even after a requested chmod, so
+      // the production private-file proof cannot be established on Windows.
+      // Keep that behavior fail-closed instead of weakening the ownership or
+      // privacy guard merely to make this fixture portable.
+      if (process.platform === "win32") {
+        await expect(stageCodexHomeForSync(home, { runId: "run-1", additionalFiles: [own] }))
+          .rejects.toThrow("owned private regular file");
+        return;
+      }
       staged = await stageCodexHomeForSync(home, { runId: "run-1", additionalFiles: [own] });
       expect(await fs.readdir(staged)).toContain(own);
       expect(await fs.readdir(staged)).not.toContain(other);
-      expect((await fs.stat(path.join(staged, own))).mode & 0o777).toBe(0o600);
-      expect((await fs.stat(staged)).mode & 0o777).toBe(0o700);
+      expectPosixMode((await fs.stat(path.join(staged, own))).mode & 0o777, 0o600);
+      expectPosixMode((await fs.stat(staged)).mode & 0o777, 0o700);
       await expect(stageCodexHomeForSync(home, { additionalFiles: ["../escape.config.toml"] })).rejects.toThrow();
       await fs.chmod(path.join(home, own), 0o644);
       await expect(stageCodexHomeForSync(home, { additionalFiles: [own] })).rejects.toThrow("private regular file");
@@ -1189,11 +1199,13 @@ process.stdin.on("end", () => {
       await fs.writeFile(path.join(home, "auth.json"), hostAuth);
       const target = {
         kind: "remote", transport: "sandbox", providerKey: "fixture", remoteCwd,
-        runner: { execute: async (input: { command: string; args?: string[]; cwd?: string; env?: Record<string, string>; stdin?: string; timeoutMs?: number }) =>
-          runChildProcess("codex-restage-fixture", input.command, input.args ?? [], {
-            cwd: input.cwd ?? root, env: input.env ?? {}, stdin: input.stdin,
+        runner: { execute: async (input: { command: string; args?: string[]; cwd?: string; env?: Record<string, string>; stdin?: string; timeoutMs?: number }) => {
+          const shell = prepareTestPosixShell({ command: input.command, args: input.args, env: input.env });
+          return runChildProcess("codex-restage-fixture", shell.command, shell.args, {
+            cwd: input.cwd ?? root, env: shell.env, stdin: input.stdin,
             timeoutSec: Math.max(1, Math.ceil((input.timeoutMs ?? 30_000) / 1000)), graceSec: 1, onLog: async () => {},
-          }) },
+          });
+        } },
       } as const;
       const stage = async (revision: string) => {
         await fs.writeFile(path.join(home, "config.toml"), `[otel.exporter.otlp-http]\nendpoint = "https://${revision}.example.test/v1/logs"\nprotocol = "binary"\n`);
@@ -1223,8 +1235,8 @@ process.stdin.on("end", () => {
       expect(await fs.readFile(path.join(remoteHome, "config.toml"), "utf8")).toContain('https://second.example.test/v1/logs');
       expect(await fs.readFile(path.join(remoteHome, "auth.json"), "utf8")).toBe(mergeAuth ? rotatedAuth : hostAuth);
       await expect(fs.access(path.join(remoteHome, "config.json"))).rejects.toThrow();
-      expect((await fs.stat(remoteHome)).mode & 0o777).toBe(0o700);
-      expect((await fs.stat(path.join(remoteHome, "config.toml"))).mode & 0o777).toBe(0o600);
+      expectPosixMode((await fs.stat(remoteHome)).mode & 0o777, 0o700);
+      expectPosixMode((await fs.stat(path.join(remoteHome, "config.toml"))).mode & 0o777, 0o600);
       // A corrupt upload must leave the prior conversation and config intact.
       const badTar = path.join(second.runtimeRootDir!, "bad-home-upload.tar");
       await fs.writeFile(badTar, "invalid archive");
@@ -1248,10 +1260,10 @@ process.stdin.on("end", () => {
       const { home, authBytes, skillBytes } = await buildFakeHome(root);
       staged = await stageCodexHomeForSync(home, { runId: "run-1" });
 
-      expect((await fs.stat(staged)).mode & 0o777).toBe(0o700);
+      expectPosixMode((await fs.stat(staged)).mode & 0o777, 0o700);
       for (const entry of ["auth.json", "config.toml", "config.json", "instructions.md"]) {
         const mode = (await fs.stat(path.join(staged, entry))).mode & 0o777;
-        expect(mode, `${entry} should be staged 0600`).toBe(0o600);
+        expectPosixMode(mode, 0o600, `${entry} should be staged 0600`);
       }
 
       const entries = (await fs.readdir(staged)).sort();

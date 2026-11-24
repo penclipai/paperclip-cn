@@ -60,7 +60,7 @@ function resolveExplicitUiLocaleFromHeader(headerValue: string | null | undefine
 }
 
 export function resolveExplicitRequestUiLocale(
-  req: Pick<Request, "get" | "query">,
+  req: Pick<Request, "query"> & { get(name: string): string | undefined },
 ): UiLocale | null {
   const queryLocale = parseQueryLocale(req.query?.lng);
   if (queryLocale) return queryLocale;

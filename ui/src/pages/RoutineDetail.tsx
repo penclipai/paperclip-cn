@@ -1,9 +1,21 @@
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Navigate, useNavigate, useParams, useSearchParams } from "@/lib/router";
+import {
+  Navigate,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, History, Pencil, Repeat, Sparkles, X } from "lucide-react";
+import {
+  AlertCircle,
+  History,
+  Pencil,
+  Repeat,
+  Sparkles,
+  X,
+} from "lucide-react";
 import { ApiError } from "../api/client";
 import {
   routinesApi,
@@ -28,20 +40,35 @@ import { buildMarkdownMentionOptions } from "../lib/company-members";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
+import { QueryErrorState, useQueryView } from "../components/QueryView";
+import { describeError } from "../api/errors";
 import { type InlineEntityOption } from "../components/InlineEntitySelector";
-import { type MarkdownEditorRef, type MentionOption } from "../components/MarkdownEditor";
+import {
+  type MarkdownEditorRef,
+  type MentionOption,
+} from "../components/MarkdownEditor";
 import {
   RoutineRunVariablesDialog,
   type RoutineRunDialogSubmitData,
 } from "../components/RoutineRunVariablesDialog";
 import { RunButton } from "../components/AgentActionButtons";
-import { getRecentAssigneeIds, sortAgentsByRecency, trackRecentAssignee } from "../lib/recent-assignees";
-import { getRecentProjectIds, trackRecentProject } from "../lib/recent-projects";
+import {
+  getRecentAssigneeIds,
+  sortAgentsByRecency,
+  trackRecentAssignee,
+} from "../lib/recent-assignees";
+import {
+  getRecentProjectIds,
+  trackRecentProject,
+} from "../lib/recent-projects";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RoutineOverview } from "../components/RoutineOverview";
 import { RoutineSectionHeading } from "../components/RoutineSectionHeading";
-import { RoutineSectionPicker, RoutineSubSidebar } from "../components/RoutineSubSidebar";
+import {
+  RoutineSectionPicker,
+  RoutineSubSidebar,
+} from "../components/RoutineSubSidebar";
 import {
   isRoutineDetailView,
   resolveRoutineDetailDestination,
@@ -77,7 +104,12 @@ import type {
 } from "@penclipai/shared";
 
 export function buildRoutineProjectOptions(
-  projects: ReadonlyArray<{ id: string; name: string; description?: string | null; archivedAt?: Date | string | null }>,
+  projects: ReadonlyArray<{
+    id: string;
+    name: string;
+    description?: string | null;
+    archivedAt?: Date | string | null;
+  }>,
 ): InlineEntityOption[] {
   return projects
     .filter((project) => !project.archivedAt)
@@ -89,13 +121,25 @@ export function buildRoutineProjectOptions(
 }
 
 const SECTION_TITLES: Record<RoutineSectionKey, string> = {
-  get overview() { return translateInstant("Overview"); },
-  get triggers() { return translateInstant("Triggers"); },
-  get variables() { return translateInstant("Variables"); },
-  get secrets() { return translateInstant("Secrets"); },
+  get overview() {
+    return translateInstant("Overview");
+  },
+  get triggers() {
+    return translateInstant("Triggers");
+  },
+  get variables() {
+    return translateInstant("Variables");
+  },
+  get secrets() {
+    return translateInstant("Secrets");
+  },
   delivery: "Delivery",
-  get runs() { return translateInstant("Runs"); },
-  get activity() { return translateInstant("Activity"); },
+  get runs() {
+    return translateInstant("Runs");
+  },
+  get activity() {
+    return translateInstant("Activity");
+  },
   history: "Version history",
 };
 
@@ -125,9 +169,13 @@ function buildRoutineMutationPayload(input: RoutineEditDraft) {
 
 export function RoutineDetail() {
   useTranslation();
-  const { routineId, section: sectionParam } = useParams<{ routineId: string; section?: string }>();
+  const { routineId, section: sectionParam } = useParams<{
+    routineId: string;
+    section?: string;
+  }>();
   const [searchParams] = useSearchParams();
-  const triggerSetup = sectionParam === "triggers" && searchParams.has("triggerSetup");
+  const triggerSetup =
+    sectionParam === "triggers" && searchParams.has("triggerSetup");
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
@@ -139,7 +187,9 @@ export function RoutineDetail() {
   const descriptionEditorRef = useRef<MarkdownEditorRef>(null);
   const assigneeSelectorRef = useRef<HTMLButtonElement | null>(null);
   const projectSelectorRef = useRef<HTMLButtonElement | null>(null);
-  const [secretMessage, setSecretMessage] = useState<SecretMessage | null>(null);
+  const [secretMessage, setSecretMessage] = useState<SecretMessage | null>(
+    null,
+  );
   const [saveConflict, setSaveConflict] = useState(false);
   const [runVariablesOpen, setRunVariablesOpen] = useState(false);
   const [overviewEditing, setOverviewEditing] = useState(false);
@@ -158,32 +208,38 @@ export function RoutineDetail() {
     env: null,
   });
 
-  const legacyOperateSection = !streamlinedUiEnabled && (sectionParam === "runs" || sectionParam === "activity")
-    ? sectionParam
-    : null;
-  const section: RoutineSectionKey = legacyOperateSection
-    ?? (isRoutineDetailView(sectionParam) ? sectionParam : "overview");
+  const legacyOperateSection =
+    !streamlinedUiEnabled &&
+    (sectionParam === "runs" || sectionParam === "activity")
+      ? sectionParam
+      : null;
+  const section: RoutineSectionKey =
+    legacyOperateSection ??
+    (isRoutineDetailView(sectionParam) ? sectionParam : "overview");
 
   const navigateToSection = useCallback(
     (next: RoutineSectionKey, options?: { replace?: boolean }) => {
       if (!routineId) return;
       if (!streamlinedUiEnabled && (next === "runs" || next === "activity")) {
-        navigate(`/routines/${routineId}/${next}`, { replace: options?.replace ?? true });
+        navigate(`/routines/${routineId}/${next}`, {
+          replace: options?.replace ?? true,
+        });
         return;
       }
-      navigate(
-        resolveRoutineDetailDestination({ routineId, section: next }),
-        { replace: options?.replace ?? true },
-      );
+      navigate(resolveRoutineDetailDestination({ routineId, section: next }), {
+        replace: options?.replace ?? true,
+      });
     },
     [navigate, routineId, streamlinedUiEnabled],
   );
 
-  const { data: routine, isLoading, error } = useQuery({
+  const routineQuery = useQuery({
     queryKey: queryKeys.routines.detail(routineId!),
     queryFn: () => routinesApi.get(routineId!),
     enabled: !!routineId,
   });
+  const { data: routine, isLoading } = routineQuery;
+  const routineView = useQueryView(routineQuery);
   const activeIssueId = routine?.activeIssue?.id;
   const { data: liveRuns } = useQuery({
     queryKey: queryKeys.issues.liveRuns(activeIssueId!),
@@ -205,23 +261,29 @@ export function RoutineDetail() {
     }),
     [routine?.triggers, routineRuns],
   );
-  const { data: activity, isLoading: activityLoading, error: activityError } = useQuery({
+  const activityQuery = useQuery({
     queryKey: [
       ...queryKeys.routines.activity(selectedCompanyId!, routineId!),
       relatedActivityIds.triggerIds.join(","),
       relatedActivityIds.runIds.join(","),
     ],
-    queryFn: () => routinesApi.activity(selectedCompanyId!, routineId!, relatedActivityIds),
+    queryFn: () =>
+      routinesApi.activity(selectedCompanyId!, routineId!, relatedActivityIds),
     enabled: !!selectedCompanyId && !!routineId && !!routine,
   });
+  const { data: activity } = activityQuery;
+  const activityView = useQueryView(activityQuery);
   const { data: agents } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
     queryFn: () => agentsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId!, { includeArchived: true }),
-    queryFn: () => projectsApi.list(selectedCompanyId!, { includeArchived: true }),
+    queryKey: queryKeys.projects.list(selectedCompanyId!, {
+      includeArchived: true,
+    }),
+    queryFn: () =>
+      projectsApi.list(selectedCompanyId!, { includeArchived: true }),
     enabled: !!selectedCompanyId,
   });
   const { data: companyMembers } = useQuery({
@@ -230,18 +292,23 @@ export function RoutineDetail() {
     enabled: !!selectedCompanyId,
   });
   const { data: availableSecrets = [] } = useQuery({
-    queryKey: selectedCompanyId ? queryKeys.secrets.list(selectedCompanyId) : ["secrets", "none"],
+    queryKey: selectedCompanyId
+      ? queryKeys.secrets.list(selectedCompanyId)
+      : ["secrets", "none"],
     queryFn: () => secretsApi.list(selectedCompanyId!),
     enabled: Boolean(selectedCompanyId),
   });
   const createSecret = useMutation({
     mutationFn: (input: { name: string; value: string }) => {
-      if (!selectedCompanyId) throw new Error("Select an organization to create secrets");
+      if (!selectedCompanyId)
+        throw new Error("Select an organization to create secrets");
       return secretsApi.create(selectedCompanyId, input);
     },
     onSuccess: () => {
       if (!selectedCompanyId) return;
-      queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedCompanyId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.secrets.list(selectedCompanyId),
+      });
     },
   });
 
@@ -267,36 +334,76 @@ export function RoutineDetail() {
   const dirtyFields = useMemo<RoutineHistoryDirtyFieldDescriptor[]>(() => {
     if (!routineDefaults) return [];
     const result: RoutineHistoryDirtyFieldDescriptor[] = [];
-    if (editDraft.title !== routineDefaults.title) result.push({ key: "title", label: translateInstant("routineDetail.dirty.title") });
+    if (editDraft.title !== routineDefaults.title)
+      result.push({
+        key: "title",
+        label: translateInstant("routineDetail.dirty.title"),
+      });
     if (editDraft.description !== routineDefaults.description) {
-      result.push({ key: "description", label: translateInstant("routineDetail.dirty.description") });
+      result.push({
+        key: "description",
+        label: translateInstant("routineDetail.dirty.description"),
+      });
     }
     if (editDraft.projectId !== routineDefaults.projectId) {
-      result.push({ key: "projectId", label: translateInstant("routineDetail.dirty.project") });
+      result.push({
+        key: "projectId",
+        label: translateInstant("routineDetail.dirty.project"),
+      });
     }
     if (editDraft.assigneeAgentId !== routineDefaults.assigneeAgentId) {
-      result.push({ key: "assigneeAgentId", label: translateInstant("routineDetail.dirty.defaultAgent") });
+      result.push({
+        key: "assigneeAgentId",
+        label: translateInstant("routineDetail.dirty.defaultAgent"),
+      });
     }
     if (editDraft.priority !== routineDefaults.priority) {
-      result.push({ key: "priority", label: translateInstant("routineDetail.dirty.priority") });
+      result.push({
+        key: "priority",
+        label: translateInstant("routineDetail.dirty.priority"),
+      });
     }
     if (editDraft.concurrencyPolicy !== routineDefaults.concurrencyPolicy) {
-      result.push({ key: "concurrencyPolicy", label: translateInstant("routineDetail.dirty.concurrency") });
+      result.push({
+        key: "concurrencyPolicy",
+        label: translateInstant("routineDetail.dirty.concurrency"),
+      });
     }
     if (editDraft.catchUpPolicy !== routineDefaults.catchUpPolicy) {
-      result.push({ key: "catchUpPolicy", label: translateInstant("routineDetail.dirty.catchUp") });
+      result.push({
+        key: "catchUpPolicy",
+        label: translateInstant("routineDetail.dirty.catchUp"),
+      });
     }
     if (editDraft.activityGatePolicy !== routineDefaults.activityGatePolicy) {
-      result.push({ key: "activityGatePolicy", label: translateInstant("the advanced run policy") });
+      result.push({
+        key: "activityGatePolicy",
+        label: translateInstant("the advanced run policy"),
+      });
     }
     if (editDraft.activityGateScope !== routineDefaults.activityGateScope) {
-      result.push({ key: "activityGateScope", label: translateInstant("the activity gate scope") });
+      result.push({
+        key: "activityGateScope",
+        label: translateInstant("the activity gate scope"),
+      });
     }
-    if (JSON.stringify(editDraft.variables) !== JSON.stringify(routineDefaults.variables)) {
-      result.push({ key: "variables", label: translateInstant("routineDetail.dirty.variables") });
+    if (
+      JSON.stringify(editDraft.variables) !==
+      JSON.stringify(routineDefaults.variables)
+    ) {
+      result.push({
+        key: "variables",
+        label: translateInstant("routineDetail.dirty.variables"),
+      });
     }
-    if (JSON.stringify(editDraft.env ?? null) !== JSON.stringify(routineDefaults.env ?? null)) {
-      result.push({ key: "env", label: translateInstant("routineDetail.dirty.secrets") });
+    if (
+      JSON.stringify(editDraft.env ?? null) !==
+      JSON.stringify(routineDefaults.env ?? null)
+    ) {
+      result.push({
+        key: "env",
+        label: translateInstant("routineDetail.dirty.secrets"),
+      });
     }
     return result;
   }, [editDraft, routineDefaults]);
@@ -332,7 +439,11 @@ export function RoutineDetail() {
 
   useEffect(() => {
     if (!routine) return;
-    if (!triggerSetup) setBreadcrumbs([{ label: translateInstant("Routines"), href: "/routines" }, { label: routine.title }]);
+    if (!triggerSetup)
+      setBreadcrumbs([
+        { label: translateInstant("Routines"), href: "/routines" },
+        { label: routine.title },
+      ]);
     if (!routineDefaults) return;
     const changedRoutine = hydratedRoutineIdRef.current !== routine.id;
     if (changedRoutine || !isEditDirty) {
@@ -357,7 +468,8 @@ export function RoutineDetail() {
       } catch (copyError) {
         pushToast({
           title: `Failed to copy ${label.toLowerCase()}`,
-          body: copyError instanceof Error ? copyError.message : "Clipboard access was denied.",
+          body: describeError(copyError, { action: "copy to the clipboard" })
+            .body,
           tone: "error",
         });
       }
@@ -377,10 +489,18 @@ export function RoutineDetail() {
     onSuccess: async () => {
       setSaveConflict(false);
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.revisions(routineId!) }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.detail(routineId!),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.list(selectedCompanyId!),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.revisions(routineId!),
+        }),
       ]);
     },
     onError: (mutationError) => {
@@ -395,7 +515,7 @@ export function RoutineDetail() {
       }
       pushToast({
         title: translateInstant("Failed to save routine"),
-        body: mutationError instanceof Error ? mutationError.message : "Paperclip could not save the routine.",
+        body: describeError(mutationError, { action: "save the routine" }).body,
         tone: "error",
       });
     },
@@ -404,10 +524,16 @@ export function RoutineDetail() {
   const runRoutine = useMutation({
     mutationFn: (data?: RoutineRunDialogSubmitData) =>
       routinesApi.run(routineId!, {
-        ...(data?.variables && Object.keys(data.variables).length > 0 ? { variables: data.variables } : {}),
-        ...(data?.assigneeAgentId !== undefined ? { assigneeAgentId: data.assigneeAgentId } : {}),
+        ...(data?.variables && Object.keys(data.variables).length > 0
+          ? { variables: data.variables }
+          : {}),
+        ...(data?.assigneeAgentId !== undefined
+          ? { assigneeAgentId: data.assigneeAgentId }
+          : {}),
         ...(data?.projectId !== undefined ? { projectId: data.projectId } : {}),
-        ...(data?.executionWorkspaceId !== undefined ? { executionWorkspaceId: data.executionWorkspaceId } : {}),
+        ...(data?.executionWorkspaceId !== undefined
+          ? { executionWorkspaceId: data.executionWorkspaceId }
+          : {}),
         ...(data?.executionWorkspacePreference !== undefined
           ? { executionWorkspacePreference: data.executionWorkspacePreference }
           : {}),
@@ -416,21 +542,38 @@ export function RoutineDetail() {
           : {}),
       }),
     onSuccess: async () => {
-      pushToast({ title: translateInstant("Routine run started"), tone: "success" });
+      pushToast({
+        title: translateInstant("Routine run started"),
+        tone: "success",
+      });
       setRunVariablesOpen(false);
       navigateToSection("runs");
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: [...queryKeys.issues.list(selectedCompanyId!), "routine", routineId!] }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.runs(routineId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!) }),
+        queryClient.invalidateQueries({
+          queryKey: [
+            ...queryKeys.issues.list(selectedCompanyId!),
+            "routine",
+            routineId!,
+          ],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.detail(routineId!),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.runs(routineId!),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.list(selectedCompanyId!),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!),
+        }),
       ]);
     },
     onError: (runError) => {
       pushToast({
         title: translateInstant("Routine run failed"),
-        body: runError instanceof Error ? runError.message : "Paperclip could not start the routine run.",
+        body: describeError(runError, { action: "start the routine run" }).body,
         tone: "error",
       });
     },
@@ -441,18 +584,23 @@ export function RoutineDetail() {
     onSuccess: async (_data, status) => {
       pushToast({
         title: translateInstant("Routine saved"),
-        body: status === "paused" ? "Automation paused." : "Automation enabled.",
+        body:
+          status === "paused" ? "Automation paused." : "Automation enabled.",
         tone: "success",
       });
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.detail(routineId!),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.list(selectedCompanyId!),
+        }),
       ]);
     },
     onError: (statusError) => {
       pushToast({
         title: translateInstant("Failed to update routine"),
-        body: statusError instanceof Error ? statusError.message : "Paperclip could not update the routine.",
+        body: describeError(statusError, { action: "update the routine" }).body,
         tone: "error",
       });
     },
@@ -460,16 +608,27 @@ export function RoutineDetail() {
 
   const createTrigger = useMutation({
     mutationFn: async (): Promise<RoutineTriggerResponse> => {
-      const existingOfKind = (routine?.triggers ?? []).filter((t) => t.kind === newTrigger.kind).length;
-      const autoLabel = existingOfKind > 0 ? `${newTrigger.kind}-${existingOfKind + 1}` : newTrigger.kind;
+      const existingOfKind = (routine?.triggers ?? []).filter(
+        (t) => t.kind === newTrigger.kind,
+      ).length;
+      const autoLabel =
+        existingOfKind > 0
+          ? `${newTrigger.kind}-${existingOfKind + 1}`
+          : newTrigger.kind;
       return routinesApi.createTrigger(routineId!, {
         kind: newTrigger.kind,
         label: autoLabel,
         ...(newTrigger.kind === "schedule"
-          ? { cronExpression: newTrigger.cronExpression.trim(), timezone: getLocalTimezone() }
+          ? {
+              cronExpression: newTrigger.cronExpression.trim(),
+              timezone: getLocalTimezone(),
+            }
           : {}),
         ...(newTrigger.kind === "webhook"
-          ? { signingMode: newTrigger.signingMode, replayWindowSec: Number(newTrigger.replayWindowSec || "300") }
+          ? {
+              signingMode: newTrigger.signingMode,
+              replayWindowSec: Number(newTrigger.replayWindowSec || "300"),
+            }
           : {}),
       });
     },
@@ -477,40 +636,73 @@ export function RoutineDetail() {
       if (result.secretMaterial) {
         setSecretMessage({
           title: translateInstant("Webhook trigger created"),
-          entries: [{ webhookUrl: result.secretMaterial.webhookUrl, webhookSecret: result.secretMaterial.webhookSecret }],
+          entries: [
+            {
+              webhookUrl: result.secretMaterial.webhookUrl,
+              webhookSecret: result.secretMaterial.webhookSecret,
+            },
+          ],
         });
       } else {
-        pushToast({ title: translateInstant("routineDetail.triggerAdded"), body: translateInstant("routineDetail.triggerAddedBody"), tone: "success" });
+        pushToast({
+          title: translateInstant("routineDetail.triggerAdded"),
+          body: translateInstant("routineDetail.triggerAddedBody"),
+          tone: "success",
+        });
       }
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!) }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.detail(routineId!),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.list(selectedCompanyId!),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!),
+        }),
       ]);
     },
     onError: (triggerError) => {
       pushToast({
         title: translateInstant("Failed to add trigger"),
-        body: triggerError instanceof Error ? triggerError.message : "Paperclip could not create the trigger.",
+        body: describeError(triggerError, { action: "create the trigger" })
+          .body,
         tone: "error",
       });
     },
   });
 
   const updateTrigger = useMutation({
-    mutationFn: ({ id, patch }: { id: string; patch: Record<string, unknown> }) => routinesApi.updateTrigger(id, patch),
+    mutationFn: ({
+      id,
+      patch,
+    }: {
+      id: string;
+      patch: Record<string, unknown>;
+    }) => routinesApi.updateTrigger(id, patch),
     onSuccess: async () => {
-      pushToast({ title: translateInstant("routineDetail.triggerSaved"), body: translateInstant("routineDetail.triggerSavedBody"), tone: "success" });
+      pushToast({
+        title: translateInstant("routineDetail.triggerSaved"),
+        body: translateInstant("routineDetail.triggerSavedBody"),
+        tone: "success",
+      });
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!) }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.detail(routineId!),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.list(selectedCompanyId!),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!),
+        }),
       ]);
     },
     onError: (triggerError) => {
       pushToast({
         title: translateInstant("Failed to update trigger"),
-        body: triggerError instanceof Error ? triggerError.message : "Paperclip could not update the trigger.",
+        body: describeError(triggerError, { action: "update the trigger" })
+          .body,
         tone: "error",
       });
     },
@@ -519,46 +711,77 @@ export function RoutineDetail() {
   const deleteTrigger = useMutation({
     mutationFn: (id: string) => routinesApi.deleteTrigger(id),
     onSuccess: async () => {
-      pushToast({ title: translateInstant("routineDetail.triggerDeleted"), tone: "success" });
+      pushToast({
+        title: translateInstant("routineDetail.triggerDeleted"),
+        tone: "success",
+      });
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!) }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.detail(routineId!),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.list(selectedCompanyId!),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!),
+        }),
       ]);
     },
     onError: (triggerError) => {
       pushToast({
         title: translateInstant("Failed to delete trigger"),
-        body: triggerError instanceof Error ? triggerError.message : "Paperclip could not delete the trigger.",
+        body: describeError(triggerError, { action: "delete the trigger" })
+          .body,
         tone: "error",
       });
     },
   });
 
   const rotateTrigger = useMutation({
-    mutationFn: (id: string): Promise<RotateRoutineTriggerResponse> => routinesApi.rotateTriggerSecret(id),
+    mutationFn: (id: string): Promise<RotateRoutineTriggerResponse> =>
+      routinesApi.rotateTriggerSecret(id),
     onSuccess: async (result) => {
       setSecretMessage({
         title: translateInstant("Webhook secret rotated"),
-        entries: [{ webhookUrl: result.secretMaterial.webhookUrl, webhookSecret: result.secretMaterial.webhookSecret }],
+        entries: [
+          {
+            webhookUrl: result.secretMaterial.webhookUrl,
+            webhookSecret: result.secretMaterial.webhookSecret,
+          },
+        ],
       });
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!) }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.detail(routineId!),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!),
+        }),
       ]);
     },
     onError: (triggerError) => {
       pushToast({
         title: translateInstant("Failed to rotate webhook secret"),
-        body: triggerError instanceof Error ? triggerError.message : "Paperclip could not rotate the webhook secret.",
+        body: describeError(triggerError, {
+          action: "rotate the webhook secret",
+        }).body,
         tone: "error",
       });
     },
   });
 
-  const agentById = useMemo(() => new Map((agents ?? []).map((agent) => [agent.id, agent])), [agents]);
-  const projectById = useMemo(() => new Map((projects ?? []).map((project) => [project.id, project])), [projects]);
-  const recentAssigneeIds = useMemo(() => getRecentAssigneeIds(), [routine?.id]);
+  const agentById = useMemo(
+    () => new Map((agents ?? []).map((agent) => [agent.id, agent])),
+    [agents],
+  );
+  const projectById = useMemo(
+    () => new Map((projects ?? []).map((project) => [project.id, project])),
+    [projects],
+  );
+  const recentAssigneeIds = useMemo(
+    () => getRecentAssigneeIds(),
+    [routine?.id],
+  );
   const recentProjectIds = useMemo(() => getRecentProjectIds(), [routine?.id]);
   const assigneeOptions = useMemo<InlineEntityOption[]>(
     () =>
@@ -577,19 +800,26 @@ export function RoutineDetail() {
     [projects],
   );
   const mentionOptions = useMemo<MentionOption[]>(
-    () => buildMarkdownMentionOptions({
-      agents,
-      projects: (projects ?? []).filter((project) => !project.archivedAt),
-      members: companyMembers?.users,
-    }),
+    () =>
+      buildMarkdownMentionOptions({
+        agents,
+        projects: (projects ?? []).filter((project) => !project.archivedAt),
+        members: companyMembers?.users,
+      }),
     [agents, companyMembers?.users, projects],
   );
 
   // Wrap track-recent side-effects so the section components stay declarative.
   const setEditDraftTracked: typeof setEditDraft = useCallback((updater) => {
     setEditDraft((current) => {
-      const next = typeof updater === "function" ? (updater as (c: RoutineEditDraft) => RoutineEditDraft)(current) : updater;
-      if (next.assigneeAgentId && next.assigneeAgentId !== current.assigneeAgentId) {
+      const next =
+        typeof updater === "function"
+          ? (updater as (c: RoutineEditDraft) => RoutineEditDraft)(current)
+          : updater;
+      if (
+        next.assigneeAgentId &&
+        next.assigneeAgentId !== current.assigneeAgentId
+      ) {
         trackRecentAssignee(next.assigneeAgentId);
       }
       if (next.projectId && next.projectId !== current.projectId) {
@@ -599,30 +829,39 @@ export function RoutineDetail() {
     });
   }, []);
 
-  const currentAssignee = editDraft.assigneeAgentId ? agentById.get(editDraft.assigneeAgentId) ?? null : null;
-  const currentProject = editDraft.projectId ? projectById.get(editDraft.projectId) ?? null : null;
+  const currentAssignee = editDraft.assigneeAgentId
+    ? (agentById.get(editDraft.assigneeAgentId) ?? null)
+    : null;
+  const currentProject = editDraft.projectId
+    ? (projectById.get(editDraft.projectId) ?? null)
+    : null;
 
   const reloadLatest = useCallback(() => {
     setSaveConflict(false);
     if (routineDefaults) setEditDraft(routineDefaults);
-    queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.routines.detail(routineId!),
+    });
   }, [queryClient, routineDefaults, routineId]);
 
-  const onHistoryRestoreSecretMaterials = useCallback((response: RestoreRoutineRevisionResponse) => {
-    if (response.secretMaterials.length > 0) {
-      navigateToSection("triggers");
-      setSecretMessage({
-        title:
-          response.secretMaterials.length === 1
-            ? translateInstant("routineDetail.webhookTriggerRestored")
-            : `${response.secretMaterials.length} webhook triggers restored`,
-        entries: response.secretMaterials.map((recreated) => ({
-          webhookUrl: recreated.webhookUrl,
-          webhookSecret: recreated.webhookSecret,
-        })),
-      });
-    }
-  }, [navigateToSection]);
+  const onHistoryRestoreSecretMaterials = useCallback(
+    (response: RestoreRoutineRevisionResponse) => {
+      if (response.secretMaterials.length > 0) {
+        navigateToSection("triggers");
+        setSecretMessage({
+          title:
+            response.secretMaterials.length === 1
+              ? translateInstant("routineDetail.webhookTriggerRestored")
+              : `${response.secretMaterials.length} webhook triggers restored`,
+          entries: response.secretMaterials.map((recreated) => ({
+            webhookUrl: recreated.webhookUrl,
+            webhookSecret: recreated.webhookSecret,
+          })),
+        });
+      }
+    },
+    [navigateToSection],
+  );
 
   const onHistoryRestored = useCallback(
     (response: RestoreRoutineRevisionResponse) => {
@@ -658,35 +897,63 @@ export function RoutineDetail() {
   );
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Repeat} message={translateInstant("Select an organization to view routines.")} />;
+    return (
+      <EmptyState
+        icon={Repeat}
+        message={translateInstant("Select an organization to view routines.")}
+      />
+    );
   }
 
   const legacyTab = new URLSearchParams(window.location.search).get("tab");
-  const validLegacySection = !streamlinedUiEnabled && (sectionParam === "runs" || sectionParam === "activity");
-  if (routineId && (legacyTab || !sectionParam || (!isRoutineDetailView(sectionParam) && !validLegacySection))) {
+  const validLegacySection =
+    !streamlinedUiEnabled &&
+    (sectionParam === "runs" || sectionParam === "activity");
+  if (
+    routineId &&
+    (legacyTab ||
+      !sectionParam ||
+      (!isRoutineDetailView(sectionParam) && !validLegacySection))
+  ) {
     return (
       <Navigate
-        to={resolveRoutineDetailDestination({ routineId, section: sectionParam, legacyTab })}
+        to={resolveRoutineDetailDestination({
+          routineId,
+          section: sectionParam,
+          legacyTab,
+        })}
         replace
       />
     );
   }
 
-  if (isLoading) {
+  // Keep a loaded routine on screen through a failed refetch; only a real
+  // failure, or an outage before the first load, replaces the page.
+  if (isLoading || routineView.kind === "reconnecting") {
     return <PageSkeleton variant="issues-list" />;
   }
 
-  if (error || !routine || !routineDefaults) {
+  if (routineView.kind === "error") {
     return (
-      <EmptyState
-        icon={AlertCircle}
-        message={error instanceof Error ? error.message : translateInstant("routineDetail.loadFailedBody")}
+      <QueryErrorState
+        size="page"
+        error={routineView.error}
+        action="load this routine"
+        onRetry={routineView.retry}
+        retrying={routineView.isFetching}
       />
     );
   }
 
+  if (!routine || !routineDefaults) {
+    return (
+      <EmptyState icon={AlertCircle} message="We couldn't load this routine." />
+    );
+  }
+
   const automationEnabled = routine.status === "active";
-  const automationToggleDisabled = updateRoutineStatus.isPending || routine.status === "archived";
+  const automationToggleDisabled =
+    updateRoutineStatus.isPending || routine.status === "archived";
   const automationLabel =
     routine.status === "archived"
       ? translateInstant("Archived")
@@ -769,7 +1036,12 @@ export function RoutineDetail() {
     navigateToSection,
   };
 
-  if (triggerSetup) return <RoutineDetailContext.Provider value={contextValue}><TriggersSection /></RoutineDetailContext.Provider>;
+  if (triggerSetup)
+    return (
+      <RoutineDetailContext.Provider value={contextValue}>
+        <TriggersSection />
+      </RoutineDetailContext.Provider>
+    );
 
   const isEditableSection = EDITABLE_SECTIONS.includes(section);
 
@@ -779,7 +1051,8 @@ export function RoutineDetail() {
         href="#routine-section"
         className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-20 focus:rounded focus:bg-background focus:px-3 focus:py-1.5 focus:text-sm"
       >
-        {translateInstant("routineDetail.skipToSection")}</a>
+        {translateInstant("routineDetail.skipToSection")}
+      </a>
 
       {/* The global shell owns routine navigation. This surface keeps one
           content scroll owner and a compact action header. */}
@@ -787,152 +1060,207 @@ export function RoutineDetail() {
         {!streamlinedUiEnabled ? (
           <RoutineSubSidebar
             activeSection={section}
-            hrefFor={(next) => next === "runs" || next === "activity"
-              ? `/routines/${routine.id}/${next}`
-              : routineDetailHref(routine.id, next)}
+            hrefFor={(next) =>
+              next === "runs" || next === "activity"
+                ? `/routines/${routine.id}/${next}`
+                : routineDetailHref(routine.id, next)
+            }
             isSectionDirty={isSectionDirty}
             hasLiveRun={hasLiveRun}
             onNavigate={navigateToSection}
           />
         ) : null}
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        {!streamlinedUiEnabled ? (
-          <RoutineSectionPicker
-            activeSection={section}
-            onNavigate={navigateToSection}
-            isSectionDirty={isSectionDirty}
-          />
-        ) : null}
-        <header className="flex min-h-14 shrink-0 flex-wrap items-center gap-3 border-b border-border bg-background px-4 py-2 md:px-6">
-          <div className="flex min-w-0 flex-1 items-center gap-3">
-            {section === "overview" && overviewEditing ? (
-              <textarea
-                ref={titleInputRef}
-                data-autosize-title
-                className="min-w-0 flex-1 resize-none overflow-hidden bg-transparent text-base font-semibold leading-7 outline-none placeholder:text-muted-foreground/50"
-                placeholder={translateInstant("Routine title")}
-                rows={1}
-                value={editDraft.title}
-                onChange={(event) => {
-                  setEditDraft((current) => ({ ...current, title: event.target.value }));
-                  autoResizeTextarea(event.target);
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" && !event.metaKey && !event.ctrlKey && !event.nativeEvent.isComposing) {
-                    event.preventDefault();
-                    descriptionEditorRef.current?.focus();
-                  }
-                }}
-              />
-            ) : (
-              <h1 className="min-w-0 flex-1 truncate text-xl font-bold">{routine.title}</h1>
-            )}
-            {routine.managedByPlugin ? (
-              <Badge variant="outline" className="hidden shrink-0 gap-1.5 text-xs text-muted-foreground sm:inline-flex">
-                <Sparkles className="h-3 w-3" />
-                {routine.managedByPlugin.pluginDisplayName}
-                <span className="font-mono text-(length:--text-nano)">{routine.managedByPlugin.resourceKey}</span>
-              </Badge>
-            ) : null}
-          </div>
-          <div className="ml-auto flex shrink-0 items-center gap-2">
-            {section === "history" ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(routineDetailHref(routine.id))}
-              >
-                {translateInstant("Back to overview")}</Button>
-            ) : (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(routineDetailHref(routine.id, "history"))}
-              >
-                <History className="h-3.5 w-3.5" />
-                {translateInstant("History")}</Button>
-            )}
-            {section === "overview" ? (
-              overviewEditing ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    discardSection("overview");
-                    setOverviewEditing(false);
-                  }}
-                >
-                  <X className="h-3.5 w-3.5" />
-                  {translateInstant("Cancel editing")}</Button>
-              ) : (
-                <Button variant="outline" size="sm" onClick={() => setOverviewEditing(true)}>
-                  <Pencil className="h-3.5 w-3.5" />
-                  {translateInstant("Edit routine")}</Button>
-              )
-            ) : null}
-            <RunButton onClick={() => setRunVariablesOpen(true)} disabled={runRoutine.isPending} />
-            <div className="flex items-center gap-2">
-              <ToggleSwitch
-                size="default"
-                checked={automationEnabled}
-                onCheckedChange={contextValue.onToggleAutomation}
-                disabled={automationToggleDisabled}
-                aria-label={automationEnabled ? translateInstant("Pause automatic triggers") : translateInstant("Enable automatic triggers")}
-              />
-              <span className={`text-sm font-medium ${automationLabelClassName}`}>{automationLabel}</span>
-            </div>
-          </div>
-        </header>
-
-        <main
-          id="routine-section"
-          role="main"
-          className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pb-6 pt-8 md:px-8"
-        >
-          <section
-            aria-labelledby="routine-section-title"
-            className={
-              section === "overview" && !overviewEditing
-                ? "mx-auto w-full max-w-5xl"
-                : isEditableSection
-                  ? "mx-auto w-full max-w-3xl"
-                  : "w-full"
-            }
-          >
-            <RoutineSectionHeading
-              title={SECTION_TITLES[section]}
-              copyText={section === "overview"
-                ? routineOverviewCopyText({
-                    editing: overviewEditing,
-                    draft: editDraft.description,
-                    saved: routine.description,
-                  })
-                : null}
+          {!streamlinedUiEnabled ? (
+            <RoutineSectionPicker
+              activeSection={section}
+              onNavigate={navigateToSection}
+              isSectionDirty={isSectionDirty}
             />
-
-            {section === "overview" && (overviewEditing ? <OverviewSection /> : <RoutineOverview />)}
-            {section === "triggers" && <TriggersSection />}
-            {section === "variables" && <VariablesSection />}
-            {section === "secrets" && <SecretsSection />}
-            {section === "delivery" && <DeliverySection />}
-            {section === "runs" && <RunsSection />}
-            {section === "activity" && <ActivitySection isLoading={activityLoading} error={activityError} />}
-            {section === "history" && <HistorySection />}
-
-            {isEditableSection && (section !== "overview" || overviewEditing) ? (
-              <RoutineSaveBar
-                dirtyFields={sectionDirtyFields(section)}
-                isSaving={saveRoutine.isPending}
-                saveConflict={saveConflict}
-                onSave={() => {
-                  if (!saveRoutine.isPending && editDraft.title.trim()) saveRoutine.mutate();
-                }}
-                onDiscard={() => discardSection(section)}
-                onReload={reloadLatest}
+          ) : null}
+          <header className="flex min-h-14 shrink-0 flex-wrap items-center gap-3 border-b border-border bg-background px-4 py-2 md:px-6">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              {section === "overview" && overviewEditing ? (
+                <textarea
+                  ref={titleInputRef}
+                  data-autosize-title
+                  className="min-w-0 flex-1 resize-none overflow-hidden bg-transparent text-base font-semibold leading-7 outline-none placeholder:text-muted-foreground/50"
+                  placeholder={translateInstant("Routine title")}
+                  rows={1}
+                  value={editDraft.title}
+                  onChange={(event) => {
+                    setEditDraft((current) => ({
+                      ...current,
+                      title: event.target.value,
+                    }));
+                    autoResizeTextarea(event.target);
+                  }}
+                  onKeyDown={(event) => {
+                    if (
+                      event.key === "Enter" &&
+                      !event.metaKey &&
+                      !event.ctrlKey &&
+                      !event.nativeEvent.isComposing
+                    ) {
+                      event.preventDefault();
+                      descriptionEditorRef.current?.focus();
+                    }
+                  }}
+                />
+              ) : (
+                <h1 className="min-w-0 flex-1 truncate text-xl font-bold">
+                  {routine.title}
+                </h1>
+              )}
+              {routine.managedByPlugin ? (
+                <Badge
+                  variant="outline"
+                  className="hidden shrink-0 gap-1.5 text-xs text-muted-foreground sm:inline-flex"
+                >
+                  <Sparkles className="h-3 w-3" />
+                  {routine.managedByPlugin.pluginDisplayName}
+                  <span className="font-mono text-(length:--text-nano)">
+                    {routine.managedByPlugin.resourceKey}
+                  </span>
+                </Badge>
+              ) : null}
+            </div>
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              {section === "history" ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(routineDetailHref(routine.id))}
+                >
+                  {translateInstant("Back to overview")}
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    navigate(routineDetailHref(routine.id, "history"))
+                  }
+                >
+                  <History className="h-3.5 w-3.5" />
+                  {translateInstant("History")}
+                </Button>
+              )}
+              {section === "overview" ? (
+                overviewEditing ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      discardSection("overview");
+                      setOverviewEditing(false);
+                    }}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    {translateInstant("Cancel editing")}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setOverviewEditing(true)}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    {translateInstant("Edit routine")}
+                  </Button>
+                )
+              ) : null}
+              <RunButton
+                onClick={() => setRunVariablesOpen(true)}
+                disabled={runRoutine.isPending}
               />
-            ) : null}
-          </section>
-        </main>
+              <div className="flex items-center gap-2">
+                <ToggleSwitch
+                  size="default"
+                  checked={automationEnabled}
+                  onCheckedChange={contextValue.onToggleAutomation}
+                  disabled={automationToggleDisabled}
+                  aria-label={
+                    automationEnabled
+                      ? translateInstant("Pause automatic triggers")
+                      : translateInstant("Enable automatic triggers")
+                  }
+                />
+                <span
+                  className={`text-sm font-medium ${automationLabelClassName}`}
+                >
+                  {automationLabel}
+                </span>
+              </div>
+            </div>
+          </header>
+
+          <main
+            id="routine-section"
+            role="main"
+            className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pb-6 pt-8 md:px-8"
+          >
+            <section
+              aria-labelledby="routine-section-title"
+              className={
+                section === "overview" && !overviewEditing
+                  ? "mx-auto w-full max-w-5xl"
+                  : isEditableSection
+                    ? "mx-auto w-full max-w-3xl"
+                    : "w-full"
+              }
+            >
+              <RoutineSectionHeading
+                title={SECTION_TITLES[section]}
+                copyText={
+                  section === "overview"
+                    ? routineOverviewCopyText({
+                        editing: overviewEditing,
+                        draft: editDraft.description,
+                        saved: routine.description,
+                      })
+                    : null
+                }
+              />
+
+              {section === "overview" &&
+                (overviewEditing ? <OverviewSection /> : <RoutineOverview />)}
+              {section === "triggers" && <TriggersSection />}
+              {section === "variables" && <VariablesSection />}
+              {section === "secrets" && <SecretsSection />}
+              {section === "delivery" && <DeliverySection />}
+              {section === "runs" && <RunsSection />}
+              {section === "activity" && (
+                <ActivitySection
+                  isLoading={
+                    activityView.kind === "loading" ||
+                    activityView.kind === "reconnecting"
+                  }
+                  error={
+                    activityView.kind === "error" ? activityView.error : null
+                  }
+                  onRetry={activityView.retry}
+                  retrying={activityView.isFetching}
+                />
+              )}
+              {section === "history" && <HistorySection />}
+
+              {isEditableSection &&
+              (section !== "overview" || overviewEditing) ? (
+                <RoutineSaveBar
+                  dirtyFields={sectionDirtyFields(section)}
+                  isSaving={saveRoutine.isPending}
+                  saveConflict={saveConflict}
+                  onSave={() => {
+                    if (!saveRoutine.isPending && editDraft.title.trim())
+                      saveRoutine.mutate();
+                  }}
+                  onDiscard={() => discardSection(section)}
+                  onReload={reloadLatest}
+                />
+              ) : null}
+            </section>
+          </main>
         </div>
       </div>
 

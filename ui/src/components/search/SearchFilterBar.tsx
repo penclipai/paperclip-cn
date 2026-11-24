@@ -4,10 +4,10 @@ import { User, UserX } from "lucide-react";
 import {
   COMPANY_SEARCH_UPDATED_WITHIN_OPTIONS,
   ISSUE_PRIORITIES,
-  ISSUE_STATUSES,
+  ISSUE_DISPLAY_STATUSES,
   type CompanySearchFilterOptionCounts,
   type CompanySearchSort,
-  type IssueStatus,
+  type IssueDisplayStatus,
 } from "@penclipai/shared";
 import { StatusIcon } from "@/components/StatusIcon";
 import { PriorityIcon } from "@/components/PriorityIcon";
@@ -45,7 +45,7 @@ export interface SearchFilterDataProps {
 }
 
 // Non-terminal statuses — the single-click "Open items" preset from wireframe screen 2.
-const OPEN_STATUS_PRESET: IssueStatus[] = ISSUE_STATUSES.filter(
+const OPEN_STATUS_PRESET: IssueDisplayStatus[] = ISSUE_DISPLAY_STATUSES.filter(
   (status) => status !== "done" && status !== "cancelled",
 );
 
@@ -74,13 +74,13 @@ export function buildSearchFilterOptions({
   labels,
   currentUserId,
 }: SearchFilterDataProps): SearchFilterOptionGroups {
-  const status: FilterMenuOption[] = ISSUE_STATUSES.map((value) => ({
+  const status: FilterMenuOption[] = ISSUE_DISPLAY_STATUSES.map((value) => ({
     value,
     label: translateInstant(value === "in_progress" ? "status.inProgress" : value === "in_review" ? "status.inReview" : `status.${value}`, {
       defaultValue: humanize(value),
     }),
     icon: <StatusIcon status={value} />,
-    count: count(counts?.status as Record<string, number> | undefined, value),
+    count: count((counts?.displayStatus ?? counts?.status) as Record<string, number> | undefined, value),
   }));
 
   const priority: FilterMenuOption[] = ISSUE_PRIORITIES.map((value) => ({

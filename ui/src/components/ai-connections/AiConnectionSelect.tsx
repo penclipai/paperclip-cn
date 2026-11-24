@@ -16,15 +16,15 @@ import {
 } from "@/components/ui/select";
 import { AppLogo } from "@/pages/apps/AppLogo";
 import { Button } from "@/components/ui/button";
-import { aiConnectionProblem, personalAiDefault } from "./model";
+import { aiConnectionDisplayLabel, aiConnectionProblem, personalAiDefault } from "./model";
 import type { AiConnectionPickerProps } from "./AiConnectionPicker";
 import type { AiConnectionSummary } from "./model";
 
-function ConnectionLabel({ connection, label }: { connection: AiConnectionSummary; label?: string }) {
+function ConnectionLabel({ connection, label, wrap = false }: { connection: AiConnectionSummary; label?: string; wrap?: boolean }) {
   return (
     <span className="flex min-w-0 items-center gap-2">
       <AppLogo name={connection.name} brandKey={aiConnectionCatalogSlug(connection.provider, connection.routing)} size={20} compact />
-      <span className="truncate">{label ?? connection.name}</span>
+      <span className={wrap ? "min-w-0 break-words whitespace-normal" : "truncate"}>{label ?? aiConnectionDisplayLabel(connection)}</span>
     </span>
   );
 }
@@ -121,7 +121,7 @@ export function AiConnectionSelect({
         onValueChange={change}
         disabled={readOnly || loading || Boolean(error)}
       >
-        <SelectTrigger id={selectId} aria-label={translateInstant("Connection")} className="w-full">
+        <SelectTrigger id={selectId} aria-label={translateInstant("Connection")} title={selected ? aiConnectionDisplayLabel(selected) : undefined} className="w-full">
           <SelectValue
             placeholder={
               loading ? translateInstant("Loading connections…") : translateInstant("Choose a connection")
@@ -137,7 +137,7 @@ export function AiConnectionSelect({
         <SelectContent>
           {incompatible && selected && (
             <SelectItem value={selected.id} disabled>
-              <ConnectionLabel connection={selected} label={`${selected.name} · ${translateInstant("Incompatible")}`} />
+              <ConnectionLabel connection={selected} label={`${aiConnectionDisplayLabel(selected)} · ${translateInstant("Incompatible")}`} wrap />
             </SelectItem>
           )}
           {compatible.map((c) => (
@@ -146,7 +146,7 @@ export function AiConnectionSelect({
               value={c.id}
               disabled={Boolean(aiConnectionProblem(c))}
             >
-              <ConnectionLabel connection={c} label={`${c.name}${c.status !== "connected" ? ` · ${translateInstant("Reconnect")}` : ""}`} />
+              <ConnectionLabel connection={c} label={`${aiConnectionDisplayLabel(c)}${c.status !== "connected" ? ` · ${translateInstant("Reconnect")}` : ""}`} wrap />
             </SelectItem>
           ))}
           {(canUseDefault || value?.mode === "responsible_user") && (

@@ -11,7 +11,7 @@
   },
   "artifactUpload.chooseFiles": {
     "en": "Choose artifact files",
-    "zh-CN": "选择工件文件",
+    "zh-CN": "选择产物文件",
     "reviewedEnglishHash": "42c7edf0968dd710d34f6fb8839cb9f96f202997b4f72093de8575aa783cd935"
   },
   "artifactUpload.dismiss": {
@@ -31,7 +31,7 @@
   },
   "artifactUpload.emptyArtifacts": {
     "en": "No artifacts yet. Work products, documents, and agent-produced files will appear here.",
-    "zh-CN": "暂未有工件。工作产物、文档和智能体生成的文件会显示在这里。",
+    "zh-CN": "暂未有产物。工作产物、文档和智能体生成的文件会显示在这里。",
     "reviewedEnglishHash": "b032412c097b00bd3336dec3bd8489a0bfe64d00b5668a975456317adaae2991"
   },
   "artifactUpload.failedRetry": {
@@ -41,12 +41,12 @@
   },
   "artifactUpload.panelLabel": {
     "en": "Task artifacts",
-    "zh-CN": "任务工件",
+    "zh-CN": "任务产物",
     "reviewedEnglishHash": "e186bee803f50c343bf0a06117154833b91c91e84adb0b3e90846b91fc3432ee"
   },
   "artifactUpload.regionLabel": {
     "en": "Artifact uploads",
-    "zh-CN": "工件上传",
+    "zh-CN": "产物上传",
     "reviewedEnglishHash": "a4ae47d0fa588ba7a455bbbe76ee76d0a81194a1ca1a6da77a881967abf23259"
   },
   "artifactUpload.uploadFiles": {

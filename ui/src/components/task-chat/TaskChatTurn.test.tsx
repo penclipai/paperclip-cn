@@ -265,7 +265,7 @@ describe("TaskChatTurn", () => {
       "Continued after steering · Worked for 38s",
     );
     await act(async () => { await i18n.changeLanguage("zh-CN"); });
-    expect(summaryBtn()?.textContent).toContain("引导后继续 · 已处理 持续 38s");
+    expect(summaryBtn()?.textContent).toContain("引导后继续 · 已处理 用时 38s");
     await act(async () => { await i18n.changeLanguage("en"); });
     expect(summaryBtn()?.textContent).toContain(
       "Continued after steering · Worked for 38s",

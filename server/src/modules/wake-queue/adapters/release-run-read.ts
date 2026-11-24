@@ -7,6 +7,13 @@ export type ReleaseRun = Omit<Run, "runnerProfileJson" | "stdoutExcerpt" | "stde
 export async function readReleaseRun(db: Db, scope: { companyId: string; runId: string }) {
   const [selected] = await db.select({
     ...getTableColumns(heartbeatRuns),
+    contextSnapshot: sql<Run["contextSnapshot"]>`case when ${heartbeatRuns.runtimeMode} = 'native'
+      and jsonb_typeof(${heartbeatRuns.contextSnapshot}) = 'object'
+      then ${heartbeatRuns.contextSnapshot} - array['executionContinuation', 'paperclipWake', 'paperclipWakeComment',
+        'paperclipTaskMarkdown', 'paperclipTaskMarkdownCompact', 'paperclipTaskMarkdownAssignment',
+        'paperclipTaskMarkdownAssignmentCompact', 'paperclipWorkspace', 'paperclipEnvironment',
+        'paperclipContinuationSummary']
+      else ${heartbeatRuns.contextSnapshot} end`,
     runnerProfileJson: sql<Run["runnerProfileJson"]>`case when ${heartbeatRuns.runtimeMode} = 'native'
       then null else ${heartbeatRuns.runnerProfileJson} end`,
     stdoutExcerpt: sql<Run["stdoutExcerpt"]>`case when ${heartbeatRuns.runtimeMode} = 'native'

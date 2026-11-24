@@ -2,7 +2,15 @@ import { useTranslation } from "react-i18next";
 import { translateInstant } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArchiveRestore, Copy, Pencil, PlugZap, ShieldCheck, Trash2, UserMinus } from "lucide-react";
+import {
+  ArchiveRestore,
+  Copy,
+  Pencil,
+  PlugZap,
+  ShieldCheck,
+  Trash2,
+  UserMinus,
+} from "lucide-react";
 import type {
   ToolCatalogEntry,
   ToolProfileBinding,
@@ -16,6 +24,7 @@ import { useNavigate, useSearchParams } from "@/lib/router";
 import { toolsApi } from "@/api/tools";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn, formatShortDate } from "@/lib/utils";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -30,12 +39,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/context/ToastContext";
-import { ErrorState, LoadingState, RelativeTime, ToolsPageHeader } from "../shared";
-import { ProfileActionDialog, type ProfileActionDialogKind } from "./ProfileActionDialog";
+import { LoadingState, RelativeTime, ToolsPageHeader } from "../shared";
+import {
+  ProfileActionDialog,
+  type ProfileActionDialogKind,
+} from "./ProfileActionDialog";
 import { allowsLabel, STATUS_LABEL } from "./profile-summary";
 import { useProfilesData } from "./useProfilesData";
 
-type DialogKind = "edit" | "duplicate" | "archive" | "delete" | "restore" | null;
+type DialogKind =
+  | "edit"
+  | "duplicate"
+  | "archive"
+  | "delete"
+  | "restore"
+  | null;
 
 interface AllowRow {
   id: string;
@@ -65,12 +83,18 @@ export function ProfileDetail({
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
   const data = useProfilesData(companyId);
+  const profilesView = useQueryView(data.profiles);
   const [dialog, setDialog] = useState<DialogKind>(null);
-  const [assignmentToRemove, setAssignmentToRemove] = useState<ToolProfileBinding | null>(null);
+  const [assignmentToRemove, setAssignmentToRemove] =
+    useState<ToolProfileBinding | null>(null);
   const [reviewOpen, setReviewOpen] = useState(Boolean(initialReviewOpen));
-  const [reviewDecisions, setReviewDecisions] = useState<Record<string, ToolProfileNewToolReviewDecision>>({});
+  const [reviewDecisions, setReviewDecisions] = useState<
+    Record<string, ToolProfileNewToolReviewDecision>
+  >({});
 
-  const profile = (data.profiles.data?.profiles ?? []).find((p) => p.id === profileId) ?? null;
+  const profile =
+    (data.profiles.data?.profiles ?? []).find((p) => p.id === profileId) ??
+    null;
   const created = initialCreated ?? searchParams.get("created") === "1";
   const pendingNewTools = profile?.newToolsPendingCount ?? 0;
   const newTools = useQuery({
@@ -78,21 +102,45 @@ export function ProfileDetail({
     queryFn: () => toolsApi.getProfileNewTools(profileId),
     enabled: pendingNewTools > 0,
   });
+  const newToolsView = useQueryView(newTools);
+  const newToolsLoading =
+    newTools.isLoading || newToolsView.kind === "reconnecting";
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.tools.profiles(companyId) });
-    queryClient.invalidateQueries({ queryKey: queryKeys.tools.testAgentAccesses() });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.tools.profiles(companyId),
+    });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.tools.testAgentAccesses(),
+    });
   };
-  const errorBody = (error: unknown) => String((error as Error)?.message ?? error);
+  const errorBody = (error: unknown) =>
+    String((error as Error)?.message ?? error);
 
   const allowRows = useMemo(
-    () => (profile ? buildAllowRows(profile, data.catalog, data.maps.applicationsById, data.maps.connectionsById, data.connections.data?.connections ?? []) : []),
-    [profile, data.catalog, data.maps.applicationsById, data.maps.connectionsById, data.connections.data?.connections],
+    () =>
+      profile
+        ? buildAllowRows(
+            profile,
+            data.catalog,
+            data.maps.applicationsById,
+            data.maps.connectionsById,
+            data.connections.data?.connections ?? [],
+          )
+        : [],
+    [
+      profile,
+      data.catalog,
+      data.maps.applicationsById,
+      data.maps.connectionsById,
+      data.connections.data?.connections,
+    ],
   );
   const reviewItems = newTools.data?.tools ?? [];
 
   useEffect(() => {
-    if (searchParams.get("review") === "new-tools" && pendingNewTools > 0) setReviewOpen(true);
+    if (searchParams.get("review") === "new-tools" && pendingNewTools > 0)
+      setReviewOpen(true);
   }, [pendingNewTools, searchParams]);
 
   useEffect(() => {
@@ -100,50 +148,89 @@ export function ProfileDetail({
     setReviewDecisions((current) => {
       const next = { ...current };
       for (const tool of reviewItems) {
-        if (!next[tool.catalogEntryId]) next[tool.catalogEntryId] = "keep_blocked";
+        if (!next[tool.catalogEntryId])
+          next[tool.catalogEntryId] = "keep_blocked";
       }
       return next;
     });
   }, [reviewItems]);
 
   const updateProfile = useMutation({
-    mutationFn: (input: Parameters<typeof toolsApi.updateProfile>[1]) => toolsApi.updateProfile(profileId, input),
+    mutationFn: (input: Parameters<typeof toolsApi.updateProfile>[1]) =>
+      toolsApi.updateProfile(profileId, input),
     onSuccess: () => {
       invalidate();
-      pushToast({ title: translateInstant("tools.profiles.toast.updated"), tone: "success" });
+      pushToast({
+        title: translateInstant("tools.profiles.toast.updated"),
+        tone: "success",
+      });
     },
-    onError: (error: unknown) => pushToast({ title: translateInstant("tools.profiles.toast.updateFailed"), body: errorBody(error), tone: "error" }),
+    onError: (error: unknown) =>
+      pushToast({
+        title: translateInstant("tools.profiles.toast.updateFailed"),
+        body: errorBody(error),
+        tone: "error",
+      }),
   });
 
   const duplicateProfile = useMutation({
-    mutationFn: (input: { name: string; includeAssignments: boolean }) => toolsApi.duplicateProfile(profileId, input),
+    mutationFn: (input: { name: string; includeAssignments: boolean }) =>
+      toolsApi.duplicateProfile(profileId, input),
     onSuccess: (copy) => {
       invalidate();
-      pushToast({ title: translateInstant("tools.profiles.toast.duplicated"), body: "The copy is not assigned to anyone yet.", tone: "success" });
+      pushToast({
+        title: translateInstant("tools.profiles.toast.duplicated"),
+        body: "The copy is not assigned to anyone yet.",
+        tone: "success",
+      });
       navigate(`/apps/advanced/profiles/${copy.id}?created=1`);
     },
-    onError: (error: unknown) => pushToast({ title: translateInstant("tools.profiles.toast.duplicateFailed"), body: errorBody(error), tone: "error" }),
+    onError: (error: unknown) =>
+      pushToast({
+        title: translateInstant("tools.profiles.toast.duplicateFailed"),
+        body: errorBody(error),
+        tone: "error",
+      }),
   });
 
   const deleteProfile = useMutation({
     mutationFn: () => toolsApi.deleteProfile(profileId),
     onSuccess: () => {
       invalidate();
-      pushToast({ title: translateInstant("tools.profiles.toast.deleted"), tone: "success" });
+      pushToast({
+        title: translateInstant("tools.profiles.toast.deleted"),
+        tone: "success",
+      });
       navigate("/apps/advanced/profiles");
     },
-    onError: (error: unknown) => pushToast({ title: translateInstant("tools.profiles.toast.deleteFailed"), body: errorBody(error), tone: "error" }),
+    onError: (error: unknown) =>
+      pushToast({
+        title: translateInstant("tools.profiles.toast.deleteFailed"),
+        body: errorBody(error),
+        tone: "error",
+      }),
   });
 
   const removeAssignment = useMutation({
     mutationFn: (binding: ToolProfileBinding) =>
-      toolsApi.unbindProfile(companyId, profileId, { targetType: binding.targetType, targetId: binding.targetId }),
+      toolsApi.unbindProfile(companyId, profileId, {
+        targetType: binding.targetType,
+        targetId: binding.targetId,
+      }),
     onSuccess: () => {
       setAssignmentToRemove(null);
       invalidate();
-      pushToast({ title: translateInstant("tools.profiles.toast.assignmentRemoved"), tone: "success" });
+      pushToast({
+        title: translateInstant("tools.profiles.toast.assignmentRemoved"),
+        tone: "success",
+      });
     },
-    onError: (error: unknown) => pushToast({ title: translateInstant("tools.profiles.toast.removeAssignmentFailed"), body: errorBody(error), tone: "error" }),
+    onError: (error: unknown) =>
+      pushToast({
+        title: translateInstant("tools.profiles.toast.removeAssignmentFailed"),
+        body: errorBody(error),
+        tone: "error",
+      }),
   });
 
   const reviewNewTools = useMutation({
@@ -157,20 +244,55 @@ export function ProfileDetail({
     onSuccess: () => {
       setReviewOpen(false);
       setSearchParams({});
-      queryClient.invalidateQueries({ queryKey: queryKeys.tools.profiles(companyId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.tools.profileNewTools(profileId) });
-      pushToast({ title: translateInstant("tools.profiles.toast.newToolsReviewed"), tone: "success" });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tools.profiles(companyId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tools.profileNewTools(profileId),
+      });
+      pushToast({
+        title: translateInstant("tools.profiles.toast.newToolsReviewed"),
+        tone: "success",
+      });
     },
-    onError: (error: unknown) => pushToast({ title: translateInstant("tools.profiles.toast.reviewFailed"), body: errorBody(error), tone: "error" }),
+    onError: (error: unknown) =>
+      pushToast({
+        title: translateInstant("tools.profiles.toast.reviewFailed"),
+        body: errorBody(error),
+        tone: "error",
+      }),
   });
 
-  if (data.profiles.isLoading) return <LoadingState label={translateInstant("tools.profiles.detail.loading")} />;
-  if (data.profiles.isError) return <ErrorState error={data.profiles.error} onRetry={() => data.profiles.refetch()} />;
+  if (data.profiles.isLoading || profilesView.kind === "reconnecting")
+    return (
+      <LoadingState label={translateInstant("tools.profiles.detail.loading")} />
+    );
+  if (profilesView.kind === "error") {
+    return (
+      <QueryErrorState
+        size="page"
+        error={data.profiles.error}
+        action="load the profile"
+        onRetry={profilesView.retry}
+        retrying={profilesView.isFetching}
+      />
+    );
+  }
   if (!profile) {
     return (
       <div className="space-y-4">
-        <ToolsPageHeader title={translateInstant("tools.profiles.detail.notFound")} description={translateInstant("tools.profiles.detail.notFoundDescription")} />
-        <Button variant="outline" onClick={() => navigate("/apps/advanced/profiles")}>{translateInstant("tools.profiles.detail.back")}</Button>
+        <ToolsPageHeader
+          title={translateInstant("tools.profiles.detail.notFound")}
+          description={translateInstant(
+            "tools.profiles.detail.notFoundDescription",
+          )}
+        />
+        <Button
+          variant="outline"
+          onClick={() => navigate("/apps/advanced/profiles")}
+        >
+          {translateInstant("tools.profiles.detail.back")}
+        </Button>
       </div>
     );
   }
@@ -182,80 +304,144 @@ export function ProfileDetail({
     <div className="space-y-6">
       <ToolsPageHeader
         title={profile.name}
-        description={profile.description ?? translateInstant("tools.profiles.detail.noDescription")}
+        description={
+          profile.description ??
+          translateInstant("tools.profiles.detail.noDescription")
+        }
         actions={
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" disabled={archived} onClick={() => setDialog("edit")}>
+            <Button
+              variant="outline"
+              disabled={archived}
+              onClick={() => setDialog("edit")}
+            >
               <Pencil className="mr-1.5 h-4 w-4" />
-              {translateInstant("tools.common.edit")}</Button>
-            <Button variant="outline" disabled={archived} onClick={() => setDialog("duplicate")}>
+              {translateInstant("tools.common.edit")}
+            </Button>
+            <Button
+              variant="outline"
+              disabled={archived}
+              onClick={() => setDialog("duplicate")}
+            >
               <Copy className="mr-1.5 h-4 w-4" />
-              {translateInstant("tools.common.duplicate")}</Button>
+              {translateInstant("tools.common.duplicate")}
+            </Button>
             {archived ? (
               <Button variant="outline" onClick={() => setDialog("restore")}>
                 <ArchiveRestore className="mr-1.5 h-4 w-4" />
-                {translateInstant("tools.common.restore")}</Button>
+                {translateInstant("tools.common.restore")}
+              </Button>
             ) : (
-              <Button variant="outline" onClick={() => setDialog("archive")}>{translateInstant("tools.common.archive")}</Button>
+              <Button variant="outline" onClick={() => setDialog("archive")}>
+                {translateInstant("tools.common.archive")}
+              </Button>
             )}
-            <Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => setDialog("delete")}>
+            <Button
+              variant="outline"
+              className="text-destructive hover:text-destructive"
+              onClick={() => setDialog("delete")}
+            >
               <Trash2 className="mr-1.5 h-4 w-4" />
-              {translateInstant("tools.common.delete")}</Button>
+              {translateInstant("tools.common.delete")}
+            </Button>
           </div>
         }
       />
 
       <div className="flex flex-wrap items-center gap-3 text-sm">
-        <Badge variant={archived ? "outline" : "default"}>{STATUS_LABEL[profile.status]}</Badge>
-        <span className="text-muted-foreground">{translateInstant("tools.profiles.detail.updated")}{" "}<RelativeTime value={profile.updatedAt} /></span>
-        <span className="text-muted-foreground">{allowsLabel(profile.summary)}</span>
+        <Badge variant={archived ? "outline" : "default"}>
+          {STATUS_LABEL[profile.status]}
+        </Badge>
+        <span className="text-muted-foreground">
+          {translateInstant("tools.profiles.detail.updated")}{" "}
+          <RelativeTime value={profile.updatedAt} />
+        </span>
+        <span className="text-muted-foreground">
+          {allowsLabel(profile.summary)}
+        </span>
       </div>
 
       {created ? (
         <div className="flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3">
           <div>
-            <p className="text-sm font-medium text-foreground">{translateInstant("tools.profiles.detail.saved")}</p>
+            <p className="text-sm font-medium text-foreground">
+              {translateInstant("tools.profiles.detail.saved")}
+            </p>
             <p className="text-sm text-muted-foreground">
-              {unassigned ? translateInstant("tools.profiles.detail.assignBeforeActive") : translateInstant("tools.profiles.detail.assignmentsActive")}
+              {unassigned
+                ? translateInstant("tools.profiles.detail.assignBeforeActive")
+                : translateInstant("tools.profiles.detail.assignmentsActive")}
             </p>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => navigate(`/apps/advanced/profiles/${profile.id}/edit?step=3`)}>
-              {translateInstant("tools.common.assign")}</Button>
-            <Button size="sm" variant="ghost" onClick={() => setSearchParams({})}>
-              {translateInstant("tools.common.dismiss")}</Button>
+            <Button
+              size="sm"
+              onClick={() =>
+                navigate(`/apps/advanced/profiles/${profile.id}/edit?step=3`)
+              }
+            >
+              {translateInstant("tools.common.assign")}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setSearchParams({})}
+            >
+              {translateInstant("tools.common.dismiss")}
+            </Button>
           </div>
         </div>
       ) : null}
 
       {archived ? (
         <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-          {translateInstant("tools.profiles.detail.archivedNotice")}</div>
+          {translateInstant("tools.profiles.detail.archivedNotice")}
+        </div>
       ) : null}
 
       {pendingNewTools > 0 ? (
         <NewToolsReviewBanner
           count={pendingNewTools}
           tools={reviewItems}
-          loading={newTools.isLoading}
+          loading={newToolsLoading}
           onReview={() => setReviewOpen(true)}
         />
       ) : null}
 
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base font-semibold text-foreground">{translateInstant("tools.profiles.detail.whatItAllows")}</h2>
-          <Button variant="outline" size="sm" disabled={archived} onClick={() => navigate(`/apps/advanced/profiles/${profile.id}/edit?step=2`)}>
-            {translateInstant("tools.profiles.detail.editTools")}</Button>
+          <h2 className="text-base font-semibold text-foreground">
+            {translateInstant("tools.profiles.detail.whatItAllows")}
+          </h2>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={archived}
+            onClick={() =>
+              navigate(`/apps/advanced/profiles/${profile.id}/edit?step=2`)
+            }
+          >
+            {translateInstant("tools.profiles.detail.editTools")}
+          </Button>
         </div>
         <AllowList rows={allowRows} total={profile.summary.totalToolCount} />
       </section>
 
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base font-semibold text-foreground">{translateInstant("tools.profiles.detail.whoHasIt")}</h2>
-          <Button variant="outline" size="sm" disabled={archived} onClick={() => navigate(`/apps/advanced/profiles/${profile.id}/edit?step=3`)}>
-            {translateInstant("tools.common.assign")}</Button>
+          <h2 className="text-base font-semibold text-foreground">
+            {translateInstant("tools.profiles.detail.whoHasIt")}
+          </h2>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={archived}
+            onClick={() =>
+              navigate(`/apps/advanced/profiles/${profile.id}/edit?step=3`)
+            }
+          >
+            {translateInstant("tools.common.assign")}
+          </Button>
         </div>
         <Assignments
           profile={profile}
@@ -267,7 +453,9 @@ export function ProfileDetail({
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-foreground">{translateInstant("tools.profiles.detail.futureTools")}</h2>
+        <h2 className="text-base font-semibold text-foreground">
+          {translateInstant("tools.profiles.detail.futureTools")}
+        </h2>
         <NewToolsSetting
           value={profile.defaultAction}
           disabled={archived || updateProfile.isPending}
@@ -275,42 +463,77 @@ export function ProfileDetail({
         />
       </section>
 
-      <Button variant="link" className="h-auto px-0" onClick={() => navigate("/apps/advanced/profiles?check=1")}>
+      <Button
+        variant="link"
+        className="h-auto px-0"
+        onClick={() => navigate("/apps/advanced/profiles?check=1")}
+      >
         <ShieldCheck className="mr-1.5 h-4 w-4" />
-        {translateInstant("tools.profiles.detail.checkAgentAccess")}</Button>
+        {translateInstant("tools.profiles.detail.checkAgentAccess")}
+      </Button>
 
       <ProfileDialogs
         kind={dialog}
         profile={profile}
         allProfiles={data.profiles.data?.profiles ?? []}
-        pending={updateProfile.isPending || duplicateProfile.isPending || deleteProfile.isPending}
+        pending={
+          updateProfile.isPending ||
+          duplicateProfile.isPending ||
+          deleteProfile.isPending
+        }
         onClose={() => setDialog(null)}
-        onUpdate={(input) => updateProfile.mutate(input, { onSuccess: () => setDialog(null) })}
-        onDuplicate={(input) => duplicateProfile.mutate(input, { onSuccess: () => setDialog(null) })}
-        onArchive={() => updateProfile.mutate({ status: "archived" }, { onSuccess: () => setDialog(null) })}
-        onRestore={() => updateProfile.mutate({ status: "active" }, { onSuccess: () => setDialog(null) })}
-        onDelete={() => deleteProfile.mutate(undefined, { onSuccess: () => setDialog(null) })}
+        onUpdate={(input) =>
+          updateProfile.mutate(input, { onSuccess: () => setDialog(null) })
+        }
+        onDuplicate={(input) =>
+          duplicateProfile.mutate(input, { onSuccess: () => setDialog(null) })
+        }
+        onArchive={() =>
+          updateProfile.mutate(
+            { status: "archived" },
+            { onSuccess: () => setDialog(null) },
+          )
+        }
+        onRestore={() =>
+          updateProfile.mutate(
+            { status: "active" },
+            { onSuccess: () => setDialog(null) },
+          )
+        }
+        onDelete={() =>
+          deleteProfile.mutate(undefined, { onSuccess: () => setDialog(null) })
+        }
       />
 
       <RemoveAssignmentDialog
         binding={assignmentToRemove}
-        label={assignmentToRemove ? assignmentLabel(assignmentToRemove, companyId, data.maps) : ""}
+        label={
+          assignmentToRemove
+            ? assignmentLabel(assignmentToRemove, companyId, data.maps)
+            : ""
+        }
         pending={removeAssignment.isPending}
         onClose={() => setAssignmentToRemove(null)}
-        onConfirm={() => assignmentToRemove && removeAssignment.mutate(assignmentToRemove)}
+        onConfirm={() =>
+          assignmentToRemove && removeAssignment.mutate(assignmentToRemove)
+        }
       />
 
       <NewToolsReviewDialog
         open={reviewOpen}
         tools={reviewItems}
-        loading={newTools.isLoading}
-        error={newTools.error}
+        loading={newToolsLoading}
+        error={newToolsView.kind === "error" ? newTools.error : null}
         decisions={reviewDecisions}
         pending={reviewNewTools.isPending}
         onClose={() => setReviewOpen(false)}
-        onRetry={() => newTools.refetch()}
+        onRetry={newToolsView.retry}
+        retrying={newToolsView.isFetching}
         onDecision={(catalogEntryId, decision) =>
-          setReviewDecisions((current) => ({ ...current, [catalogEntryId]: decision }))
+          setReviewDecisions((current) => ({
+            ...current,
+            [catalogEntryId]: decision,
+          }))
         }
         onSubmit={() => reviewNewTools.mutate()}
       />
@@ -335,11 +558,17 @@ function NewToolsReviewBanner({
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
       <div>
         <p className="font-medium">
-          {loading ? translateInstant("tools.profiles.review.bannerLoading") : `${appLabel} added ${count} new ${count === 1 ? "tool" : "tools"} since your last review`}
+          {loading
+            ? translateInstant("tools.profiles.review.bannerLoading")
+            : `${appLabel} added ${count} new ${count === 1 ? "tool" : "tools"} since your last review`}
         </p>
-        <p className="text-amber-900/80">{translateInstant("tools.profiles.review.bannerDescription")}</p>
+        <p className="text-amber-900/80">
+          {translateInstant("tools.profiles.review.bannerDescription")}
+        </p>
       </div>
-      <Button size="sm" onClick={onReview}>{translateInstant("tools.common.review")}</Button>
+      <Button size="sm" onClick={onReview}>
+        {translateInstant("tools.common.review")}
+      </Button>
     </div>
   );
 }
@@ -353,18 +582,24 @@ function NewToolsReviewDialog({
   pending,
   onClose,
   onRetry,
+  retrying,
   onDecision,
   onSubmit,
 }: {
   open: boolean;
   tools: ToolProfileNewToolReviewItem[];
   loading: boolean;
+  /** Set only for a real (non-transient) failure with nothing to show. */
   error: unknown;
   decisions: Record<string, ToolProfileNewToolReviewDecision>;
   pending: boolean;
   onClose: () => void;
   onRetry: () => void;
-  onDecision: (catalogEntryId: string, decision: ToolProfileNewToolReviewDecision) => void;
+  retrying: boolean;
+  onDecision: (
+    catalogEntryId: string,
+    decision: ToolProfileNewToolReviewDecision,
+  ) => void;
   onSubmit: () => void;
 }) {
   useTranslation();
@@ -372,21 +607,35 @@ function NewToolsReviewDialog({
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{translateInstant("tools.profiles.review.title")}</DialogTitle>
+          <DialogTitle>
+            {translateInstant("tools.profiles.review.title")}
+          </DialogTitle>
           <DialogDescription>
-            {translateInstant("tools.profiles.review.description")}</DialogDescription>
+            {translateInstant("tools.profiles.review.description")}
+          </DialogDescription>
         </DialogHeader>
         {loading ? (
-          <LoadingState label={translateInstant("tools.profiles.review.loading")} />
+          <LoadingState
+            label={translateInstant("tools.profiles.review.loading")}
+          />
         ) : error ? (
-          <ErrorState error={error} onRetry={onRetry} />
+          <QueryErrorState
+            error={error}
+            action="load new tools"
+            onRetry={onRetry}
+            retrying={retrying}
+          />
         ) : tools.length === 0 ? (
           <div className="rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
-            {translateInstant("tools.profiles.review.empty")}</div>
+            {translateInstant("tools.profiles.review.empty")}
+          </div>
         ) : (
           <div className="max-h-(--sz-52vh) divide-y divide-border overflow-y-auto rounded-lg border border-border">
             {tools.map((tool) => (
-              <div key={tool.catalogEntryId} className="grid gap-3 px-3 py-3 sm:grid-cols-[1fr_auto]">
+              <div
+                key={tool.catalogEntryId}
+                className="grid gap-3 px-3 py-3 sm:grid-cols-[1fr_auto]"
+              >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="truncate text-sm font-medium text-foreground">
@@ -395,10 +644,16 @@ function NewToolsReviewDialog({
                     <Badge variant="secondary">{capabilityText(tool)}</Badge>
                   </div>
                   {tool.description ? (
-                    <p className="mt-1 text-sm text-muted-foreground">{tool.description}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {tool.description}
+                    </p>
                   ) : null}
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {tool.applicationName ?? tool.connectionName ?? translateInstant("tools.profiles.review.appTool")}{" "}{translateInstant("· added")}{" "}{formatShortDate(tool.addedAt)}
+                    {tool.applicationName ??
+                      tool.connectionName ??
+                      translateInstant("tools.profiles.review.appTool")}{" "}
+                    {translateInstant("· added")}{" "}
+                    {formatShortDate(tool.addedAt)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 sm:justify-end">
@@ -406,27 +661,43 @@ function NewToolsReviewDialog({
                     <input
                       type="radio"
                       name={`review-${tool.catalogEntryId}`}
-                      checked={(decisions[tool.catalogEntryId] ?? "keep_blocked") === "allow"}
+                      checked={
+                        (decisions[tool.catalogEntryId] ?? "keep_blocked") ===
+                        "allow"
+                      }
                       onChange={() => onDecision(tool.catalogEntryId, "allow")}
                     />
-                    {translateInstant("tools.common.allow")}</label>
+                    {translateInstant("tools.common.allow")}
+                  </label>
                   <label className="inline-flex items-center gap-1.5 text-sm">
                     <input
                       type="radio"
                       name={`review-${tool.catalogEntryId}`}
-                      checked={(decisions[tool.catalogEntryId] ?? "keep_blocked") === "keep_blocked"}
-                      onChange={() => onDecision(tool.catalogEntryId, "keep_blocked")}
+                      checked={
+                        (decisions[tool.catalogEntryId] ?? "keep_blocked") ===
+                        "keep_blocked"
+                      }
+                      onChange={() =>
+                        onDecision(tool.catalogEntryId, "keep_blocked")
+                      }
                     />
-                    {translateInstant("tools.profiles.review.keepBlocked")}</label>
+                    {translateInstant("tools.profiles.review.keepBlocked")}
+                  </label>
                 </div>
               </div>
             ))}
           </div>
         )}
         <DialogFooter>
-          <Button variant="ghost" onClick={onClose}>{translateInstant("tools.common.cancel")}</Button>
-          <Button disabled={pending || loading || tools.length === 0} onClick={onSubmit}>
-            {translateInstant("tools.profiles.review.submit")}</Button>
+          <Button variant="ghost" onClick={onClose}>
+            {translateInstant("tools.common.cancel")}
+          </Button>
+          <Button
+            disabled={pending || loading || tools.length === 0}
+            onClick={onSubmit}
+          >
+            {translateInstant("tools.profiles.review.submit")}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -438,7 +709,8 @@ function AllowList({ rows, total }: { rows: AllowRow[]; total: number }) {
   if (rows.length === 0) {
     return (
       <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-        {translateInstant("tools.profiles.allowList.empty")}</div>
+        {translateInstant("tools.profiles.allowList.empty")}
+      </div>
     );
   }
   return (
@@ -446,39 +718,68 @@ function AllowList({ rows, total }: { rows: AllowRow[]; total: number }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border bg-muted/40 text-left text-xs font-medium text-muted-foreground">
-            <th className="px-3 py-2 font-medium">{translateInstant("tools.common.tool")}</th>
-            <th className="px-3 py-2 font-medium">{translateInstant("tools.common.app")}</th>
-            <th className="px-3 py-2 font-medium">{translateInstant("tools.common.capabilities")}</th>
-            <th className="px-3 py-2 font-medium">{translateInstant("tools.common.source")}</th>
+            <th className="px-3 py-2 font-medium">
+              {translateInstant("tools.common.tool")}
+            </th>
+            <th className="px-3 py-2 font-medium">
+              {translateInstant("tools.common.app")}
+            </th>
+            <th className="px-3 py-2 font-medium">
+              {translateInstant("tools.common.capabilities")}
+            </th>
+            <th className="px-3 py-2 font-medium">
+              {translateInstant("tools.common.source")}
+            </th>
           </tr>
         </thead>
         <tbody>
           {rows.slice(0, 80).map((row) => (
-            <tr key={row.id} className={cn("border-b border-border last:border-0", row.degraded && "bg-muted/30 text-muted-foreground")}>
+            <tr
+              key={row.id}
+              className={cn(
+                "border-b border-border last:border-0",
+                row.degraded && "bg-muted/30 text-muted-foreground",
+              )}
+            >
               <td className="px-3 py-2">
                 <div className="flex flex-col">
-                  <span className="font-medium text-foreground">{row.tool}</span>
+                  <span className="font-medium text-foreground">
+                    {row.tool}
+                  </span>
                   {row.degraded ? (
-                    <a className="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline" href={`/apps/${row.connectionId}`}>
+                    <a
+                      className="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                      href={`/apps/${row.connectionId}`}
+                    >
                       <PlugZap className="h-3 w-3" />
-                      {translateInstant("tools.common.reconnect")}</a>
+                      {translateInstant("tools.common.reconnect")}
+                    </a>
                   ) : null}
                 </div>
               </td>
               <td className="px-3 py-2">
                 <span>{row.app}</span>
-                {row.degraded ? <span className="ml-2 text-xs text-muted-foreground">{row.app}{" "}{translateInstant("is disconnected")}</span> : null}
+                {row.degraded ? (
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    {row.app} {translateInstant("is disconnected")}
+                  </span>
+                ) : null}
               </td>
-              <td className="px-3 py-2 text-muted-foreground">{row.capabilities}</td>
+              <td className="px-3 py-2 text-muted-foreground">
+                {row.capabilities}
+              </td>
               <td className="px-3 py-2">
                 {row.source.startsWith("added by rule") ? (
-                  <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-950">{row.source}</span>
+                  <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-950">
+                    {row.source}
+                  </span>
                 ) : (
                   <span className="text-muted-foreground">{row.source}</span>
                 )}
                 {row.autoAddedAt ? (
                   <div className="mt-0.5 text-xs text-muted-foreground">
-                    {translateInstant("added automatically ·")}{" "}{formatShortDate(row.autoAddedAt)}
+                    {translateInstant("added automatically ·")}{" "}
+                    {formatShortDate(row.autoAddedAt)}
                   </div>
                 ) : null}
               </td>
@@ -488,10 +789,15 @@ function AllowList({ rows, total }: { rows: AllowRow[]; total: number }) {
       </table>
       {rows.length > 80 ? (
         <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
-          {translateInstant("Showing 80 of")}{" "}{rows.length} {translateInstant("allowed tools.")}</p>
+          {translateInstant("Showing 80 of")} {rows.length}{" "}
+          {translateInstant("allowed tools.")}
+        </p>
       ) : (
         <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
-          {translateInstant("tools.profiles.table.allows")}{" "}{rows.length} {translateInstant("issueCommon.of")}{" "}{total} {translateInstant("known tools.")}</p>
+          {translateInstant("tools.profiles.table.allows")} {rows.length}{" "}
+          {translateInstant("issueCommon.of")} {total}{" "}
+          {translateInstant("known tools.")}
+        </p>
       )}
     </div>
   );
@@ -514,27 +820,46 @@ function Assignments({
   if (profile.bindings.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-border px-4 py-5">
-        <p className="text-sm font-medium text-foreground">{translateInstant("tools.profiles.summary.notAssigned")}</p>
-        <p className="text-sm text-muted-foreground">{translateInstant("tools.profiles.assignments.emptyDescription")}</p>
+        <p className="text-sm font-medium text-foreground">
+          {translateInstant("tools.profiles.summary.notAssigned")}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          {translateInstant("tools.profiles.assignments.emptyDescription")}
+        </p>
       </div>
     );
   }
   return (
     <div className="divide-y divide-border overflow-hidden rounded-lg border border-border">
       {profile.bindings.map((binding) => (
-        <div key={binding.id} className="flex items-center justify-between gap-3 px-3 py-2.5">
+        <div
+          key={binding.id}
+          className="flex items-center justify-between gap-3 px-3 py-2.5"
+        >
           <div className="flex min-w-0 items-center gap-3">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
-              {binding.targetType === "company" ? "Or" : binding.targetType.slice(0, 2).toUpperCase()}
+              {binding.targetType === "company"
+                ? "Or"
+                : binding.targetType.slice(0, 2).toUpperCase()}
             </span>
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-foreground">{assignmentLabel(binding, companyId, maps)}</p>
-              <p className="text-xs text-muted-foreground">{assignmentTypeLabel(binding.targetType)}</p>
+              <p className="truncate text-sm font-medium text-foreground">
+                {assignmentLabel(binding, companyId, maps)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {assignmentTypeLabel(binding.targetType)}
+              </p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" disabled={archived} onClick={() => onRemove(binding)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={archived}
+            onClick={() => onRemove(binding)}
+          >
             <UserMinus className="mr-1.5 h-4 w-4" />
-            {translateInstant("tools.common.remove")}</Button>
+            {translateInstant("tools.common.remove")}
+          </Button>
         </div>
       ))}
     </div>
@@ -551,9 +876,21 @@ function NewToolsSetting({
   onChange: (value: ToolProfileDefaultAction) => void;
 }) {
   useTranslation();
-  const options: Array<{ value: ToolProfileDefaultAction; title: string; body: string }> = [
-    { value: "deny", title: translateInstant("tools.profiles.futureTools.blockedTitle"), body: "New tools do not become available automatically." },
-    { value: "allow", title: translateInstant("tools.profiles.futureTools.allowedTitle"), body: "New tools from selected apps become available right away." },
+  const options: Array<{
+    value: ToolProfileDefaultAction;
+    title: string;
+    body: string;
+  }> = [
+    {
+      value: "deny",
+      title: translateInstant("tools.profiles.futureTools.blockedTitle"),
+      body: "New tools do not become available automatically.",
+    },
+    {
+      value: "allow",
+      title: translateInstant("tools.profiles.futureTools.allowedTitle"),
+      body: "New tools from selected apps become available right away.",
+    },
   ];
   return (
     <div className="grid gap-2 sm:grid-cols-2">
@@ -562,7 +899,9 @@ function NewToolsSetting({
           key={option.value}
           className={cn(
             "flex cursor-pointer items-start gap-3 rounded-lg border px-4 py-3",
-            value === option.value ? "border-primary bg-primary/5" : "border-border",
+            value === option.value
+              ? "border-primary bg-primary/5"
+              : "border-border",
             disabled && "cursor-not-allowed opacity-60",
           )}
         >
@@ -574,8 +913,12 @@ function NewToolsSetting({
             onChange={() => onChange(option.value)}
           />
           <span>
-            <span className="block text-sm font-medium text-foreground">{option.title}</span>
-            <span className="block text-xs text-muted-foreground">{option.body}</span>
+            <span className="block text-sm font-medium text-foreground">
+              {option.title}
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              {option.body}
+            </span>
           </span>
         </label>
       ))}
@@ -600,7 +943,11 @@ function ProfileDialogs({
   allProfiles: ToolProfileWithDetails[];
   pending: boolean;
   onClose: () => void;
-  onUpdate: (input: { name: string; description: string | null; profileKey: string }) => void;
+  onUpdate: (input: {
+    name: string;
+    description: string | null;
+    profileKey: string;
+  }) => void;
   onDuplicate: (input: { name: string; includeAssignments: boolean }) => void;
   onArchive: () => void;
   onRestore: () => void;
@@ -614,8 +961,14 @@ function ProfileDialogs({
   const [copyAssignments, setCopyAssignments] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
-  const duplicateName = allProfiles.some((p) => p.id !== profile.id && p.name.trim().toLowerCase() === name.trim().toLowerCase());
-  const duplicateCopyName = allProfiles.some((p) => p.name.trim().toLowerCase() === copyName.trim().toLowerCase());
+  const duplicateName = allProfiles.some(
+    (p) =>
+      p.id !== profile.id &&
+      p.name.trim().toLowerCase() === name.trim().toLowerCase(),
+  );
+  const duplicateCopyName = allProfiles.some(
+    (p) => p.name.trim().toLowerCase() === copyName.trim().toLowerCase(),
+  );
 
   if (!kind) return null;
   const open = Boolean(kind);
@@ -625,32 +978,77 @@ function ProfileDialogs({
       <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{translateInstant("tools.profiles.dialog.editTitle")}</DialogTitle>
-            <DialogDescription>{translateInstant("tools.profiles.dialog.editDescription")}</DialogDescription>
+            <DialogTitle>
+              {translateInstant("tools.profiles.dialog.editTitle")}
+            </DialogTitle>
+            <DialogDescription>
+              {translateInstant("tools.profiles.dialog.editDescription")}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label htmlFor="edit-profile-name">{translateInstant("tools.common.name")}</Label>
-              <Input id="edit-profile-name" value={name} onChange={(e) => setName(e.target.value)} />
-              {duplicateName ? <p className="text-xs text-destructive">{translateInstant("tools.profiles.dialog.duplicateName")}</p> : null}
+              <Label htmlFor="edit-profile-name">
+                {translateInstant("tools.common.name")}
+              </Label>
+              <Input
+                id="edit-profile-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+              {duplicateName ? (
+                <p className="text-xs text-destructive">
+                  {translateInstant("tools.profiles.dialog.duplicateName")}
+                </p>
+              ) : null}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-profile-description">{translateInstant("tools.common.description")}</Label>
-              <Textarea id="edit-profile-description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+              <Label htmlFor="edit-profile-description">
+                {translateInstant("tools.common.description")}
+              </Label>
+              <Textarea
+                id="edit-profile-description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+              />
             </div>
-            <button type="button" className="text-sm font-medium text-muted-foreground hover:text-foreground" onClick={() => setAdvancedOpen((v) => !v)}>
-              {translateInstant("tools.common.advanced")}</button>
+            <button
+              type="button"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground"
+              onClick={() => setAdvancedOpen((v) => !v)}
+            >
+              {translateInstant("tools.common.advanced")}
+            </button>
             {advancedOpen ? (
               <div className="space-y-1.5">
-                <Label htmlFor="edit-profile-key">{translateInstant("tools.common.identifier")}</Label>
-                <Input id="edit-profile-key" value={profileKey} onChange={(e) => setProfileKey(e.target.value)} className="font-mono text-xs" />
+                <Label htmlFor="edit-profile-key">
+                  {translateInstant("tools.common.identifier")}
+                </Label>
+                <Input
+                  id="edit-profile-key"
+                  value={profileKey}
+                  onChange={(e) => setProfileKey(e.target.value)}
+                  className="font-mono text-xs"
+                />
               </div>
             ) : null}
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={onClose}>{translateInstant("tools.common.cancel")}</Button>
-            <Button disabled={!name.trim() || duplicateName || pending} onClick={() => onUpdate({ name: name.trim(), description: description.trim() || null, profileKey: profileKey.trim() })}>
-              {translateInstant("tools.common.save")}</Button>
+            <Button variant="ghost" onClick={onClose}>
+              {translateInstant("tools.common.cancel")}
+            </Button>
+            <Button
+              disabled={!name.trim() || duplicateName || pending}
+              onClick={() =>
+                onUpdate({
+                  name: name.trim(),
+                  description: description.trim() || null,
+                  profileKey: profileKey.trim(),
+                })
+              }
+            >
+              {translateInstant("tools.common.save")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -662,23 +1060,53 @@ function ProfileDialogs({
       <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{translateInstant("tools.profiles.dialog.duplicateTitle")}</DialogTitle>
-            <DialogDescription>{translateInstant("tools.profiles.dialog.duplicateDescription")}</DialogDescription>
+            <DialogTitle>
+              {translateInstant("tools.profiles.dialog.duplicateTitle")}
+            </DialogTitle>
+            <DialogDescription>
+              {translateInstant("tools.profiles.dialog.duplicateDescription")}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label htmlFor="copy-profile-name">{translateInstant("tools.common.name")}</Label>
-              <Input id="copy-profile-name" value={copyName} onChange={(e) => setCopyName(e.target.value)} />
-              {duplicateCopyName ? <p className="text-xs text-destructive">{translateInstant("tools.profiles.dialog.duplicateName")}</p> : null}
+              <Label htmlFor="copy-profile-name">
+                {translateInstant("tools.common.name")}
+              </Label>
+              <Input
+                id="copy-profile-name"
+                value={copyName}
+                onChange={(e) => setCopyName(e.target.value)}
+              />
+              {duplicateCopyName ? (
+                <p className="text-xs text-destructive">
+                  {translateInstant("tools.profiles.dialog.duplicateName")}
+                </p>
+              ) : null}
             </div>
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={copyAssignments} onChange={(e) => setCopyAssignments(e.target.checked)} />
-              {translateInstant("tools.profiles.dialog.copyAssignments")}</label>
+              <input
+                type="checkbox"
+                checked={copyAssignments}
+                onChange={(e) => setCopyAssignments(e.target.checked)}
+              />
+              {translateInstant("tools.profiles.dialog.copyAssignments")}
+            </label>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={onClose}>{translateInstant("tools.common.cancel")}</Button>
-            <Button disabled={!copyName.trim() || duplicateCopyName || pending} onClick={() => onDuplicate({ name: copyName.trim(), includeAssignments: copyAssignments })}>
-              {translateInstant("tools.common.duplicate")}</Button>
+            <Button variant="ghost" onClick={onClose}>
+              {translateInstant("tools.common.cancel")}
+            </Button>
+            <Button
+              disabled={!copyName.trim() || duplicateCopyName || pending}
+              onClick={() =>
+                onDuplicate({
+                  name: copyName.trim(),
+                  includeAssignments: copyAssignments,
+                })
+              }
+            >
+              {translateInstant("tools.common.duplicate")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -716,7 +1144,9 @@ function RemoveAssignmentDialog({
     <Dialog open={Boolean(binding)} onOpenChange={(next) => !next && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{translateInstant("tools.profiles.removeAssignment.title")}</DialogTitle>
+          <DialogTitle>
+            {translateInstant("tools.profiles.removeAssignment.title")}
+          </DialogTitle>
           <DialogDescription>
             {binding?.targetType === "company"
               ? "Removing the organization default changes access for every agent that relies on it."
@@ -724,8 +1154,12 @@ function RemoveAssignmentDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="ghost" onClick={onClose}>{translateInstant("tools.common.cancel")}</Button>
-          <Button disabled={pending} onClick={onConfirm}>{translateInstant("tools.common.remove")}</Button>
+          <Button variant="ghost" onClick={onClose}>
+            {translateInstant("tools.common.cancel")}
+          </Button>
+          <Button disabled={pending} onClick={onConfirm}>
+            {translateInstant("tools.common.remove")}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -739,35 +1173,64 @@ function buildAllowRows(
   connectionNames: Map<string, string>,
   connections: Array<{ id: string; status?: string; healthStatus?: string }>,
 ): AllowRow[] {
-  const excluded = profile.entries.filter((entry) => entry.effect === "exclude");
-  const included = profile.entries.filter((entry) => entry.effect === "include");
+  const excluded = profile.entries.filter(
+    (entry) => entry.effect === "exclude",
+  );
+  const included = profile.entries.filter(
+    (entry) => entry.effect === "include",
+  );
   const includeAllExcept = profile.summary.accessMode === "all_except";
   return catalog
     .filter((tool) => !excluded.some((entry) => entryMatchesTool(entry, tool)))
-    .filter((tool) => includeAllExcept || included.some((entry) => entryMatchesTool(entry, tool)))
+    .filter(
+      (tool) =>
+        includeAllExcept ||
+        included.some((entry) => entryMatchesTool(entry, tool)),
+    )
     .map((tool) => {
-      const match = includeAllExcept ? null : included.find((entry) => entryMatchesTool(entry, tool)) ?? null;
-      const app = appNames.get(tool.applicationId ?? "") ?? connectionNames.get(tool.connectionId) ?? "Unknown app";
-      const connection = connections.find((item) => item.id === tool.connectionId);
+      const match = includeAllExcept
+        ? null
+        : (included.find((entry) => entryMatchesTool(entry, tool)) ?? null);
+      const app =
+        appNames.get(tool.applicationId ?? "") ??
+        connectionNames.get(tool.connectionId) ??
+        "Unknown app";
+      const connection = connections.find(
+        (item) => item.id === tool.connectionId,
+      );
       return {
         id: tool.id,
         app,
         tool: tool.title || tool.toolName,
         capabilities: capabilityLabel(tool),
         source: sourceLabel(match, app),
-        autoAddedAt: profile.defaultAction === "allow" && isRecentTool(tool) ? (tool.addedAt ?? tool.firstSeenAt) : null,
-        degraded: Boolean(connection && (connection.status !== "active" || connection.healthStatus === "error")),
+        autoAddedAt:
+          profile.defaultAction === "allow" && isRecentTool(tool)
+            ? (tool.addedAt ?? tool.firstSeenAt)
+            : null,
+        degraded: Boolean(
+          connection &&
+            (connection.status !== "active" ||
+              connection.healthStatus === "error"),
+        ),
         connectionId: tool.connectionId,
       };
     });
 }
 
-function entryMatchesTool(entry: ToolProfileEntry, tool: ToolCatalogEntry): boolean {
+function entryMatchesTool(
+  entry: ToolProfileEntry,
+  tool: ToolCatalogEntry,
+): boolean {
   switch (entry.selectorType) {
     case "application":
-      return Boolean(entry.applicationId && entry.applicationId === tool.applicationId);
+      return Boolean(
+        entry.applicationId && entry.applicationId === tool.applicationId,
+      );
     case "connection":
-      return Boolean(entry.connectionId && entry.connectionId === tool.connectionId);
+      return Boolean(
+        entry.connectionId && entry.connectionId === tool.connectionId,
+      );
     case "catalog_entry":
       return Boolean(entry.catalogEntryId && entry.catalogEntryId === tool.id);
     case "tool_name":
@@ -781,8 +1244,13 @@ function entryMatchesTool(entry: ToolProfileEntry, tool: ToolCatalogEntry): bool
 
 function sourceLabel(entry: ToolProfileEntry | null, app: string): string {
   if (!entry) return "added directly";
-  if (entry.selectorType === "application" || entry.selectorType === "connection") return `added by rule: all ${app}`;
-  if (entry.selectorType === "risk_level" && entry.riskLevel) return `added by rule: ${entry.riskLevel} tools`;
+  if (
+    entry.selectorType === "application" ||
+    entry.selectorType === "connection"
+  )
+    return `added by rule: all ${app}`;
+  if (entry.selectorType === "risk_level" && entry.riskLevel)
+    return `added by rule: ${entry.riskLevel} tools`;
   return "added directly";
 }
 
@@ -800,7 +1268,13 @@ function capabilityText(tool: ToolProfileNewToolReviewItem): string {
 }
 
 function newToolsAppLabel(tools: ToolProfileNewToolReviewItem[]): string {
-  const names = [...new Set(tools.map((tool) => tool.applicationName ?? tool.connectionName).filter(Boolean))] as string[];
+  const names = [
+    ...new Set(
+      tools
+        .map((tool) => tool.applicationName ?? tool.connectionName)
+        .filter(Boolean),
+    ),
+  ] as string[];
   if (names.length === 0) return "An app";
   if (names.length === 1) return names[0] ?? "An app";
   if (names.length === 2) return `${names[0]} and ${names[1]}`;
@@ -821,9 +1295,17 @@ function assignmentLabel(
   maps: ReturnType<typeof useProfilesData>["maps"],
 ): string {
   if (binding.targetType === "company") return "Organization default";
-  if (binding.targetType === "agent") return maps.agentsById.get(binding.targetId) ?? translateInstant("Unknown agent");
-  if (binding.targetType === "project") return maps.projectsById.get(binding.targetId) ?? translateInstant("Unknown project");
-  if (binding.targetType === "routine") return maps.routinesById.get(binding.targetId) ?? "Unknown routine";
+  if (binding.targetType === "agent")
+    return (
+      maps.agentsById.get(binding.targetId) ?? translateInstant("Unknown agent")
+    );
+  if (binding.targetType === "project")
+    return (
+      maps.projectsById.get(binding.targetId) ??
+      translateInstant("Unknown project")
+    );
+  if (binding.targetType === "routine")
+    return maps.routinesById.get(binding.targetId) ?? "Unknown routine";
   if (binding.targetId === companyId) return "Organization";
   return binding.targetId;
 }

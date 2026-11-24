@@ -47,3 +47,6 @@ overrides:
   # Parsers and highlighters must share NodeProp IDs from one Lezer instance.
   # Mixed copies can interpret unrelated node metadata as highlighting tags.
   "@lezer/common": "^1.5.2"
+  # Storybook's docgen plugin still pins glob 13. Limit the security patch to
+  # its audited minimatch edge until upstream admits a fixed release.
+  "glob@13.0.6>minimatch": "11.0.4"

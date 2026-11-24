@@ -521,7 +521,7 @@
   },
   "instanceExperimentalSettings.streamlinedNavDescription": {
     "en": "Reduces the maximum number of items in the left navigation bar — nests Projects under Work with a dedicated Projects page, and shows only active agents (max 5 recently-active) in the sidebar.",
-    "zh-CN": "使用精简导航布局。",
+    "zh-CN": "减少左侧导航栏可显示的项目数：在“工作”下收纳“项目”并提供专门的项目页面，侧边栏仅显示活跃智能体（最多 5 个最近活跃的智能体）。",
     "reviewedEnglishHash": "17875df9f8916fdd37aff66386c39a9de6a506a1a3bcf46c86d77f9e88537c82"
   },
   "instanceExperimentalSettings.streamlinedNavTitle": {
@@ -561,7 +561,7 @@
   },
   "instanceExperimentalSettings.taskWatchdogsDescription": {
     "en": "Show task detail controls for configuring watchdog agents that verify stopped task subtrees and restore live paths when work should continue.",
-    "zh-CN": "启用任务看护，用于跟进和健康检查。",
+    "zh-CN": "在任务详情页显示用于配置看护智能体的控件；这些智能体会检查停滞的任务子树，并在工作应继续时恢复可执行路径。",
     "reviewedEnglishHash": "e49db28aff6a1cd08cb1a34cc2ed1d9304009143afdc80b09fbba68a6e1aa3e9"
   },
   "instanceExperimentalSettings.taskWatchdogsTitle": {
@@ -581,12 +581,12 @@
   },
   "instanceExperimentalSettings.warningBody": {
     "en": "These features are opt-in and come with no compatibility guarantees. They may change, break, or be removed without notice. Avoid relying on them for critical or production workflows.",
-    "zh-CN": "实验功能在开发期间可能变更或重置。",
+    "zh-CN": "这些功能需要主动启用，且不保证兼容性。它们可能随时变更、失效或被移除，恕不另行通知。请勿将其用于关键或生产工作流。",
     "reviewedEnglishHash": "2bf20acf9e5a2c8bd9ac36ec5c1f1d7648969daab200cde2dae1b891db0ee162"
   },
   "instanceExperimentalSettings.warningTitle": {
     "en": "Experimental features may break at any time.",
-    "zh-CN": "实验设置",
+    "zh-CN": "实验功能随时可能失效。",
     "reviewedEnglishHash": "c56337a6aee9131e901513a636c3dea3c37e7eb81796fb6bd64fb53cbb6923a8"
   },
   "instanceExperimentalSettings.workspacesDescription": {

@@ -40,6 +40,12 @@ export function prepareTestPosixShell(input: {
   for (const key of ["SystemRoot", "SYSTEMROOT", "ComSpec", "COMSPEC", "PATHEXT", "TEMP", "TMP"]) {
     if (env[key] === undefined && typeof process.env[key] === "string") env[key] = process.env[key];
   }
+  // Git Bash otherwise follows its Windows link-text fallback. Scope native
+  // links to this returned test child only; never modify the runner's MSYS
+  // environment. Preserve unrelated MSYS switches while replacing a stale
+  // winsymlinks choice from the fixture.
+  const msysOptions = (env.MSYS ?? "").split(/[\s,;]+/).filter((option) => option && !/^winsymlinks(?::[^\s,;]*)?$/i.test(option));
+  env.MSYS = [...msysOptions, "winsymlinks:nativestrict"].join(" ");
 
   if ((args[0] === "-c" || args[0] === "-lc") && typeof args[1] === "string") {
     args[1] = args[1]

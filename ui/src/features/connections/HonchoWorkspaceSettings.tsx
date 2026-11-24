@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useId, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { connectionInstructionsConfig, type ToolConnection } from "@penclipai/shared";
+import { describeError } from "@/api/errors";
 import { toolsApi } from "@/api/tools";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

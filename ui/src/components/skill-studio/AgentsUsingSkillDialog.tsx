@@ -7,7 +7,7 @@ import type {
   AgentDesiredSkillEntry,
   CompanySkillDetail,
   CompanySkillUsageAgent,
-  CompanySkillVersion,
+  CompanySkillVersionSummary,
 } from "@penclipai/shared";
 import { Link } from "@/lib/router";
 import { agentsApi } from "@/api/agents";
@@ -150,11 +150,8 @@ export function AgentsUsingSkillDialog({
     if (!open) setConfirmRemoveId(null);
   }, [open]);
 
-  const versions = useMemo<CompanySkillVersion[]>(
-    () =>
-      [...(versionsQuery.data ?? [])].sort(
-        (a, b) => b.revisionNumber - a.revisionNumber,
-      ),
+  const versions = useMemo<CompanySkillVersionSummary[]>(
+    () => [...(versionsQuery.data ?? [])].sort((a, b) => b.revisionNumber - a.revisionNumber),
     [versionsQuery.data],
   );
   const latestRevision = skill.currentVersion?.revisionNumber ?? null;
@@ -381,7 +378,7 @@ function AgentRow({
   icon: string | null;
   canManage: boolean;
   hasVersions: boolean;
-  versions: CompanySkillVersion[];
+  versions: CompanySkillVersionSummary[];
   latestRevision: number | null;
   pinnedRevision: number | null;
   busy: boolean;

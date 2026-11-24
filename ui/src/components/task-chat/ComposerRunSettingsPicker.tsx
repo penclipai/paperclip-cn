@@ -1,21 +1,66 @@
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode, type Ref } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+  type Ref,
+} from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Check, ChevronDown, Plus, RotateCcw, Search, X, Zap } from "lucide-react";
-import { aiRuntimeConnectionBindingSchema, agentHarnessType, type Agent, type IssueAssigneeAdapterOverrides } from "@penclipai/shared";
+import {
+  ArrowLeft,
+  Check,
+  ChevronDown,
+  Plus,
+  RotateCcw,
+  Search,
+  X,
+  Zap,
+} from "lucide-react";
+import {
+  aiRuntimeConnectionBindingSchema,
+  agentHarnessType,
+  type Agent,
+  type IssueAssigneeAdapterOverrides,
+} from "@penclipai/shared";
 import { agentsApi, type AdapterModel } from "@/api/agents";
 import { queryKeys } from "@/lib/queryKeys";
-import { COPILOT_MODEL_DISCOVERY_QUERY_OPTIONS, copilotTaskModelCatalogOptions } from "@/lib/copilot-task-model-catalog";
+import {
+  ACCOUNT_BOUND_MODEL_DISCOVERY_QUERY_OPTIONS,
+  nativeTaskModelCatalogOptions,
+} from "@/lib/native-model-catalog";
 import { cn } from "@/lib/utils";
 import { useMobileEntityPickerViewportStyle } from "@/hooks/useMobileEntityPickerViewportStyle";
-import { getLastComposerEffort, rememberComposerEffort } from "@/lib/recent-composer-effort";
-import type { InlineEntityOption } from "@/components/InlineEntitySelector";
-import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
-  composerCatalogProvider, composerDefaultModel, composerEfforts, composerFastAvailable, DEFAULT_COMPOSER_RUN_SETTINGS,
-  EFFORT_LABELS, readComposerRunSettings, supportsComposerModel,
+  getLastComposerEffort,
+  rememberComposerEffort,
+} from "@/lib/recent-composer-effort";
+import type { InlineEntityOption } from "@/components/InlineEntitySelector";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  composerCatalogProvider,
+  composerDefaultModel,
+  composerEfforts,
+  composerFastAvailable,
+  DEFAULT_COMPOSER_RUN_SETTINGS,
+  EFFORT_LABELS,
+  readComposerRunSettings,
+  supportsComposerModel,
   type ComposerRunSettings,
 } from "./composer-run-settings";
 import "./composer-run-settings.css";
@@ -30,12 +75,18 @@ interface Props {
   settings: ComposerRunSettings | null;
   onSettingsChange: (settings: ComposerRunSettings | null) => void;
   onAssigneeChange: (value: string) => void;
+  /** Conversations keep their agent identity; only model/effort is editable here. */
+  allowAssigneeChange?: boolean;
   disabled?: boolean;
   mobile?: boolean;
   triggerRef?: Ref<HTMLButtonElement>;
   /** Storybook can supply a fixed catalog; the app loads it for the selected harness. */
   modelOptionsOverride?: readonly (AdapterModel & { detail?: string })[];
-  renderAssigneeIdentity?: (value: string, label: string, placement: "trigger" | "option") => ReactNode;
+  renderAssigneeIdentity?: (
+    value: string,
+    label: string,
+    placement: "trigger" | "option",
+  ) => ReactNode;
   /** Initial presentation state for embedded examples; ordinary composers start closed. */
   initialOpen?: boolean;
   initialView?: "settings" | "agents" | "models";
@@ -44,28 +95,55 @@ interface Props {
 }
 
 const HARNESS_LABELS: Record<string, string> = {
-  claude_local: "Claude Code", codex_local: "Codex", opencode_local: "OpenCode",
-  pi_local: "Pi", kimi_local: "Kimi Code", gemini_local: "Gemini CLI",
-  cursor: "Cursor", cursor_cloud: "Cursor Cloud", grok_local: "Grok CLI",
+  claude_local: "Claude Code",
+  codex_local: "Codex",
+  opencode_local: "OpenCode",
+  pi_local: "Pi",
+  kimi_local: "Kimi Code",
+  gemini_local: "Gemini CLI",
+  cursor: "Cursor",
+  cursor_cloud: "Cursor Cloud",
+  grok_local: "Grok CLI",
   paperclip_runner: "Paperclip Runner",
-  process: "Process", http: "HTTP", openclaw_gateway: "OpenClaw Gateway",
+  process: "Process",
+  http: "HTTP",
+  openclaw_gateway: "OpenClaw Gateway",
 };
 
 function harnessLabel(agent: Agent | undefined): string {
   if (!agent) return translateInstant("Choose an agent");
-  const harness = HARNESS_LABELS[agentHarnessType(agent.adapterType, agent.adapterConfig)] ?? agent.adapterType;
+  const harness =
+    HARNESS_LABELS[agentHarnessType(agent.adapterType, agent.adapterConfig)] ??
+    agent.adapterType;
   const provider = composerCatalogProvider(agent);
-  const binding = aiRuntimeConnectionBindingSchema.safeParse(agent?.runtimeConfig?.aiConnection).data;
+  const binding = aiRuntimeConnectionBindingSchema.safeParse(
+    agent?.runtimeConfig?.aiConnection,
+  ).data;
   const poolId = binding?.mode === "router" ? binding.connectionId : undefined;
   return provider === "openrouter" ? `${harness} · OpenRouter` : harness;
 }
 
 function unavailableModelReason(agent: Agent | undefined): string {
-  if (!agent) return translateInstant("taskComposer.runSettings.chooseAgentToSelectModelAndEffort");
-  if (agent.adapterType === "paperclip_runner" && agent.adapterConfig.provider === "muse") return "Muse chooses its model and effort. Paperclip has no per-task override.";
-  if (agent?.adapterType === "process") return translateInstant("taskComposer.runSettings.commandHarnessNoModelOrEffort");
-  if (agent?.adapterType === "http") return translateInstant("taskComposer.runSettings.httpEndpointServiceChoosesModel");
-  return translateInstant("taskComposer.runSettings.gatewayRemoteModelNoPerTaskSetting");
+  if (!agent)
+    return translateInstant(
+      "taskComposer.runSettings.chooseAgentToSelectModelAndEffort",
+    );
+  if (
+    agent.adapterType === "paperclip_runner" &&
+    agent.adapterConfig.provider === "muse"
+  )
+    return "Muse chooses its model and effort. Paperclip has no per-task override.";
+  if (agent?.adapterType === "process")
+    return translateInstant(
+      "taskComposer.runSettings.commandHarnessNoModelOrEffort",
+    );
+  if (agent?.adapterType === "http")
+    return translateInstant(
+      "taskComposer.runSettings.httpEndpointServiceChoosesModel",
+    );
+  return translateInstant(
+    "taskComposer.runSettings.gatewayRemoteModelNoPerTaskSetting",
+  );
 }
 
 function AnimatedBody({ children }: { children: ReactNode }) {
@@ -80,21 +158,51 @@ function AnimatedBody({ children }: { children: ReactNode }) {
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
-  return <div className="composer-run-settings-height" style={{ height: height ?? "auto" }}><div ref={ref}>{children}</div></div>;
+  return (
+    <div
+      className="composer-run-settings-height"
+      style={{ height: height ?? "auto" }}
+    >
+      <div ref={ref}>{children}</div>
+    </div>
+  );
 }
 
 export function ComposerRunSettingsPicker({
-  companyId, assigneeValue, currentAssigneeValue, options, agents, overrides,
-  settings, onSettingsChange, onAssigneeChange, disabled = false, mobile: mobileProp, triggerRef, modelOptionsOverride, renderAssigneeIdentity,
-  initialOpen = false, initialView = "settings", initialModelSearch = "", initialAssigneeSearch = "",
+  companyId,
+  assigneeValue,
+  currentAssigneeValue,
+  options,
+  agents,
+  overrides,
+  settings,
+  onSettingsChange,
+  onAssigneeChange,
+  allowAssigneeChange = true,
+  disabled = false,
+  mobile: mobileProp,
+  triggerRef,
+  modelOptionsOverride,
+  renderAssigneeIdentity,
+  initialOpen = false,
+  initialView = "settings",
+  initialModelSearch = "",
+  initialAssigneeSearch = "",
 }: Props) {
   useTranslation();
   const [open, setOpen] = useState(initialOpen);
-  const [requestedView, setView] = useState<"settings" | "agents" | "models">(initialView);
+  const [requestedView, setView] = useState<"settings" | "agents" | "models">(
+    initialView,
+  );
   const [modelSearch, setModelSearch] = useState(initialModelSearch);
   const [assigneeSearch, setAssigneeSearch] = useState(initialAssigneeSearch);
   const [highlightedAssignee, setHighlightedAssignee] = useState(0);
-  const [narrow, setNarrow] = useState(() => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(max-width: 639px)").matches);
+  const [narrow, setNarrow] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(max-width: 639px)").matches,
+  );
   useEffect(() => {
     if (typeof window.matchMedia !== "function") return;
     const query = window.matchMedia("(max-width: 639px)");
@@ -104,49 +212,108 @@ export function ComposerRunSettingsPicker({
   }, []);
   const mobile = mobileProp ?? narrow;
   const mobileViewportStyle = useMobileEntityPickerViewportStyle();
-  const agentId = assigneeValue.startsWith("agent:") ? assigneeValue.slice(6) : "";
+  const agentId = assigneeValue.startsWith("agent:")
+    ? assigneeValue.slice(6)
+    : "";
   const agent = agents.get(agentId);
   const modelSupported = supportsComposerModel(agent);
-  const view = requestedView === "models" && !modelSupported ? "settings" : requestedView;
+  const view =
+    (requestedView === "models" && !modelSupported) ||
+    (requestedView === "agents" && !allowAssigneeChange)
+      ? "settings"
+      : requestedView;
   const provider = composerCatalogProvider(agent);
-  const isMuseRunner = agent?.adapterType === "paperclip_runner" && provider === "muse";
+  const isMuseRunner =
+    agent?.adapterType === "paperclip_runner" && provider === "muse";
   useEffect(() => {
     if (isMuseRunner && settings !== null) onSettingsChange(null);
   }, [isMuseRunner, settings, onSettingsChange]);
-  const binding = aiRuntimeConnectionBindingSchema.safeParse(agent?.runtimeConfig?.aiConnection).data;
+  const binding = aiRuntimeConnectionBindingSchema.safeParse(
+    agent?.runtimeConfig?.aiConnection,
+  ).data;
   const poolId = binding?.mode === "router" ? binding.connectionId : undefined;
-  const copilotCatalog = copilotTaskModelCatalogOptions(agent);
-  const copilotCatalogScope = JSON.stringify(copilotCatalog ?? null);
-  const requestCopilotModels = Boolean(copilotCatalog && open && view !== "agents" && !modelOptionsOverride);
-  const { data: fetchedModels = [], isPending: modelsPending, refetch: refreshModels } = useQuery({
-    queryKey: agent && modelSupported
-      ? [...queryKeys.agents.adapterModels(companyId, agent.adapterType, agent.defaultEnvironmentId ?? null, provider), poolId ?? null, copilotCatalog ?? null]
-      : ["agents", "composer-models", "none"],
-    queryFn: () => agentsApi.adapterModels(companyId, agent!.adapterType, {
-      environmentId: agent!.defaultEnvironmentId ?? null, provider, poolId, ...copilotCatalog,
-    }),
-    ...(copilotCatalog ? COPILOT_MODEL_DISCOVERY_QUERY_OPTIONS : {}),
-    enabled: Boolean(agent && modelSupported && !modelOptionsOverride && (!copilotCatalog || requestCopilotModels)),
+  const nativeCatalog = nativeTaskModelCatalogOptions(agent);
+  const acpxAgent =
+    agent?.adapterType === "paperclip_runner" &&
+    provider === "acpx" &&
+    typeof agent.adapterConfig.acpxAgent === "string"
+      ? agent.adapterConfig.acpxAgent
+      : undefined;
+  const nativeCatalogScope = JSON.stringify(nativeCatalog ?? null);
+  const requestNativeModels = Boolean(
+    nativeCatalog && open && view !== "agents" && !modelOptionsOverride,
+  );
+  const {
+    data: fetchedModels = [],
+    isPending: modelsPending,
+    refetch: refreshModels,
+  } = useQuery({
+    queryKey:
+      agent && modelSupported
+        ? [
+            ...queryKeys.agents.adapterModels(
+              companyId,
+              agent.adapterType,
+              agent.defaultEnvironmentId ?? null,
+              provider,
+            ),
+            poolId ?? null,
+            nativeCatalog ?? null,
+            acpxAgent ?? null,
+          ]
+        : ["agents", "composer-models", "none"],
+    queryFn: () =>
+      agentsApi.adapterModels(companyId, agent!.adapterType, {
+        environmentId: agent!.defaultEnvironmentId ?? null,
+        provider,
+        poolId,
+        acpxAgent,
+        ...nativeCatalog,
+      }),
+    ...(nativeCatalog ? ACCOUNT_BOUND_MODEL_DISCOVERY_QUERY_OPTIONS : {}),
+    enabled: Boolean(
+      agent &&
+        modelSupported &&
+        !modelOptionsOverride &&
+        (!nativeCatalog || requestNativeModels),
+    ),
   });
   useEffect(() => {
-    if (requestCopilotModels) void refreshModels();
-  }, [requestCopilotModels, copilotCatalogScope, companyId, agent?.defaultEnvironmentId, refreshModels]);
+    if (requestNativeModels) void refreshModels();
+  }, [
+    requestNativeModels,
+    nativeCatalogScope,
+    companyId,
+    agent?.defaultEnvironmentId,
+    refreshModels,
+  ]);
   // The server resolves instance-declared models first and otherwise returns the
   // adapter's curated catalog. Do not replace a declared Codex list locally.
-  const models: readonly (AdapterModel & { detail?: string })[] = modelOptionsOverride
-    ?? fetchedModels;
+  const models: readonly (AdapterModel & { detail?: string })[] =
+    modelOptionsOverride ?? fetchedModels;
   const catalogPending = modelsPending && !modelOptionsOverride;
-  const base = assigneeValue === currentAssigneeValue
-    ? readComposerRunSettings(overrides, agent?.adapterType)
-    : DEFAULT_COMPOSER_RUN_SETTINGS;
+  const base =
+    assigneeValue === currentAssigneeValue
+      ? readComposerRunSettings(overrides, agent?.adapterType)
+      : DEFAULT_COMPOSER_RUN_SETTINGS;
   const selected = settings ?? base;
   const configuredModel = composerDefaultModel(agent);
   const model = selected.model ?? configuredModel;
-  const modelName = models.find((item) => item.id === model)?.label ?? model ?? "";
-  const choices = composerEfforts(agent, model, models.map((item) => item.id));
-  const effort = selected.effort && choices.includes(selected.effort) ? selected.effort : null;
+  const modelName =
+    models.find((item) => item.id === model)?.label ?? model ?? "";
+  const choices = composerEfforts(
+    agent,
+    model,
+    models.map((item) => item.id),
+  );
+  const effort =
+    selected.effort && choices.includes(selected.effort)
+      ? selected.effort
+      : null;
   const effortIndex = effort ? choices.indexOf(effort) + 1 : 0;
-  const effortLabel = effort ? translateInstant(EFFORT_LABELS[effort] ?? effort) : translateInstant("Default");
+  const effortLabel = effort
+    ? translateInstant(EFFORT_LABELS[effort] ?? effort)
+    : translateInstant("Default");
   const fastAvailable = composerFastAvailable(agent, model);
   const effortChoicesKey = choices.join(",");
   useEffect(() => {
@@ -156,29 +323,57 @@ export function ComposerRunSettingsPicker({
     if (remembered && effortChoicesKey.split(",").includes(remembered)) {
       onSettingsChange({ ...base, effort: remembered });
     }
-  }, [companyId, agentId, model, modelSupported, settings, base.model, base.effort, base.fast, effortChoicesKey, onSettingsChange]);
+  }, [
+    companyId,
+    agentId,
+    model,
+    modelSupported,
+    settings,
+    base.model,
+    base.effort,
+    base.fast,
+    effortChoicesKey,
+    onSettingsChange,
+  ]);
   const changed = Boolean(selected.model || selected.effort || selected.fast);
-  const assigneeOptions = [{ id: "", label: translateInstant("No assignee"), searchText: "Unassigned" }, ...options.filter((item) => item.id !== "")];
+  const assigneeOptions = [
+    {
+      id: "",
+      label: translateInstant("No assignee"),
+      searchText: "Unassigned",
+    },
+    ...options.filter((item) => item.id !== ""),
+  ];
   const filteredAgents = assigneeOptions.filter((item) => {
-    const optionAgent = agents.get(item.id.startsWith("agent:") ? item.id.slice(6) : "");
+    const optionAgent = agents.get(
+      item.id.startsWith("agent:") ? item.id.slice(6) : "",
+    );
     return `${item.label} ${item.searchText ?? ""} ${optionAgent?.role ?? ""} ${harnessLabel(optionAgent)}`
-      .toLowerCase().includes(assigneeSearch.trim().toLowerCase());
+      .toLowerCase()
+      .includes(assigneeSearch.trim().toLowerCase());
   });
   const query = modelSearch.trim();
   const filteredModels = models.filter((item) =>
-    `${item.label} ${item.id}`.toLowerCase().includes(query.toLowerCase()));
-  const exactMatch = models.some((item) => item.id.toLowerCase() === query.toLowerCase());
-  const needsProvider = agent && (["opencode_local", "pi_local", "kimi_local"].includes(agent.adapterType)
-    || (agent.adapterType === "paperclip_runner" && provider === "opencode"));
-  const manualValid = query.length > 0 && !/\s/.test(query)
-    && (!needsProvider || /^[^/]+\/.+[^/]$/.test(query))
-    && (provider !== "openrouter" || /^openrouter\/[^/]+\/.+[^/]$/.test(query));
+    `${item.label} ${item.id}`.toLowerCase().includes(query.toLowerCase()),
+  );
+  const exactMatch = models.some(
+    (item) => item.id.toLowerCase() === query.toLowerCase(),
+  );
+  const needsProvider =
+    agent &&
+    (["opencode_local", "pi_local", "kimi_local"].includes(agent.adapterType) ||
+      (agent.adapterType === "paperclip_runner" && provider === "opencode"));
+  const manualValid =
+    query.length > 0 &&
+    !/\s/.test(query) &&
+    (!needsProvider || /^[^/]+\/.+[^/]$/.test(query)) &&
+    (provider !== "openrouter" || /^openrouter\/[^/]+\/.+[^/]$/.test(query));
 
   const previousAgentId = useRef(agentId);
   useEffect(() => {
     if (previousAgentId.current === agentId) return;
     previousAgentId.current = agentId;
-    setView((current) => current === "agents" ? "agents" : "settings");
+    setView((current) => (current === "agents" ? "agents" : "settings"));
     setModelSearch("");
   }, [agentId]);
 
@@ -192,9 +387,17 @@ export function ComposerRunSettingsPicker({
     setAssigneeSearch("");
   };
   const chooseModel = (value: string | null) => {
-    const nextChoices = composerEfforts(agent, value ?? configuredModel, models.map((item) => item.id));
+    const nextChoices = composerEfforts(
+      agent,
+      value ?? configuredModel,
+      models.map((item) => item.id),
+    );
     const preferred = selected.effort ?? getLastComposerEffort(companyId);
-    onSettingsChange({ model: value, effort: preferred && nextChoices.includes(preferred) ? preferred : null, fast: false });
+    onSettingsChange({
+      model: value,
+      effort: preferred && nextChoices.includes(preferred) ? preferred : null,
+      fast: false,
+    });
     setView("settings");
     setModelSearch("");
   };
@@ -202,84 +405,557 @@ export function ComposerRunSettingsPicker({
     rememberComposerEffort(companyId, null);
     onSettingsChange(DEFAULT_COMPOSER_RUN_SETTINGS);
   };
-  const closeButton = mobile ? <DialogClose asChild><button type="button" aria-label={translateInstant("Close picker")} className="grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-accent"><X className="size-4" /></button></DialogClose> : null;
+  const closeButton = mobile ? (
+    <DialogClose asChild>
+      <button
+        type="button"
+        aria-label={translateInstant("Close picker")}
+        className="grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-accent"
+      >
+        <X className="size-4" />
+      </button>
+    </DialogClose>
+  ) : null;
   const Trigger = mobile ? DialogTrigger : PopoverTrigger;
-  const triggers = <div data-testid="task-chat-composer-selection" className="flex min-w-0 max-w-full items-center rounded-full bg-muted text-xs font-medium">
-    <Trigger asChild><button ref={triggerRef} type="button" disabled={disabled} aria-label={translateInstant("Select assignee")} data-testid="task-chat-composer-assignee"
-      onClick={() => { setView("agents"); setHighlightedAssignee(0); }}
-      className="flex h-8 min-w-0 max-w-full items-center gap-1.5 rounded-full px-2.5 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50">
-      {renderAssigneeIdentity?.(assigneeValue, agent?.name ?? translateInstant("Unassigned"), "trigger")}
-      <span data-testid="task-chat-composer-assignee-label" className="min-w-0 truncate">{assigneeOptions.find((item) => item.id === assigneeValue)?.label ?? translateInstant("Unassigned")}</span>
-      {!modelSupported ? <ChevronDown className="size-3 shrink-0 text-muted-foreground" aria-hidden /> : null}
-    </button></Trigger>
-    {modelSupported ? <>
-      <span className="text-muted-foreground" aria-hidden>·</span>
-      <button type="button" disabled={disabled} aria-label={translateInstant("Select model and effort")} aria-haspopup="dialog" aria-expanded={open && view !== "agents"} onClick={() => { setView("settings"); setOpen(true); }}
-        className="flex h-8 min-w-0 max-w-full items-center gap-1.5 rounded-full px-2.5 text-muted-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50">
-        <span data-testid="task-chat-composer-model-label" className="min-w-0 truncate">{open ? translateInstant("agentConfig.selectModel") : modelName || translateInstant("Default")}</span>
-        {!open && effort ? <span className="hidden shrink-0 sm:inline">{effortLabel}</span> : null}
-        <ChevronDown className="size-3 shrink-0" aria-hidden />
-      </button>
-    </> : null}
-  </div>;
-
-  const body = view === "settings" ? <div className="min-h-0 overflow-y-auto overscroll-contain touch-pan-y p-3" data-testid="composer-run-settings-view">
-    <div className="flex items-center gap-2">
-      <button type="button" aria-label={translateInstant("Choose assignee")} onClick={() => setView("agents")}
-        className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-1 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-        {renderAssigneeIdentity?.(assigneeValue, agent?.name ?? translateInstant("Unassigned"), "option") ?? <span className="grid size-6 shrink-0 place-items-center rounded-md bg-secondary text-xs font-semibold text-secondary-foreground">{agent?.name.slice(0, 1) ?? "?"}</span>}
-        <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{agent?.name ?? options.find((item) => item.id === assigneeValue)?.label ?? translateInstant("Unassigned")}</span><span className="block truncate text-xs text-muted-foreground">{harnessLabel(agent)}</span></span>
-        <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-      </button>
-      {!choices.length && modelSupported ? <button type="button" aria-label={translateInstant("Reset to agent default")} title={translateInstant("Reset to agent default")} disabled={!changed} onClick={reset} className="grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-accent disabled:opacity-40"><RotateCcw className="size-4" /></button> : null}
-      {closeButton}
+  const modelTrigger = (
+    <button
+      ref={allowAssigneeChange ? undefined : triggerRef}
+      type="button"
+      disabled={disabled}
+      aria-label={translateInstant("Select model and effort", { defaultValue: "Select model and effort" })}
+      aria-haspopup="dialog"
+      aria-expanded={open && view !== "agents"}
+      onClick={() => {
+        setView("settings");
+        if (allowAssigneeChange) setOpen(true);
+      }}
+      className="flex h-8 min-w-0 max-w-full items-center gap-1.5 rounded-full px-2.5 text-muted-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+    >
+      <span
+        data-testid="task-chat-composer-model-label"
+        className="min-w-0 truncate text-foreground/70"
+      >
+        {open ? "Select model" : modelName || "Default"}
+      </span>
+      {!open && effort ? (
+        <span className="hidden shrink-0 sm:inline">{effortLabel}</span>
+      ) : null}
+      <ChevronDown className="size-3 shrink-0" aria-hidden />
+    </button>
+  );
+  const AssigneeHeader = allowAssigneeChange ? "button" : "div";
+  const triggers = (
+    <div
+      data-testid="task-chat-composer-selection"
+      className="flex min-w-0 max-w-full items-center rounded-full bg-muted text-xs font-medium"
+    >
+      {allowAssigneeChange ? (
+        <Trigger asChild>
+          <button
+            ref={triggerRef}
+            type="button"
+            disabled={disabled}
+            aria-label={translateInstant("Select assignee")}
+            data-testid="task-chat-composer-assignee"
+            onClick={() => {
+              setView("agents");
+              setHighlightedAssignee(0);
+            }}
+            className="flex h-8 min-w-0 max-w-full items-center gap-1.5 rounded-full px-2.5 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+          >
+            {renderAssigneeIdentity?.(
+              assigneeValue,
+              agent?.name ?? translateInstant("Unassigned"),
+              "trigger",
+            )}
+            <span
+              data-testid="task-chat-composer-assignee-label"
+              className="min-w-0 truncate"
+            >
+              {assigneeOptions.find((item) => item.id === assigneeValue)
+                ?.label ?? translateInstant("Unassigned")}
+            </span>
+            {!modelSupported ? (
+              <ChevronDown
+                className="size-3 shrink-0 text-muted-foreground"
+                aria-hidden
+              />
+            ) : null}
+          </button>
+        </Trigger>
+      ) : null}
+      {modelSupported ? (
+        <>
+          {allowAssigneeChange ? (
+            <>
+              <span className="text-muted-foreground" aria-hidden>
+                ·
+              </span>
+              {modelTrigger}
+            </>
+          ) : (
+            <Trigger asChild>{modelTrigger}</Trigger>
+          )}
+        </>
+      ) : null}
     </div>
-    {modelSupported ? <>
-      <button type="button" aria-label={translateInstant("Choose exact model")} onClick={() => setView("models")} className="mt-3 flex w-full items-center gap-2 rounded-md px-1 py-1 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-        <span className="min-w-0 flex-1"><span className="block text-xs text-muted-foreground">{translateInstant("Model")}</span><span className="block truncate text-sm font-medium">{modelName || translateInstant("Default")}</span></span><ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-      </button>
-      {choices.length ? <div className="mt-3">
+  );
+
+  const body =
+    view === "settings" ? (
+      <div
+        className="min-h-0 overflow-y-auto overscroll-contain touch-pan-y p-3"
+        data-testid="composer-run-settings-view"
+      >
         <div className="flex items-center gap-2">
-          {fastAvailable ? <button type="button" aria-label={translateInstant("agentConfig.fastMode")} aria-pressed={selected.fast} title={translateInstant("agentConfig.fastMode")} onClick={() => onSettingsChange({ ...selected, fast: !selected.fast })} className={cn("grid size-8 shrink-0 place-items-center rounded-md hover:bg-accent", selected.fast ? "composer-run-settings-accent bg-accent" : "text-muted-foreground")}><Zap className="size-4" /></button> : <span className="size-8 shrink-0" aria-hidden />}
-          <label htmlFor="composer-run-effort" data-testid="selected-effort" className="composer-run-settings-accent min-w-0 flex-1 text-center text-sm font-medium">{effortLabel}</label>
-          <button type="button" aria-label={translateInstant("Reset to agent default")} title={translateInstant("Reset to agent default")} disabled={!changed} onClick={reset} className="grid size-8 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-accent disabled:opacity-40"><RotateCcw className="size-4" /></button>
+          <AssigneeHeader
+            type={allowAssigneeChange ? "button" : undefined}
+            aria-label={
+              allowAssigneeChange
+                ? translateInstant("Choose assignee")
+                : undefined
+            }
+            onClick={allowAssigneeChange ? () => setView("agents") : undefined}
+            className={cn(
+              "flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-1 text-left",
+              allowAssigneeChange &&
+                "hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            )}
+          >
+            {renderAssigneeIdentity?.(
+              assigneeValue,
+              agent?.name ?? translateInstant("Unassigned"),
+              "option",
+            ) ?? (
+              <span className="grid size-6 shrink-0 place-items-center rounded-md bg-secondary text-xs font-semibold text-secondary-foreground">
+                {agent?.name.slice(0, 1) ?? "?"}
+              </span>
+            )}
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-medium">
+                {agent?.name ??
+                  options.find((item) => item.id === assigneeValue)?.label ??
+                  translateInstant("Unassigned")}
+              </span>
+              <span className="block truncate text-xs text-muted-foreground">
+                {harnessLabel(agent)}
+              </span>
+            </span>
+            {allowAssigneeChange ? (
+              <ChevronDown
+                className="size-4 shrink-0 text-muted-foreground"
+                aria-hidden
+              />
+            ) : null}
+          </AssigneeHeader>
+          {!choices.length && modelSupported ? (
+            <button
+              type="button"
+              aria-label={translateInstant("Reset to agent default")}
+              title={translateInstant("Reset to agent default")}
+              disabled={!changed}
+              onClick={reset}
+              className="grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-accent disabled:opacity-40"
+            >
+              <RotateCcw className="size-4" />
+            </button>
+          ) : null}
+          {closeButton}
         </div>
-        <input id="composer-run-effort" type="range" min={0} max={choices.length} step={1} value={effortIndex} aria-label={agent?.adapterType === "pi_local" ? translateInstant("Thinking") : translateInstant("taskComposer.runSettings.effort")} aria-valuetext={effortLabel}
-          onChange={(event) => {
-            const nextEffort = Number(event.target.value) === 0 ? null : choices[Number(event.target.value) - 1]!;
-            rememberComposerEffort(companyId, nextEffort);
-            onSettingsChange({ ...selected, effort: nextEffort });
-          }}
-          className="composer-run-effort-range mt-3 w-full" style={{ "--fill": `${effortIndex / choices.length * 100}%` } as CSSProperties} />
-      </div> : null}
-    </> : agent ? <div className="mt-3 rounded-md bg-muted/40 px-3 py-2 text-xs text-muted-foreground" data-testid="model-unavailable">{unavailableModelReason(agent)}</div> : null}
-  </div> : view === "agents" ? <div className="composer-run-settings-list-view p-2">
-    <div className="flex items-center gap-2 px-1 py-1.5"><span className="min-w-0 flex-1 text-xs font-semibold">{translateInstant("Choose assignee")}</span>{closeButton}</div>
-    <div className="relative mt-2"><Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" aria-hidden /><input autoFocus type="search" aria-label={translateInstant("Search assignees")} placeholder={translateInstant("Search assignees…")} value={assigneeSearch} onChange={(event) => { setAssigneeSearch(event.target.value); setHighlightedAssignee(0); }} onKeyDown={(event) => {
-      if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); setHighlightedAssignee((current) => filteredAgents.length ? (current + (event.key === "ArrowDown" ? 1 : -1) + filteredAgents.length) % filteredAgents.length : 0); }
-      if (event.key === "Enter" && filteredAgents.length) { event.preventDefault(); chooseAssignee(filteredAgents[Math.min(highlightedAssignee, filteredAgents.length - 1)]!.id); }
-    }} className="h-9 w-full rounded-md border border-border bg-background pl-8 pr-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring" /></div>
-    <div className="mt-2 min-h-0 max-h-60 overflow-y-auto overscroll-contain touch-pan-y" role="listbox" aria-label={translateInstant("Assignees")}>{filteredAgents.map((item, index) => {
-      const optionAgent = agents.get(item.id.startsWith("agent:") ? item.id.slice(6) : "");
-      const option = <button key={item.id} type="button" role="option" aria-selected={item.id === assigneeValue} onMouseEnter={() => setHighlightedAssignee(index)} onClick={() => chooseAssignee(item.id)} className={cn("flex w-full items-center gap-2 rounded-md px-2 py-2 text-left focus-visible:outline-none", highlightedAssignee === index ? "bg-accent" : "hover:bg-accent")}>{renderAssigneeIdentity?.(item.id, item.label, "option")}<span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{item.label}</span>{optionAgent ? <span className="block truncate text-xs text-muted-foreground">{optionAgent.role}</span> : null}</span>{optionAgent ? <span className="truncate text-xs text-muted-foreground">{harnessLabel(optionAgent)}</span> : null}{item.id === assigneeValue ? <Check className="composer-run-settings-accent size-4" /> : null}</button>;
-      // Keep mobile dismissal and focus restoration with Radix's dialog primitive.
-      return mobile ? <DialogClose asChild key={item.id}>{option}</DialogClose> : option;
-    })}{!filteredAgents.length ? <p className="px-2 py-2 text-xs text-muted-foreground">{translateInstant("No matches.")}</p> : null}</div>
-  </div> : <div className="composer-run-settings-list-view p-2">
-    <div className="flex items-center gap-2 px-1 py-1.5"><button type="button" aria-label={translateInstant("Back to selection")} onClick={() => setView("settings")} className="grid size-7 place-items-center rounded-md hover:bg-accent"><ArrowLeft className="size-4" /></button><span className="min-w-0 flex-1"><span className="block text-xs font-semibold">{translateInstant("Choose model")}</span><span className="block truncate text-xs text-muted-foreground">{harnessLabel(agent)}</span></span>{closeButton}</div>
-    <div className="relative mt-2"><Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" aria-hidden /><input autoFocus type="search" aria-label={translateInstant("Search or paste a model ID")} placeholder={translateInstant("Search or paste a model ID")} value={modelSearch} onChange={(event) => setModelSearch(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && manualValid && !exactMatch) chooseModel(query); }} className="h-9 w-full rounded-md border border-border bg-background pl-8 pr-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring" /></div>
-    <div className="mt-2 min-h-0 max-h-60 overflow-y-auto overscroll-contain touch-pan-y" role="listbox" aria-label={translateInstant("agentConfig.modelsGroupLabel")}>
-      {!query ? <button type="button" role="option" aria-selected={selected.model === null} onClick={() => chooseModel(null)} className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left hover:bg-accent"><span className="min-w-0 flex-1"><span className="block text-sm font-medium">{translateInstant("Use agent default")}</span><span className="block truncate text-xs text-muted-foreground">{models.find((item) => item.id === configuredModel)?.label || configuredModel || translateInstant("Default")}</span></span>{selected.model === null ? <Check className="composer-run-settings-accent size-4" /> : null}</button> : null}
-      {filteredModels.map((item) => <button type="button" role="option" aria-selected={selected.model === item.id} key={item.id} onClick={() => chooseModel(item.id)} className="flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-left text-sm transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"><span className="min-w-0 flex-1"><span className="block truncate font-medium">{item.label}</span><span className="block truncate font-mono text-xs text-muted-foreground">{item.id}</span></span>{item.detail || item.id === configuredModel ? <span className="shrink-0 text-xs text-muted-foreground">{item.detail ?? translateInstant("taskComposer.runSettings.agentDefault")}</span> : null}{selected.model === item.id ? <Check className="composer-run-settings-accent size-4 shrink-0" /> : null}</button>)}
-      {catalogPending ? <p className="px-2.5 py-2 text-xs text-muted-foreground">{translateInstant("Loading models…")}</p> : null}
-      {!catalogPending && !filteredModels.length && query ? <p className="px-2.5 py-2 text-xs text-muted-foreground">{translateInstant("No catalog match.")}</p> : null}
-    </div>
-    {query && !exactMatch ? <div className="mt-2 border-t border-border pt-2"><button type="button" disabled={!manualValid} onClick={() => chooseModel(query)} className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm hover:bg-accent disabled:opacity-40"><Plus className="size-4 shrink-0" aria-hidden /><span className="min-w-0 flex-1 truncate">{translateInstant("Use exact ID")}{" "}<span className="font-mono font-semibold">{query}</span></span></button>{!manualValid ? <p className="px-2.5 text-xs text-destructive">{translateInstant(provider === "openrouter" ? "taskComposer.runSettings.modelIdFormat" : "taskComposer.runSettings.modelIdsNoSpaces")}</p> : null}</div> : null}
-    <p className="px-2.5 pb-1 pt-2 text-xs text-muted-foreground">{translateInstant(provider === "openrouter" ? "taskComposer.runSettings.customIdsHint" : "taskComposer.runSettings.customModelIdsHint")}</p>
-  </div>;
+        {modelSupported ? (
+          <>
+            <button
+              type="button"
+              aria-label={translateInstant("Choose exact model")}
+              onClick={() => setView("models")}
+              className="mt-3 flex w-full items-center gap-2 rounded-md px-1 py-1 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-xs text-muted-foreground">
+                  {translateInstant("Model")}
+                </span>
+                <span className="block truncate text-sm font-medium">
+                  {modelName || translateInstant("Default")}
+                </span>
+              </span>
+              <ChevronDown
+                className="size-4 shrink-0 text-muted-foreground"
+                aria-hidden
+              />
+            </button>
+            {choices.length ? (
+              <div className="mt-3">
+                <div className="flex items-center gap-2">
+                  {fastAvailable ? (
+                    <button
+                      type="button"
+                      aria-label={translateInstant("agentConfig.fastMode")}
+                      aria-pressed={selected.fast}
+                      title={translateInstant("agentConfig.fastMode")}
+                      onClick={() =>
+                        onSettingsChange({ ...selected, fast: !selected.fast })
+                      }
+                      className={cn(
+                        "grid size-8 shrink-0 place-items-center rounded-md hover:bg-accent",
+                        selected.fast
+                          ? "composer-run-settings-accent bg-accent"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      <Zap className="size-4" />
+                    </button>
+                  ) : (
+                    <span className="size-8 shrink-0" aria-hidden />
+                  )}
+                  <label
+                    htmlFor="composer-run-effort"
+                    data-testid="selected-effort"
+                    className="composer-run-settings-accent min-w-0 flex-1 text-center text-sm font-medium"
+                  >
+                    {effortLabel}
+                  </label>
+                  <button
+                    type="button"
+                    aria-label={translateInstant("Reset to agent default")}
+                    title={translateInstant("Reset to agent default")}
+                    disabled={!changed}
+                    onClick={reset}
+                    className="grid size-8 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-accent disabled:opacity-40"
+                  >
+                    <RotateCcw className="size-4" />
+                  </button>
+                </div>
+                <input
+                  id="composer-run-effort"
+                  type="range"
+                  min={0}
+                  max={choices.length}
+                  step={1}
+                  value={effortIndex}
+                  aria-label={
+                    agent?.adapterType === "pi_local"
+                      ? translateInstant("Thinking")
+                      : translateInstant("taskComposer.runSettings.effort")
+                  }
+                  aria-valuetext={effortLabel}
+                  onChange={(event) => {
+                    const nextEffort =
+                      Number(event.target.value) === 0
+                        ? null
+                        : choices[Number(event.target.value) - 1]!;
+                    rememberComposerEffort(companyId, nextEffort);
+                    onSettingsChange({ ...selected, effort: nextEffort });
+                  }}
+                  className="composer-run-effort-range mt-3 w-full"
+                  style={
+                    {
+                      "--fill": `${(effortIndex / choices.length) * 100}%`,
+                    } as CSSProperties
+                  }
+                />
+              </div>
+            ) : null}
+          </>
+        ) : agent ? (
+          <div
+            className="mt-3 rounded-md bg-muted/40 px-3 py-2 text-xs text-muted-foreground"
+            data-testid="model-unavailable"
+          >
+            {unavailableModelReason(agent)}
+          </div>
+        ) : null}
+      </div>
+    ) : view === "agents" ? (
+      <div className="composer-run-settings-list-view p-2">
+        <div className="flex items-center gap-2 px-1 py-1.5">
+          <span className="min-w-0 flex-1 text-xs font-semibold">
+            {translateInstant("Choose assignee")}
+          </span>
+          {closeButton}
+        </div>
+        <div className="relative mt-2">
+          <Search
+            className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground"
+            aria-hidden
+          />
+          <input
+            autoFocus
+            type="search"
+            aria-label={translateInstant("Search assignees")}
+            placeholder={translateInstant("Search assignees…")}
+            value={assigneeSearch}
+            onChange={(event) => {
+              setAssigneeSearch(event.target.value);
+              setHighlightedAssignee(0);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                event.preventDefault();
+                setHighlightedAssignee((current) =>
+                  filteredAgents.length
+                    ? (current +
+                        (event.key === "ArrowDown" ? 1 : -1) +
+                        filteredAgents.length) %
+                      filteredAgents.length
+                    : 0,
+                );
+              }
+              if (event.key === "Enter" && filteredAgents.length) {
+                event.preventDefault();
+                chooseAssignee(
+                  filteredAgents[
+                    Math.min(highlightedAssignee, filteredAgents.length - 1)
+                  ]!.id,
+                );
+              }
+            }}
+            className="h-9 w-full rounded-md border border-border bg-background pl-8 pr-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+          />
+        </div>
+        <div
+          className="mt-2 min-h-0 max-h-60 overflow-y-auto overscroll-contain touch-pan-y"
+          role="listbox"
+          aria-label={translateInstant("Assignees")}
+        >
+          {filteredAgents.map((item, index) => {
+            const optionAgent = agents.get(
+              item.id.startsWith("agent:") ? item.id.slice(6) : "",
+            );
+            const option = (
+              <button
+                key={item.id}
+                type="button"
+                role="option"
+                aria-selected={item.id === assigneeValue}
+                onMouseEnter={() => setHighlightedAssignee(index)}
+                onClick={() => chooseAssignee(item.id)}
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-md px-2 py-2 text-left focus-visible:outline-none",
+                  highlightedAssignee === index
+                    ? "bg-accent"
+                    : "hover:bg-accent",
+                )}
+              >
+                {renderAssigneeIdentity?.(item.id, item.label, "option")}
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">
+                    {item.label}
+                  </span>
+                  {optionAgent ? (
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {optionAgent.role}
+                    </span>
+                  ) : null}
+                </span>
+                {optionAgent ? (
+                  <span className="truncate text-xs text-muted-foreground">
+                    {harnessLabel(optionAgent)}
+                  </span>
+                ) : null}
+                {item.id === assigneeValue ? (
+                  <Check className="composer-run-settings-accent size-4" />
+                ) : null}
+              </button>
+            );
+            // Keep mobile dismissal and focus restoration with Radix's dialog primitive.
+            return mobile ? (
+              <DialogClose asChild key={item.id}>
+                {option}
+              </DialogClose>
+            ) : (
+              option
+            );
+          })}
+          {!filteredAgents.length ? (
+            <p className="px-2 py-2 text-xs text-muted-foreground">
+              {translateInstant("No matches.")}
+            </p>
+          ) : null}
+        </div>
+      </div>
+    ) : (
+      <div className="composer-run-settings-list-view p-2">
+        <div className="flex items-center gap-2 px-1 py-1.5">
+          <button
+            type="button"
+            aria-label={translateInstant("Back to selection")}
+            onClick={() => setView("settings")}
+            className="grid size-7 place-items-center rounded-md hover:bg-accent"
+          >
+            <ArrowLeft className="size-4" />
+          </button>
+          <span className="min-w-0 flex-1">
+            <span className="block text-xs font-semibold">
+              {translateInstant("Choose model")}
+            </span>
+            <span className="block truncate text-xs text-muted-foreground">
+              {harnessLabel(agent)}
+            </span>
+          </span>
+          {closeButton}
+        </div>
+        <div className="relative mt-2">
+          <Search
+            className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground"
+            aria-hidden
+          />
+          <input
+            autoFocus
+            type="search"
+            aria-label={translateInstant("Search or paste a model ID")}
+            placeholder={translateInstant("Search or paste a model ID")}
+            value={modelSearch}
+            onChange={(event) => setModelSearch(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && manualValid && !exactMatch)
+                chooseModel(query);
+            }}
+            className="h-9 w-full rounded-md border border-border bg-background pl-8 pr-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+          />
+        </div>
+        <div
+          className="mt-2 min-h-0 max-h-60 overflow-y-auto overscroll-contain touch-pan-y"
+          role="listbox"
+          aria-label={translateInstant("agentConfig.modelsGroupLabel")}
+        >
+          {!query ? (
+            <button
+              type="button"
+              role="option"
+              aria-selected={selected.model === null}
+              onClick={() => chooseModel(null)}
+              className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left hover:bg-accent"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium">
+                  {translateInstant("Use agent default")}
+                </span>
+                <span className="block truncate text-xs text-muted-foreground">
+                  {models.find((item) => item.id === configuredModel)?.label ||
+                    configuredModel ||
+                    translateInstant("Default")}
+                </span>
+              </span>
+              {selected.model === null ? (
+                <Check className="composer-run-settings-accent size-4" />
+              ) : null}
+            </button>
+          ) : null}
+          {filteredModels.map((item) => (
+            <button
+              type="button"
+              role="option"
+              aria-selected={selected.model === item.id}
+              key={item.id}
+              onClick={() => chooseModel(item.id)}
+              className="flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-left text-sm transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-medium">{item.label}</span>
+                <span className="block truncate font-mono text-xs text-muted-foreground">
+                  {item.id}
+                </span>
+              </span>
+              {item.detail || item.id === configuredModel ? (
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {item.detail ??
+                    translateInstant("taskComposer.runSettings.agentDefault")}
+                </span>
+              ) : null}
+              {selected.model === item.id ? (
+                <Check className="composer-run-settings-accent size-4 shrink-0" />
+              ) : null}
+            </button>
+          ))}
+          {catalogPending ? (
+            <p className="px-2.5 py-2 text-xs text-muted-foreground">
+              {translateInstant("Loading models…")}
+            </p>
+          ) : null}
+          {!catalogPending && !filteredModels.length && query ? (
+            <p className="px-2.5 py-2 text-xs text-muted-foreground">
+              {translateInstant("No catalog match.")}
+            </p>
+          ) : null}
+        </div>
+        {query && !exactMatch ? (
+          <div className="mt-2 border-t border-border pt-2">
+            <button
+              type="button"
+              disabled={!manualValid}
+              onClick={() => chooseModel(query)}
+              className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm hover:bg-accent disabled:opacity-40"
+            >
+              <Plus className="size-4 shrink-0" aria-hidden />
+              <span className="min-w-0 flex-1 truncate">
+                {translateInstant("Use exact ID")}{" "}
+                <span className="font-mono font-semibold">{query}</span>
+              </span>
+            </button>
+            {!manualValid ? (
+              <p className="px-2.5 text-xs text-destructive">
+                {translateInstant(
+                  provider === "openrouter"
+                    ? "taskComposer.runSettings.modelIdFormat"
+                    : "taskComposer.runSettings.modelIdsNoSpaces",
+                )}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+        <p className="px-2.5 pb-1 pt-2 text-xs text-muted-foreground">
+          {translateInstant(
+            provider === "openrouter"
+              ? "taskComposer.runSettings.customIdsHint"
+              : "taskComposer.runSettings.customModelIdsHint",
+          )}
+        </p>
+      </div>
+    );
 
-  const onOpenChange = (next: boolean) => { setOpen(next); if (!next) { setView("settings"); setModelSearch(""); setAssigneeSearch(""); } };
+  const onOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (!next) {
+      setView("settings");
+      setModelSearch("");
+      setAssigneeSearch("");
+    }
+  };
   // The desktop portal needs its own scroll lock inside the new-task dialog.
-  return mobile ? <Dialog open={open} onOpenChange={onOpenChange}>{triggers}<DialogContent aria-describedby={undefined} showCloseButton={false} style={mobileViewportStyle} className="composer-mobile-dialog gap-0 overflow-hidden p-0" data-testid="composer-mobile-dialog"><DialogTitle className="sr-only">{translateInstant(view === "agents" ? "Select assignee" : modelSupported ? "Select model and effort" : "Agent run settings")}</DialogTitle><AnimatedBody>{body}</AnimatedBody></DialogContent></Dialog>
-    : <Popover modal open={open} onOpenChange={onOpenChange}><PopoverAnchor asChild>{triggers}</PopoverAnchor><PopoverContent side="top" align="end" sideOffset={8} className="w-80 max-w-full p-0 shadow-sm" data-testid="composer-model-popover"><AnimatedBody>{body}</AnimatedBody></PopoverContent></Popover>;
+  return mobile ? (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {triggers}
+      <DialogContent
+        aria-describedby={undefined}
+        showCloseButton={false}
+        style={mobileViewportStyle}
+        className="composer-mobile-dialog gap-0 overflow-hidden p-0"
+        data-testid="composer-mobile-dialog"
+      >
+        <DialogTitle className="sr-only">
+          {translateInstant(
+            view === "agents"
+              ? "Select assignee"
+              : modelSupported
+                ? "Select model and effort"
+                : "Agent run settings",
+          )}
+        </DialogTitle>
+        <AnimatedBody>{body}</AnimatedBody>
+      </DialogContent>
+    </Dialog>
+  ) : (
+    <Popover modal open={open} onOpenChange={onOpenChange}>
+      <PopoverAnchor asChild>{triggers}</PopoverAnchor>
+      <PopoverContent
+        side="top"
+        align="end"
+        sideOffset={8}
+        className="w-80 max-w-full p-0 shadow-sm"
+        data-testid="composer-model-popover"
+      >
+        <AnimatedBody>{body}</AnimatedBody>
+      </PopoverContent>
+    </Popover>
+  );
 }
