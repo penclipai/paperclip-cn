@@ -25,19 +25,31 @@ export type DurableAutosaveResult =
   /** A definitive failure; the caller may handle it (a conflict view, a lock notice). */
   | { kind: "failed"; error: unknown };
 
-/** Copy for the autosave indicator. */
-export function autosaveLabel(status: DurableAutosaveStatus, error: ErrorDescription | null): string | null {
+type AutosaveTranslator = (key: string, options: { defaultValue: string; reason?: string }) => string;
+
+/** Copy for the autosave indicator. Callers may pass their live locale translator. */
+export function autosaveLabel(
+  status: DurableAutosaveStatus,
+  error: ErrorDescription | null,
+  translate?: AutosaveTranslator,
+): string | null {
+  const label = (key: string, defaultValue: string, reason?: string) =>
+    translate
+      ? translate(key, { defaultValue, ...(reason === undefined ? {} : { reason }) })
+      : reason === undefined ? defaultValue : defaultValue.replace("{{reason}}", reason);
   switch (status) {
     case "saving":
-      return "Saving…";
+      return label("autosave.saving", "Saving…");
     case "saved":
-      return "Saved";
+      return label("autosave.saved", "Saved");
     case "waiting":
-      return "Will save when reconnected";
+      return label("autosave.waiting", "Will save when reconnected");
     case "stalled":
-      return "Automatic saving paused";
+      return label("autosave.paused", "Automatic saving paused");
     case "error":
-      return error ? `Couldn't save (${error.body.replace(/\.$/, "")})` : "Couldn't save";
+      return error
+        ? label("autosave.couldNotSaveWithReason", "Couldn't save ({{reason}})", error.body.replace(/\.$/, ""))
+        : label("autosave.couldNotSave", "Couldn't save");
     default:
       return null;
   }

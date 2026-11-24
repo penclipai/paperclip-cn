@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, useCallback, useId } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "../lib/utils";
 import { MarkdownBody, type MarkdownExternalReferenceMap } from "./MarkdownBody";
 import { MarkdownEditor, type MarkdownEditorRef, type MentionOption } from "./MarkdownEditor";
 import { ApiError } from "../api/client";
-import { useDurableAutosave } from "../hooks/useDurableAutosave";
+import { autosaveLabel, useDurableAutosave } from "../hooks/useDurableAutosave";
 import { useDraftOwner } from "../hooks/useDraftOwner";
 import { loadStructuredDraft, saveStructuredDraft } from "../lib/composer-draft";
 
@@ -100,6 +101,7 @@ function OwnedInlineEditor({
   readCurrentValue,
   draftOwner,
 }: InlineEditorProps & { draftOwner: string | undefined }) {
+  const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const editingChangeCallback = useRef(onEditingChange);
   editingChangeCallback.current = onEditingChange;
@@ -127,33 +129,7 @@ function OwnedInlineEditor({
   const pendingFocusFrameRef = useRef<number | null>(null);
   const justEnteredEditRef = useRef(multiline && defaultEditing);
   const hasBeenFocusedRef = useRef(false);
-  const autosave = useDurableAutosave<string>({
-    sourceId: `inline-editor:${useId()}`,
-    targetKey: draftKey ?? undefined,
-    save: async (next) => {
-      await onSave(next);
-    },
-  });
-  const { markDirty, clearDirty, reset, run: runAutosave } = autosave;
-  const runInlineAutosave = useCallback((next: string) => {
-    const restored = restoredBaseRef.current;
-    const readCurrent = readCurrentValueRef.current;
-    return runAutosave(next, {
-      beforeSave: restored && restored.draft.trim() === next && readCurrent ? async () => {
-        const current = await readCurrent();
-        if (current !== restored.base && current.trim() !== next) {
-          throw new ApiError("This changed since you loaded it. Your draft is kept for review.", 409, {});
-        }
-      } : undefined,
-    });
-  }, [runAutosave]);
-  const autosaveState = autosave.status;
-  const autosaveStateRef = useRef(autosaveState);
-  autosaveStateRef.current = autosaveState;
-
-  // Unsaved edits are stored with the value they were based on, so a restored
-  // edit never silently overwrites a newer server value, and per signed-in
-  // account, so another account in this browser never sees or saves them.
+  const saveInFlightRef = useRef(0);
   const storageKey = draftKey && draftOwner !== undefined ? `paperclip:inline-draft:v2:${draftOwner}:${draftKey}` : null;
   const clearStoredDraft = useCallback(() => {
     if (!storageKey) return;
@@ -163,21 +139,56 @@ function OwnedInlineEditor({
       // Unavailable storage holds nothing to clear.
     }
   }, [storageKey]);
-
-  // Any path that lands the edit (blur, autosave, a resend after an outage)
-  // updates `value`; the stored copy is then no longer needed.
-  useEffect(() => {
+  const clearStoredDraftIfMatches = useCallback((savedDraft: string) => {
     if (!storageKey) return;
     const stored = loadStructuredDraft<StoredInlineDraft | null>(storageKey, null);
-    if (stored && typeof stored.draft === "string" && stored.draft.trim() === value.trim()) clearStoredDraft();
-  }, [clearStoredDraft, storageKey, value]);
+    if (typeof stored?.draft === "string" && stored.draft.trim() === savedDraft.trim()) clearStoredDraft();
+  }, [clearStoredDraft, storageKey]);
+  const autosave = useDurableAutosave<string>({
+    sourceId: `inline-editor:${useId()}`,
+    targetKey: draftKey ?? undefined,
+    save: async (next) => {
+      saveInFlightRef.current += 1;
+      try {
+        await onSave(next);
+        // This is the only success path that knows the server write landed.
+        // It also runs for deferred retries after `run` first returned waiting.
+        clearStoredDraftIfMatches(next);
+      } finally {
+        saveInFlightRef.current -= 1;
+      }
+    },
+  });
+  const { markDirty, clearDirty, reset, run: runAutosave } = autosave;
+  const runInlineAutosave = useCallback(async (next: string) => {
+    const restored = restoredBaseRef.current;
+    const readCurrent = readCurrentValueRef.current;
+    const result = await runAutosave(next, {
+      beforeSave: restored && restored.draft.trim() === next && readCurrent ? async () => {
+        const current = await readCurrent();
+        if (current !== restored.base && current.trim() !== next) {
+          throw new ApiError("This changed since you loaded it. Your draft is kept for review.", 409, {});
+        }
+      } : undefined,
+    });
+    return result;
+  }, [runAutosave]);
+  const autosaveState = autosave.status;
+  const autosaveStateRef = useRef(autosaveState);
+  autosaveStateRef.current = autosaveState;
+
+  // Unsaved edits are stored with the value they were based on, so a restored
+  // edit never silently overwrites a newer server value, and per signed-in
+  // account, so another account in this browser never sees or saves them.
 
   const changeDraft = useCallback((next: string) => {
     restoredBaseRef.current = null;
     setDraft(next);
     if (draftOwner === undefined) unownedDraft.current = { version: 1, draft: next, base: value };
     if (!storageKey) return;
-    if (next.trim() === value.trim()) clearStoredDraft();
+    // A parent can optimistically reflect an in-flight write. Do not mistake
+    // that value equality for a server acknowledgement.
+    if (next.trim() === value.trim() && saveInFlightRef.current === 0) clearStoredDraft();
     else saveStructuredDraft(storageKey, { version: 1, draft: next, base: value } satisfies StoredInlineDraft);
   }, [clearStoredDraft, draftOwner, storageKey, value]);
 
@@ -310,7 +321,7 @@ function OwnedInlineEditor({
       : Boolean(valueToSave && valueChanged);
     if (!shouldSave) {
       setDraft(value);
-      if (draftKey) clearStoredDraft();
+      if (draftKey && saveInFlightRef.current === 0) clearStoredDraft();
       if (!multiline) setEditing(false);
       return;
     }
@@ -322,7 +333,7 @@ function OwnedInlineEditor({
   /** Multiline blur/submit: show autosave indicator when persisting */
   const finalizeMultilineBlurOrSubmit = useCallback(() => {
     const trimmed = draft.trim();
-    if (trimmed === value || (!trimmed && !nullable)) {
+    if ((trimmed === value || (!trimmed && !nullable)) && saveInFlightRef.current === 0) {
       reset();
     }
     void commit();
@@ -502,9 +513,9 @@ function OwnedInlineEditor({
             )}
             role={autosaveState === "error" ? "alert" : "status"}
           >
-            {autosave.label ?? "Idle"}
+            {autosaveLabel(autosaveState, autosave.error, t) ?? ""}
           </span>
-          {autosaveState === "stalled" ? <button type="button" className="ml-2 text-xs text-foreground underline" onClick={autosave.resendNow}>Retry saving</button> : null}
+          {autosaveState === "stalled" ? <button type="button" className="ml-2 text-xs text-foreground underline" onClick={autosave.resendNow}>{t("autosave.retrySaving", { defaultValue: "Retry saving" })}</button> : null}
         </div>
       </div>
     );
@@ -516,7 +527,7 @@ function OwnedInlineEditor({
         ref={inputRef}
         value={draft}
         aria-invalid={autosaveState === "error" || undefined}
-        aria-description={autosaveState === "error" ? autosave.label ?? undefined : undefined}
+        aria-description={autosaveState === "error" ? autosaveLabel(autosaveState, autosave.error, t) ?? undefined : undefined}
         rows={1}
         aria-label={placeholder}
         onChange={(e) => {
@@ -559,7 +570,7 @@ function OwnedInlineEditor({
     >
       {value || placeholder}
     </DisplayTag>
-    {autosaveState === "stalled" ? <button type="button" className="text-xs text-foreground underline" onClick={autosave.resendNow}>Retry saving</button> : null}
+    {autosaveState === "stalled" ? <button type="button" className="text-xs text-foreground underline" onClick={autosave.resendNow}>{t("autosave.retrySaving", { defaultValue: "Retry saving" })}</button> : null}
     </>
   );
 }

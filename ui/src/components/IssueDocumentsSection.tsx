@@ -15,7 +15,7 @@ import { isArtifactReviewDocumentKey, isSystemIssueDocumentKey } from "@penclipa
 import { useLocation } from "@/lib/router";
 import { ApiError } from "../api/client";
 import { issuesApi } from "../api/issues";
-import { useDurableAutosave } from "../hooks/useDurableAutosave";
+import { autosaveLabel, useDurableAutosave } from "../hooks/useDurableAutosave";
 import { describeError } from "../api/errors";
 import { loadStructuredDraft, saveStructuredDraft } from "../lib/composer-draft";
 import { copyTextToClipboard } from "../lib/clipboard";
@@ -185,6 +185,31 @@ function clearStoredDocumentDraft(scope: string | null, key: string) {
   } catch {
     // Unavailable storage holds nothing to clear.
   }
+}
+
+function reconcileStoredDocumentDraft(
+  scope: string | null,
+  savedDraft: DraftState,
+  saved: IssueDocument,
+) {
+  if (!scope || !saved.latestRevisionId) return;
+  const stored = loadStoredDocumentDraft(scope, savedDraft.key);
+  if (!stored) return;
+  // A stored draft can come from another tab or a later mount. Only the exact
+  // base used by this request may be retired or rebased by its late response.
+  if (stored.baseRevisionId !== savedDraft.baseRevisionId) return;
+  if (stored.title === savedDraft.title && stored.body === savedDraft.body) {
+    clearStoredDocumentDraft(scope, savedDraft.key);
+    return;
+  }
+  // A previous request can finish after later typing or after the pane closes.
+  // Keep that newer text and make its next save target the confirmed revision.
+  saveStructuredDraft(documentDraftStorageKey(scope, saved.key), {
+    ...stored,
+    key: saved.key,
+    baseRevisionId: saved.latestRevisionId,
+    isNew: false,
+  });
 }
 
 function newDocumentDraftStorageKey(scope: string) {
@@ -703,7 +728,7 @@ function AccountIssueDocumentsSection({
         : currentDraft.baseRevisionId,
     };
     const applySaved = (saved: IssueDocument) => {
-      clearStoredDocumentDraft(draftScope, normalizedKey);
+      reconcileStoredDocumentDraft(draftScope, currentDraft, saved);
       clearStoredNewDocumentDraft(newDraftScope, currentDraft);
       const retained = currentDraft.isNew ? loadStoredNewDocumentDraft(newDraftScope) : null;
       if (newDraftScope && retained?.isNew && retained.key.trim().toLowerCase() === normalizedKey && saved.latestRevisionId) {
@@ -1629,11 +1654,11 @@ function AccountIssueDocumentsSection({
                           ? activeConflict
                           ? t("issueDocuments.outOfDate", { defaultValue: "Out of date" })
                           : autosaveDocumentKey === doc.key
-                            ? autosave.label ?? ""
+                            ? autosaveLabel(autosaveState, autosave.error, t) ?? ""
                             : ""
                           : ""}
                     </span>
-                    {activeDraft && autosaveDocumentKey === doc.key && autosaveState === "stalled" ? <Button type="button" size="sm" variant="ghost" onClick={autosave.resendNow}>Retry saving</Button> : null}
+                    {activeDraft && autosaveDocumentKey === doc.key && autosaveState === "stalled" ? <Button type="button" size="sm" variant="ghost" onClick={autosave.resendNow}>{t("autosave.retrySaving", { defaultValue: "Retry saving" })}</Button> : null}
                   </div>
                   {canVoteOnDocument && doc.latestRevisionId ? (
                     <OutputFeedbackButtons

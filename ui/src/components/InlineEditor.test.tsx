@@ -20,8 +20,10 @@ vi.mock("react-i18next", async (importOriginal) => {
     ...actual,
     initReactI18next: { type: "3rdParty", init: () => {} },
     useTranslation: () => ({
-      t: (key: string, options?: Record<string, unknown>) =>
-        typeof options?.defaultValue === "string" ? options.defaultValue : key,
+      t: (key: string, options?: Record<string, unknown>) => {
+        if (typeof options?.defaultValue !== "string") return key;
+        return options.defaultValue.replace("{{reason}}", typeof options.reason === "string" ? options.reason : "{{reason}}");
+      },
     }),
   };
 });
@@ -230,6 +232,39 @@ describe("InlineEditor", () => {
     window.removeEventListener("unhandledrejection", unhandled);
     process.off("unhandledRejection", unhandled);
     act(() => root.unmount());
+  });
+
+  it("keeps a recovery draft through optimistic update, blur, and unmount until save confirmation", async () => {
+    const key = "paperclip:inline-draft:v2:user-1:optimistic-save";
+    let resolve!: () => void;
+    const onSave = vi.fn(() => new Promise<void>((done) => { resolve = done; }));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData(queryKeys.auth.session, { user: { id: "user-1" } });
+    const root = createRoot(container);
+    const render = (value: string) => root.render(<QueryClientProvider client={client}>
+      <InlineEditor value={value} draftKey="optimistic-save" onSave={onSave} />
+    </QueryClientProvider>);
+    try {
+      await act(async () => render("Original"));
+      await act(async () => container.querySelector("span")!.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+      const input = container.querySelector("textarea")!;
+      await act(async () => setNativeTextareaValue(input, "Saved only after confirmation"));
+      await act(async () => input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
+      expect(onSave).toHaveBeenCalledWith("Saved only after confirmation");
+      await act(async () => render("Saved only after confirmation"));
+      // A blur after the optimistic prop update must not treat equality as a
+      // confirmed save, and unmount must leave recovery data for a slow write.
+      await act(async () => input.blur());
+      expect(localStorage.getItem(key)).toContain("Saved only after confirmation");
+      await act(async () => root.unmount());
+      expect(localStorage.getItem(key)).toContain("Saved only after confirmation");
+      await act(async () => resolve());
+      expect(localStorage.getItem(key)).toBeNull();
+    } finally {
+      if (container.firstChild) act(() => root.unmount());
+      client.clear();
+      localStorage.clear();
+    }
   });
 
   it.each([false, true])("checks a restored draft against a fresh field after session verification (multiline=%s)", async (multiline) => {

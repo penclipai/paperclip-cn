@@ -1539,6 +1539,42 @@ describe("IssueDocumentsSection", () => {
     queryClient.clear();
   });
 
+  it.each([
+    { newerBase: "revision-4", expectedBase: "revision-5", outcome: "rebases the same-base draft" },
+    { newerBase: "revision-6", expectedBase: "revision-6", outcome: "keeps a draft from a different base" },
+  ])("$outcome when an older save completes after unmount", async ({ newerBase, expectedBase }) => {
+    const issue = createIssue();
+    const key = `paperclip:document-draft:v2:user-1:${issue.id}:plan`;
+    const server = createIssueDocument({ body: "Server body", latestRevisionId: "revision-4" });
+    const saved = createIssueDocument({ body: "First saved body", latestRevisionId: "revision-5", latestRevisionNumber: 5 });
+    const pendingSave = deferred<IssueDocument>();
+    mockIssuesApi.listDocuments.mockResolvedValue([server]);
+    mockIssuesApi.upsertDocument.mockReturnValue(pendingSave.promise);
+    localStorage.setItem(key, JSON.stringify({
+      key: "plan", title: "Plan", body: "First saved body", baseRevisionId: "revision-4", isNew: false,
+    }));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    client.setQueryData(queryKeys.auth.session, { user: { id: "user-1" } });
+    const root = createRoot(container);
+    try {
+      await act(async () => root.render(<QueryClientProvider client={client}><IssueDocumentsSection issue={issue} canDeleteDocuments={false} /></QueryClientProvider>));
+      await flush();
+      await act(async () => new Promise(resolve => setTimeout(resolve, 1_100)));
+      expect(mockIssuesApi.upsertDocument).toHaveBeenCalledOnce();
+      // A later edit can already be persisted after the pane has gone away.
+      localStorage.setItem(key, JSON.stringify({
+        key: "plan", title: "Plan", body: "Newer local text", baseRevisionId: newerBase, isNew: false,
+      }));
+      await act(async () => root.unmount());
+      await act(async () => pendingSave.resolve(saved));
+      const retained = JSON.parse(localStorage.getItem(key)!);
+      expect(retained).toMatchObject({ body: "Newer local text", baseRevisionId: expectedBase, isNew: false });
+    } finally {
+      client.clear();
+      localStorage.clear();
+    }
+  });
+
   it("treats a 409 on a new document whose saved copy is ours as created", async () => {
     const { ApiError } = await import("../api/client");
     const issue = createIssue();
