@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { ArchiveRestore, MoreHorizontal, Plus, ShieldCheck, Users } from "lucide-react";
-import type { ToolProfileWithDetails } from "@penclipai/shared";
+import type { ToolProfileListItem } from "@penclipai/shared";
 import { useNavigate } from "@/lib/router";
 import { toolsApi } from "@/api/tools";
 import { queryKeys } from "@/lib/queryKeys";
@@ -29,7 +29,7 @@ import { EffectiveAgentPanel } from "../ProfilesTab";
 import { LoadingState, RelativeTime, ToolsPageHeader } from "../shared";
 import { ProfileActionDialog, type ProfileActionDialogKind } from "./ProfileActionDialog";
 import { TEMPLATES, type TemplateKey } from "./profile-model";
-import { useProfilesData } from "./useProfilesData";
+import { useProfileIndexData } from "./useProfilesData";
 import { allowsLabel, assignedLabel, isDraft, STATUS_LABEL } from "./profile-summary";
 
 const TEMPLATE_TRANSLATIONS: Record<TemplateKey, { titleKey: string; descriptionKey: string }> = {
@@ -47,7 +47,7 @@ function newProfileHref(template?: TemplateKey): string {
     : "/apps/advanced/profiles/new";
 }
 
-function statusVariant(status: ToolProfileWithDetails["status"]): "default" | "secondary" | "outline" {
+function statusVariant(status: ToolProfileListItem["status"]): "default" | "secondary" | "outline" {
   if (status === "active") return "default";
   if (status === "draft") return "secondary";
   return "outline";
@@ -66,13 +66,13 @@ export function ProfilesIndex({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
-  const { profiles, agents } = useProfilesData(companyId);
+  const { profiles, agents } = useProfileIndexData(companyId);
   const profilesView = useQueryView(profiles);
   const [resolverOpen, setResolverOpen] = useState(Boolean(initialResolverOpen));
   const [statusFilter, setStatusFilter] = useState<"active" | "archived">(initialStatusFilter ?? "active");
   const [actionDialog, setActionDialog] = useState<{
     kind: ProfileActionDialogKind;
-    profile: ToolProfileWithDetails;
+    profile: ToolProfileListItem;
   } | null>(null);
 
   useEffect(() => {
@@ -92,7 +92,7 @@ export function ProfilesIndex({
   const errorBody = (error: unknown) => String((error as Error)?.message ?? error);
 
   const duplicate = useMutation({
-    mutationFn: (profile: ToolProfileWithDetails) =>
+    mutationFn: (profile: ToolProfileListItem) =>
       toolsApi.duplicateProfile(profile.id, {
         name: t("tools.profiles.dialog.copyNameParenthetical", { defaultValue: "{{name}} (copy)", name: profile.name }),
       }),
@@ -109,7 +109,7 @@ export function ProfilesIndex({
   });
 
   const archive = useMutation({
-    mutationFn: (profile: ToolProfileWithDetails) =>
+    mutationFn: (profile: ToolProfileListItem) =>
       toolsApi.updateProfile(profile.id, { status: "archived" }),
     onSuccess: () => {
       pushToast({ title: t("tools.profiles.toast.archived", { defaultValue: "Profile archived" }), tone: "success" });
@@ -119,7 +119,7 @@ export function ProfilesIndex({
   });
 
   const restore = useMutation({
-    mutationFn: (profile: ToolProfileWithDetails) =>
+    mutationFn: (profile: ToolProfileListItem) =>
       toolsApi.updateProfile(profile.id, { status: "active" }),
     onSuccess: () => {
       pushToast({ title: t("tools.profiles.toast.restored", { defaultValue: "Profile restored" }), tone: "success" });
@@ -129,7 +129,7 @@ export function ProfilesIndex({
   });
 
   const remove = useMutation({
-    mutationFn: (profile: ToolProfileWithDetails) => toolsApi.deleteProfile(profile.id),
+    mutationFn: (profile: ToolProfileListItem) => toolsApi.deleteProfile(profile.id),
     onSuccess: () => {
       pushToast({ title: t("tools.profiles.toast.deleted", { defaultValue: "Profile deleted" }), tone: "success" });
       invalidate();

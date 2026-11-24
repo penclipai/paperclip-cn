@@ -2229,6 +2229,16 @@
     "zh-CN": "此访问配置停止应用于 {{count}} 智能体。您可以稍后恢复它。",
     "reviewedEnglishHash": "338fc8664d268ad64829835628d35bdfefa05dc7243f3b70b97e880388906585"
   },
+  "tools.profiles.actions.archive.body_one": {
+    "en": "This profile stops applying to {{count}} agent. You can restore it later.",
+    "zh-CN": "此访问配置将停止应用于 {{count}} 个智能体。您可以稍后恢复它。",
+    "reviewedEnglishHash": "36ee555711bd4c4ed6769dbe52c763e0e65856136697039e0cd8dde797387e33"
+  },
+  "tools.profiles.actions.archive.body_other": {
+    "en": "This profile stops applying to {{count}} agents. You can restore it later.",
+    "zh-CN": "此访问配置将停止应用于 {{count}} 个智能体。您可以稍后恢复它。",
+    "reviewedEnglishHash": "81d49b8fe16a1a02a357946c9a2f088d958e7a4ac232de8cd526d3edf2be4914"
+  },
   "tools.profiles.actions.archive.confirm": {
     "en": "Archive",
     "zh-CN": "存档",
@@ -2244,6 +2254,16 @@
     "zh-CN": "这将永久删除访问配置并删除 {{count}} 分配。",
     "reviewedEnglishHash": "36735d4ec6982ed3489c9d20e50ff9d38c999bb10a0f657c57c6f0525f9d2a1b"
   },
+  "tools.profiles.actions.delete.body_one": {
+    "en": "This permanently deletes the profile and removes {{count}} assignment.",
+    "zh-CN": "这将永久删除该访问配置并移除 {{count}} 个分配。",
+    "reviewedEnglishHash": "a24b865ad397f1e802063e13faa16b5d47b5c9c0af8877fba024b78af6956155"
+  },
+  "tools.profiles.actions.delete.body_other": {
+    "en": "This permanently deletes the profile and removes {{count}} assignments.",
+    "zh-CN": "这将永久删除该访问配置并移除 {{count}} 个分配。",
+    "reviewedEnglishHash": "78bf973f2259984f977514bd44e0c511b384d9f545c44a292c2d5f8dbbc70426"
+  },
   "tools.profiles.actions.delete.chooseDefaultFirst": {
     "en": "Choose another access profile and make it the company default first.",
     "zh-CN": "首先选择另一个访问配置并将其设为公司默认值。",
@@ -2258,6 +2278,11 @@
     "en": "This profile is the company default. Reassign the company default to another profile before deleting it.",
     "zh-CN": "此访问配置是公司默认配置。在删除之前，将公司默认值重新分配给另一个访问配置。",
     "reviewedEnglishHash": "2f375b926adcb434ae7520dc87d3f4152552f7cae6036238e54d87f369415a20"
+  },
+  "tools.profiles.actions.delete.organizationDefaultBlocked": {
+    "en": "This profile is the organization default. Reassign the organization default to another profile before deleting it.",
+    "zh-CN": "此访问配置是组织默认配置。删除前请先将组织默认配置重新分配给其他访问配置。",
+    "reviewedEnglishHash": "b0c43e2afa7e9798fb6d68bd9c244ac0c46485e24d0326dcbbeca0ddf4bf1931"
   },
   "tools.profiles.actions.delete.title": {
     "en": "Delete profile",

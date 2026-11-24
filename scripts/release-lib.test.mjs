@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { delimiter, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
@@ -23,8 +23,18 @@ function toGitBashPath(value) {
   return driveMatch ? `/${driveMatch[1].toLowerCase()}/${driveMatch[2]}` : normalized;
 }
 
-const bashToolPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
-const repoRoot = toBashPath(fileURLToPath(new URL("..", import.meta.url)).replace(/[\\/]$/, ""));
+const bash = process.platform === "win32" && existsSync("C:\\Program Files\\Git\\bin\\bash.exe")
+  ? "C:\\Program Files\\Git\\bin\\bash.exe"
+  : "bash";
+const useGitBash = bash !== "bash";
+function toShellPath(value) {
+  return useGitBash ? toGitBashPath(value) : toBashPath(value);
+}
+
+const bashToolPath = useGitBash
+  ? `/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${toGitBashPath(dirname(process.execPath))}`
+  : "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
+const repoRoot = toShellPath(fileURLToPath(new URL("..", import.meta.url)).replace(/[\\/]$/, ""));
 const releaseWorkflow = readFileSync(new URL("../.github/workflows/release.yml", import.meta.url), "utf8")
   .replace(/\r\n/g, "\n");
 const releaseScript = readFileSync(new URL("./release.sh", import.meta.url), "utf8").replace(/\r\n/g, "\n");
@@ -215,12 +225,17 @@ exec npm "$@"
     .join("\n");
   const script = `
 ${shellOptions}
-export PATH=${shellQuote(`${toBashPath(binDir)}:${bashToolPath}`)}
-export FAKE_CALL_LOG=${shellQuote(toBashPath(callLog))}
-export FAKE_STATE_DIR=${shellQuote(toBashPath(stateDir))}
+export PATH=${shellQuote(`${toShellPath(binDir)}:${bashToolPath}`)}
+export FAKE_CALL_LOG=${shellQuote(toShellPath(callLog))}
+export FAKE_STATE_DIR=${shellQuote(toShellPath(stateDir))}
 export NPM_VERSION_EXISTS=${shellQuote(npmVersionExists ? "true" : "false")}
+export NPM_VERSION_EXISTS_AFTER_CHECKS=${shellQuote(String(npmVersionExistsAfterChecks))}
+export VERIFY_ATTEMPTS=${shellQuote(String(verifyAttempts))}
+export VERIFY_DELAY_SECONDS=${shellQuote(String(verifyDelaySeconds))}
+export NPM_VIEW_CROSS=${shellQuote(visibilityPackages ? "true" : "false")}
+export CROSS_PACKAGES=${shellQuote((visibilityPackages ?? []).join(" "))}
 export PNPM_MODE=${shellQuote(pnpmMode)}
-export REPO_ROOT=${shellQuote(toBashPath(fixtureDir))}
+export REPO_ROOT=${shellQuote(toShellPath(fixtureDir))}
 export GITHUB_ACTIONS=${shellQuote(githubActions ? "true" : "")}
 export NODE_AUTH_TOKEN=${shellQuote(nodeAuthToken)}
 source "${repoRoot}/scripts/release-lib.sh"
@@ -240,14 +255,14 @@ wait_for_npm_package_versions "$VERIFY_ATTEMPTS" "$VERIFY_DELAY_SECONDS" "$PACKA
   let status = 0;
   let output = "";
   try {
-    output = execFileSync("bash", ["-c", script], {
+    output = execFileSync(bash, ["-c", script], {
       cwd: fixtureDir,
       encoding: "utf8",
       env: {
         ...process.env,
-        PATH: `${binDir}:${process.env.PATH}`,
-        FAKE_CALL_LOG: toBashPath(callLog),
-        FAKE_STATE_DIR: toBashPath(stateDir),
+        PATH: `${binDir}${delimiter}${process.env.PATH ?? ""}`,
+        FAKE_CALL_LOG: toShellPath(callLog),
+        FAKE_STATE_DIR: toShellPath(stateDir),
         NPM_VERSION_EXISTS: npmVersionExists ? "true" : "false",
         NPM_VERSION_EXISTS_AFTER_CHECKS: String(npmVersionExistsAfterChecks),
         VERIFY_ATTEMPTS: String(verifyAttempts),
@@ -255,7 +270,7 @@ wait_for_npm_package_versions "$VERIFY_ATTEMPTS" "$VERIFY_DELAY_SECONDS" "$PACKA
         NPM_VIEW_CROSS: visibilityPackages ? "true" : "false",
         CROSS_PACKAGES: (visibilityPackages ?? []).join(" "),
         PNPM_MODE: pnpmMode,
-        REPO_ROOT: toBashPath(fixtureDir),
+        REPO_ROOT: toShellPath(fixtureDir),
         GITHUB_ACTIONS: githubActions ? "true" : "",
         NODE_AUTH_TOKEN: nodeAuthToken,
       },
@@ -598,15 +613,22 @@ test("the workflow budget fails closed after the last registry check", () => {
   assert.equal(result.calls.match(/^sleep /gm)?.length, budget.verifyAttempts - 1);
 });
 
-test("every publish job budgets for build time and four delayed packages", () => {
+test("every publish job budgets for build time, four delayed packages and the install deadline", () => {
   const { verifyAttempts, verifyDelaySeconds } = workflowVerifyBudget();
   const pollingSeconds = (verifyAttempts - 1) * verifyDelaySeconds;
-  const requiredSeconds = 30 * 60 + 4 * pollingSeconds;
+  const releaseScript = readFileSync(new URL("./release.sh", import.meta.url), "utf8");
+  const installDeadlineSeconds = Number(releaseScript.match(/NPM_INSTALL_VERIFY_TIMEOUT_SECONDS:-(\d+)/)?.[1]);
+  assert.ok(installDeadlineSeconds > 0);
 
-  for (const job of ["publish_canary", "publish_nightly", "publish_beta", "publish_stable"]) {
+  for (const [job, requiredSeconds] of [
+    ["publish_canary", 30 * 60 + 4 * pollingSeconds],
+    ["publish_nightly", 30 * 60 + 4 * pollingSeconds + installDeadlineSeconds],
+    ["publish_beta", 30 * 60 + 4 * pollingSeconds + installDeadlineSeconds],
+    ["publish_stable", 30 * 60 + 4 * pollingSeconds + installDeadlineSeconds],
+  ]) {
     const body = releaseWorkflow.split(`\n  ${job}:\n`)[1]?.split(/\n  [a-z_]+:\n/)[0] ?? "";
     const timeoutMinutes = Number(body.match(/^    timeout-minutes: (\d+)$/m)?.[1]);
-    assert.ok(timeoutMinutes * 60 > requiredSeconds, `${job} must leave time beyond build and polling`);
+    assert.ok(timeoutMinutes * 60 > requiredSeconds, `${job} must leave time beyond build, polling and the install deadline`);
   }
 });
 
@@ -753,4 +775,140 @@ printf 'TOOL_STATUS=%s\\n' "$tool_status"
   assert.equal(existsSync(join(stateDir, "pnpm-called-tool-fail")), false, "failed tool resolution must not run pnpm");
   assert.doesNotMatch(readFileSync(calls, "utf8"), /^missing$/m, "failed directory change must not run pnpm");
   assert.doesNotMatch(readFileSync(calls, "utf8"), /npm/);
+});
+
+function canaryNumberFixture({ commits, publishedVersions, shallow = false }) {
+  const dir = mkdtempSync(join(tmpdir(), "paperclip-canary-number-"));
+  const source = join(dir, "source");
+  mkdirSync(source);
+  const git = (cwd, ...args) => execFileSync("git", args, { cwd, encoding: "utf8", env: { ...process.env, GIT_AUTHOR_NAME: "t", GIT_AUTHOR_EMAIL: "t@example.test", GIT_COMMITTER_NAME: "t", GIT_COMMITTER_EMAIL: "t@example.test" } });
+  git(source, "init", "-q", "-b", "master");
+  for (let index = 0; index < commits; index += 1) git(source, "commit", "-q", "--allow-empty", "-m", `c${index}`);
+  let repo = source;
+  if (shallow) {
+    repo = join(dir, "shallow");
+    git(dir, "clone", "-q", "--depth", "1", `file://${source}`, repo);
+  }
+  const versionsFile = join(dir, "versions.json");
+  writeFileSync(versionsFile, JSON.stringify({ "@penclipai/shared": publishedVersions, penclip: publishedVersions }));
+  return { dir, repo, versionsFile, git };
+}
+
+function nextCanary(fixture, { allowFallback = false, attempt = "1" } = {}) {
+  const script = `source "${repoRoot}/scripts/release-lib.sh"; next_canary_version_from_source "$1" "$2" 2026.1116.0 "$3" @penclipai/shared penclip`;
+  return execFileSync(bash, ["-c", script, "next-canary", toShellPath(fixture.repo), String(allowFallback), attempt], {
+    encoding: "utf8", env: { ...process.env, RELEASE_PACKAGE_VERSIONS_FILE: fixture.versionsFile }, stdio: ["ignore", "pipe", "pipe"],
+  }).trim();
+}
+
+test("a canary is numbered from its master position and run attempt, ignoring other commits' numbers", () => {
+  const fixture = canaryNumberFixture({ commits: 25, publishedVersions: ["2026.1116.0-canary.2600", "2026.1116.0-canary.9999"] });
+  assert.equal(nextCanary(fixture), "2026.1116.0-canary.2500");
+  assert.equal(nextCanary(fixture, { attempt: "2" }), "2026.1116.0-canary.2501");
+  assert.equal(nextCanary(fixture, { attempt: "99" }), "2026.1116.0-canary.2598");
+});
+
+test("publishing the same commit again outside a rerun moves to the next free number in its own range", () => {
+  const fixture = canaryNumberFixture({ commits: 25, publishedVersions: ["2026.1116.0-canary.2500", "2026.1116.0-canary.2501", "2026.1116.0-canary.2600", "2026.1115.0-canary.2502"] });
+  assert.equal(nextCanary(fixture), "2026.1116.0-canary.2502");
+  assert.equal(nextCanary(fixture, { attempt: "3" }), "2026.1116.0-canary.2502");
+  assert.equal(nextCanary(fixture, { attempt: "4" }), "2026.1116.0-canary.2503");
+  const full = canaryNumberFixture({ commits: 25, publishedVersions: Array.from({ length: 100 }, (_, index) => `2026.1116.0-canary.${2500 + index}`) });
+  assert.throws(() => nextCanary(full), /every canary number for master position 25 is already published/);
+});
+
+test("reruns of one commit never reach the next commit's numbers", () => {
+  const earlier = canaryNumberFixture({ commits: 25, publishedVersions: [] });
+  const later = canaryNumberFixture({ commits: 26, publishedVersions: [] });
+  const earlierNumbers = new Set(Array.from({ length: 99 }, (_, index) => nextCanary(earlier, { attempt: String(index + 1) })));
+  assert.equal(earlierNumbers.size, 99);
+  assert.equal(earlierNumbers.has(nextCanary(later)), false);
+});
+
+test("an invalid run attempt is refused", () => {
+  const fixture = canaryNumberFixture({ commits: 3, publishedVersions: [] });
+  for (const attempt of ["0", "100", "", "1a"]) assert.throws(() => nextCanary(fixture, { attempt }), /run attempt from 1 to 99/);
+});
+
+test("a publishing canary refuses a shallow checkout, and a dry run falls back to the registry number", () => {
+  const fixture = canaryNumberFixture({ commits: 5, publishedVersions: ["2026.1116.0-canary.7"], shallow: true });
+  assert.throws(() => nextCanary(fixture), /needs the full master history/);
+  assert.equal(nextCanary(fixture, { allowFallback: true }), "2026.1116.0-canary.8");
+});
+
+test("a canary tag is pushed once, accepted again on the same commit, and refused on another commit", () => {
+  const fixture = canaryNumberFixture({ commits: 2, publishedVersions: [] });
+  const remote = join(fixture.dir, "remote.git");
+  fixture.git(fixture.dir, "init", "-q", "--bare", remote);
+  fixture.git(fixture.repo, "remote", "add", "origin", remote);
+  const [head, parent] = fixture.git(fixture.repo, "rev-list", "-2", "HEAD").trim().split("\n");
+  const pushTag = (sha) => execFileSync(bash, ["-c", `REPO_ROOT="$1"; source "${repoRoot}/scripts/release-lib.sh"; push_release_tag_at origin canary/v2026.1116.0-canary.200 "$2"`, "push-tag", toShellPath(fixture.repo), sha],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  assert.match(pushTag(head), /Pushed canary\/v2026\.1116\.0-canary\.200/);
+  assert.equal(fixture.git(fixture.dir, "--git-dir", remote, "rev-parse", "canary/v2026.1116.0-canary.200").trim(), head);
+  assert.match(pushTag(head), /already points at/);
+  fixture.git(fixture.repo, "tag", "-d", "canary/v2026.1116.0-canary.200");
+  assert.throws(() => pushTag(parent), /already exists on [0-9a-f]{40}, not/);
+  assert.equal(fixture.git(fixture.dir, "--git-dir", remote, "rev-parse", "canary/v2026.1116.0-canary.200").trim(), head);
+});
+
+test("a canary version is accepted only for the master commit whose position numbered it", () => {
+  const fixture = canaryNumberFixture({ commits: 25, publishedVersions: [] });
+  const head = fixture.git(fixture.repo, "rev-parse", "HEAD").trim();
+  fixture.git(fixture.repo, "update-ref", "refs/remotes/origin/master", head);
+  const confirm = (version, sha) => execFileSync(bash, ["-c", `REPO_ROOT="$1"; source "${repoRoot}/scripts/release-lib.sh"; require_canary_number_from_master_commit "$2" "$3"`, "confirm", toShellPath(fixture.repo), version, sha],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  assert.match(confirm("2026.1116.0-canary.2500", head), /numbered from .* \(master position 25\)/);
+  assert.match(confirm("2026.1116.0-canary.2503", head), /master position 25/);
+  assert.throws(() => confirm("2026.1116.0-canary.2600", head), /was not numbered from/);
+  assert.throws(() => confirm("2026.1116.0-canary.7", head), /was not numbered from/);
+  fixture.git(fixture.repo, "checkout", "-q", "-b", "side");
+  fixture.git(fixture.repo, "commit", "-q", "--allow-empty", "-m", "side");
+  const side = fixture.git(fixture.repo, "rev-parse", "HEAD").trim();
+  assert.throws(() => confirm("2026.1116.0-canary.2600", side), /is not on origin\/master/);
+});
+
+function installRetryFixture({ failures = 0, hangSeconds = 0 }) {
+  const dir = mkdtempSync(join(tmpdir(), "paperclip-install-retry-"));
+  const bin = join(dir, "bin");
+  mkdirSync(bin);
+  const counter = join(dir, "attempts");
+  const bashCounter = toShellPath(counter);
+  writeFileSync(counter, "0");
+  writeExecutable(join(bin, "npm"), `#!/usr/bin/env bash
+n=$(( $(cat "${bashCounter}") + 1 )); echo "$n" > "${bashCounter}"
+if [ "${hangSeconds}" -gt 0 ]; then sleep "${hangSeconds}"; fi
+if [ "$n" -le "${failures}" ]; then echo "npm error code E404" >&2; exit 1; fi
+prefix="$3"; mkdir -p "$prefix/node_modules/penclip"
+printf '{"version":"1.2.3"}' > "$prefix/node_modules/penclip/package.json"
+`);
+  const run = (deadline, delay = 0) => {
+    const started = Date.now();
+    const result = spawnSync(bash, ["-c", `export PATH=${shellQuote(toShellPath(bin))}:$PATH; source "${repoRoot}/scripts/release-lib.sh"; wait_for_npm_installable penclip@canary 1.2.3 ${deadline} ${delay}`],
+      { encoding: "utf8", env: { ...process.env, PATH: `${bin}${delimiter}${process.env.PATH ?? ""}` } });
+    return { status: result.status, seconds: (Date.now() - started) / 1000, attempts: Number(readFileSync(counter, "utf8")), stderr: result.stderr };
+  };
+  return { run };
+}
+
+test("a release install is retried while its tarball lags the metadata", () => {
+  const recovered = installRetryFixture({ failures: 3 }).run(60);
+  assert.equal(recovered.status, 0);
+  assert.equal(recovered.attempts, 4);
+  assert.match(recovered.stderr, /attempt 3, \d+s left/);
+  assert.equal(installRetryFixture({}).run(60).attempts, 1);
+});
+
+const hasTimeoutCommand = spawnSync(bash, ["-c", "command -v timeout"], { encoding: "utf8" }).status === 0;
+
+test("install retries stop at the deadline", () => {
+  const exhausted = installRetryFixture({ failures: 1000 }).run(3, 1);
+  assert.notEqual(exhausted.status, 0);
+  assert.ok(exhausted.seconds < 8, `took ${exhausted.seconds}s`);
+});
+
+test("an install that hangs is stopped at the deadline", { skip: !hasTimeoutCommand && "needs the timeout command (GNU coreutils)" }, () => {
+  const hung = installRetryFixture({ hangSeconds: 120 }).run(3, 1);
+  assert.notEqual(hung.status, 0);
+  assert.ok(hung.seconds < 20, `a hung install outlived the deadline: ${hung.seconds}s`);
 });

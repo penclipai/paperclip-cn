@@ -86,6 +86,8 @@ import {
   sortWorkspaceRoutinesByName,
 } from "../lib/workspace-routines";
 import { useUpdateIssueMutation } from "../hooks/useUpdateIssueMutation";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
+import { safeExternalHttpUrl } from "@/lib/safe-url";
 
 type WorkspaceFormState = {
   name: string;
@@ -205,16 +207,6 @@ function LegacyWorkspaceTabRedirect({ workspaceId }: { workspaceId: string }) {
   return (
     <Navigate to={executionWorkspaceTabPath(workspaceId, "issues")} replace />
   );
-}
-
-function isSafeExternalUrl(value: string | null | undefined) {
-  if (!value) return false;
-  try {
-    const parsed = new URL(value);
-    return parsed.protocol === "http:" || parsed.protocol === "https:";
-  } catch {
-    return false;
-  }
 }
 
 function readText(value: string | null | undefined) {
@@ -2161,26 +2153,10 @@ export function ExecutionWorkspaceDetail() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <DetailRow label={translateInstant("Working dir")}>
-                  {workspace.cwd ? (
-                    <MonoValue value={workspace.cwd} copy />
-                  ) : (
-                    translateInstant("None")
-                  )}
-                </DetailRow>
-                <DetailRow
-                  label={translateInstant("executionWorkspace.providerRef")}
-                >
-                  {workspace.providerRef ? (
-                    <MonoValue value={workspace.providerRef} copy />
-                  ) : (
-                    translateInstant("None")
-                  )}
-                </DetailRow>
                 <DetailRow
                   label={translateInstant("executionWorkspace.repoUrl")}
                 >
-                  {workspace.repoUrl && isSafeExternalUrl(workspace.repoUrl) ? (
+                  {workspace.repoUrl && safeExternalHttpUrl(workspace.repoUrl) ? (
                     <div className="inline-flex max-w-full items-start gap-2">
                       <a
                         href={workspace.repoUrl}
@@ -2281,11 +2257,11 @@ export function ExecutionWorkspaceDetail() {
                               : ""}
                           </div>
                           {operation.stderrExcerpt ? (
-                            <div className="whitespace-pre-wrap break-words text-xs text-destructive">
+                            <div className={cn("whitespace-pre-wrap break-words text-xs text-destructive", ANALYTICS_MASK_CLASS)}>
                               {operation.stderrExcerpt}
                             </div>
                           ) : operation.stdoutExcerpt ? (
-                            <div className="whitespace-pre-wrap break-words text-xs text-muted-foreground">
+                            <div className={cn("whitespace-pre-wrap break-words text-xs text-muted-foreground", ANALYTICS_MASK_CLASS)}>
                               {operation.stdoutExcerpt}
                             </div>
                           ) : null}

@@ -3,5 +3,10 @@
     "en": "Optional override for the Codex ACP server command. Defaults to the package-local codex-acp binary.",
     "zh-CN": "可选覆盖 Codex ACP 服务器命令。默认使用包内的 codex-acp 二进制文件。",
     "reviewedEnglishHash": "d8c7b6ad7becd4e2a10991f9bb1f39dfec76055cf4ce671499c434f703cf94fc"
+  },
+  "adapterConfig.dotRunner.enableExperimentalSettings": {
+    "en": "Enable OpenAI Dot in experimental settings.",
+    "zh-CN": "请在实验性设置中启用 OpenAI Dot。",
+    "reviewedEnglishHash": "f42d6c3a2d88864ed772eef5fb8f2667a90db3f190134d633ab5306b9c627cb4"
   }
 }

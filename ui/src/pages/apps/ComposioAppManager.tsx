@@ -24,6 +24,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { describeError } from "@/api/errors";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
+import { cn } from "@/lib/utils";
 
 export function ComposioAppManager({
   app,
@@ -50,7 +52,7 @@ export function ComposioAppManager({
         if (!open) onClose();
       }}
     >
-      <DialogContent>
+      <DialogContent className={ANALYTICS_MASK_CLASS}>
         <DialogHeader>
           <DialogTitle>
             {translateInstant("Manage")} {app.name}
@@ -68,7 +70,7 @@ export function ComposioAppManager({
               id="composio-manage-gateway"
               value={connectionId}
               onChange={(event) => setConnectionId(event.target.value)}
-              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+              className={cn("h-9 w-full rounded-md border border-input bg-background px-3 text-sm", ANALYTICS_MASK_CLASS)}
             >
               {connections.map((candidate) => (
                 <option key={candidate.id} value={candidate.id}>
@@ -173,7 +175,7 @@ function ComposioAccountObservations({
         <div className="divide-y divide-border">
           {accounts.map(({ account, snapshot }) => (
             <div key={`${snapshot.toolkit}:${account.id}`} className="py-3">
-              <p className="truncate text-sm font-medium">
+              <p className={cn("truncate text-sm font-medium", ANALYTICS_MASK_CLASS)}>
                 {account.alias || `${app.name} account`}
               </p>
               <p className="text-xs text-muted-foreground">
@@ -187,7 +189,7 @@ function ComposioAccountObservations({
                     : account.status === "INITIATED"
                       ? translateInstant("Waiting for sign-in")
                       : translateInstant("Needs sign-in")}
-                {account.isDefault ? " · Default" : ""}
+                {account.isDefault ? ` · ${translateInstant("Default")}` : ""}
               </p>
             </div>
           ))}
@@ -199,7 +201,7 @@ function ComposioAccountObservations({
           <Link
             to={`/apps/${connection.id}/permissions`}
             onClick={onClose}
-            className="underline underline-offset-2"
+            className={cn("underline underline-offset-2", ANALYTICS_MASK_CLASS)}
           >
             “{connection.name}”
           </Link>
@@ -220,7 +222,7 @@ function ComposioAccountObservations({
             disabled={busy}
             onClick={() => void refresh()}
           >
-            {busy ? "Checking…" : translateInstant("Refresh")}
+            {busy ? translateInstant("Checking…", { defaultValue: "Checking…" }) : translateInstant("Refresh")}
           </Button>
           <Button asChild>
             <a

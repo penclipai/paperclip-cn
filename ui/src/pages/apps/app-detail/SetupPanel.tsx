@@ -6,6 +6,8 @@ import type { ToolCatalogEntry, ToolConnection } from "@penclipai/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
+import { ACTION_PAGE_SIZE } from "./constants";
+import { actionLabel } from "./action-permissions";
 import { appDefinitionSlug } from "../app-definition-display";
 import type { AppDetailSectionProps } from "./types";
 import { googleSheetsConfigWithAllowlist, parseGoogleSheetIds } from "../google-sheets";
@@ -255,6 +257,7 @@ export function QuarantinedActionsReview({
 }) {
   useTranslation();
   const [enabledIds, setEnabledIds] = useState<Set<string>>(new Set());
+  const [visibleLimit, setVisibleLimit] = useState(ACTION_PAGE_SIZE);
   const count = entries.length;
   const selectedIds = entries.filter((entry) => enabledIds.has(entry.id)).map((entry) => entry.id);
   return (
@@ -286,9 +289,9 @@ export function QuarantinedActionsReview({
         </div>
       </div>
       <div className="divide-y divide-border">
-        {entries.map((entry) => {
+        {entries.slice(0, visibleLimit).map((entry) => {
           const enabled = enabledIds.has(entry.id);
-          const label = entry.title ?? entry.toolName;
+          const label = actionLabel(entry);
           return (
             <div key={entry.id} className="flex items-center gap-3 py-3">
               <div className="min-w-0 flex-1">
@@ -314,6 +317,11 @@ export function QuarantinedActionsReview({
           );
         })}
       </div>
+      {visibleLimit < count ? (
+        <Button type="button" variant="outline" size="sm" onClick={() => setVisibleLimit(limit => limit + ACTION_PAGE_SIZE)}>
+          Show more new actions
+        </Button>
+      ) : null}
       <div className="flex items-center justify-between gap-3">
         <span className="text-xs text-amber-700 dark:text-amber-300">
           {selectedIds.length} {translateInstant("issueCommon.of")}{" "}{count} {translateInstant("will be on")}</span>

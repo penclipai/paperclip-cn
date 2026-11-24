@@ -104,6 +104,16 @@
     "zh-CN": "删除了评论",
     "reviewedEnglishHash": "8f41dfb438126e0cdd6b7b607784725e9400a72d6b557a0a44ef46e16a4c4e51"
   },
+  "activityFormat.action.issue.connection_content_deleted": {
+    "en": "deleted connected app content",
+    "zh-CN": "删除了已连接应用的内容",
+    "reviewedEnglishHash": "3c828d093989c5d71d09874a4f198f5f96c5739dede6473fca4a5c2b238ee4a9"
+  },
+  "activityFormat.action.issue.connection_content_deletion_incomplete": {
+    "en": "partly deleted connected app content; some is still in use",
+    "zh-CN": "部分删除了已连接应用的内容；部分仍在使用中",
+    "reviewedEnglishHash": "92281e7005ce3f926499cb546a1b2e96adf27dc5b0a6d92a3a268ee1e5abdb45"
+  },
   "activityFormat.action.issue.created": {
     "en": "created the issue",
     "zh-CN": "创建了任务",
@@ -424,6 +434,56 @@
     "zh-CN": "{{action}} {{key}}",
     "reviewedEnglishHash": "03b4e22d878e4bc05e38c80bb3da0184e99c95b336e3e1c191500d2228a8a742"
   },
+  "activityFormat.entity.agent": {
+    "en": "an agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "647936ec3e40783d8d86fad9d2d8acfac4613dee5c3eb516ef433fed532f8d86"
+  },
+  "activityFormat.entity.approval": {
+    "en": "an approval",
+    "zh-CN": "审批",
+    "reviewedEnglishHash": "82e872015dfb5c07061c4eef06edd85ed772ee6a773d38546833fb5d21a951ff"
+  },
+  "activityFormat.entity.company": {
+    "en": "the organization",
+    "zh-CN": "组织",
+    "reviewedEnglishHash": "7b4eb2793b4bbcc2399b9c8cc56fa1e912202842211e0cc272fdcf5221134fa1"
+  },
+  "activityFormat.entity.goal": {
+    "en": "a goal",
+    "zh-CN": "目标",
+    "reviewedEnglishHash": "29bf57e4be0d00dc77078fc4464aedf04515d0a073cfb01bf68878e7915e4e15"
+  },
+  "activityFormat.entity.googleWorkspaceConnection": {
+    "en": "the Google Workspace connection",
+    "zh-CN": "Google Workspace 连接",
+    "reviewedEnglishHash": "17406d75ebd44f82d780012bfd9aefde26e8faffd226922ce3df2c2bde8373fe"
+  },
+  "activityFormat.entity.heartbeatRun": {
+    "en": "a run",
+    "zh-CN": "一次运行",
+    "reviewedEnglishHash": "7666f0507e9b2d38e9dee8b3a19b4379c41fe8b33413fdc329fcf115b2c76a65"
+  },
+  "activityFormat.entity.project": {
+    "en": "a project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "8d24f5bc0a858d02c625ad2ee5650d947963bc3086eeca94926f51a8295159f2"
+  },
+  "activityFormat.entity.routine": {
+    "en": "a routine",
+    "zh-CN": "例行任务",
+    "reviewedEnglishHash": "ce5e3e7f40e5f531689f912c9d93ffc7429eba3d3008f15d51e612145952d061"
+  },
+  "activityFormat.entity.toolApplication": {
+    "en": "the app",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "ecf6410c21e70b6249f59badba275ed326c3043ff2a39f08b88373ead8932dbc"
+  },
+  "activityFormat.entity.toolConnection": {
+    "en": "the connection",
+    "zh-CN": "连接",
+    "reviewedEnglishHash": "03001d4d5dfc42592aefe882739d179ffcc2adfa35a20553401b3ae0770c4b60"
+  },
   "activityFormat.interaction.acceptedAnswers": {
     "en": "accepted the answers",
     "zh-CN": "接受了回答",
@@ -504,6 +564,11 @@
     "zh-CN": "{{entity}} {{label}}",
     "reviewedEnglishHash": "057881d856d90d9464bc3bdf6694ba325f5dc82cba98dce3d60d5003a36550ef"
   },
+  "activityFormat.outcome.lastConnectionRemoved": {
+    "en": "Its last connection was removed.",
+    "zh-CN": "其最后一个连接已被移除。",
+    "reviewedEnglishHash": "e32a110ff4a697246b5f4204eb424b5e6dbef3278c9cde218d24a6a9401cccd0"
+  },
   "activityFormat.removed": {
     "en": "removed {{changed}}",
     "zh-CN": "移除了{{changed}}",
@@ -513,16 +578,6 @@
     "en": "removed {{changed}} from",
     "zh-CN": "从其移除了{{changed}}",
     "reviewedEnglishHash": "5bc0fe0af5b977343207371d304959edc26fa703d3929744de3346344abea827"
-  },
-  "activityFormat.reviewer": {
-    "en": "reviewer",
-    "zh-CN": "复查人",
-    "reviewedEnglishHash": "2d70999ae1805e4bcef9b4ab3a4b827f578c61740f30076fcdc35c7ae7f586b3"
-  },
-  "activityFormat.reviewers": {
-    "en": "reviewers",
-    "zh-CN": "复查人",
-    "reviewedEnglishHash": "f49dd73f5cf9d596c1958c1f9345df6dfd14d332d3af85dfd92d9b859f7cd3d8"
   },
   "activityFormat.reviewPolicy.anyone": {
     "en": "anyone",
@@ -543,6 +598,16 @@
     "en": "changed who can approve to {{policy}}",
     "zh-CN": "将可审批者改为 {{policy}}",
     "reviewedEnglishHash": "7c071e11b92df7fa7813a07441960965c5e3acb42dbeabe52752458be9d2aeb2"
+  },
+  "activityFormat.reviewer": {
+    "en": "reviewer",
+    "zh-CN": "复查人",
+    "reviewedEnglishHash": "2d70999ae1805e4bcef9b4ab3a4b827f578c61740f30076fcdc35c7ae7f586b3"
+  },
+  "activityFormat.reviewers": {
+    "en": "reviewers",
+    "zh-CN": "复查人",
+    "reviewedEnglishHash": "f49dd73f5cf9d596c1958c1f9345df6dfd14d332d3af85dfd92d9b859f7cd3d8"
   },
   "activityFormat.row.agent.budget_updated": {
     "en": "updated budget for",
@@ -778,6 +843,16 @@
     "en": "commented on",
     "zh-CN": "评论了",
     "reviewedEnglishHash": "189a57e1f3af552b68759755a39a614f11246b246b13186347a1560dc8c59773"
+  },
+  "activityFormat.row.issue.connection_content_deleted": {
+    "en": "deleted connected app content from",
+    "zh-CN": "删除了以下位置已连接应用的内容：",
+    "reviewedEnglishHash": "bd0fc0f0fc35a3e4348b33feea08e2127d01287e880223e78168c94ee2a14850"
+  },
+  "activityFormat.row.issue.connection_content_deletion_incomplete": {
+    "en": "partly deleted connected app content from",
+    "zh-CN": "部分删除了以下位置已连接应用的内容：",
+    "reviewedEnglishHash": "33ba2d2353bd59daf4c30404139c126e4999927d0b37e4db80ae64fc889c8b4f"
   },
   "activityFormat.row.issue.created": {
     "en": "created",
@@ -1139,6 +1214,11 @@
     "zh-CN": "已重新连接",
     "reviewedEnglishHash": "6f0258f861b12e79547416e36c408098d2c1cce845f8914b3937cb02f075f306"
   },
+  "activityFormat.row.tool_application.archived": {
+    "en": "removed",
+    "zh-CN": "移除了",
+    "reviewedEnglishHash": "e1f79758cc42e6fe6037941205d1fbc37f5780f13aa077d0ba8287fd93cecd52"
+  },
   "activityFormat.row.tool_connection.archived": {
     "en": "removed",
     "zh-CN": "已移除",
@@ -1148,6 +1228,26 @@
     "en": "refreshed actions for",
     "zh-CN": "刷新了操作：",
     "reviewedEnglishHash": "6d7c49eff3396531c119e18d350e1d5e4ce549669327f2a61cf61fa6d64da319"
+  },
+  "activityFormat.row.tool_connection.content_deleted": {
+    "en": "deleted stored content from",
+    "zh-CN": "删除了以下位置存储的内容：",
+    "reviewedEnglishHash": "b628133a32463a33a62096849bd879d60be77c5223c21190be95f593efa755f7"
+  },
+  "activityFormat.row.tool_connection.content_deletion_requested": {
+    "en": "asked to delete stored content from",
+    "zh-CN": "请求删除以下位置存储的内容：",
+    "reviewedEnglishHash": "79783696f4cf322a635f5d7ab39fd45e08ef638b4d2a15a59983d9df53da2099"
+  },
+  "activityFormat.row.tool_connection.google_access_ended": {
+    "en": "confirmed Google access ended for",
+    "zh-CN": "已确认结束 Google 访问权限：",
+    "reviewedEnglishHash": "bce33c6b8210ac0b67c2b129c47dd7ba2d9e5b153b2b822152836589bc4b57a4"
+  },
+  "activityFormat.row.tool_connection.google_access_not_ended": {
+    "en": "stopped trying to end Google access for",
+    "zh-CN": "已停止尝试结束 Google 访问权限：",
+    "reviewedEnglishHash": "61d9fb6cfd28ce755c9c40e6e43b3ba15f8f04f82742aa6fa0c86f04246a59c5"
   },
   "activityFormat.row.tool_connection.grant_added": {
     "en": "added credentials to",
@@ -1183,6 +1283,11 @@
     "en": "changed agent installs for",
     "zh-CN": "更新了智能体安装：",
     "reviewedEnglishHash": "e0c04196da0a85a3fc39c7b0e54231200ca708f11444f8da7362b478e40e2f58"
+  },
+  "activityFormat.row.tool_connection.sign_in_cancelled": {
+    "en": "cancelled sign-in for",
+    "zh-CN": "取消了登录：",
+    "reviewedEnglishHash": "2629e8a9e71e4f855708fcc041ade7ad0feef534af821ed58d33d13c1b8994f5"
   },
   "activityFormat.stalledReview.approved": {
     "en": "approved the review",
@@ -1239,25 +1344,45 @@
     "zh-CN": "被阻止使用 {{tool}}：",
     "reviewedEnglishHash": "092209a18d09cc781e221f6f3c40ff267717157be3c4d07134b33ceea86a8e6a"
   },
+  "activityFormat.toolGateway.deferredUsingOn": {
+    "en": "could not finish using {{tool}} on",
+    "zh-CN": "未能完成使用 {{tool}}：",
+    "reviewedEnglishHash": "a8e89aa176114c6c7031d8a64d272793e2f986787640544dce808e056eaf85f3"
+  },
   "activityFormat.toolGateway.discoveredActionsFor": {
     "en": "discovered app actions for",
     "zh-CN": "发现了应用操作：",
     "reviewedEnglishHash": "65a54858cd9aa033950da5f6baf5dcfda514b555ff3cdf9fcf543fcede3ac3dc"
+  },
+  "activityFormat.toolGateway.failedUsingOn": {
+    "en": "could not use {{tool}} on",
+    "zh-CN": "未能使用 {{tool}}：",
+    "reviewedEnglishHash": "4509c1bae007ac8d14905d96c20b2257d44ab91bc71b244d01b70515a9d7d097"
   },
   "activityFormat.toolGateway.openedSessionFor": {
     "en": "opened an app session for",
     "zh-CN": "打开了应用会话：",
     "reviewedEnglishHash": "c6cbaaa24f176cc9b49507e8727325667fa38a9e23a3c400ff9bd3484cb0e108"
   },
-  "activityFormat.toolGateway.testedOn": {
-    "en": "tested {{tool}} on",
-    "zh-CN": "测试了 {{tool}}：",
-    "reviewedEnglishHash": "d74da9df0e240902d5480ec6aaf12017e7f6701fffd66590870207c167ae64ad"
+  "activityFormat.toolGateway.testDeferredOn": {
+    "en": "could not finish testing {{tool}} on",
+    "zh-CN": "未能完成测试 {{tool}}：",
+    "reviewedEnglishHash": "aa902e399094f175a4ad7ec9568dfaebfd74d900b765bee4df954bc9ad50532f"
+  },
+  "activityFormat.toolGateway.testFailedOn": {
+    "en": "could not test {{tool}} on",
+    "zh-CN": "未能测试 {{tool}}：",
+    "reviewedEnglishHash": "b7a3d28f489d561a6fc36d5ea5603768c3c61361a328cdf1a41c703a55b22acc"
   },
   "activityFormat.toolGateway.testStartedOn": {
     "en": "started a test of {{tool}} on",
     "zh-CN": "开始测试 {{tool}}：",
     "reviewedEnglishHash": "1202cf4044619e8a1d93dcfc84f8804aecf656c82cfde6559023a255caf04d96"
+  },
+  "activityFormat.toolGateway.testedOn": {
+    "en": "tested {{tool}} on",
+    "zh-CN": "测试了 {{tool}}：",
+    "reviewedEnglishHash": "d74da9df0e240902d5480ec6aaf12017e7f6701fffd66590870207c167ae64ad"
   },
   "activityFormat.toolGateway.usedOn": {
     "en": "used {{tool}} on",

@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { SVGProps } from "react";
 import { cn } from "../lib/utils";
+import { useBlockingPageGate } from "../hooks/usePageContentReady";
 
 export function AnimatedPaperclipIcon({
   className,
@@ -29,6 +30,8 @@ export function AnimatedPaperclipIcon({
 /** Full-page loading state: a large, centered, gray animated paperclip. */
 export function PaperclipLoading({ className }: { className?: string }) {
   const { t } = useTranslation();
+  // While a full-page loading state is on screen the page has not loaded.
+  useBlockingPageGate();
   return (
     <div
       role="status"

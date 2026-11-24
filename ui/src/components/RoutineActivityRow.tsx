@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { ChevronRight } from "lucide-react";
 import type { ActivityEvent } from "@penclipai/shared";
 import { cn } from "@/lib/utils";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 export type RoutineActivityEvent = Pick<ActivityEvent, "id" | "action" | "details" | "createdAt">;
 
@@ -60,7 +61,7 @@ const actionLabels: Record<string, string> = {
   "routine.webhook_rejected": "Webhook authentication failed",
   "routine.created": "routines.createSuccess", "routine.updated": "Routine updated",
   "routine.trigger_created": "routineDetail.triggerAdded", "routine.trigger_updated": "Trigger updated",
-  "routine.trigger_deleted": "Trigger removed", "routine.trigger_removed": "Trigger removed", "routine.trigger_restored": "Trigger restored", "routine.trigger_setup_finished": "Webhook setup finished", "routine.trigger_secret_rotated": "Webhook key replaced",
+  "routine.trigger_deleted": "Trigger removed", "routine.trigger_removed": "Trigger removed", "routine.trigger_restored": "Trigger restored", "routine.trigger_setup_finished": "Webhook setup finished", "routine.trigger_test_started": "routineActivity.triggerTestStarted", "routine.trigger_secret_rotated": "Webhook key replaced",
   "routine.run_triggered": "executionWorkspace.routineStarted", "routine.run_created": "Run created",
 };
 function actionLabel(action: string, t: (key: string) => string) {
@@ -106,7 +107,7 @@ export function RoutineActivityRow({ event }: { event: RoutineActivityEvent }) {
         ) : null}
       </button>
       {expanded && hasPayload ? (
-        <pre className="mx-2 mb-2 overflow-x-auto rounded-md bg-muted p-3 font-mono text-xs text-foreground">
+        <pre className={cn("mx-2 mb-2 overflow-x-auto rounded-md bg-muted p-3 font-mono text-xs text-foreground", ANALYTICS_MASK_CLASS)}>
           {JSON.stringify(event.details, null, 2)}
         </pre>
       ) : null}

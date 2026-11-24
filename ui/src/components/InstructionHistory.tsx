@@ -7,6 +7,8 @@ import { agentsApi } from "../api/agents";
 import { describeError } from "../api/errors";
 import { Button } from "./ui/button";
 import { QueryErrorState, useQueryView } from "./QueryView";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
+import { cn } from "@/lib/utils";
 
 export function InstructionHistory({
   agentId,
@@ -132,13 +134,13 @@ export function InstructionHistory({
           {diff.data && (
             <>
               <p className="text-sm text-muted-foreground">{translateInstant("Selected revision")}</p>
-              <pre className="whitespace-pre-wrap break-words rounded-md border border-border p-3 font-mono text-sm">
+              <pre className={cn("whitespace-pre-wrap break-words rounded-md border border-border p-3 font-mono text-sm", ANALYTICS_MASK_CLASS)}>
                 {diff.data.from.content}
               </pre>
               <p className="text-sm text-muted-foreground">
                 {translateInstant("Changes from selected revision to current", { defaultValue: "Changes from selected revision to current" })}
               </p>
-              <pre className="whitespace-pre-wrap break-words rounded-md border border-border p-3 font-mono text-sm">
+              <pre className={cn("whitespace-pre-wrap break-words rounded-md border border-border p-3 font-mono text-sm", ANALYTICS_MASK_CLASS)}>
                 {diff.data.removed && `Removed:\n${diff.data.removed}\n`}
                 {diff.data.added && `Added:\n${diff.data.added}`}
                 {!diff.data.removed &&

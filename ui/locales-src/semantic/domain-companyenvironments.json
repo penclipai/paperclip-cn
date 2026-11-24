@@ -4,19 +4,74 @@
     "zh-CN": "正在捕获。如果刷新或请求中断后仍保持此状态，请取消以返回当前模板控件。",
     "reviewedEnglishHash": "ad3474e111b2213899296142fb4ca9904d5eb566062c55f80ca32f15574da9c7"
   },
+  "companyEnvironments.connectTailscaleNetwork": {
+    "en": "Connect Tailscale Network",
+    "zh-CN": "连接 Tailscale 网络",
+    "reviewedEnglishHash": "2086b70af59374b6513a3c784321a89c3227945b9dac260d174cdfd4ae6c50e1"
+  },
+  "companyEnvironments.connectTailscaleSuffix": {
+    "en": "to choose machines from your tailnet.",
+    "zh-CN": "以从你的 tailnet 中选择主机。",
+    "reviewedEnglishHash": "bc3f5c1442b121ee7f67d622d202da049dde5516c9f7ef09bb19fb5f17381d51"
+  },
+  "companyEnvironments.directConnection": {
+    "en": "Direct connection",
+    "zh-CN": "直接连接",
+    "reviewedEnglishHash": "28d0ad5455688db8142822ec486c82cfdc9aa909612e10ba0add34fc40fe059b"
+  },
   "companyEnvironments.imageStale": {
     "en": "Not in use — the environment configuration changed since this image was captured. Runs fall back to the base configuration until you capture a new image.",
     "zh-CN": "未使用 - 捕获此镜像后环境配置已更改。在捕获新镜像前，运行会回退到基础配置。",
     "reviewedEnglishHash": "383f0396ad207d54082732dd8d5bd8035c29c5dcbbbc4d00bdb5250bc2840196"
+  },
+  "companyEnvironments.network": {
+    "en": "Network",
+    "zh-CN": "网络",
+    "reviewedEnglishHash": "1744b96470b51bf30935e2748b237a708d226a0430063f92accf90961cd28d86"
+  },
+  "companyEnvironments.networkHint": {
+    "en": "Choose how Paperclip reaches this SSH server.",
+    "zh-CN": "选择 Paperclip 连接此 SSH 服务器的方式。",
+    "reviewedEnglishHash": "2ad5c9fd8c4ac65fc6a9eedd6076b25da290759e7410c3396ed129b4f1818a78"
   },
   "companyEnvironments.sshFallback": {
     "en": "SSH command fallback",
     "zh-CN": "SSH 命令回退",
     "reviewedEnglishHash": "9f1db9e00858c762d8e237fd2a21eb505bc67e5f31c43e38ba367fdbad2c8c3c"
   },
+  "companyEnvironments.sshNetworkAria": {
+    "en": "SSH network",
+    "zh-CN": "SSH 网络",
+    "reviewedEnglishHash": "712324ec7333e3859063340448c46444fd63e24dc48266ae9aa3ef4b2fa48040"
+  },
+  "companyEnvironments.sshUseHostAuth": {
+    "en": "Use authentication configured on the remote machine",
+    "zh-CN": "使用远程主机上已配置的身份验证",
+    "reviewedEnglishHash": "8b7cf11bbfd3fa3f03e4cd5b795b32c6ea607e4e85f1ca623d7f2c3ad0f0aa7d"
+  },
+  "companyEnvironments.sshUseHostAuthHint": {
+    "en": "Use the remote user's provider login instead of the agent's Paperclip AI account.",
+    "zh-CN": "使用远程用户的提供商登录凭据，而非智能体的 Paperclip AI 账号。",
+    "reviewedEnglishHash": "b0492f7fa1eff29c587002f0133b8b84e4d015e713e1a6bda3c6c4b1414361f8"
+  },
+  "companyEnvironments.sshViaTailscale": {
+    "en": "ssh via Tailscale",
+    "zh-CN": "通过 Tailscale 的 SSH",
+    "reviewedEnglishHash": "1fca2fa253f07412a0f6d0dad601bfc3bf6fc46cd73a2d00bbf9e4d9080be19c"
+  },
   "companyEnvironments.streamLogs": {
     "en": "Stream run logs",
     "zh-CN": "流式传输运行日志",
     "reviewedEnglishHash": "95161f1e983d932768011b4b042a2864f9c15bd3e1db1212be10b995c3c62e16"
+  },
+  "companyEnvironments.tailscaleHostHint": {
+    "en": "Tailscale IP address or MagicDNS name of your machine.",
+    "zh-CN": "主机的 Tailscale IP 地址或 MagicDNS 名称。",
+    "reviewedEnglishHash": "2c3cfccf431482481d29c3cbcea9caad3ff96710cc7b00ae6f33760cee803817"
+  },
+  "companyEnvironments.tailscaleTestHint": {
+    "en": "Save this environment, then test its connection from the list.",
+    "zh-CN": "请先保存此环境，再从列表中测试连接。",
+    "reviewedEnglishHash": "32cb1f4ec8bcec3b9019673cc2b24706c800ba51fea215ecb36dc1456da97f7e"
   }
 }

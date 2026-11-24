@@ -1,6 +1,6 @@
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
-import { useLocation } from "@/lib/router";
+import { NavLink, useLocation } from "@/lib/router";
 import { ChatDetailSidebar } from "./chat/ChatDetailSidebar";
 import { ChatSetupSidebar } from "./chat/ChatSetupNavigation";
 import { Store, ShieldQuestion } from "lucide-react";
@@ -48,7 +48,7 @@ export function AppsSidebar() {
             icon={ShieldQuestion}
             badge={reviewCount > 0 ? reviewCount : undefined}
             badgeTone="warning"
-            badgeLabel="waiting for your OK"
+            badgeLabel={translateInstant("apps.sidebar.waitingForApproval")}
           />
         </div>
         {developerTabs.length > 0 ? (
@@ -79,4 +79,16 @@ export function AppsSidebar() {
       </nav>
     </aside>
   );
+}
+
+/** Mobile collection navigation replaces the desktop Browse/Review rail. */
+export function AppsMobileNav() {
+  const { t } = useTranslation();
+  const reviewCount = useReviewCount();
+  const segmentClass = ({ isActive }: { isActive: boolean }) =>
+    `flex min-w-0 flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${isActive ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"}`;
+  return <nav aria-label={translateInstant("Connectors")} className="mb-4 flex rounded-lg border border-border bg-background p-1">
+    <NavLink to="/apps" end className={segmentClass}>{translateInstant("apps.sidebar.browse")}</NavLink>
+    <NavLink to="/apps/review" className={segmentClass}>{translateInstant("apps.sidebar.review")}{reviewCount > 0 && <span className="rounded-full bg-muted px-1.5 text-xs" aria-label={t("apps.sidebar.waitingForApprovalCount", { count: reviewCount, defaultValue: "{{count}} waiting for your OK" })}>{reviewCount}</span>}</NavLink>
+  </nav>;
 }

@@ -74,6 +74,11 @@
     "zh-CN": "附加截图",
     "reviewedEnglishHash": "d0f8e01df872f86295cccfe34ff1d656b4afa21cb9cdb0a3ff9a01da25349f5f"
   },
+  "issueThreadInteraction.attachment": {
+    "en": "Attachment",
+    "zh-CN": "附件",
+    "reviewedEnglishHash": "040d2b3689dd1d4c9661e938f4633914f2c0aa0a1fbc3bc0047f554c0b16fd20"
+  },
   "issueThreadInteraction.cancel": {
     "en": "Cancel",
     "zh-CN": "取消",
@@ -108,6 +113,21 @@
     "en": "Child task",
     "zh-CN": "子任务",
     "reviewedEnglishHash": "4e6d7bdb7ee5f2eb549f36eda0b43347b639188709df4d99a1734e3aae9f0ae0"
+  },
+  "issueThreadInteraction.chooseOneAnswer": {
+    "en": "Choose one answer.",
+    "zh-CN": "请选择一项答案。",
+    "reviewedEnglishHash": "336bcb612c43830e633c4c797db34671d8d1307c346c498c0717042d9ba39e30"
+  },
+  "issueThreadInteraction.chooseOneOrMoreAnswers": {
+    "en": "Choose one or more answers.",
+    "zh-CN": "请选择一项或多项答案。",
+    "reviewedEnglishHash": "44916fc3824a7367580f83639d569e9a42f2162e798bd4fd3e9c1195d0f6ad66"
+  },
+  "issueThreadInteraction.chooseTasksToCreate": {
+    "en": "Choose tasks to create",
+    "zh-CN": "选择要创建的任务",
+    "reviewedEnglishHash": "e64a43de174c2fbfa659ba1e1ce32d02eb78ce1e440d6315eb61fd3186c2edfe"
   },
   "issueThreadInteraction.clearSelection": {
     "en": "Clear selection",
@@ -148,6 +168,16 @@
     "en": "Confirming...",
     "zh-CN": "正在确认...",
     "reviewedEnglishHash": "f802fc22aed3ab954915df8d12db4a3d5d2636f2601931e3bd00584486b7d9f2"
+  },
+  "issueThreadInteraction.connectService": {
+    "en": "Connect {{service}}",
+    "zh-CN": "连接 {{service}}",
+    "reviewedEnglishHash": "c82de35de6721761a46ecaf038996979d014f7db3538d431a5ec77ac0258f7d5"
+  },
+  "issueThreadInteraction.connectYourProviderToContinue": {
+    "en": "Connect your {{provider}} to continue",
+    "zh-CN": "连接你的 {{provider}} 以继续",
+    "reviewedEnglishHash": "672899176ad7340632acf9ca018943030e7e6d36519cc1e224eb8fc85e43fdc6"
   },
   "issueThreadInteraction.connectorError": {
     "en": "You approved it and it ran, but the connector returned an error.",
@@ -209,10 +239,20 @@
     "zh-CN": "默认父任务",
     "reviewedEnglishHash": "ac981ebffeaa6b4dd50c17c5cfb76f4213ff0212b9be662d6425e824ba2a543d"
   },
+  "issueThreadInteraction.describeAnswerFor": {
+    "en": "Describe your answer for {{prompt}}",
+    "zh-CN": "请说明你对“{{prompt}}”的回答",
+    "reviewedEnglishHash": "e55ade720e7f7713628e3473bd23a53cb6db6f0da595d45472a31411bbbf8b97"
+  },
   "issueThreadInteraction.directedToAgentDescription": {
-    "en": "Directed to {{name}}. Agent-addressed interactions are handled by that agent and are kept out of the board attention feed.",
-    "zh-CN": "已定向给 {{name}}。由智能体接收的交互将由该智能体处理，且不会进入看板关注队列。",
-    "reviewedEnglishHash": "8aaca2c21c6f8f3ba3f46834422ccf80204ac263f413682fa76274fa95fdffdd"
+    "en": "Directed to {{name}}. Agent-addressed interactions are owned by that agent and are kept out of the open organization attention feed.",
+    "zh-CN": "已定向给 {{name}}。由智能体接收的交互归该智能体所有，且不会进入公开的组织关注队列。",
+    "reviewedEnglishHash": "08776fe69b673c88a21771f10c32b3c1de49ff89dc58c938121b44bbbfd7b994"
+  },
+  "issueThreadInteraction.document": {
+    "en": "Document",
+    "zh-CN": "文档",
+    "reviewedEnglishHash": "d6bd8c0aeee80fedb2dbf05c973100c3db04be90c072a88572533f2684131a36"
   },
   "issueThreadInteraction.draftIssues": {
     "en": "{{count}} draft issues",
@@ -248,6 +288,11 @@
     "en": "For {{name}}",
     "zh-CN": "发送给 {{name}}",
     "reviewedEnglishHash": "eca307bbb7592a8f1db3cc14ce94c733db576fe1a83c399e0c560833512451fe"
+  },
+  "issueThreadInteraction.grantAccessToConnection": {
+    "en": "Grant {{agent}} access to “{{connection}}”?",
+    "zh-CN": "授予 {{agent}} 对“{{connection}}”的访问权限？",
+    "reviewedEnglishHash": "9ce26e6eb7e8d80c361cdb2b7dee7b27daedd702225582b5bd49380e18a65c69"
   },
   "issueThreadInteraction.hiddenFollowOnTasks": {
     "en": "{{count}} follow-on tasks hidden in preview",
@@ -354,6 +399,11 @@
     "zh-CN": "已选择 {{selected}} / {{total}} 个选项",
     "reviewedEnglishHash": "7ca8aac3a25f83146cc6a741340dc25d27a5e19ab1bb4c0627c6c8d3ec0ebc5a"
   },
+  "issueThreadInteraction.other": {
+    "en": "Other",
+    "zh-CN": "其他",
+    "reviewedEnglishHash": "f97e9da0e3b879f0a9df979ae260a5f7e1371edb127c1862d4f861981166cdc1"
+  },
   "issueThreadInteraction.otherAnswerFor": {
     "en": "Other answer for {{prompt}}",
     "zh-CN": "{{prompt}} 的其他答案",
@@ -458,6 +508,11 @@
     "en": "Questions for the operator",
     "zh-CN": "给操作者的问题",
     "reviewedEnglishHash": "09c5a86ef56d95bb1217bd42f0f9e65350019a12684d87c0651403d64fb1f362"
+  },
+  "issueThreadInteraction.questionsToAnswer": {
+    "en": "Questions to answer",
+    "zh-CN": "待回答的问题",
+    "reviewedEnglishHash": "9b3aa9589f653d3fa3e1d9449ac42e5df87e3dd7ba5d4eef98d09675b2c3d9d0"
   },
   "issueThreadInteraction.questionsWithdrawn": {
     "en": "Questions withdrawn",
@@ -865,9 +920,9 @@
     "reviewedEnglishHash": "6af3ea688c2d33dea3a1ffacffdbe77887d644ae4b32fdd9c949a53d732cbadc"
   },
   "issueThreadInteraction.submitting": {
-    "en": "Submitting...",
-    "zh-CN": "正在提交...",
-    "reviewedEnglishHash": "64115d5b9c794c9257475694ccc8056a407c4f3a2e523ccc4668a63418132887"
+    "en": "Submitting…",
+    "zh-CN": "提交中…",
+    "reviewedEnglishHash": "49195f559e4a9f5b08de63a11b91827883385c819ddd46b0d6f0ec9df8b5e4b0"
   },
   "issueThreadInteraction.suggestedTaskTree": {
     "en": "Suggested task tree",
@@ -894,6 +949,26 @@
     "zh-CN": "此项目。",
     "reviewedEnglishHash": "5f6fa014844e45dcade01fa630ac005b24def904b48a6d86962dabd0329614be"
   },
+  "issueThreadInteraction.toolAction.allowOnce": {
+    "en": "Allow once",
+    "zh-CN": "允许一次",
+    "reviewedEnglishHash": "168511d24d9ee03122b3200f929be11eaaedad45cb0ecb20a95f549b3e3f4d0f"
+  },
+  "issueThreadInteraction.toolAction.allowQuestion": {
+    "en": "Allow {{target}}?",
+    "zh-CN": "允许 {{target}}？",
+    "reviewedEnglishHash": "8a8b319f1149ab6eeb1955dfac37e10805da900032bf2b22bb3df85ee7733516"
+  },
+  "issueThreadInteraction.toolAction.allowing": {
+    "en": "Allowing…",
+    "zh-CN": "正在允许…",
+    "reviewedEnglishHash": "ff49ba8724e14662c396038882068693c8c8c142ebe04a93cfffd43b44f34f06"
+  },
+  "issueThreadInteraction.toolAction.alwaysAllow": {
+    "en": "Always allow",
+    "zh-CN": "始终允许",
+    "reviewedEnglishHash": "977618bd8bc7eef4d3bada0cf1a791d8362cd5fd8680e9673566abab2e76dded"
+  },
   "issueThreadInteraction.toolAction.approvalClosed": {
     "en": "Approval window closed · auto-declines any moment",
     "zh-CN": "审批窗口已关闭 · 即将自动拒绝",
@@ -903,6 +978,11 @@
     "en": "Approval expires in {{minutes}} min · auto-declines if not answered",
     "zh-CN": "审批将在 {{minutes}} 分钟后过期 · 未处理将自动拒绝",
     "reviewedEnglishHash": "74bf27ac742536a9675b41fca443634eac875babe4edf45351f22eee6e41a4c8"
+  },
+  "issueThreadInteraction.toolAction.approvalOptions": {
+    "en": "Approval options",
+    "zh-CN": "审批选项",
+    "reviewedEnglishHash": "b8cd0e4b744cdfb793347dced6d28d72df225a41f0ff07d9b237ed122cdfe8fa"
   },
   "issueThreadInteraction.toolAction.approveAndRun": {
     "en": "Approve & run",
@@ -914,6 +994,11 @@
     "zh-CN": "批准后将立即运行此操作。",
     "reviewedEnglishHash": "a1d7c120aff57e715494cdaf52685ad2b2b52cac015b8ba574e97d909d904e33"
   },
+  "issueThreadInteraction.toolAction.approveRequest": {
+    "en": "Approve request",
+    "zh-CN": "批准请求",
+    "reviewedEnglishHash": "9ed200aeb78c5b9b70da66f07ed48c545ad9261e06a29e4b3a3a2936a9454294"
+  },
   "issueThreadInteraction.toolAction.approving": {
     "en": "Approving…",
     "zh-CN": "正在批准…",
@@ -923,6 +1008,16 @@
     "en": "args hash",
     "zh-CN": "参数哈希",
     "reviewedEnglishHash": "d6c2bde3cc558ce9a233478aba1fef250c442f710477ae2ebb75fde7effc0cb9"
+  },
+  "issueThreadInteraction.toolAction.arguments": {
+    "en": "Arguments",
+    "zh-CN": "参数",
+    "reviewedEnglishHash": "7f816072c1c6a23b88dfde54c5aa48559a81803890d297d21f17943c4f2b643d"
+  },
+  "issueThreadInteraction.toolAction.argumentsUnavailable": {
+    "en": "Request arguments are unavailable.",
+    "zh-CN": "请求参数不可用。",
+    "reviewedEnglishHash": "f24c7770ff6f581149c1d3eb96347608157b3f12e9a2d3a10c6b8616efd3c0e0"
   },
   "issueThreadInteraction.toolAction.decline": {
     "en": "Decline",
@@ -953,6 +1048,21 @@
     "en": "Declining…",
     "zh-CN": "正在拒绝…",
     "reviewedEnglishHash": "fb03c72b9ced6a80c92edb5ba28df26e824f33af6cdaaad5dd8ef74ed1a07fda"
+  },
+  "issueThreadInteraction.toolAction.deny": {
+    "en": "Deny",
+    "zh-CN": "拒绝",
+    "reviewedEnglishHash": "05a2d7332eb9d8bf164487c743a2e93c21b16bb2061a93e3ee2ceb508eadb753"
+  },
+  "issueThreadInteraction.toolAction.denying": {
+    "en": "Denying…",
+    "zh-CN": "正在拒绝…",
+    "reviewedEnglishHash": "a3830dd8c9d72f4801e3b13ed76d5c6e46401588f5da1a73031160b6ac653f9d"
+  },
+  "issueThreadInteraction.toolAction.destructiveActionPrefix": {
+    "en": "Destructive action. ",
+    "zh-CN": "破坏性操作。",
+    "reviewedEnglishHash": "5205234462f02102b4a335f344b2a0364f4e326a4ef78b155734e5e28028f46a"
   },
   "issueThreadInteraction.toolAction.executedSuccessfully": {
     "en": "Executed successfully.",
@@ -1028,6 +1138,11 @@
     "en": "Approved by {{who}} — running the action now",
     "zh-CN": "已由 {{who}} 批准 - 正在执行操作",
     "reviewedEnglishHash": "c764d189d04a6f81f9c1df4d4b6f5dd547ac929d064fecede129fc5c7ae5f331"
+  },
+  "issueThreadInteraction.toolAction.runsOnceWhenAllowed": {
+    "en": "Runs once when you allow it",
+    "zh-CN": "允许后将运行一次",
+    "reviewedEnglishHash": "2eebf58e6efbaf068b118539dfe04c6517f92243442fe5b99f3cb9b55f4a1cbb"
   },
   "issueThreadInteraction.toolAction.status.declined": {
     "en": "Declined",
@@ -1279,6 +1394,11 @@
     "zh-CN": "已决定 {{decided}} / {{total}}",
     "reviewedEnglishHash": "4a15c2fc23b65fa627d6c1c2572862104e25f42e14dcf0a8952077b527711a96"
   },
+  "issueThreadInteraction.verdict.readyToSubmit": {
+    "en": " · {{count}} ready to submit",
+    "zh-CN": " · {{count}} 项待提交",
+    "reviewedEnglishHash": "eebfe8ea08b9d0faf3df95de42bdd1e521527b373c9f41bb8dc3be371e235ca1"
+  },
   "issueThreadInteraction.verdict.reason": {
     "en": "Reason",
     "zh-CN": "原因",
@@ -1308,6 +1428,11 @@
     "en": "Rejected",
     "zh-CN": "已拒绝",
     "reviewedEnglishHash": "aea4a04a80426ed865ec2058b16854b9146166d22c1f3282a18f285941c42eba"
+  },
+  "issueThreadInteraction.verdict.submitVerdicts": {
+    "en": "Submit verdicts",
+    "zh-CN": "提交裁决",
+    "reviewedEnglishHash": "4631e903520becffff275fb4a397e81917b97921ec978776fae31682ef95646b"
   },
   "issueThreadInteraction.verdict.unableToApply": {
     "en": "Unable to apply the verdicts",

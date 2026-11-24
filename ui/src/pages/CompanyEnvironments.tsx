@@ -35,6 +35,8 @@ import {
   type EnvironmentCustomImageSetupSessionResult,
   type EnvironmentUpdateResult,
 } from "@/api/environments";
+import { TailscaleSshMachine } from "@/components/TailscaleSshMachine";
+import { useTailscaleConnections } from "@/hooks/useTailscaleConnections";
 import { agentsApi } from "@/api/agents";
 import { ApiError } from "@/api/client";
 import { describeError } from "@/api/errors";
@@ -80,12 +82,22 @@ import {
 import { queryKeys } from "@/lib/queryKeys";
 import { Link, useNavigate, useParams } from "@/lib/router";
 import { buildSameOriginWebSocketUrl } from "@/lib/websocket-url";
-import { Field, ToggleField } from "../components/agent-config-primitives";
+import {
+  Field,
+  ToggleField,
+} from "../components/agent-config-primitives";
+import { ANALYTICS_NO_CAPTURE_CLASS } from "@/lib/analytics/privacy";
+import { cn } from "@/lib/utils";
 
 type EnvironmentFormState = {
   name: string;
   description: string;
   driver: "local" | "ssh" | "sandbox";
+  sshNetwork: "direct" | "tailscale";
+  sshUseHostAuth: boolean;
+  tailscaleConnectionId: string;
+  tailscaleDeviceId: string;
+  tailscaleAuthKeySecretId: string;
   sshHost: string;
   sshPort: string;
   sshUsername: string;
@@ -148,6 +160,11 @@ function buildEnvironmentPayload(form: EnvironmentFormState) {
     config:
       form.driver === "ssh"
         ? {
+            useHostAuth: form.sshUseHostAuth,
+            ...(form.sshNetwork === "tailscale" ? { network: "tailscale" as const,
+              ...(form.tailscaleConnectionId ? { tailscaleConnectionId: form.tailscaleConnectionId, tailscaleDeviceId: form.tailscaleDeviceId } :
+                { tailscaleAuthKeySecretRef: form.tailscaleAuthKeySecretId ? { type: "secret_ref" as const, secretId: form.tailscaleAuthKeySecretId, version: "latest" as const } : null }),
+            } : { network: "direct" as const }),
             host: form.sshHost.trim(),
             port: Number.parseInt(form.sshPort || "22", 10) || 22,
             username: form.sshUsername.trim(),
@@ -175,10 +192,17 @@ function buildEnvironmentPayload(form: EnvironmentFormState) {
 }
 
 function createEmptyEnvironmentForm(): EnvironmentFormState {
+  const connectionId = typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("tailscale_connection") ?? "";
+  const tailscaleSetup = Boolean(connectionId) || (typeof window !== "undefined" && new URLSearchParams(window.location.search).has("tailscale_setup"));
   return {
     name: "",
     description: "",
     driver: "ssh",
+    sshUseHostAuth: false,
+    sshNetwork: tailscaleSetup ? "tailscale" : "direct",
+    tailscaleConnectionId: connectionId,
+    tailscaleDeviceId: "",
+    tailscaleAuthKeySecretId: "",
     sshHost: "",
     sshPort: "22",
     sshUsername: "",
@@ -210,6 +234,10 @@ function normalizeNonLocalEnvironmentId(
 function readSshConfig(environment: Environment) {
   const config = environment.config ?? {};
   return {
+    useHostAuth: config.useHostAuth !== false,
+    network: config.network === "tailscale" ? "tailscale" as const : "direct" as const,
+    tailscaleAuthKeySecretId: typeof (config.tailscaleAuthKeySecretRef as { secretId?: unknown } | null)?.secretId === "string"
+      ? (config.tailscaleAuthKeySecretRef as { secretId: string }).secretId : "",
     host: typeof config.host === "string" ? config.host : "",
     port:
       typeof config.port === "number"
@@ -261,6 +289,11 @@ function createEnvironmentFormFromEnvironment(
       name: environment.name,
       description: environment.description ?? "",
       driver: "ssh",
+      tailscaleConnectionId: typeof environment.config.tailscaleConnectionId === "string" ? environment.config.tailscaleConnectionId : "",
+      tailscaleDeviceId: typeof environment.config.tailscaleDeviceId === "string" ? environment.config.tailscaleDeviceId : "",
+      sshUseHostAuth: ssh.useHostAuth,
+      sshNetwork: ssh.network,
+      tailscaleAuthKeySecretId: ssh.tailscaleAuthKeySecretId,
       sshHost: ssh.host,
       sshPort: ssh.port,
       sshUsername: ssh.username,
@@ -1376,7 +1409,7 @@ function EnvironmentImageTemplatePanel({
             <summary className="cursor-pointer select-none font-medium text-foreground">
               {translateInstant("companyEnvironments.sshFallback")}
             </summary>
-            <code className="mt-2 block overflow-x-auto whitespace-nowrap text-(length:--text-micro) leading-5">
+            <code className={cn("mt-2 block overflow-x-auto whitespace-nowrap text-(length:--text-micro) leading-5", ANALYTICS_NO_CAPTURE_CLASS)}>
               {connectionCommand}
             </code>
           </details>
@@ -1528,17 +1561,15 @@ export function CompanyEnvironments({
   }>();
   const navigate = useNavigate();
   const { selectedCompanyId } = useCompany();
+  const tailscaleConnections = useTailscaleConnections(selectedCompanyId);
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToast();
   const queryClient = useQueryClient();
   const isEnvironmentFormPage = mode === "create" || mode === "edit";
-  const editingEnvironmentId =
-    mode === "edit" ? (routeEnvironmentId ?? null) : null;
-  const [environmentForm, setEnvironmentForm] = useState<EnvironmentFormState>(
-    createEmptyEnvironmentForm,
-  );
-  const environmentVariablesEditorRef =
-    useRef<EnvironmentVariablesEditorHandle | null>(null);
+  const editingEnvironmentId = mode === "edit" ? routeEnvironmentId ?? null : null;
+  const [environmentForm, setEnvironmentForm] = useState<EnvironmentFormState>(createEmptyEnvironmentForm);
+  const hasConnectedTailnet = tailscaleConnections.data?.some(connection => connection.status === "connected") ?? false;
+  const environmentVariablesEditorRef = useRef<EnvironmentVariablesEditorHandle | null>(null);
   const initializedFormKeyRef = useRef<string | null>(null);
   // Fingerprint of the form as initialized; null until the form page has loaded its data.
   const [environmentFormBaselineKey, setEnvironmentFormBaselineKey] = useState<
@@ -2178,7 +2209,9 @@ export function CompanyEnvironments({
     (environmentForm.driver !== "ssh" ||
       (environmentForm.sshHost.trim().length > 0 &&
         environmentForm.sshUsername.trim().length > 0 &&
-        environmentForm.sshRemoteWorkspacePath.trim().length > 0)) &&
+        environmentForm.sshRemoteWorkspacePath.trim().length > 0 &&
+        (environmentForm.sshNetwork !== "tailscale" || Boolean(environmentForm.tailscaleConnectionId && environmentForm.tailscaleDeviceId))
+      )) &&
     (environmentForm.driver !== "sandbox" ||
       (environmentForm.sandboxProvider.trim().length > 0 &&
         environmentForm.sandboxProvider !== "fake" &&
@@ -2427,7 +2460,7 @@ export function CompanyEnvironments({
                             ) ? null : (
                               <span className="text-muted-foreground">
                                 {" "}
-                                · {environment.driver}
+                                · {environment.driver === "ssh" && environment.config.network === "tailscale" ? translateInstant("companyEnvironments.sshViaTailscale") : environment.driver}
                               </span>
                             )}
                           </span>
@@ -2616,6 +2649,7 @@ export function CompanyEnvironments({
               >
                 <EnvironmentVariablesEditor
                   ref={environmentVariablesEditorRef}
+                  footerHint={null}
                   value={environmentForm.envVars}
                   secrets={secrets ?? []}
                   onCreateSecret={async (name, value) =>
@@ -2787,14 +2821,87 @@ export function CompanyEnvironments({
 
                 {environmentForm.driver === "ssh" ? (
                   <div className="grid gap-3 md:grid-cols-2">
+                    <div className="md:col-span-2">
+                      {environmentForm.sshNetwork === "tailscale" || hasConnectedTailnet ? (
+                        <Field
+                          label={translateInstant("companyEnvironments.network")}
+                          hint={translateInstant("companyEnvironments.networkHint")}
+                        >
+                          <select
+                            aria-label={translateInstant("companyEnvironments.sshNetworkAria")}
+                            className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm"
+                            value={environmentForm.sshNetwork}
+                            onChange={(event) =>
+                              setEnvironmentForm((current) => ({
+                                ...current,
+                                sshNetwork: event.target.value === "tailscale" ? "tailscale" : "direct",
+                                tailscaleConnectionId: "",
+                                tailscaleDeviceId: "",
+                                tailscaleAuthKeySecretId: "",
+                                sshHost: "",
+                                sshPrivateKey: "",
+                                sshPrivateKeySecretId: "",
+                                sshKnownHosts: "",
+                              }))
+                            }
+                          >
+                            <option value="direct">{translateInstant("companyEnvironments.directConnection")}</option>
+                            <option value="tailscale">Tailscale</option>
+                          </select>
+                        </Field>
+                      ) : null}
+                      {tailscaleConnections.error ? (
+                        <p role="alert" className="text-sm text-destructive">
+                          {describeError(tailscaleConnections.error, { action: "load Tailscale connections" }).body}
+                        </p>
+                      ) : null}
+                      {tailscaleConnections.data !== undefined && !hasConnectedTailnet && environmentForm.sshNetwork === "direct" ? (
+                        <p className="text-sm text-muted-foreground">
+                          <Link className="underline" to="/apps/tailscale">
+                            {translateInstant("companyEnvironments.connectTailscaleNetwork")}
+                          </Link>{" "}
+                          {translateInstant("companyEnvironments.connectTailscaleSuffix")}
+                        </p>
+                      ) : null}
+                    </div>
+                    {environmentForm.sshNetwork === "tailscale" && selectedCompanyId ? (
+                      <div className="md:col-span-2">
+                        <TailscaleSshMachine
+                          companyId={selectedCompanyId}
+                          connectionId={environmentForm.tailscaleConnectionId}
+                          deviceId={environmentForm.tailscaleDeviceId}
+                          port={Number(environmentForm.sshPort) || 22}
+                          onPrivateKey={(secretId) => {
+                            setEnvironmentForm((current) => ({ ...current, sshPrivateKey: "", sshPrivateKeySecretId: secretId }));
+                            void queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedCompanyId) });
+                          }}
+                          onChange={(selection) =>
+                            setEnvironmentForm((current) => ({
+                              ...current,
+                              tailscaleConnectionId: selection.connectionId,
+                              tailscaleDeviceId: selection.deviceId,
+                              sshHost: selection.host,
+                              sshPrivateKey: "",
+                              sshPrivateKeySecretId: "",
+                              sshKnownHosts: "",
+                            }))
+                          }
+                        />
+                      </div>
+                    ) : null}
                     <Field
                       label={translateInstant("companySettings.host")}
-                      hint="DNS name or IP address for the remote machine."
+                      hint={
+                        environmentForm.sshNetwork === "tailscale"
+                          ? translateInstant("companyEnvironments.tailscaleHostHint")
+                          : "DNS name or IP address for the remote machine."
+                      }
                     >
                       <input
                         className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
                         type="text"
                         value={environmentForm.sshHost}
+                        readOnly={environmentForm.sshNetwork === "tailscale" && Boolean(environmentForm.tailscaleConnectionId)}
                         onChange={(e) =>
                           setEnvironmentForm((current) => ({
                             ...current,
@@ -2918,6 +3025,22 @@ export function CompanyEnvironments({
                         }
                       />
                     </Field>
+                    <details className="md:col-span-2">
+                      <summary className="cursor-pointer text-sm font-medium">{translateInstant("Advanced")}</summary>
+                      <div className="pt-3">
+                        <ToggleField
+                          label={translateInstant("companyEnvironments.sshUseHostAuth")}
+                          hint={translateInstant("companyEnvironments.sshUseHostAuthHint")}
+                          checked={environmentForm.sshUseHostAuth}
+                          onChange={(checked) =>
+                            setEnvironmentForm((current) => ({
+                              ...current,
+                              sshUseHostAuth: checked,
+                            }))
+                          }
+                        />
+                      </div>
+                    </details>
                     <div className="md:col-span-2">
                       <ToggleField
                         label={translateInstant(
@@ -3099,7 +3222,13 @@ export function CompanyEnvironments({
                   }
                   disabled={
                     draftEnvironmentProbeMutation.isPending ||
-                    !environmentFormValid
+                    !environmentFormValid ||
+                    (environmentForm.driver === "ssh" && environmentForm.sshNetwork === "tailscale")
+                  }
+                  title={
+                    environmentForm.driver === "ssh" && environmentForm.sshNetwork === "tailscale"
+                      ? translateInstant("companyEnvironments.tailscaleTestHint")
+                      : undefined
                   }
                 >
                   {draftEnvironmentProbeMutation.isPending

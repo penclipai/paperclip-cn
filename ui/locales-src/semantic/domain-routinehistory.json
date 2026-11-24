@@ -449,6 +449,11 @@
     "zh-CN": "触发器 {{label}}",
     "reviewedEnglishHash": "0b82842c61f61da38b183d6a07f4bc2bdeb7e5c88bd07506ae94281d49c6a466"
   },
+  "routineHistory.triggerHeartbeat": {
+    "en": "Standing check on each wake-up",
+    "zh-CN": "每次唤醒时执行常规检查",
+    "reviewedEnglishHash": "d5cdd13f4b17bc4239babdfd3e1a9d4cdd632bee9fbf98714260722883af6e7b"
+  },
   "routineHistory.triggerRemoved": {
     "en": "Trigger removed ({{label}})",
     "zh-CN": "已移除触发器（{{label}}）",

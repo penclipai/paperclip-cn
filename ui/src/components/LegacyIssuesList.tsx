@@ -4,6 +4,7 @@ import { saveTaskCollectionPreferences } from "../lib/task-collection-preference
 import { useWarmTaskDetailCode } from "@/hooks/useWarmTaskDetailCode";
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { topRenderedNavEntryRefs, usePreloadTaskChats } from "../hooks/usePreloadTaskChats";
 import { useShowAgentCreatedTasks } from "../hooks/useShowAgentCreatedTasks";
 import { useIssueHierarchyContext } from "../hooks/useIssueHierarchyContext";
 import { includeIssueHierarchyContext } from "../lib/issue-hierarchy-context";
@@ -59,7 +60,7 @@ import {
 } from "../lib/inbox";
 import { cn, formatDurationMs, formatTokens } from "../lib/utils";
 import { SHOW_TASK_PRIORITY_UI } from "../lib/ui-flags";
-import { collectSubtreeLiveCounts } from "../lib/liveIssueIds";
+import { collectSubtreeLiveCounts, issueWaitingOf } from "../lib/liveIssueIds";
 import {
   InboxIssueMetaLeading,
   InboxIssueTrailingColumns,
@@ -440,6 +441,8 @@ type ProjectOption = Pick<Project, "id" | "name"> & Partial<Pick<Project, "color
 type IssueListRequestFilters = NonNullable<Parameters<typeof issuesApi.list>[1]>;
 
 interface IssuesListProps {
+  /** Preload the chat of the top visible rows. Only the top-level tasks page sets this. */
+  preloadTaskChats?: boolean;
   issues: Issue[];
   isLoading?: boolean;
   error?: Error | null;
@@ -665,6 +668,7 @@ const MOBILE_TREE_INDENT = ["", "pl-4 sm:pl-0", "pl-8 sm:pl-0", "pl-12 sm:pl-0",
 
 export function IssuesList({
   issues,
+  preloadTaskChats = false,
   isLoading,
   error,
   onRetry,
@@ -1048,7 +1052,8 @@ export function IssuesList({
   );
   const availableIssueColumnSet = useMemo(() => new Set(availableIssueColumns), [availableIssueColumns]);
   const subtreeLiveCounts = useMemo(
-    () => collectSubtreeLiveCounts(issues, liveIssueIds ?? new Set<string>()),
+    // The row chip counts only started sub-tasks; waiting ones are not running below.
+    () => collectSubtreeLiveCounts(issues, liveIssueIds ?? new Set<string>(), { startedOnly: true }),
     [issues, liveIssueIds],
   );
   const visibleTrailingIssueColumns = useMemo(
@@ -1378,6 +1383,13 @@ export function IssuesList({
     viewState.collapsedParents,
     viewState.nestingEnabled,
   ]);
+  // The top rows the list renders, in display order (collapsed groups and
+  // parents hide theirs), so the preload warms what a person can click.
+  const preloadTaskRefs = useMemo(
+    () => preloadTaskChats ? topRenderedNavEntryRefs(flatNavEntries, renderedIssueRowLimit) : [],
+    [flatNavEntries, preloadTaskChats, renderedIssueRowLimit],
+  );
+  usePreloadTaskChats(selectedCompanyId, preloadTaskRefs, !isLoading && !error && (!hierarchyEnabled || !hierarchy.isLoading) && preloadTaskRefs.length > 0);
 
   const listNavStateRef = useRef({
     flatNavEntries,
@@ -2220,6 +2232,7 @@ export function IssuesList({
                             <InboxIssueMetaLeading
                               issue={issue}
                               isLive={liveIssueIds?.has(issue.id) === true}
+                              waiting={issueWaitingOf(liveIssueIds, issue.id)}
                               subtreeLiveCount={subtreeLiveCounts.get(issue.id) ?? 0}
                               showStatus={visibleIssueColumnSet.has("status") && availableIssueColumnSet.has("status")}
                               showIdentifier={visibleIssueColumnSet.has("id") && availableIssueColumnSet.has("id")}

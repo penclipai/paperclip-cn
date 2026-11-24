@@ -59,6 +59,26 @@
     "zh-CN": "自动重启开发服务器",
     "reviewedEnglishHash": "8ecaf4ca370a7d2126094d2f6f8a4ef65962dcb747e0e404cf8af261f5162b77"
   },
+  "instanceExperimentalSettings.awsConnectorDescription": {
+    "en": "Let agents work in AWS through AWS's hosted MCP server, with short-lived credentials made for each connection.",
+    "zh-CN": "让智能体通过 AWS 托管的 MCP 服务器在 AWS 中开展工作，每次连接都会生成短期凭据。",
+    "reviewedEnglishHash": "4b80c6192e965ef403834770bb73114f78fd82bdadcbce3366a546eb525a6023"
+  },
+  "instanceExperimentalSettings.awsConnectorFootnote": {
+    "en": "Off by default. While off, the AWS connector cannot be set up or run.",
+    "zh-CN": "默认关闭。关闭期间无法配置或运行 AWS 连接器。",
+    "reviewedEnglishHash": "75aaa7de21e47f3f3876186f6b0169ce66ffe3fd32dbebc5d402efcb1eb15d3c"
+  },
+  "instanceExperimentalSettings.awsConnectorTitle": {
+    "en": "AWS connector",
+    "zh-CN": "AWS 连接器",
+    "reviewedEnglishHash": "487a50f10f200e136fdaba7dc7fca1910cc554e5ddd3dacb7b5395e18c74401f"
+  },
+  "instanceExperimentalSettings.awsConnectorToggle": {
+    "en": "Toggle AWS connector experimental setting",
+    "zh-CN": "切换 AWS 连接器实验功能设置",
+    "reviewedEnglishHash": "ad903f8b7a9dbf735ccffd21c916cdc836cd783cef4e9d50d6d6f54eef592e67"
+  },
   "instanceExperimentalSettings.betaSkillsDescription": {
     "en": "Allow agents to pin beta releases of the Paperclip core skill. Disabling this returns every agent to the default live skill without removing saved pins.",
     "zh-CN": "允许智能体固定 Paperclip 核心技能的 beta 版本。禁用后，所有智能体会恢复默认 live 技能，但不会删除已保存的固定版本。",
@@ -354,10 +374,35 @@
     "zh-CN": "切换仅使用托管沙箱实验功能设置",
     "reviewedEnglishHash": "129ac5d57752b38903b3e989495752d67a2c2381cd08286b6dbde784509b8c5e"
   },
+  "instanceExperimentalSettings.mcpTasksDescription": {
+    "en": "Let connected apps run long actions, such as CI runs or deploys, as tasks Paperclip keeps track of. If an action outlasts a call, a restart, or a deploy, the agent collects the result later and the work is never started twice.",
+    "zh-CN": "让已连接的应用将长时间运行的操作（如 CI 运行或部署）作为 Paperclip 跟踪的任务来执行。即使操作跨越单次调用、重启或部署，智能体稍后也能获取结果，且任务绝不会重复启动。",
+    "reviewedEnglishHash": "4f1f3c12af325f0dec7f2267ca4f50d0e99926f64363484bf74f71a55e23a06d"
+  },
+  "instanceExperimentalSettings.mcpTasksFootnote": {
+    "en": "Applies to apps that support MCP Tasks. Turning this off stops new tasks; apps then answer as before.",
+    "zh-CN": "适用于支持 MCP Tasks 的应用。关闭后会停止新任务；应用将恢复此前的响应方式。",
+    "reviewedEnglishHash": "819b91679e5ce1dbbf1074e2fb21a68a2af4977bbdf346453964114d3d11e3d8"
+  },
+  "instanceExperimentalSettings.mcpTasksTitle": {
+    "en": "Durable app actions (MCP Tasks)",
+    "zh-CN": "持久应用操作（MCP Tasks）",
+    "reviewedEnglishHash": "265f06bc7b47e12c5410a7c6b0763918cdd40758958198751d8290cb32748022"
+  },
+  "instanceExperimentalSettings.mcpTasksToggle": {
+    "en": "Toggle durable app actions experimental setting",
+    "zh-CN": "切换持久应用操作实验功能设置",
+    "reviewedEnglishHash": "c7c2f966d1ae22b976eff1408d13511e6edcabf086e04946061574b193cee491"
+  },
   "instanceExperimentalSettings.noRecoveryTasksNow": {
     "en": "No recovery tasks need to be created right now.",
     "zh-CN": "当前不需要创建恢复任务。",
     "reviewedEnglishHash": "50250d5d00c8649516d3db66f75c8a986c5d2d8b8d73213304001521dbc2fa23"
+  },
+  "instanceExperimentalSettings.openAiDotFootnote": {
+    "en": "Requires an authenticated instance with a public HTTPS URL. Turning this off blocks Dot calls and new work; saved connections are kept.",
+    "zh-CN": "需要已认证且配置公共 HTTPS URL 的实例。关闭后会阻止 Dot 调用与新工作，已保存的连接会保留。",
+    "reviewedEnglishHash": "836769d11118576a99580da15ed21a8f04701d8657a890b2fbbf961cfa35d651"
   },
   "instanceExperimentalSettings.outsideLookback": {
     "en": "outside the configured lookback and will not be touched.",
@@ -434,15 +479,35 @@
     "zh-CN": "恢复目标",
     "reviewedEnglishHash": "969dd1c5df90680279c5df99ff13298892f344b1c186ae40a0a3079f8ccb20b1"
   },
-  "instanceExperimentalSettings.runningAfter": {
-    "en": "Running tasks created after",
-    "zh-CN": "运行创建于此时间之后的任务",
-    "reviewedEnglishHash": "590de07dbd7e534957fea808ecdbc048de816026cf2b29724ef0d7b2dad85518"
+  "instanceExperimentalSettings.responsibilitiesDescription": {
+    "en": "Replace the classic dashboard with one built around the areas you care about and the responsibilities you own in each. An agent can interview you to create it, and you can undo any change.",
+    "zh-CN": "用围绕你关注的领域及各自职责构建的仪表盘替代经典仪表盘。智能体可以通过访谈帮你创建，且任何更改都可撤销。",
+    "reviewedEnglishHash": "5a90d734a9994fe21e3718464a1224ee978a288de8e2722a2157a5899480f53a"
+  },
+  "instanceExperimentalSettings.responsibilitiesFootnote": {
+    "en": "Turning this off brings back the classic dashboard. Your areas and responsibilities are kept.",
+    "zh-CN": "关闭后将恢复经典仪表盘。你的领域与职责配置会保留。",
+    "reviewedEnglishHash": "f8726c3b4eeafbf2f4cbb4167e8375478ef28376cca844719689478ff4274058"
+  },
+  "instanceExperimentalSettings.responsibilitiesTitle": {
+    "en": "Areas & Responsibilities dashboard",
+    "zh-CN": "领域与职责仪表盘",
+    "reviewedEnglishHash": "64c3c9838116c24a00811fca3320e4233dbc6818fee41d6f742a9ce6a3bbdca8"
+  },
+  "instanceExperimentalSettings.responsibilitiesToggle": {
+    "en": "Toggle Areas & Responsibilities dashboard experimental setting",
+    "zh-CN": "切换领域与职责仪表盘实验功能设置",
+    "reviewedEnglishHash": "bdf1e3c6ba77fee17d5561429696e83fb43f4bbc6fba4309e1003494b1eddf4d"
   },
   "instanceExperimentalSettings.runNow": {
     "en": "Run now",
     "zh-CN": "立即运行",
     "reviewedEnglishHash": "0991397702fabb407256a08adbb643c936aa03a49b9e78a2e62f4303c8a03e4c"
+  },
+  "instanceExperimentalSettings.runningAfter": {
+    "en": "Running tasks created after",
+    "zh-CN": "运行创建于此时间之后的任务",
+    "reviewedEnglishHash": "590de07dbd7e534957fea808ecdbc048de816026cf2b29724ef0d7b2dad85518"
   },
   "instanceExperimentalSettings.saveHours": {
     "en": "Save hours",

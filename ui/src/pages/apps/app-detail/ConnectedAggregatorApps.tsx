@@ -16,6 +16,7 @@ import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { Button } from "@/components/ui/button";
 import { queryKeys } from "@/lib/queryKeys";
 import { AppLogo } from "../AppLogo";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 const catalogBySlug = new Map(
   AGGREGATOR_APP_CATALOG.map((app) => [app.slug, app]),
@@ -207,7 +208,7 @@ export function ConnectedAggregatorApps({
                       {accounts.length} accounts
                     </p>
                   ) : accounts[0]?.alias ? (
-                    <p className="truncate text-xs text-muted-foreground">
+                    <p className={`truncate text-xs text-muted-foreground ${ANALYTICS_MASK_CLASS}`}>
                       {accounts[0].alias}
                     </p>
                   ) : null}

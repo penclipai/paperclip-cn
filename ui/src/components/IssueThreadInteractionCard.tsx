@@ -1,6 +1,7 @@
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import {
+  Children,
   createContext,
   useContext,
   useEffect,
@@ -26,6 +27,7 @@ import {
   ImagePlus,
   KeyRound,
   Loader2,
+  Lock,
   MessageSquareQuote,
   MinusCircle,
   ShieldAlert,
@@ -70,6 +72,7 @@ import {
   type SuggestedTaskDraft,
   type SuggestedTaskTreeNode,
 } from "../lib/issue-thread-interactions";
+import { safeNavigableUrl } from "../lib/safe-url";
 import { cn, formatDateTime, formatShortDate } from "../lib/utils";
 import { InteractionPreparationNotice } from "./InteractionPreparationNotice";
 import { InteractionAudienceLine } from "./InteractionAudienceLine";
@@ -77,6 +80,7 @@ import {
   MarkdownBody,
   type MarkdownExternalReferenceMap,
 } from "./MarkdownBody";
+import { PromptText } from "./PromptText";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import {
@@ -98,12 +102,19 @@ import {
 } from "./ui/dropdown-menu";
 import { AppLogo } from "@/pages/apps/AppLogo";
 import { ConnectionIntentInteractionBody } from "@/features/connections/ConnectionIntentInteractionBody";
+import { RoutineSuggestionCard } from "@/components/RoutineSuggestionCard";
+import { BarProposalCard } from "@/components/responsibilities/BarProposalCard";
+import { AutomationProposalCard } from "@/components/responsibilities/AutomationProposalCard";
+import { DashboardChangesCard } from "@/components/responsibilities/DashboardChangesCard";
 import { QuestionForm } from "./task-chat/QuestionForm";
 import { useCoordinatorWorkspaceEnabled } from "@/hooks/useCoordinatorWorkspaceEnabled";
 import { CoordinatorTaskCommitment } from "./coordinator/CoordinatorTaskCommitment";
 
 import { DecisionCardFooter } from "./DecisionCardFooter";
 import { ToolActionAuditHashCopy } from "./ToolActionAuditHashCopy";
+import { NeedsYouPanel, NeedsYouPanelNote, NeedsYouPanelRow } from "./coordinator/NeedsYouCardKit";
+import { claimReviseDraftWork, clearReviseDraft, releaseReviseDraftWork, reviseDraftKey, useReviseDraft, type ReviseDraftWork } from "@/lib/revise-draft-store";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 const OTHER_ANSWER_ID = "__paperclip_other__";
 
@@ -155,6 +166,14 @@ interface IssueThreadInteractionCardProps {
   /** Reuse the resolver without the task timeline's audit/header chrome. */
   footerSlot?: ReactNode;
   presentationVariant?: "default" | "coordinator-decision";
+  /**
+   * The Needs You card's audience line already says who may answer, so the
+   * compact decision keeps its own clause for screen readers only (PAP-767).
+   */
+  audienceStated?: boolean;
+  /** The Needs You page's artifact row ("Plan · Open in sidebar ↗"): the first
+   * row of a compact decision's context panel (PAP-775). */
+  artifactRow?: ReactNode;
   agentMap?: Map<string, Agent>;
   currentUserId?: string | null;
   userLabelMap?: ReadonlyMap<string, string> | null;
@@ -183,6 +202,9 @@ interface IssueThreadInteractionCardProps {
   ) => Promise<void> | void;
   /** Render confirmation CTAs with the primary action rightmost (task-chat grammar). */
   primaryActionOnRight?: boolean;
+  /** This decision is also rendered in another view (Needs You card + Review
+   * side panel): share one Revise… draft between them (PAP-773). */
+  shareReviseDraft?: boolean;
   onSubmitInteractionVerdicts?: (
     interaction: RequestItemVerdictsInteraction,
     verdicts: {
@@ -262,6 +284,60 @@ function statusLabel(status: IssueThreadInteraction["status"]) {
     default:
       return status;
   }
+}
+
+/**
+ * The agent's one-line note on a compact decision (PAP-775, UI1): it explains
+ * the ask, so it sits under the prompt, never above it, and is left out when
+ * it only repeats the prompt.
+ */
+function compactDecisionNote(interaction: IssueThreadInteraction, prompts: ReadonlyArray<string | null | undefined>): string | null {
+  const note = interaction.summary?.trim();
+  if (!note) return null;
+  return prompts.some(text => text?.trim() === note) ? null : note;
+}
+
+function CompactDecisionNote({ note }: { note: string | null }) {
+  return note ? <p data-decision-note className="text-sm text-muted-foreground">{note}</p> : null;
+}
+
+/** The ask on a compact decision: the largest text on the card (UI1). */
+function CompactDecisionAsk({ children }: { children: ReactNode }) {
+  return <div role="heading" aria-level={2} data-decision-prompt className="text-base font-medium text-foreground">{children}</div>;
+}
+
+/** The Needs You page's ready-made artifact row ("Plan · Open in sidebar ↗"). */
+const CompactArtifactRowContext = createContext<ReactNode>(null);
+
+/**
+ * A compact decision's inset context panel (PAP-775, Paper "A · Compact
+ * cards"). The artifact row the page passes in is always its first row.
+ */
+function DecisionPanel({ children }: { children?: ReactNode }) {
+  const artifactRow = useContext(CompactArtifactRowContext);
+  const rows = Children.toArray(children);
+  if (!artifactRow && rows.length === 0) return null;
+  return <NeedsYouPanel>{artifactRow}{rows}</NeedsYouPanel>;
+}
+
+/** Markdown inside a panel: the first line reads as the panel's title, the rest as its note. */
+function DecisionPanelMarkdown({ markdown, lead = true, externalReferences }: {
+  markdown: string;
+  lead?: boolean;
+  externalReferences?: MarkdownExternalReferenceMap;
+}) {
+  const text = markdown.trim();
+  const breakAt = lead ? text.indexOf("\n") : 0;
+  const first = lead ? (breakAt < 0 ? text : text.slice(0, breakAt)).trim() : "";
+  const rest = lead ? (breakAt < 0 ? "" : text.slice(breakAt + 1)).trim() : text;
+  return <>
+    {first ? <div className="text-(length:--text-compact) leading-5 text-foreground">
+      <MarkdownBody className="paperclip-markdown-on-accent" externalReferences={externalReferences}>{first}</MarkdownBody>
+    </div> : null}
+    {rest ? <div className="text-xs leading-4.5 text-muted-foreground">
+      <MarkdownBody className="paperclip-markdown-on-accent" externalReferences={externalReferences}>{rest}</MarkdownBody>
+    </div> : null}
+  </>;
 }
 
 function interactionKindLabel(kind: IssueThreadInteraction["kind"]) {
@@ -850,6 +926,7 @@ function TaskTreeNode({
 function SuggestTasksCard({
   footerSlot,
   interaction,
+  compact = false,
   agentMap,
   currentUserId,
   userLabelMap,
@@ -857,6 +934,7 @@ function SuggestTasksCard({
   onRejectInteraction,
 }: {
   footerSlot?: ReactNode;
+  compact?: boolean;
   interaction: SuggestTasksInteraction;
   agentMap?: Map<string, Agent>;
   currentUserId?: string | null;
@@ -986,6 +1064,62 @@ function SuggestTasksCard({
     });
   }
 
+  if (compact && interaction.status === "pending") {
+    // Paper "Accept suggested tasks": a checklist with each owner under its task.
+    const rows: { node: SuggestedTaskTreeNode; depth: number }[] = [];
+    const visit = (node: SuggestedTaskTreeNode, depth: number) => {
+      rows.push({ node, depth });
+      for (const child of node.children) if (!child.task.hiddenInPreview) visit(child, depth + 1);
+    };
+    roots.forEach((root) => visit(root, 0));
+    const hiddenCount = totalTasks - rows.length;
+    const ownersShown = rows.some(({ node }) => node.task.assigneeAgentId || node.task.assigneeUserId);
+    return (
+      <div className="space-y-4">
+        <DecisionPanel>
+          <div role="group" aria-label="Suggested tasks" className="flex flex-col gap-2">
+            {rows.map(({ node, depth }) => {
+              const task = node.task;
+              const owner = task.assigneeAgentId || task.assigneeUserId
+                ? resolveActorLabel({ agentId: task.assigneeAgentId, userId: task.assigneeUserId, agentMap, currentUserId, userLabelMap })
+                : null;
+              const meta = [owner, task.billingCode, ...(task.labels ?? [])].filter(Boolean).join(" · ");
+              return (
+                <div key={task.clientKey} className="flex items-start gap-2.5" style={depth > 0 ? { paddingLeft: `calc(var(--spacing) * 6 * ${depth})` } : undefined}>
+                  <Checkbox
+                    checked={selectedClientKeys.has(task.clientKey)}
+                    onCheckedChange={(checked) => handleToggleSelection(node, checked === true)}
+                    disabled={working !== null}
+                    aria-label={`Include ${task.title}`}
+                    className="mt-0.5"
+                  />
+                  <span className="flex min-w-0 flex-col gap-0.5">
+                    <span className="text-(length:--text-compact) font-medium leading-5 text-foreground">{task.title}</span>
+                    {meta ? <span className="text-xs leading-4.5 text-muted-foreground">{meta}</span> : null}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          <NeedsYouPanelNote>
+            {selectedCount} of {totalTasks} selected
+            {hiddenCount > 0 ? ` · ${hiddenCount} follow-on ${hiddenCount === 1 ? "task" : "tasks"} not shown` : ""}
+            {ownersShown ? " · Creates tasks with the owners shown" : ""}
+          </NeedsYouPanelNote>
+        </DecisionPanel>
+        <DecisionCardFooter leading={footerSlot}>
+          <Button size="sm" variant="ghost" disabled={!onRejectInteraction || working !== null} onClick={() => void handleReject()}>
+            {working === "reject" ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Declining…</> : "Decline all"}
+          </Button>
+          <Button size="sm" disabled={!onAcceptInteraction || working !== null || selectedCount === 0} onClick={() => void handleAccept()}>
+            {working === "accept" ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Creating…</> : `Create ${selectedCount} ${selectedCount === 1 ? "task" : "tasks"}`}
+          </Button>
+        </DecisionCardFooter>
+        <InteractionActionError message={actionError} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -1066,6 +1200,25 @@ function SuggestTasksCard({
 
             <DecisionCardFooter leading={footerSlot} className="w-full">
               <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+                {/* The primary action sits right-most (PAP-775, UI4). */}
+                {selectedCount < totalTasks ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    disabled={working !== null}
+                    onClick={() => setSelectedClientKeys(new Set(interaction.payload.tasks.map((task) => task.clientKey)))}
+                  >
+                    {translateInstant("issueThreadInteraction.resetSelection", { defaultValue: "Reset selection" })}
+                  </Button>
+                ) : null}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={!onRejectInteraction || working !== null}
+                  onClick={() => setRejecting((current) => !current)}
+                >
+                  {translateInstant("issueThreadInteraction.verdict.reject", { defaultValue: "Reject" })}
+                </Button>
                 <Button
                   size="sm"
                   disabled={
@@ -1081,37 +1234,11 @@ function SuggestTasksCard({
                       {translateInstant("issueThreadInteraction.accepting", { defaultValue: "Accepting..." })}
                     </>
                   ) : selectedCount === totalTasks ? (
-                    "Accept drafts"
+                    translateInstant("issueThreadInteraction.acceptDrafts", { defaultValue: "Accept drafts" })
                   ) : (
-                    "Accept selected drafts"
+                    translateInstant("issueThreadInteraction.acceptSelectedDrafts", { defaultValue: "Accept selected drafts" })
                   )}
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={!onRejectInteraction || working !== null}
-                  onClick={() => setRejecting((current) => !current)}
-                >
-                  {translateInstant("Reject", { defaultValue: "Reject" })}
-                </Button>
-                {selectedCount < totalTasks ? (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    disabled={working !== null}
-                    onClick={() =>
-                      setSelectedClientKeys(
-                        new Set(
-                          interaction.payload.tasks.map(
-                            (task) => task.clientKey,
-                          ),
-                        ),
-                      )
-                    }
-                  >
-                    {translateInstant("issueThreadInteraction.resetSelection", { defaultValue: "Reset selection" })}
-                  </Button>
-                ) : null}
               </div>
             </DecisionCardFooter>
           </div>
@@ -1176,62 +1303,38 @@ function QuestionOptionButton({
       role={selectionMode === "single" ? "radio" : "checkbox"}
       aria-checked={selected}
       className={cn(
-        compact
-          ? "flex w-full items-start gap-3 rounded-md px-3 py-2 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          : "w-full rounded-sm border px-4 py-3 text-left transition-colors outline-none focus-visible:border-ring focus-visible:ring-(length:--rad-3) focus-visible:ring-ring/50",
-        compact
-          ? selected
-            ? "bg-muted text-foreground"
-            : "text-foreground hover:bg-muted/50"
-          : selected
-            ? "border-sky-500/80 bg-sky-500/10 text-sky-950 dark:border-sky-400/80 dark:bg-sky-400/15 dark:text-sky-50"
-            : "border-border/70 bg-transparent text-foreground hover:border-sky-500/70 hover:bg-sky-500/10 dark:hover:border-sky-400/70 dark:hover:bg-sky-400/10",
+        compact ? "flex w-full items-start gap-2.5 rounded-sm px-1 py-1 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring" : "w-full rounded-sm border px-4 py-3 text-left transition-colors outline-none focus-visible:border-ring focus-visible:ring-(length:--rad-3) focus-visible:ring-ring/50",
+        compact ? (selected ? "text-foreground" : "text-muted-foreground hover:text-foreground") : selected
+          ? "border-sky-500/80 bg-sky-500/10 text-sky-950 dark:border-sky-400/80 dark:bg-sky-400/15 dark:text-sky-50"
+          : "border-border/70 bg-transparent text-foreground hover:border-sky-500/70 hover:bg-sky-500/10 dark:hover:border-sky-400/70 dark:hover:bg-sky-400/10",
       )}
       id={id}
       onClick={onClick}
     >
-      {compact ? (
-        <span
-          aria-hidden="true"
-          className={cn(
-            "mt-0.5 flex size-4 shrink-0 items-center justify-center border",
-            selectionMode === "single" ? "rounded-full" : "rounded-sm",
-            selected ? "border-foreground" : "border-muted-foreground/50",
-          )}
-        >
-          {selected ? (
-            <span
-              className={cn(
-                "size-2 bg-foreground",
-                selectionMode === "single" ? "rounded-full" : "rounded-xs",
-              )}
-            />
-          ) : null}
-        </span>
-      ) : null}
+      {compact ? <span aria-hidden="true" className={cn("mt-0.5 flex size-4 shrink-0 items-center justify-center border", selectionMode === "single" ? "rounded-full" : "rounded-sm", selected ? "border-foreground" : "border-muted-foreground/50")}>
+        {selected ? <span className={cn("size-2 bg-foreground", selectionMode === "single" ? "rounded-full" : "rounded-xs")} /> : null}
+      </span> : null}
       <div className={compact ? "min-w-0" : "contents"}>
+      <div
+        className={cn(
+          compact ? "text-(length:--text-compact) leading-5" : "text-sm font-medium",
+          compact ? undefined : selected ? "text-sky-950 dark:text-sky-50" : "text-foreground",
+        )}
+      >
+        {label}
+      </div>
+      {description ? (
         <div
           className={cn(
-            "text-sm font-medium",
+            compact ? "text-xs leading-4.5" : "mt-1 text-sm leading-6",
             selected && !compact
-              ? "text-sky-950 dark:text-sky-50"
-              : "text-foreground",
+              ? "text-sky-900/80 dark:text-sky-100/80"
+              : "text-muted-foreground",
           )}
         >
-          {label}
+          {description}
         </div>
-        {description ? (
-          <div
-            className={cn(
-              "mt-1 text-sm leading-6",
-              selected && !compact
-                ? "text-sky-900/80 dark:text-sky-100/80"
-                : "text-muted-foreground",
-            )}
-          >
-            {description}
-          </div>
-        ) : null}
+      ) : null}
       </div>
     </button>
   );
@@ -1336,7 +1439,7 @@ function AskUserQuestionsCard({
     if (optionId === OTHER_ANSWER_ID || isFreeText) {
       setOtherActiveQuestions((current) => ({
         ...current,
-        [questionId]: !current[questionId],
+        [questionId]: selectionMode === "single" || !current[questionId],
       }));
       if (selectionMode === "single") {
         setDraftAnswers((current) => ({ ...current, [questionId]: [] }));
@@ -1382,6 +1485,7 @@ function AskUserQuestionsCard({
         }),
       );
     } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
       setActionError(resolutionErrorMessage(error));
     } finally {
       setWorking(false);
@@ -1401,30 +1505,38 @@ function AskUserQuestionsCard({
     }
   }
 
+  // A compact card asks once (its title, or the only question) and lists the
+  // questions in its panel, numbered when there are several (PAP-775).
+  const questionSet = interaction.payload.questionSet;
+  const onlyPrompt = (questionSet ? questionSet.questions : questions).length === 1
+    ? (questionSet ? questionSet.questions[0]?.prompt : questions[0]?.prompt) ?? null
+    : null;
+  const compactAsk = questionSet?.title ?? interaction.payload.title ?? interaction.title ?? onlyPrompt ?? "Answer these questions";
+  const promptStated = compactAsk === onlyPrompt;
+
   return (
     <div className="space-y-4">
-      {!compact ? (
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <Badge
-            variant="outline"
-            className="border-border/70 bg-background/70 px-2.5 py-1 uppercase tracking-(--tracking-eyebrow) text-foreground/70"
-          >
-            <MessageSquareQuote className="h-3 w-3" />
-            {translateInstant("issueThreadInteraction.kind.askUserQuestions")}
-          </Badge>
-          <span>
-            {questions.length === 1
-              ? "1 question"
-              : `${questions.length} questions`}
-          </span>
-        </div>
-      ) : null}
+      {!compact ? <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <Badge variant="outline" className="border-border/70 bg-background/70 px-2.5 py-1 uppercase tracking-(--tracking-eyebrow) text-foreground/70">
+          <MessageSquareQuote className="h-3 w-3" />
+          {translateInstant("issueThreadInteraction.kind.askUserQuestions")}
+        </Badge>
+        <span>
+          {questions.length === 1
+            ? translateInstant("issueThreadInteraction.oneQuestion", { defaultValue: "1 question" })
+            : translateInstant("issueThreadInteraction.questionsCount", { count: questions.length, defaultValue: `${questions.length} questions` })}
+        </span>
+      </div> : interaction.status === "pending" ? <div className="space-y-3">
+        <CompactDecisionAsk><PromptText>{compactAsk}</PromptText></CompactDecisionAsk>
+        <CompactDecisionNote note={compactDecisionNote(interaction, [compactAsk, questionSet?.description, ...questions.flatMap(entry => [entry.prompt, entry.helpText])])} />
+      </div> : null}
 
       {interaction.status === "pending" && interaction.payload.questionSet ? (
         <QuestionForm
           footerSlot={footerSlot}
           id={interaction.id}
           presentation={compact ? "decision" : "default"}
+          promptStated={compact && promptStated}
           questionSet={interaction.payload.questionSet}
           draftKey={`issue-question:${interaction.companyId}:${interaction.id}`}
           disabled={!onSubmitInteractionAnswers}
@@ -1471,6 +1583,7 @@ function AskUserQuestionsCard({
             try {
               await onSubmitInteractionAnswers?.(interaction, answers);
             } catch (error) {
+              if (error instanceof DOMException && error.name === "AbortError") throw error;
               throw new Error(resolutionErrorMessage(error));
             }
           }}
@@ -1488,180 +1601,190 @@ function AskUserQuestionsCard({
         />
       ) : interaction.status === "pending" ? (
         <div className="space-y-4">
-          {questions.map((question, index) => {
+          {compact ? <DecisionPanel>{questions.map((question, index) => (
+            <div key={question.id} className="flex flex-col gap-1.5">
+              <div className={cn("text-(length:--text-compact) leading-5", promptStated && "sr-only")}>
+                <div id={`${interaction.id}-${question.id}-prompt`} className="font-medium text-foreground">
+                  {questions.length > 1 ? `${index + 1}. ` : ""}<PromptText>{question.prompt}</PromptText>
+                </div>
+                <span aria-hidden className="text-muted-foreground">
+                  {" · "}
+                  {question.required
+                    ? translateInstant("taskChat.questionForm.required", { defaultValue: "Required" })
+                    : translateInstant("taskChat.questionForm.optional", { defaultValue: "Optional" })}
+                </span>
+              </div>
+              {question.helpText ? <span className="text-xs leading-4.5 text-muted-foreground">{question.helpText}</span> : null}
+              <span className="sr-only" id={`${interaction.id}-${question.id}-requirements`}>
+                {question.selectionMode === "single"
+                  ? translateInstant("issueThreadInteraction.chooseOneAnswer", { defaultValue: "Choose one answer." })
+                  : translateInstant("issueThreadInteraction.chooseOneOrMoreAnswers", { defaultValue: "Choose one or more answers." })}{" "}
+                {question.required
+                  ? translateInstant("taskChat.questionForm.required", { defaultValue: "Required" })
+                  : translateInstant("taskChat.questionForm.optional", { defaultValue: "Optional" })}
+              </span>
+              <div
+                className="flex flex-col"
+                role={question.selectionMode === "single" ? "radiogroup" : "group"}
+                aria-labelledby={`${interaction.id}-${question.id}-prompt`}
+                aria-describedby={`${interaction.id}-${question.id}-requirements`}
+                aria-required={question.selectionMode === "single" && question.required ? true : undefined}
+              >
+                {question.options.map((option) => {
+                  const isFreeText = option.freeText === true;
+                  const optionSelected = isFreeText
+                    ? otherActiveQuestions[question.id] === true
+                    : (draftAnswers[question.id] ?? []).includes(option.id);
+                  return (
+                    <QuestionOptionButton
+                      key={option.id}
+                      compact
+                      id={`${interaction.id}-${question.id}-${option.id}`}
+                      label={option.label}
+                      description={option.description}
+                      selected={optionSelected}
+                      selectionMode={question.selectionMode}
+                      onClick={() => toggleOption(question.id, option.id, question.selectionMode, isFreeText)}
+                    />
+                  );
+                })}
+                {question.options.some((option) => option.freeText === true) || question.allowOther === false ? null : (
+                  <QuestionOptionButton
+                    compact
+                    id={`${interaction.id}-${question.id}-other`}
+                    label={translateInstant("issueThreadInteraction.other", { defaultValue: "Other" })}
+                    selected={otherActiveQuestions[question.id] === true}
+                    selectionMode={question.selectionMode}
+                    onClick={() => toggleOption(question.id, OTHER_ANSWER_ID, question.selectionMode)}
+                  />
+                )}
+              </div>
+              {otherActiveQuestions[question.id] ? (
+                <Textarea
+                  aria-label={translateInstant("issueThreadInteraction.describeAnswerFor", { prompt: question.prompt, defaultValue: `Describe your answer for ${question.prompt}` })}
+                  value={draftOtherAnswers[question.id] ?? ""}
+                  onChange={(event) =>
+                    setDraftOtherAnswers((current) => ({ ...current, [question.id]: event.target.value }))}
+                  placeholder={translateInstant("taskChat.questionForm.addContextPlaceholder", { defaultValue: "Add context for the agent…" })}
+                  className="min-h-16 bg-card text-(length:--text-compact)"
+                />
+              ) : null}
+            </div>
+          ))}</DecisionPanel> : questions.map((question, index) => {
             const hasFreeTextOption = question.options.some(
               (option) => option.freeText === true,
             );
             return (
-              <div
-                key={question.id}
-                className={
-                  compact
-                    ? "space-y-3"
-                    : "rounded-2xl border border-border/70 bg-background/82 p-4 shadow-(--shadow-extract-9)"
-                }
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    {!compact ? (
-                      <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                        {translateInstant("issueThreadInteraction.question", { defaultValue: "Question" })} {index + 1}
-                      </div>
-                    ) : null}
-                    <div
-                      id={`${interaction.id}-${question.id}-prompt`}
-                      data-decision-prompt={compact ? true : undefined}
-                      className={
-                        compact
-                          ? "text-lg font-medium leading-relaxed text-foreground"
-                          : "mt-1 text-sm font-semibold text-foreground"
-                      }
-                    >
-                      {question.prompt}
-                    </div>
-                    {question.helpText ? (
-                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                        {question.helpText}
-                      </p>
-                    ) : null}
+            <div
+              key={question.id}
+              className="rounded-2xl border border-border/70 bg-background/82 p-4 shadow-(--shadow-extract-9)"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+                    {translateInstant("issueThreadInteraction.questionNumber", { count: index + 1, defaultValue: `Question ${index + 1}` })}
                   </div>
-                  {compact ? (
-                    <span
-                      className="sr-only"
-                      id={`${interaction.id}-${question.id}-requirements`}
-                    >
-                      {question.selectionMode === "single"
-                        ? "Choose one answer."
-                        : "Choose one or more answers."}{" "}
-                      {question.required ? "Required." : "Optional."}
-                    </span>
-                  ) : (
-                    <TaskField
-                      label={
-                        question.selectionMode === "single"
-                          ? "Pick"
-                          : "Pick many"
-                      }
-                      value={question.required ? "Required" : "Optional"}
-                      tone="subtle"
-                    />
-                  )}
-                </div>
-
-                <div className="mt-3 space-y-3">
                   <div
-                    className="grid gap-3"
-                    role={
-                      question.selectionMode === "single"
-                        ? "radiogroup"
-                        : "group"
-                    }
-                    aria-labelledby={`${interaction.id}-${question.id}-prompt`}
-                    aria-describedby={
-                      compact
-                        ? `${interaction.id}-${question.id}-requirements`
-                        : undefined
-                    }
-                    aria-required={
-                      question.selectionMode === "single" && question.required
-                        ? true
-                        : undefined
-                    }
+                    id={`${interaction.id}-${question.id}-prompt`}
+                    className="mt-1 text-sm font-semibold text-foreground"
                   >
-                    {question.options.map((option) => {
-                      const isFreeText = option.freeText === true;
-                      const optionSelected = isFreeText
-                        ? otherActiveQuestions[question.id] === true
-                        : (draftAnswers[question.id] ?? []).includes(option.id);
-                      return (
-                        <div key={option.id} className="space-y-2">
-                          <QuestionOptionButton
-                            compact={compact}
-                            id={`${interaction.id}-${question.id}-${option.id}`}
-                            label={option.label}
-                            description={option.description}
-                            selected={optionSelected}
-                            selectionMode={question.selectionMode}
-                            onClick={() =>
-                              toggleOption(
-                                question.id,
-                                option.id,
-                                question.selectionMode,
-                                isFreeText,
-                              )
-                            }
-                          />
-                          {isFreeText && optionSelected ? (
-                            <Textarea
-                              aria-label={`Describe your answer for ${question.prompt}`}
-                              value={draftOtherAnswers[question.id] ?? ""}
-                              onChange={(event) =>
-                                setDraftOtherAnswers((current) => ({
-                                  ...current,
-                                  [question.id]: event.target.value,
-                                }))
-                              }
-                              placeholder={translateInstant(
-                                "issueThreadInteraction.typeYourAnswer",
-                              )}
-                              className="min-h-24 bg-background text-sm"
-                              autoFocus
-                            />
-                          ) : null}
-                        </div>
-                      );
-                    })}
+                    <PromptText>{question.prompt}</PromptText>
                   </div>
-                  {/*
-                   * The built-in "Other" link is the fallback free-text affordance.
-                   * Suppress it when the agent already authored a first-class
-                   * free-text option so the card never shows two ways to type an
-                   * answer (PAP-419).
-                   */}
-                  {hasFreeTextOption || question.allowOther === false ? null : (
-                    <>
-                      <button
-                        type="button"
-                        id={`${interaction.id}-${question.id}-other`}
-                        aria-expanded={
-                          otherActiveQuestions[question.id] === true
-                        }
-                        className={cn(
-                          "text-sm font-medium underline underline-offset-4 transition-colors outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring/50",
-                          otherActiveQuestions[question.id]
-                            ? "text-sky-700 hover:text-sky-800 dark:text-sky-300 dark:hover:text-sky-200"
-                            : "text-muted-foreground hover:text-foreground",
-                        )}
-                        onClick={() =>
-                          toggleOption(
-                            question.id,
-                            OTHER_ANSWER_ID,
-                            question.selectionMode,
-                          )
-                        }
-                      >
-                        {translateInstant("Other")}
-                      </button>
-                      {otherActiveQuestions[question.id] ? (
-                        <Textarea
-                          aria-label={`Other answer for ${question.prompt}`}
-                          value={draftOtherAnswers[question.id] ?? ""}
-                          onChange={(event) =>
-                            setDraftOtherAnswers((current) => ({
-                              ...current,
-                              [question.id]: event.target.value,
-                            }))
-                          }
-                          placeholder={translateInstant(
-                            "issueThreadInteraction.typeYourAnswer",
-                          )}
-                          className="min-h-24 bg-background text-sm"
+                  {question.helpText ? (
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                      {question.helpText}
+                    </p>
+                  ) : null}
+                </div>
+                <TaskField
+                  label={
+                    question.selectionMode === "single"
+                      ? translateInstant("issueThreadInteraction.pick", { defaultValue: "Pick" })
+                      : translateInstant("issueThreadInteraction.pickMany", { defaultValue: "Pick many" })
+                  }
+                  value={
+                    question.required
+                      ? translateInstant("taskChat.questionForm.required", { defaultValue: "Required" })
+                      : translateInstant("taskChat.questionForm.optional", { defaultValue: "Optional" })
+                  }
+                  tone="subtle"
+                />
+              </div>
+
+              <div className="mt-3 space-y-3">
+                <div
+                  className="grid gap-3"
+                  role={question.selectionMode === "single" ? "radiogroup" : "group"}
+                  aria-labelledby={`${interaction.id}-${question.id}-prompt`}
+                  aria-required={question.selectionMode === "single" && question.required ? true : undefined}
+                >
+                  {question.options.map((option) => {
+                    const isFreeText = option.freeText === true;
+                    const optionSelected = isFreeText
+                      ? otherActiveQuestions[question.id] === true
+                      : (draftAnswers[question.id] ?? []).includes(option.id);
+                    return (
+                      <div key={option.id} className="space-y-2">
+                        <QuestionOptionButton
+                          id={`${interaction.id}-${question.id}-${option.id}`}
+                          label={option.label}
+                          description={option.description}
+                          selected={optionSelected}
+                          selectionMode={question.selectionMode}
+                          onClick={() =>
+                            toggleOption(question.id, option.id, question.selectionMode, isFreeText)}
                         />
-                      ) : null}
-                    </>
-                  )}
+                        {isFreeText && optionSelected ? (
+                          <Textarea
+                            aria-label={translateInstant("issueThreadInteraction.describeAnswerFor", { prompt: question.prompt, defaultValue: `Describe your answer for ${question.prompt}` })}
+                            value={draftOtherAnswers[question.id] ?? ""}
+                            onChange={(event) =>
+                              setDraftOtherAnswers((current) => ({
+                                ...current,
+                                [question.id]: event.target.value,
+                              }))}
+                            placeholder={translateInstant("issueThreadInteraction.typeYourAnswer", { defaultValue: "Type your answer" })}
+                            className="min-h-24 bg-background text-sm"
+                            autoFocus
+                          />
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                {/*
+                 * The built-in "Other" option is the fallback free-text affordance.
+                 * Suppress it when the agent already authored a first-class
+                 * free-text option so the card never shows two ways to type an
+                 * answer (PAP-419).
+                 */}
+                {hasFreeTextOption || question.allowOther === false ? null : (
+                  <div className="space-y-2">
+                    <QuestionOptionButton
+                      id={`${interaction.id}-${question.id}-other`}
+                      label={translateInstant("issueThreadInteraction.other", { defaultValue: "Other" })}
+                      selected={otherActiveQuestions[question.id] === true}
+                      selectionMode={question.selectionMode}
+                      onClick={() =>
+                        toggleOption(question.id, OTHER_ANSWER_ID, question.selectionMode)}
+                    />
+                    {otherActiveQuestions[question.id] ? (
+                      <Textarea
+                        aria-label={translateInstant("issueThreadInteraction.otherAnswerFor", { prompt: question.prompt, defaultValue: `Other answer for ${question.prompt}` })}
+                        value={draftOtherAnswers[question.id] ?? ""}
+                        onChange={(event) =>
+                          setDraftOtherAnswers((current) => ({
+                            ...current,
+                            [question.id]: event.target.value,
+                          }))}
+                        placeholder={translateInstant("issueThreadInteraction.typeYourAnswer", { defaultValue: "Type your answer" })}
+                        className="min-h-24 bg-background text-sm"
+                      />
+                    ) : null}
+                  </div>
+                )}
                 </div>
               </div>
+            </div>
             );
           })}
 
@@ -1850,7 +1973,8 @@ function requestConfirmationTargetHref({
   if (target.type === "issue_attachment") {
     return `/api/attachments/${encodeURIComponent(target.attachmentId)}/content`;
   }
-  if (target.href) return target.href;
+  const safeTargetHref = target.href ? normalizeRequestConfirmationTargetHref(target.href) : null;
+  if (safeTargetHref) return safeTargetHref;
   if (target.type === "issue_document") {
     const issueId = target.issueId ?? interaction.issueId;
     return `/issues/${issueId}#document-${encodeURIComponent(target.key)}`;
@@ -2199,48 +2323,44 @@ function ToolActionResolution({
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 font-mono text-xs text-foreground">
-              {formattedOutput}
-            </pre>
+            <pre className={cn("mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 font-mono text-xs text-foreground", ANALYTICS_MASK_CLASS)}>{formattedOutput}</pre>
           </CollapsibleContent>
         </Collapsible>
-      ) : (
-        <p className="flex items-center gap-1.5">{status}</p>
-      )}
-      {detail ? (
-        <p
-          className={cn(
-            "break-words",
-            state === "failed" && "text-destructive",
-          )}
-        >
-          {detail}
-        </p>
-      ) : null}
-      {state === "executed" && result?.resultHref?.trim() ? (
-        <a
-          className="inline-flex items-center gap-1 underline underline-offset-4 hover:text-foreground"
-          href={result.resultHref}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {translateInstant("issueThreadInteraction.toolAction.viewResult")}
-          <ExternalLink className="h-3 w-3" />
-        </a>
+      ) : <p className="flex items-center gap-1.5">{status}</p>}
+      {detail ? <p className={cn("break-words", state === "failed" && "text-destructive")}>{detail}</p> : null}
+      {state === "executed" && safeNavigableUrl(result?.resultHref) ? (
+        <a className="inline-flex items-center gap-1 underline underline-offset-4 hover:text-foreground" href={safeNavigableUrl(result?.resultHref) ?? undefined} target="_blank" rel="noreferrer">{translateInstant("issueThreadInteraction.toolAction.viewResult")}<ExternalLink className="h-3 w-3" /></a>
       ) : null}
     </div>
   );
+}
+
+/** The redacted arguments as one line ("repo: acme/onboarding · tag: pilot-v1"). */
+function toolArgumentsLine(json: string): string | null {
+  try {
+    const parsed: unknown = JSON.parse(json);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+    const parts = Object.entries(parsed as Record<string, unknown>)
+      .filter(([, value]) => ["string", "number", "boolean"].includes(typeof value))
+      .slice(0, 3)
+      .map(([key, value]) => `${key}: ${String(value)}`);
+    return parts.length > 0 ? parts.join(" · ") : null;
+  } catch {
+    return null;
+  }
 }
 
 function RequestToolActionCard({
   footerSlot,
   interaction,
   state,
+  compact = false,
   onAcceptInteraction,
   onRejectInteraction,
   externalReferences,
 }: {
   footerSlot?: ReactNode;
+  compact?: boolean;
   interaction: RequestConfirmationInteraction;
   state: ToolActionCardState;
   onAcceptInteraction?: IssueThreadInteractionCardProps["onAcceptInteraction"];
@@ -2291,8 +2411,75 @@ function RequestToolActionCard({
     }
   }
 
+  if (compact) {
+    // Paper "Approve tool or secret access": the tool and its target in the
+    // panel, Deny and Allow once in the footer.
+    const appName = payload.appDisplayName || null;
+    const ask = interaction.title ?? translateInstant("issueThreadInteraction.toolAction.allowQuestion", {
+      target: `${appName ? `${appName} · ` : ""}${payload.toolDisplayName}`,
+      defaultValue: `Allow ${appName ? `${appName} · ` : ""}${payload.toolDisplayName}?`,
+    });
+    // A one-line preview names the target, so it is the row's meta.
+    const preview = payload.previewMarkdown?.trim() ?? "";
+    const previewIsLine = Boolean(preview) && !preview.includes("\n") && preview.length <= 120;
+    return (
+      <div className={cn("space-y-4 text-foreground", ANALYTICS_MASK_CLASS)}>
+        <div className="space-y-3">
+          <CompactDecisionAsk>{ask}</CompactDecisionAsk>
+          <CompactDecisionNote note={compactDecisionNote(interaction, [ask, payload.previewMarkdown])} />
+          <DecisionPanel>
+            <NeedsYouPanelRow icon={<Lock />} title={appName ? `${appName} · ${payload.toolDisplayName}` : payload.toolDisplayName} meta={previewIsLine ? preview.replace(/[*_`]/g, "") : toolArgumentsLine(payload.argumentsSummaryJson)} />
+            {preview && !previewIsLine ? <DecisionPanelMarkdown markdown={preview} lead={false} externalReferences={externalReferences} /> : null}
+            {isPending ? inspectableArguments ? <details>
+              <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+                {translateInstant("issueThreadInteraction.toolAction.arguments", { defaultValue: "Arguments" })}
+              </summary>
+              <pre className={cn("mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words font-mono text-xs text-foreground", ANALYTICS_MASK_CLASS)}>{payload.argumentsSummaryJson}</pre>
+              <ToolActionAuditHashCopy hash={payload.argumentsHash} />
+            </details> : <p className="text-xs text-muted-foreground">{translateInstant("issueThreadInteraction.toolAction.argumentsUnavailable", { defaultValue: "Request arguments are unavailable." })}</p> : null}
+            {isPending ? (
+              <NeedsYouPanelNote>
+                {payload.risk === "destructive" ? translateInstant("issueThreadInteraction.toolAction.destructiveActionPrefix", { defaultValue: "Destructive action. " }) : ""}
+                {translateInstant("issueThreadInteraction.toolAction.runsOnceWhenAllowed", { defaultValue: "Runs once when you allow it" })} · {payload.expiresAt ? translateInstant("issueThreadInteraction.secretBinding.expiresAt", { date: formatShortDate(payload.expiresAt), defaultValue: `Expires ${formatShortDate(payload.expiresAt)}` }) : null}
+              </NeedsYouPanelNote>
+            ) : null}
+          </DecisionPanel>
+        </div>
+        {isPending ? (
+          <DecisionCardFooter leading={footerSlot}>
+            <Button size="sm" variant="ghost" disabled={!onRejectInteraction || working !== null} onClick={() => void decide("reject")}>
+              {working === "reject"
+                ? translateInstant("issueThreadInteraction.toolAction.denying", { defaultValue: "Denying…" })
+                : translateInstant("issueThreadInteraction.toolAction.deny", { defaultValue: "Deny" })}
+            </Button>
+            <div className="inline-flex" role="group" aria-label={translateInstant("issueThreadInteraction.toolAction.approveRequest", { defaultValue: "Approve request" })}>
+              <Button size="sm" variant={payload.risk === "destructive" ? "destructive" : "default"} className={payload.rememberActionScope ? "rounded-r-none" : undefined} disabled={!onAcceptInteraction || working !== null} onClick={() => void decide("accept")}>
+                {working === "accept" || working === "always" ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />{working === "always" ? translateInstant("issueThreadInteraction.saving", { defaultValue: "Saving…" }) : translateInstant("issueThreadInteraction.toolAction.allowing", { defaultValue: "Allowing…" })}</> : translateInstant("issueThreadInteraction.toolAction.allowOnce", { defaultValue: "Allow once" })}
+              </Button>
+              {payload.rememberActionScope ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="icon-sm" variant={payload.risk === "destructive" ? "destructive" : "default"} className="rounded-l-none border-l border-background/30" aria-label={translateInstant("issueThreadInteraction.toolAction.approvalOptions", { defaultValue: "Approval options" })} disabled={!onAcceptInteraction || working !== null}>
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => void decide("always")} title={payload.rememberActionScope} aria-description={payload.rememberActionScope}>
+                      {translateInstant("issueThreadInteraction.toolAction.alwaysAllow", { defaultValue: "Always allow" })}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : null}
+            </div>
+          </DecisionCardFooter>
+        ) : <ToolActionResolution state={state} interaction={interaction} />}
+        <InteractionActionError message={actionError} />
+      </div>
+    );
+  }
+
   return (
-    <div className="text-foreground">
+    <div className={cn("text-foreground", ANALYTICS_MASK_CLASS)}>
       <div className="flex items-start gap-3">
         <span
           role="img"
@@ -2312,23 +2499,17 @@ function RequestToolActionCard({
           ) : null}
         </div>
       </div>
-      {isPending ? (
-        inspectableArguments ? (
-          <details className="mt-3">
-            <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
-              Arguments
-            </summary>
-            <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words font-mono text-xs text-foreground">
-              {payload.argumentsSummaryJson}
-            </pre>
-            <ToolActionAuditHashCopy hash={payload.argumentsHash} />
-          </details>
-        ) : (
-          <p className="mt-3 text-xs text-muted-foreground">
-            Request arguments are unavailable.
-          </p>
-        )
-      ) : null}
+      {isPending ? inspectableArguments ? (
+        <details className="mt-3">
+          <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+            {translateInstant("issueThreadInteraction.toolAction.arguments", { defaultValue: "Arguments" })}
+          </summary>
+          <pre className={cn("mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words font-mono text-xs text-foreground", ANALYTICS_MASK_CLASS)}>
+            {payload.argumentsSummaryJson}
+          </pre>
+          <ToolActionAuditHashCopy hash={payload.argumentsHash} />
+        </details>
+      ) : <p className="mt-3 text-xs text-muted-foreground">{translateInstant("issueThreadInteraction.toolAction.argumentsUnavailable", { defaultValue: "Request arguments are unavailable." })}</p> : null}
       {isPending ? (
         <DecisionCardFooter leading={footerSlot} className="mt-3">
           <div
@@ -2652,11 +2833,13 @@ function RequestSecretProposalCard({
   footerSlot,
   interaction,
   state,
+  compact = false,
   resolvedByLabel,
   onAcceptInteraction,
   onRejectInteraction,
 }: {
   footerSlot?: ReactNode;
+  compact?: boolean;
   interaction: RequestConfirmationInteraction;
   state: SecretProposalCardState;
   resolvedByLabel: string | null;
@@ -2704,6 +2887,43 @@ function RequestSecretProposalCard({
     } finally {
       setWorking(null);
     }
+  }
+
+  if (compact) {
+    const denyLabel = interaction.payload.rejectLabel ?? "Deny";
+    return (
+      <div className="space-y-4">
+        <DecisionPanel>
+          <NeedsYouPanelRow icon={<Lock />} title={`Bind ${payload.sourceSecretLabel}`} meta={`${payload.targetAgentName} · ${payload.configPath}`} />
+          <NeedsYouPanelNote>
+            Credential: {payload.sourceSecretLabel} (hidden). Reason given: “{payload.justification}” · {payload.expiresAt ? <>Expires {formatShortDate(payload.expiresAt)}</> : null}
+          </NeedsYouPanelNote>
+        </DecisionPanel>
+        {isPending ? (
+          <ConfirmationActionRow
+            footerSlot={footerSlot}
+            resetKey={`${interaction.id}:${interaction.status}`}
+            approveLabel={interaction.payload.acceptLabel ?? "Approve & bind"}
+            rejectLabel={denyLabel}
+            reviseLabel={`${denyLabel}…`}
+            sendLabel={denyLabel}
+            compact
+            allowRevise={interaction.payload.rejectRequiresReason === true}
+            rejectRequiresReason={interaction.payload.rejectRequiresReason === true}
+            reasonPlaceholder={interaction.payload.declineReasonPlaceholder ?? "Optional: explain why this binding should not be created."}
+            working={working}
+            actionError={actionError}
+            preparingApproval={isInteractionPreparingApproval(interaction)}
+            canApprove={Boolean(onAcceptInteraction)}
+            canReject={Boolean(onRejectInteraction)}
+            onApprove={() => void handleAccept()}
+            onReject={(reason) => void handleReject(reason)}
+          />
+        ) : (
+          <SecretProposalResolution interaction={interaction} state={state} resolvedByLabel={resolvedByLabel} />
+        )}
+      </div>
+    );
   }
 
   return (
@@ -2796,11 +3016,23 @@ function ConfirmationActionRow({
   extraReasonSatisfied = false,
   revisePanelChildren,
   stackActionsOnMobile = false,
+  draftKey = null,
+  compact = false,
+  showReject = true,
+  sendLabel = "Send revision",
 }: {
   footerSlot?: ReactNode;
+  /** A Needs You card (PAP-775): ghost, outline, then the one primary on the right. */
+  compact?: boolean;
+  /** Offer the bare reject; a card can route every "no" through the reason box instead. */
+  showReject?: boolean;
+  sendLabel?: string;
   /** Changing this (interaction id + status) collapses the revise panel and
    * clears its draft text — the row is reused across interaction updates. */
   resetKey: string;
+  /** Share the Revise… open state and text with every other view of the same
+   * decision (PAP-773: the Needs You card and its Review side panel). */
+  draftKey?: string | null;
   approveLabel: string;
   reviseLabel?: string;
   rejectLabel: string;
@@ -2809,7 +3041,7 @@ function ConfirmationActionRow({
   allowRevise: boolean;
   rejectRequiresReason: boolean;
   reasonPlaceholder: string;
-  working: "accept" | "reject" | null;
+  working: ReviseDraftWork | null;
   actionError: string | null;
   approveDisabled?: boolean;
   preparingApproval?: boolean;
@@ -2830,14 +3062,19 @@ function ConfirmationActionRow({
   stackActionsOnMobile?: boolean;
 }) {
   useTranslation();
-  const [revising, setRevising] = useState(false);
+  const [localRevising, setLocalRevising] = useState(false);
   const { enabled: coordinatorEnabled } = useCoordinatorWorkspaceEnabled();
-  const [reason, setReason] = useState("");
+  const [localReason, setLocalReason] = useState("");
   const [attempted, setAttempted] = useState(false);
+  const [sharedDraft, updateSharedDraft] = useReviseDraft(draftKey);
+  const revising = draftKey ? sharedDraft.revising : localRevising;
+  const reason = draftKey ? sharedDraft.reason : localReason;
+  const setRevising = (next: boolean) => draftKey ? updateSharedDraft({ revising: next }) : setLocalRevising(next);
+  const setReason = (next: string) => draftKey ? updateSharedDraft({ reason: next }) : setLocalReason(next);
 
   useEffect(() => {
-    setRevising(false);
-    setReason("");
+    setLocalRevising(false);
+    setLocalReason("");
     setAttempted(false);
   }, [resetKey]);
 
@@ -2851,8 +3088,59 @@ function ConfirmationActionRow({
     onReject(composeReason ? composeReason(reason) : trimmed || undefined);
   }
 
+  const approveButton = (
+    <Button
+      size="sm"
+      variant={revising ? "outline" : compact && approveVariant === "cta" ? "default" : approveVariant}
+      className={stackActionsOnMobile && !compact ? "col-span-2 w-full sm:col-auto sm:w-auto" : undefined}
+      disabled={!canApprove || working !== null || approveDisabled || preparingApproval}
+      onClick={onApprove}
+    >
+      {working === "accept" ? (
+        <>
+          <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+          {translateInstant("issueThreadInteraction.toolAction.approving", { defaultValue: "Approving…" })}
+        </>
+      ) : (
+        approveLabel
+      )}
+    </Button>
+  );
+  const reviseButton = allowRevise ? (
+    <Button
+      size="sm"
+      variant="outline"
+      className={stackActionsOnMobile && !compact ? "w-full sm:w-auto" : undefined}
+      disabled={!canReject || working !== null}
+      onClick={() => {
+        setAttempted(false);
+        setRevising(!revising);
+      }}
+    >
+      {reviseLabel}
+    </Button>
+  ) : null;
+  const rejectButton = !rejectRequiresReason && showReject ? (
+    <Button
+      size="sm"
+      variant="ghost"
+      className={stackActionsOnMobile && !compact ? "w-full sm:w-auto" : undefined}
+      disabled={!canReject || working !== null}
+      onClick={() => onReject(undefined)}
+    >
+      {working === "reject" && !revising ? (
+        <>
+          <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+          {translateInstant("issueThreadInteraction.rejecting", { defaultValue: "Rejecting…" })}
+        </>
+      ) : (
+        rejectLabel
+      )}
+    </Button>
+  ) : null;
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-decision-action-row>
       {preparingApproval ? <InteractionPreparationNotice /> : null}
       <DecisionCardFooter
         leading={footerSlot}
@@ -2863,85 +3151,28 @@ function ConfirmationActionRow({
           hidden={coordinatorEnabled && revising}
           data-mobile-layout={stackActionsOnMobile ? "stacked" : "inline"}
           className={cn(
-            stackActionsOnMobile
+            stackActionsOnMobile && !compact
               ? "grid grid-cols-2 items-stretch gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end"
               : "flex flex-wrap items-center justify-end gap-2",
-            primaryActionOnRight && "flex-row-reverse justify-start",
+            primaryActionOnRight && !compact && "flex-row-reverse justify-start",
             coordinatorEnabled && revising && "hidden",
           )}
         >
-          <Button
-            size="sm"
-            variant={revising ? "outline" : approveVariant}
-            className={
-              stackActionsOnMobile
-                ? "col-span-2 w-full sm:col-auto sm:w-auto"
-                : undefined
-            }
-            disabled={
-              !canApprove ||
-              working !== null ||
-              approveDisabled ||
-              preparingApproval
-            }
-            onClick={onApprove}
-          >
-            {working === "accept" ? (
-              <>
-                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                {translateInstant("issueThreadInteraction.toolAction.approving", { defaultValue: "Approving…" })}
-              </>
-            ) : (
-              approveLabel
-            )}
-          </Button>
-          {allowRevise ? (
-            <Button
-              size="sm"
-              variant="outline"
-              className={stackActionsOnMobile ? "w-full sm:w-auto" : undefined}
-              disabled={!canReject || working !== null}
-              onClick={() => {
-                setAttempted(false);
-                setRevising((current) => !current);
-              }}
-            >
-              {reviseLabel}
-            </Button>
-          ) : null}
-          {!rejectRequiresReason ? (
-            <Button
-              size="sm"
-              variant="ghost"
-              className={stackActionsOnMobile ? "w-full sm:w-auto" : undefined}
-              disabled={!canReject || working !== null}
-              onClick={() => onReject(undefined)}
-            >
-              {working === "reject" && !revising ? (
-                <>
-                  <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                  {translateInstant("Rejecting…", { defaultValue: "Rejecting…" })}
-                </>
-              ) : (
-                rejectLabel
-              )}
-            </Button>
-          ) : null}
+          {compact ? <>{rejectButton}{reviseButton}{approveButton}</> : <>{approveButton}{reviseButton}{rejectButton}</>}
         </div>
       </DecisionCardFooter>
 
       {revising ? (
-        <div className="space-y-3 rounded-sm border border-border/70 bg-background/75 p-3">
+        <div className={compact ? "space-y-3" : "space-y-3 rounded-sm border border-border/70 bg-background/75 p-3"}>
           <Textarea
             value={reason}
             onChange={(event) => setReason(event.target.value)}
             placeholder={reasonPlaceholder}
             aria-invalid={attempted && reasonMissing}
             className={cn(
-              "min-h-24 bg-background text-sm",
-              attempted &&
-                reasonMissing &&
-                "border-rose-500 focus-visible:ring-rose-500/25",
+              "min-h-24 text-sm",
+              compact ? "bg-card" : "bg-background",
+              attempted && reasonMissing && "border-rose-500 focus-visible:ring-rose-500/25",
             )}
           />
           {attempted && reasonMissing ? (
@@ -2959,7 +3190,10 @@ function ConfirmationActionRow({
                 variant="ghost"
                 disabled={working !== null}
                 onClick={() => {
-                  setRevising(false);
+                  // A shared draft is cleared on Cancel so neither view keeps
+                  // stale text; a local one keeps its text like before.
+                  if (draftKey) updateSharedDraft({ revising: false, reason: "" });
+                  else setRevising(false);
                   setAttempted(false);
                 }}
               >
@@ -2967,7 +3201,7 @@ function ConfirmationActionRow({
               </Button>
               <Button
                 size="sm"
-                variant="outline"
+                variant={compact ? "default" : "outline"}
                 disabled={!canReject || working !== null}
                 onClick={submitRevision}
               >
@@ -2977,7 +3211,7 @@ function ConfirmationActionRow({
                     {translateInstant("Sending…", { defaultValue: "Sending…" })}
                   </>
                 ) : (
-                  "Send revision"
+                  sendLabel
                 )}
               </Button>
             </div>
@@ -3068,6 +3302,7 @@ function RequestConnectionAuthorizationCard({
   footerSlot,
   interaction,
   state,
+  compact = false,
   isAddressee,
   providerName,
   addresseeLabel,
@@ -3079,6 +3314,7 @@ function RequestConnectionAuthorizationCard({
   footerSlot?: ReactNode;
   interaction: RequestConfirmationInteraction;
   state: ConnectionAuthorizationCardState;
+  compact?: boolean;
   /** Is the signed-in reader the person the server addressed? */
   isAddressee: boolean;
   providerName: string;
@@ -3133,6 +3369,42 @@ function RequestConnectionAuthorizationCard({
   // states carry it in their own status line.
   const consentSentence =
     state === "actionable" ? "No one else can complete this step." : null;
+
+  if (compact && state === "actionable") {
+    // Paper "Connect a service": only the addressed person ever sees this state.
+    const connectionName = interaction.payload.connectionAuthorization?.connectionName;
+    return (
+      <div className="space-y-4">
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground" data-testid="connection-authorization-body">{lead}</p>
+          <DecisionPanel>
+            <NeedsYouPanelRow icon={<Lock />} title={connectionName && connectionName !== providerName ? <>{providerName} · <span className={ANALYTICS_MASK_CLASS}>{connectionName}</span></> : providerName} meta="Not connected" />
+            <NeedsYouPanelNote>{consentSentence}</NeedsYouPanelNote>
+          </DecisionPanel>
+        </div>
+        {href ? (
+          <DecisionCardFooter leading={footerSlot}>
+            <div data-testid="connection-authorization-actions" className="flex flex-wrap items-center justify-end gap-1.5">
+              <Button size="sm" variant="ghost" disabled={!onRejectInteraction || working} onClick={() => void handleNotNow()}>
+                {working ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Saving…</> : "Not now"}
+              </Button>
+              <Button asChild size="sm">
+                <a href={href} target="_blank" rel="noreferrer">Connect {providerName}<ArrowUpRight className="h-3.5 w-3.5" /></a>
+              </Button>
+            </div>
+          </DecisionCardFooter>
+        ) : (
+          <ConnectionAuthorizationStatusLine
+            Icon={TriangleAlert}
+            testId="connection-authorization-no-target"
+            headline="This authorization link is unavailable"
+            detail={`Ask ${requestingAgentLabel ?? "the agent"} to send a fresh ${providerName} authorization link.`}
+          />
+        )}
+        <InteractionActionError message={actionError} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -3281,12 +3553,16 @@ function RequestConfirmationCard({
   onRejectInteraction,
   onUploadImage,
   externalReferences,
+  shareReviseDraft = false,
 }: {
   footerSlot?: ReactNode;
   interaction: RequestConfirmationInteraction;
   compact?: boolean;
   isPlan?: boolean;
   primaryActionOnRight?: boolean;
+  /** Another view renders this same decision (PAP-773): share the Revise…
+   * draft and the in-flight action with it. */
+  shareReviseDraft?: boolean;
   onAcceptInteraction?: (
     interaction: RequestConfirmationInteraction,
   ) => Promise<void> | void;
@@ -3298,9 +3574,17 @@ function RequestConfirmationCard({
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
   useTranslation();
-  const [working, setWorking] = useState<"accept" | "reject" | null>(null);
+  const [localWorking, setWorking] = useState<"accept" | "reject" | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const resolutionErrorMessage = useResolutionErrorMessage();
+  const target = interaction.payload.target;
+  // Keyed by the plan revision under review: a newer revision starts clean.
+  const draftKey = shareReviseDraft
+    ? reviseDraftKey(interaction.id, target?.type === "issue_document" ? target.revisionId : null)
+    : null;
+  const [sharedDraft] = useReviseDraft(draftKey);
+  // Either view sending disables both, so one decision can't be sent twice.
+  const working = localWorking ?? sharedDraft.working;
   const [shots, setShots] = useState<{ name: string; url: string }[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -3325,6 +3609,10 @@ function RequestConfirmationCard({
       setWorking(null);
     }
   }, [interaction.id, interaction.result?.reason, interaction.status]);
+
+  useEffect(() => {
+    if (draftKey && interaction.status !== "pending") clearReviseDraft(draftKey);
+  }, [draftKey, interaction.status]);
 
   async function handleAddScreenshots(files: FileList | null) {
     if (!onUploadImage || !files || files.length === 0) return;
@@ -3353,80 +3641,107 @@ function RequestConfirmationCard({
   }
 
   async function handleAccept() {
-    if (!onAcceptInteraction) return;
+    if (!onAcceptInteraction || working) return;
+    if (draftKey && !claimReviseDraftWork(draftKey, "accept")) return;
     setWorking("accept");
     setActionError(null);
     try {
       await onAcceptInteraction(interaction);
+      if (draftKey) clearReviseDraft(draftKey);
     } catch (error) {
       setActionError(resolutionErrorMessage(error));
     } finally {
       setWorking(null);
+      if (draftKey) releaseReviseDraftWork(draftKey);
     }
   }
 
   async function handleReject(reason: string | undefined) {
-    if (!onRejectInteraction) return;
+    if (!onRejectInteraction || working) return;
+    if (draftKey && !claimReviseDraftWork(draftKey, "reject")) return;
     setWorking("reject");
     setActionError(null);
     try {
       await onRejectInteraction(interaction, reason);
+      if (draftKey) clearReviseDraft(draftKey);
     } catch (error) {
       setActionError(resolutionErrorMessage(error));
     } finally {
       setWorking(null);
+      if (draftKey) releaseReviseDraftWork(draftKey);
     }
   }
 
+  // Paper "Review a plan" / "Review a deliverable" / "Confirm or decline":
+  // the panel carries the artifact and the details, the footer the verbs.
+  const artifactRow = useContext(CompactArtifactRowContext);
+  const deliverable = !isPlan && (target?.type === "issue_attachment" || target?.type === "issue_document");
+  const compactActions = isPlan
+    ? {
+        approveLabel: interaction.payload.acceptLabel ?? translateInstant("issueThreadInteraction.approvePlan"),
+        rejectLabel: CONFIRMATION_REJECT_LABEL,
+        reviseLabel: CONFIRMATION_REVISE_LABEL,
+        allowRevise,
+        showReject: true,
+        sendLabel: translateInstant("issueThreadInteraction.sendRevision"),
+      }
+    : deliverable
+      ? {
+          approveLabel: interaction.payload.acceptLabel ?? CONFIRMATION_APPROVE_LABEL,
+          rejectLabel: interaction.payload.rejectLabel ?? CONFIRMATION_REJECT_LABEL,
+          reviseLabel: translateInstant("issueThreadInteraction.requestChanges"),
+          allowRevise,
+          showReject: !allowRevise,
+          sendLabel: translateInstant("issueThreadInteraction.requestChanges"),
+        }
+      : {
+          approveLabel: interaction.payload.acceptLabel ?? translateInstant("issueThreadInteraction.confirm"),
+          rejectLabel: interaction.payload.rejectLabel ?? translateInstant("issueThreadInteraction.decline"),
+          reviseLabel: `${interaction.payload.rejectLabel ?? translateInstant("issueThreadInteraction.decline")}…`,
+          allowRevise: rejectRequiresReason,
+          showReject: true,
+          sendLabel: interaction.payload.rejectLabel ?? translateInstant("issueThreadInteraction.decline"),
+        };
+  const compactAsk = interaction.title?.trim() || interaction.payload.prompt;
+  const targetHref = target && isDisplayableRequestConfirmationTarget(target) ? requestConfirmationTargetHref({ interaction, target }) : null;
+  const targetMeta = target?.type === "issue_attachment"
+    ? translateInstant("issueThreadInteraction.attachment", { defaultValue: "Attachment" })
+    : target?.type === "issue_document"
+      ? [
+          isPlan ? translateInstant("issueThreadInteraction.plan") : translateInstant("issueThreadInteraction.document", { defaultValue: "Document" }),
+          target.revisionNumber ? `v${target.revisionNumber}` : null,
+        ]
+          .filter(Boolean)
+          .join(" · ")
+      : null;
+
   return (
     <div className="space-y-4">
-      {interaction.status === "pending" ? (
-        <div
-          className={
-            compact
-              ? "space-y-3"
-              : "space-y-3 rounded-sm border border-border/70 bg-background/75 p-4"
-          }
-        >
-          <div
-            data-decision-prompt={compact ? true : undefined}
-            className={
-              compact
-                ? "text-lg font-medium leading-relaxed text-foreground"
-                : "text-sm leading-6 text-foreground"
-            }
-          >
-            <MarkdownBody
-              className={compact ? "text-lg" : undefined}
-              externalReferences={externalReferences}
-              mediaMode="reference"
-            >
-              {interaction.payload.prompt}
-            </MarkdownBody>
+      {interaction.status === "pending" && compact ? (
+        <div className="space-y-3">
+          {/* The card header no longer names the request, so its title is the
+              ask and the prompt the one line under it. */}
+          <CompactDecisionAsk><PromptText>{compactAsk}</PromptText></CompactDecisionAsk>
+          {compactAsk !== interaction.payload.prompt ? <div data-decision-note className="text-sm text-muted-foreground"><PromptText>{interaction.payload.prompt}</PromptText></div>
+            : <CompactDecisionNote note={compactDecisionNote(interaction, [interaction.payload.prompt, interaction.payload.detailsMarkdown])} />}
+          <DecisionPanel>
+            {!artifactRow && target && isDisplayableRequestConfirmationTarget(target) ? (
+              <NeedsYouPanelRow icon={<FileText />} title={requestConfirmationTargetLabel(target)} meta={targetMeta} href={targetHref ?? undefined} />
+            ) : null}
+            {interaction.payload.detailsMarkdown ? (
+              <DecisionPanelMarkdown markdown={interaction.payload.detailsMarkdown} lead={!isPlan && !deliverable} externalReferences={externalReferences} />
+            ) : null}
+          </DecisionPanel>
+        </div>
+      ) : interaction.status === "pending" ? (
+        <div className="space-y-3 rounded-sm border border-border/70 bg-background/75 p-4">
+          <div className="text-sm leading-6 text-foreground">
+            <PromptText>{interaction.payload.prompt}</PromptText>
           </div>
           {interaction.payload.detailsMarkdown ? (
-            compact ? (
-              <details className="group/confirmation-details">
-                <summary className="flex cursor-pointer list-none items-center gap-1 rounded-sm text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                  <ChevronRight
-                    aria-hidden
-                    className="h-3.5 w-3.5 transition-transform group-open/confirmation-details:rotate-90 motion-reduce:transition-none"
-                  />
-                  Details
-                </summary>
-                <div className="mt-2 rounded-sm bg-muted/40 px-2.5 py-2 text-sm text-muted-foreground">
-                  <MarkdownBody externalReferences={externalReferences}>
-                    {interaction.payload.detailsMarkdown}
-                  </MarkdownBody>
-                </div>
-              </details>
-            ) : (
-              <div className="border-t border-border/60 pt-3 text-sm">
-                <MarkdownBody externalReferences={externalReferences}>
-                  {interaction.payload.detailsMarkdown}
-                </MarkdownBody>
-              </div>
-            )
+            <div className="border-t border-border/60 pt-3 text-sm">
+              <MarkdownBody externalReferences={externalReferences}>{interaction.payload.detailsMarkdown}</MarkdownBody>
+            </div>
           ) : null}
           <RequestConfirmationTargetChip
             interaction={interaction}
@@ -3439,13 +3754,13 @@ function RequestConfirmationCard({
         <ConfirmationActionRow
           footerSlot={footerSlot}
           resetKey={`${interaction.id}:${interaction.status}`}
-          approveLabel={
-            interaction.payload.acceptLabel ?? CONFIRMATION_APPROVE_LABEL
-          }
-          rejectLabel={CONFIRMATION_REJECT_LABEL}
+          approveLabel={compact ? compactActions.approveLabel : interaction.payload.acceptLabel ?? CONFIRMATION_APPROVE_LABEL}
+          rejectLabel={compact ? compactActions.rejectLabel : CONFIRMATION_REJECT_LABEL}
           approveVariant={isPlan ? "cta" : "default"}
           primaryActionOnRight={primaryActionOnRight}
-          allowRevise={allowRevise}
+          compact={compact}
+          {...(compact ? { reviseLabel: compactActions.reviseLabel, showReject: compactActions.showReject, sendLabel: compactActions.sendLabel } : {})}
+          allowRevise={compact ? compactActions.allowRevise : allowRevise}
           rejectRequiresReason={rejectRequiresReason}
           reasonPlaceholder={reasonPlaceholder}
           working={working}
@@ -3456,6 +3771,7 @@ function RequestConfirmationCard({
           onApprove={() => void handleAccept()}
           onReject={(reason) => void handleReject(reason)}
           composeReason={composeReason}
+          draftKey={draftKey}
           extraReasonSatisfied={shots.length > 0}
           revisePanelChildren={
             allowScreenshots ? (
@@ -3680,6 +3996,7 @@ function CheckboxOptionRow({
 function RequestCheckboxConfirmationCard({
   footerSlot,
   interaction,
+  compact = false,
   primaryActionOnRight = false,
   onAcceptInteraction,
   onRejectInteraction,
@@ -3687,6 +4004,7 @@ function RequestCheckboxConfirmationCard({
 }: {
   footerSlot?: ReactNode;
   interaction: RequestCheckboxConfirmationInteraction;
+  compact?: boolean;
   primaryActionOnRight?: boolean;
   onAcceptInteraction?: (
     interaction: RequestCheckboxConfirmationInteraction,
@@ -3835,6 +4153,77 @@ function RequestCheckboxConfirmationCard({
       : minSelected > 0
         ? `Pick at least ${minSelected}.`
         : null;
+
+  if (compact) {
+    return (
+      <div className="space-y-4">
+        <DecisionPanel>
+          {/* Without a title the prompt is the card's ask. */}
+          {interaction.payload.prompt === (interaction.title ?? interaction.payload.prompt) ? null : (
+            <div className="text-(length:--text-compact) leading-5 text-foreground"><PromptText>{interaction.payload.prompt}</PromptText></div>
+          )}
+          {interaction.payload.detailsMarkdown ? (
+            <DecisionPanelMarkdown markdown={interaction.payload.detailsMarkdown} lead={false} externalReferences={externalReferences} />
+          ) : null}
+          <div role="group" aria-label="Selectable options" className="flex max-h-80 flex-col gap-2 overflow-y-auto">
+            {options.map((option) => {
+              const checked = selectedOptionIds.has(option.id);
+              const disabled = working !== null || (!checked && atMax);
+              return (
+                <label key={option.id} htmlFor={`${interaction.id}-${option.id}`} className={cn("flex cursor-pointer items-start gap-2.5", disabled && "cursor-not-allowed opacity-60")}>
+                  <Checkbox
+                    id={`${interaction.id}-${option.id}`}
+                    checked={checked}
+                    disabled={disabled}
+                    onCheckedChange={(value) => toggleOption(option.id, value === true)}
+                    aria-label={option.label}
+                    className="mt-0.5"
+                  />
+                  <span className="flex min-w-0 flex-col gap-0.5">
+                    <span className="text-(length:--text-compact) font-medium leading-5 text-foreground">{option.label}</span>
+                    {option.description ? <span className="text-xs leading-4.5 text-muted-foreground">{option.description}</span> : null}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-2 text-xs leading-4.5 text-muted-foreground">
+            <span>{selectionSummary}{boundsHint ? ` · ${boundsHint}` : ""}</span>
+            <button type="button" className="rounded-sm underline-offset-4 hover:text-foreground hover:underline disabled:pointer-events-none disabled:opacity-50"
+              disabled={working !== null || selectedCount === totalOptions || (maxSelected != null && selectedCount >= maxSelected)} onClick={handleSelectAll}>
+              Select all
+            </button>
+            <button type="button" className="rounded-sm underline-offset-4 hover:text-foreground hover:underline disabled:pointer-events-none disabled:opacity-50"
+              disabled={working !== null || selectedCount === 0} onClick={handleClearSelection}>
+              Clear selection
+            </button>
+          </div>
+          {acceptAttempted && validationMessage ? (
+            <span className="text-xs text-destructive">{validationMessage}</span>
+          ) : null}
+        </DecisionPanel>
+        <ConfirmationActionRow
+          footerSlot={footerSlot}
+          resetKey={`${interaction.id}:${interaction.status}`}
+          approveLabel={interaction.payload.acceptLabel ?? "Confirm"}
+          rejectLabel={interaction.payload.rejectLabel ?? "Decline"}
+          reviseLabel={`${interaction.payload.rejectLabel ?? "Decline"}…`}
+          sendLabel={interaction.payload.rejectLabel ?? "Decline"}
+          compact
+          allowRevise={rejectRequiresReason}
+          rejectRequiresReason={rejectRequiresReason}
+          reasonPlaceholder={reasonPlaceholder}
+          working={working}
+          actionError={actionError}
+          preparingApproval={isInteractionPreparingApproval(interaction)}
+          canApprove={Boolean(onAcceptInteraction)}
+          canReject={Boolean(onRejectInteraction)}
+          onApprove={() => void handleAccept()}
+          onReject={(reason) => void handleReject(reason)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -4038,8 +4427,10 @@ function ItemVerdictSegmentedControl({
   verdicts,
   value,
   disabled,
+  compact = false,
   onSelect,
 }: {
+  compact?: boolean;
   itemId: string;
   verdicts: RequestItemVerdictValue[];
   value: RequestItemVerdictValue | null;
@@ -4055,24 +4446,15 @@ function ItemVerdictSegmentedControl({
     >
       {verdicts.map((verdict) => {
         const active = value === verdict;
-        const variant =
-          verdict === "reject"
-            ? active
-              ? "destructive"
-              : "outline"
-            : verdict === "approve"
-              ? active
-                ? "default"
-                : "outline"
-              : active
-                ? "secondary"
-                : "outline";
-        const Icon =
-          verdict === "approve"
-            ? Check
-            : verdict === "reject"
-              ? X
-              : MinusCircle;
+        // A Needs You card keeps one filled button, its primary (PAP-775).
+        const variant = compact
+          ? (active ? "secondary" : "ghost")
+          : verdict === "reject"
+          ? (active ? "destructive" : "outline")
+          : verdict === "approve"
+            ? (active ? "default" : "outline")
+            : (active ? "secondary" : "outline");
+        const Icon = verdict === "approve" ? Check : verdict === "reject" ? X : MinusCircle;
         return (
           <Button
             key={verdict}
@@ -4082,7 +4464,7 @@ function ItemVerdictSegmentedControl({
             disabled={disabled}
             aria-pressed={active}
             aria-label={`${VERDICT_LABEL[verdict]} this item`}
-            className="min-h-11 min-w-24"
+            className={compact ? undefined : "min-h-11 min-w-24"}
             onClick={() => onSelect(verdict)}
             data-verdict={verdict}
             data-item-id={itemId}
@@ -4105,10 +4487,12 @@ interface VerdictDraft {
 function RequestItemVerdictsCard({
   footerSlot,
   interaction,
+  compact = false,
   onSubmitInteractionVerdicts,
   externalReferences,
 }: {
   footerSlot?: ReactNode;
+  compact?: boolean;
   interaction: RequestItemVerdictsInteraction;
   onSubmitInteractionVerdicts?: (
     interaction: RequestItemVerdictsInteraction,
@@ -4266,18 +4650,89 @@ function RequestItemVerdictsCard({
       ? "Apply 0 decisions"
       : `Apply ${draftCount} decision${draftCount === 1 ? "" : "s"}`;
 
+  if (compact && !isTerminal) {
+    return (
+      <div className="space-y-4">
+        <DecisionPanel>
+          {payload.prompt === (interaction.title ?? payload.prompt) ? null : (
+            <div className="text-(length:--text-compact) leading-5 text-foreground"><PromptText>{payload.prompt}</PromptText></div>
+          )}
+          {payload.detailsMarkdown ? (
+            <DecisionPanelMarkdown markdown={payload.detailsMarkdown} lead={false} externalReferences={externalReferences} />
+          ) : null}
+          <ul className="flex flex-col gap-3" aria-label={translateInstant("issueThreadInteraction.verdict.itemsToReview")}>
+            {items.map((item) => {
+              const resolved = resolvedById.get(item.id);
+              const applying = applyingItemIds.has(item.id);
+              const draft = drafts.get(item.id);
+              return (
+                <li key={item.id} className="flex flex-col gap-2" data-item-id={item.id}
+                  data-item-state={resolved ? "resolved" : applying ? "applying" : draft ? "draft" : "pending"}>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <span className="flex min-w-0 flex-1 basis-48 flex-col gap-0.5">
+                      <span className="flex flex-wrap items-center gap-2">
+                        <span className="text-(length:--text-compact) font-medium leading-5 text-foreground">{item.label}</span>
+                        <ItemVerdictDeepLink item={item} interaction={interaction} />
+                      </span>
+                      {item.description ? <span className="text-xs leading-4.5 text-muted-foreground">{item.description}</span> : null}
+                    </span>
+                    {resolved ? <VerdictConsequenceChip verdict={resolved.verdict} />
+                      : applying ? <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" aria-hidden />{translateInstant("issueThreadInteraction.verdict.applying")}</span>
+                      : <ItemVerdictSegmentedControl compact itemId={item.id} verdicts={enabledVerdicts} value={draft?.verdict ?? null} disabled={working} onSelect={(verdict) => toggleDraft(item.id, verdict)} />}
+                  </div>
+                  {!resolved && !applying && draft && requireReasonOn.has(draft.verdict) ? (
+                    <div className="flex flex-col gap-1.5">
+                      <label htmlFor={`${interaction.id}-${item.id}-reason`} className="text-xs font-medium text-foreground">{reasonLabel}</label>
+                      <Textarea
+                        id={`${interaction.id}-${item.id}-reason`}
+                        value={draft.reason}
+                        onChange={(event) => setDraftReason(item.id, event.target.value)}
+                        placeholder={translateInstant("issueThreadInteraction.verdict.reasonPlaceholder")}
+                        aria-invalid={attempted && invalidDraftIds.has(item.id)}
+                        className={cn("min-h-16 bg-card text-sm", attempted && invalidDraftIds.has(item.id) && "border-rose-500 focus-visible:ring-rose-500/25")}
+                      />
+                      {attempted && invalidDraftIds.has(item.id) ? (
+                        <span className="text-xs text-destructive">
+                          {translateInstant("issueThreadInteraction.verdict.reasonRequired", { action: VERDICT_LABEL[draft.verdict].toLowerCase() })}
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+          <NeedsYouPanelNote>
+            {translateInstant("issueThreadInteraction.verdict.progress", { decided: progress.decided, total: progress.total })}
+            {draftCount > 0 ? translateInstant("issueThreadInteraction.verdict.readyToSubmit", { count: draftCount, defaultValue: ` · ${draftCount} ready to submit` }) : ""}
+          </NeedsYouPanelNote>
+        </DecisionPanel>
+        {progress.pendingItemIds.length > 0 ? (
+          <DecisionCardFooter leading={footerSlot}>
+            {allowBulkApprove ? (
+              <Button type="button" size="sm" variant="outline" disabled={working || progress.pendingItemIds.length === 0} onClick={handleApproveAll}>
+                {translateInstant("issueThreadInteraction.verdict.approveAll")}
+              </Button>
+            ) : null}
+            <Button type="button" size="sm" aria-disabled={!canApply} disabled={!hasDrafts} onClick={() => void handleApply()}>
+              {working
+                ? <><Loader2 className="h-4 w-4 motion-safe:animate-spin" aria-hidden />{translateInstant("issueThreadInteraction.submitting")}</>
+                : translateInstant("issueThreadInteraction.verdict.submitVerdicts", { defaultValue: "Submit verdicts" })}
+            </Button>
+          </DecisionCardFooter>
+        ) : null}
+        <InteractionActionError message={actionError} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {/* Prompt + details (S1) */}
       <div className="space-y-3 rounded-sm border border-border/70 bg-background/75 p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="text-sm leading-6 text-foreground">
-            {payload.prompt}
-          </div>
-          <VerdictProgressBadge
-            progress={progress}
-            pendingReason={invalidDraftIds.size > 0}
-          />
+          <div className="min-w-0 text-sm leading-6 text-foreground"><PromptText>{payload.prompt}</PromptText></div>
+          <VerdictProgressBadge progress={progress} pendingReason={invalidDraftIds.size > 0} />
         </div>
         {payload.detailsMarkdown ? (
           <div className="border-t border-border/60 pt-3 text-sm">
@@ -4567,6 +5022,8 @@ function VerdictProgressBadge({
 export function IssueThreadInteractionCard({
   interaction,
   presentationVariant = "default",
+  audienceStated = false,
+  artifactRow,
   footerSlot,
   agentMap,
   currentUserId,
@@ -4576,10 +5033,12 @@ export function IssueThreadInteractionCard({
   onSubmitInteractionAnswers,
   onCancelInteraction,
   primaryActionOnRight,
+  shareReviseDraft = false,
   onSubmitInteractionVerdicts,
   onUploadImage,
   externalReferences,
 }: IssueThreadInteractionCardProps) {
+  useTranslation();
   const { enabled: coordinatorEnabled } = useCoordinatorWorkspaceEnabled();
   const compactDecision = presentationVariant === "coordinator-decision";
   // Single enforcement point (PAP-424, plan from PAP-420; extended by PAP-437):
@@ -4715,37 +5174,33 @@ export function IssueThreadInteractionCard({
     creatorLabel: createdByLabel,
     addresseeLabel,
   });
-  if (
-    coordinatorEnabled &&
-    !compactDecision &&
-    interaction.kind === "suggest_tasks"
-  ) {
-    return (
-      <InteractionAudienceContext.Provider value={audience}>
-        <CoordinatorTaskCommitment interaction={interaction}>
-          <div className="p-4 space-y-3">
-            {interaction.status === "pending" ? (
-              <InteractionAudienceLine audience={audience} />
-            ) : null}
-            <SuggestTasksCard
-              interaction={interaction}
-              agentMap={agentMap}
-              currentUserId={currentUserId}
-              userLabelMap={userLabelMap}
-              onAcceptInteraction={onAcceptInteraction}
-              onRejectInteraction={onRejectInteraction}
-            />
-          </div>
-        </CoordinatorTaskCommitment>
-      </InteractionAudienceContext.Provider>
-    );
+  if (coordinatorEnabled && !compactDecision && interaction.kind === "suggest_tasks") {
+    return <InteractionAudienceContext.Provider value={audience}>
+      <CoordinatorTaskCommitment interaction={interaction}>
+        <div className={cn("p-4 space-y-3", ANALYTICS_MASK_CLASS)}>
+          {interaction.status === "pending" ? <InteractionAudienceLine audience={audience} /> : null}
+          <SuggestTasksCard interaction={interaction} agentMap={agentMap} currentUserId={currentUserId}
+            userLabelMap={userLabelMap} onAcceptInteraction={onAcceptInteraction} onRejectInteraction={onRejectInteraction} />
+        </div>
+      </CoordinatorTaskCommitment>
+    </InteractionAudienceContext.Provider>;
   }
-  if (
-    interaction.kind === "connection_intent" &&
-    interaction.payload.accessRequest
-  ) {
+  if (interaction.kind === "suggest_routine") {
+    return <RoutineSuggestionCard interaction={interaction} />;
+  }
+  if (interaction.kind === "propose_responsibility_bar") {
+    return <BarProposalCard interaction={interaction} />;
+  }
+
+  if (interaction.kind === "propose_automation") {
+    return <AutomationProposalCard interaction={interaction} />;
+  }
+  if (interaction.kind === "propose_dashboard_changes") {
+    return <DashboardChangesCard interaction={interaction} />;
+  }
+  if (!compactDecision && interaction.kind === "connection_intent" && interaction.payload.accessRequest) {
     return (
-      <div id={`interaction-${interaction.id}`}>
+      <div className={ANALYTICS_MASK_CLASS} id={`interaction-${interaction.id}`}>
         <ConnectionIntentInteractionBody
           footerSlot={footerSlot}
           interaction={interaction}
@@ -4755,11 +5210,7 @@ export function IssueThreadInteractionCard({
       </div>
     );
   }
-  if (
-    isToolAction &&
-    interaction.kind === "request_confirmation" &&
-    toolActionState
-  ) {
+  if (!compactDecision && isToolAction && interaction.kind === "request_confirmation" && toolActionState) {
     return (
       <InteractionAudienceContext.Provider value={audience}>
         <RequestToolActionCard
@@ -4784,191 +5235,155 @@ export function IssueThreadInteractionCard({
 
   // The decision surface already names its source task. The actionable prompt
   // carries the heading; keep only distinct context, not a second task title.
-  const bodyNamesDecision =
-    interaction.kind === "ask_user_questions" ||
-    (interaction.kind === "request_confirmation" &&
-      !connectionAuthorization &&
-      !isSecretProposal);
-  const bodyContext =
-    interaction.kind === "ask_user_questions"
-      ? [
-          interaction.payload.questionSet?.description,
-          ...interaction.payload.questions.flatMap((question) => [
-            question.prompt,
-            question.helpText,
-          ]),
-        ]
-      : interaction.kind === "request_confirmation"
-        ? [interaction.payload.prompt, interaction.payload.detailsMarkdown]
-        : [];
-  const summaryIsRepeated = bodyContext.some(
-    (text) => text?.trim() === interaction.summary?.trim(),
-  );
-  const addressedElsewhere = Boolean(
-    interaction.addresseeAgentId ||
-      (interaction.addresseeUserId &&
-        interaction.addresseeUserId !== currentUserId),
-  );
+  const bodyNamesDecision = interaction.kind === "ask_user_questions"
+    || (interaction.kind === "request_confirmation" && !connectionAuthorization && !isSecretProposal);
+  const bodyContext = interaction.kind === "ask_user_questions"
+    ? [interaction.payload.questionSet?.description, ...interaction.payload.questions.flatMap(question => [question.prompt, question.helpText])]
+    : interaction.kind === "request_confirmation" ? [interaction.payload.prompt, interaction.payload.detailsMarkdown] : [];
+  const fallbackTitle = interaction.kind === "suggest_tasks"
+    ? translateInstant("issueThreadInteraction.suggestedTaskTree")
+    : interaction.kind === "ask_user_questions"
+      // Only a human-only card is genuinely "for the operator";
+      // an open card is answerable by any teammate (PAP-17280).
+      ? interaction.payload.title
+        ?? (audience.policy === "human_only"
+          ? translateInstant("issueThreadInteraction.questionsForOperator")
+          : translateInstant("issueThreadInteraction.questionsToAnswer", { defaultValue: "Questions to answer" }))
+    : interaction.kind === "request_checkbox_confirmation"
+      ? translateInstant("issueThreadInteraction.checkboxConfirmationRequested")
+      : isSecretProposal
+        ? translateInstant("issueThreadInteraction.secretBinding.requested")
+      : connectionAuthorization
+        ? translateInstant("issueThreadInteraction.connectYourProviderToContinue", {
+            provider: connectionAuthorization.providerName,
+            defaultValue: `Connect your ${connectionAuthorization.providerName} to continue`,
+          })
+      : isToolAction
+        ? translateInstant("issueThreadInteraction.toolApprovalRequested")
+        : interaction.kind === "request_item_verdicts"
+          ? translateInstant("issueThreadInteraction.reviewTheseItems")
+          : isPlan
+            ? translateInstant("issueThreadInteraction.planReview")
+            : translateInstant("issueThreadInteraction.confirmationRequested");
+  // A Needs You card's ask says what to decide, not what kind of record it is.
+  const compactTitle = interaction.title ?? (
+    interaction.kind === "suggest_tasks"
+      ? translateInstant("issueThreadInteraction.chooseTasksToCreate", { defaultValue: "Choose tasks to create" })
+      : interaction.kind === "request_checkbox_confirmation" || interaction.kind === "request_item_verdicts" ? interaction.payload.prompt
+      : interaction.kind === "connection_intent" ? interaction.payload.accessRequest
+        ? translateInstant("issueThreadInteraction.grantAccessToConnection", {
+            agent: interaction.payload.requestingAgentName,
+            connection: interaction.payload.accessRequest.connectionName,
+            defaultValue: `Grant ${interaction.payload.requestingAgentName} access to “${interaction.payload.accessRequest.connectionName}”?`,
+          })
+        : translateInstant("issueThreadInteraction.connectService", {
+            service: interaction.payload.serviceName,
+            defaultValue: `Connect ${interaction.payload.serviceName}`,
+          })
+      : fallbackTitle);
+  const summaryIsRepeated = [...bodyContext, ...(compactDecision ? [compactTitle] : [])].some(text => text?.trim() === interaction.summary?.trim());
+  const addressedElsewhere = Boolean(interaction.addresseeAgentId
+    || (interaction.addresseeUserId && interaction.addresseeUserId !== currentUserId));
 
   return (
     // Every nested subcard resolves the same interaction, so they all explain a
     // denial with the same audience the header states (PAP-17287).
     <InteractionAudienceContext.Provider value={audience}>
-      <div
-        data-presentation={presentationVariant}
-        className={
-          compactDecision
-            ? "coordinator-decision-content space-y-4"
-            : cn("rounded-lg border p-5 shadow-none", styles.shell)
-        }
-      >
-        {compactDecision ? (
-          <>
-            {!bodyNamesDecision && interaction.title ? (
-              <h2 className="text-lg font-medium">{interaction.title}</h2>
-            ) : null}
-            {interaction.summary &&
-            !summaryIsRepeated &&
-            !connectionAuthorization &&
-            interaction.kind !== "connection_intent" ? (
-              <p className="text-sm text-muted-foreground">
+      <CompactArtifactRowContext.Provider value={compactDecision ? artifactRow : null}>
+      <div data-presentation={presentationVariant} className={compactDecision ? cn("coordinator-decision-content space-y-4", ANALYTICS_MASK_CLASS) : cn("rounded-lg border p-5 shadow-none", styles.shell, ANALYTICS_MASK_CLASS)}>
+        {compactDecision ? <>
+          {!bodyNamesDecision ? <CompactDecisionAsk><PromptText>{compactTitle}</PromptText></CompactDecisionAsk> : null}
+          {/* Questions and confirmations put the note under their ask (UI1). */}
+          {interaction.summary && !summaryIsRepeated && !bodyNamesDecision && !connectionAuthorization && interaction.kind !== "connection_intent" ? <p className="text-sm text-muted-foreground">{interaction.summary}</p> : null}
+          {interaction.status === "pending" ? <div className={addressedElsewhere && !audienceStated ? undefined : "sr-only"}><InteractionAudienceLine audience={audience} variant="compact" /></div> : null}
+        </> : <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0 flex-1 basis-64">
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                data-testid="interaction-status-badge"
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-sm border px-2.5 py-1 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow)",
+                  styles.badge,
+                )}
+              >
+                <StatusIcon className={cn("h-3.5 w-3.5", iconSpin && "animate-spin")} />
+                {isSecretProposal ? (
+                  <span className="flex flex-col sm:flex-row sm:items-center sm:gap-1">
+                    <span>{translateInstant("issueThreadInteraction.secretBinding.badge")}</span>
+                    <span className="hidden text-current/60 sm:inline">/</span>
+                    <span>{statusText}</span>
+                  </span>
+                ) : connectionAuthorization ? (
+                  // One state, in the reader's own terms: "Action required",
+                  // "Waiting for Carol", "Gmail connected". The interaction kind
+                  // is machinery the person being asked does not need.
+                  <span>{statusText}</span>
+                ) : (
+                  <>
+                    {isPlan ? translateInstant("issueThreadInteraction.plan", { defaultValue: "Plan" }) : interactionKindLabel(interaction.kind)}
+                    <span className="text-current/60">/</span>
+                    {statusText}
+                  </>
+                )}
+              </span>
+              {addresseeLabel ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge
+                      variant="secondary"
+                      className="gap-1"
+                      data-testid="interaction-addressee-badge"
+                    >
+                      <Bot className="h-3 w-3" />
+                      {translateInstant("For")} {addresseeLabel}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs text-xs">
+                    {translateInstant("issueThreadInteraction.directedToAgentDescription", {
+                      name: addresseeLabel,
+                      defaultValue: `Directed to ${addresseeLabel}. Agent-addressed interactions are owned by that agent and are kept out of the open organization attention feed.`,
+                    })}
+                  </TooltipContent>
+                </Tooltip>
+              ) : null}
+            </div>
+
+            <div className="mt-3 text-lg font-bold text-foreground">
+              {interaction.title ?? fallbackTitle}
+            </div>
+            {/* A connection-authorization card composes its own single body
+                below, because the closing sentence depends on whether the
+                reader is the person who may consent. Rendering the summary here
+                as well would be the second body PAP-17859 removed. */}
+            {interaction.summary && !connectionAuthorization && interaction.kind !== "connection_intent" ? (
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
                 {interaction.summary}
               </p>
             ) : null}
             {interaction.status === "pending" ? (
-              <div className={addressedElsewhere ? undefined : "sr-only"}>
-                <InteractionAudienceLine
-                  audience={audience}
-                  variant="compact"
-                />
-              </div>
+              <InteractionAudienceLine audience={audience} className="mt-3" />
             ) : null}
-          </>
-        ) : (
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="min-w-0 flex-1 basis-64">
-              <div className="flex flex-wrap items-center gap-2">
-                <span
-                  data-testid="interaction-status-badge"
-                  className={cn(
-                    "inline-flex items-center gap-1 rounded-sm border px-2.5 py-1 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow)",
-                    styles.badge,
-                  )}
-                >
-                  <StatusIcon
-                    className={cn("h-3.5 w-3.5", iconSpin && "animate-spin")}
-                  />
-                  {isSecretProposal ? (
-                    <span className="flex flex-col sm:flex-row sm:items-center sm:gap-1">
-                      <span>
-                        {translateInstant(
-                          "issueThreadInteraction.secretBinding.badge",
-                        )}
-                      </span>
-                      <span className="hidden text-current/60 sm:inline">
-                        /
-                      </span>
-                      <span>{statusText}</span>
-                    </span>
-                  ) : connectionAuthorization ? (
-                    // One state, in the reader's own terms: "Action required",
-                    // "Waiting for Carol", "Gmail connected". The interaction kind
-                    // is machinery the person being asked does not need.
-                    <span>{statusText}</span>
-                  ) : (
-                    <>
-                      {isPlan ? "Plan" : interactionKindLabel(interaction.kind)}
-                      <span className="text-current/60">/</span>
-                      {statusText}
-                    </>
-                  )}
-                </span>
-                {addresseeLabel ? (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Badge
-                        variant="secondary"
-                        className="gap-1"
-                        data-testid="interaction-addressee-badge"
-                      >
-                        <Bot className="h-3 w-3" />
-                        {translateInstant("For")} {addresseeLabel}
-                      </Badge>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="max-w-xs text-xs">
-                      {translateInstant("Directed to")} {addresseeLabel}.
-                      Agent-addressed interactions are owned by that agent and
-                      are kept out of the open organization attention feed.
-                    </TooltipContent>
-                  </Tooltip>
-                ) : null}
-              </div>
-
-              <div className="mt-3 text-lg font-bold text-foreground">
-                {interaction.title ??
-                  (interaction.kind === "suggest_tasks"
-                    ? "Suggested task tree"
-                    : interaction.kind === "ask_user_questions"
-                      ? // Only a human-only card is genuinely "for the operator";
-                        // an open card is answerable by any teammate (PAP-17280).
-                        (interaction.payload.title ??
-                        (audience.policy === "human_only"
-                          ? "Questions for the operator"
-                          : "Questions to answer"))
-                      : interaction.kind === "request_checkbox_confirmation"
-                        ? "Checkbox confirmation requested"
-                        : isSecretProposal
-                          ? "Secret binding requested"
-                          : connectionAuthorization
-                            ? `Connect your ${connectionAuthorization.providerName} to continue`
-                            : isToolAction
-                              ? "Tool approval requested"
-                              : interaction.kind === "request_item_verdicts"
-                                ? "Review these items"
-                                : isPlan
-                                  ? "Plan review"
-                                  : "Confirmation requested")}
-              </div>
-              {/* A connection-authorization card composes its own single body
-                below, because the closing sentence depends on whether the
-                reader is the person who may consent. Rendering the summary here
-                as well would be the second body PAP-17859 removed. */}
-              {interaction.summary &&
-              !connectionAuthorization &&
-              interaction.kind !== "connection_intent" ? (
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-                  {interaction.summary}
-                </p>
-              ) : null}
-              {interaction.status === "pending" ? (
-                <InteractionAudienceLine audience={audience} className="mt-3" />
-              ) : null}
-            </div>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="rounded-sm border border-border/70 bg-transparent px-3 py-2 text-right text-xs text-muted-foreground">
-                  <div className="font-medium text-foreground">
-                    {formatShortDate(interaction.createdAt)}
-                  </div>
-                  <div>
-                    {translateInstant("proposed by")} {createdByLabel}
-                  </div>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="text-xs">
-                {translateInstant("Created")}{" "}
-                {formatDateTime(interaction.createdAt)}
-              </TooltipContent>
-            </Tooltip>
           </div>
-        )}
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="rounded-sm border border-border/70 bg-transparent px-3 py-2 text-right text-xs text-muted-foreground">
+                <div className="font-medium text-foreground">{formatShortDate(interaction.createdAt)}</div>
+                <div>{translateInstant("proposed by")} {createdByLabel}</div>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="text-xs">
+              {translateInstant("Created")} {formatDateTime(interaction.createdAt)}
+            </TooltipContent>
+          </Tooltip>
+        </div>}
 
         <div className={compactDecision ? undefined : "mt-5"}>
           {interaction.kind === "suggest_tasks" ? (
             <SuggestTasksCard
               footerSlot={footerSlot}
               interaction={interaction}
+              compact={compactDecision}
               agentMap={agentMap}
               currentUserId={currentUserId}
               userLabelMap={userLabelMap}
@@ -4988,6 +5403,7 @@ export function IssueThreadInteractionCard({
             <RequestCheckboxConfirmationCard
               footerSlot={footerSlot}
               interaction={interaction}
+              compact={compactDecision}
               primaryActionOnRight={primaryActionOnRight}
               onAcceptInteraction={onAcceptInteraction}
               onRejectInteraction={onRejectInteraction}
@@ -5000,6 +5416,7 @@ export function IssueThreadInteractionCard({
               footerSlot={footerSlot}
               interaction={interaction}
               state={connectionAuthorizationState}
+              compact={compactDecision}
               isAddressee={isConnectionAddressee}
               providerName={connectionAuthorization.providerName}
               addresseeLabel={addresseeLabel ?? "the addressed person"}
@@ -5010,13 +5427,22 @@ export function IssueThreadInteractionCard({
               resolvedByAgent={resolvedByAgent}
               onRejectInteraction={onRejectInteraction}
             />
-          ) : isSecretProposal &&
-            interaction.kind === "request_confirmation" &&
-            secretProposalState ? (
+          ) : isToolAction && interaction.kind === "request_confirmation" && toolActionState ? (
+            <RequestToolActionCard
+              footerSlot={footerSlot}
+              interaction={interaction}
+              state={toolActionState}
+              compact={compactDecision}
+              onAcceptInteraction={onAcceptInteraction}
+              onRejectInteraction={onRejectInteraction}
+              externalReferences={externalReferences}
+            />
+          ) : isSecretProposal && interaction.kind === "request_confirmation" && secretProposalState ? (
             <RequestSecretProposalCard
               footerSlot={footerSlot}
               interaction={interaction}
               state={secretProposalState}
+              compact={compactDecision}
               resolvedByLabel={resolvedByLabel}
               onAcceptInteraction={onAcceptInteraction}
               onRejectInteraction={onRejectInteraction}
@@ -5025,6 +5451,8 @@ export function IssueThreadInteractionCard({
             <ConnectionIntentInteractionBody
               footerSlot={footerSlot}
               interaction={interaction}
+              compact={compactDecision}
+              artifactRow={compactDecision ? artifactRow : undefined}
               currentUserId={currentUserId}
               addresseeLabel={addresseeLabel ?? "the addressed person"}
               addresseeName={
@@ -5037,6 +5465,7 @@ export function IssueThreadInteractionCard({
             <RequestItemVerdictsCard
               footerSlot={footerSlot}
               interaction={interaction}
+              compact={compactDecision}
               onSubmitInteractionVerdicts={onSubmitInteractionVerdicts}
               externalReferences={externalReferences}
             />
@@ -5051,6 +5480,7 @@ export function IssueThreadInteractionCard({
               onRejectInteraction={onRejectInteraction}
               onUploadImage={onUploadImage}
               externalReferences={externalReferences}
+              shareReviseDraft={shareReviseDraft}
             />
           )}
         </div>
@@ -5112,6 +5542,7 @@ export function IssueThreadInteractionCard({
           </div>
         ) : null}
       </div>
+      </CompactArtifactRowContext.Provider>
     </InteractionAudienceContext.Provider>
   );
 }

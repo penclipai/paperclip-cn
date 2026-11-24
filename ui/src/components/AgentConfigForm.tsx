@@ -1,14 +1,17 @@
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
-import { useAdapterLoginCancellation } from "./useAdapterLoginCancellation";
-import { ACCOUNT_BOUND_MODEL_DISCOVERY_QUERY_OPTIONS, isAccountBoundAcpxAgent } from "@/lib/native-model-catalog";
+import { environmentSupportsLoginPty } from "@penclipai/shared";
+import { matchesAdapterLoginTarget, useAdapterLoginCancellation } from "./useAdapterLoginCancellation";
+import { ACCOUNT_BOUND_MODEL_DISCOVERY_QUERY_OPTIONS, antigravityModelGroup, isAccountBoundAcpxAgent } from "@/lib/native-model-catalog";
 import { useConnectionModels } from "./ai-connections/useConnectionModels";
 import { agentHarnessType, agentRunner, paperclipRunnerProfileForHarness, normalizeClaudeRunnerOptions, type AgentRunnerChoice } from "@penclipai/shared";
 import { adaptersApi } from "../api/adapters";
 import { canQualifyRunnerEnvironment, qualifyRunnerEnvironment } from "../lib/qualify-claude-setup";
 import { aiRoutingHarness } from "@penclipai/shared";
 import { AiConnectionField } from "./ai-connections/AiConnectionField";
-import { aiConnectionBindingSchema, aiRuntimeConnectionBindingSchema } from "@penclipai/shared";
+import { isAiConnectionCompatibleForSelection, personalAiDefault } from "./ai-connections/model";
+import { aiConnectionsApi } from "@/api/ai-connections";
+import { aiConnectionBindingSchema, aiRuntimeConnectionBindingSchema, isAiConnectionCompatible } from "@penclipai/shared";
 import { testAgentSetup } from "@/lib/test-agent-setup";
 import { setupEfforts } from "../lib/agent-setup-fields";
 import { RuntimeTestCard } from "./RuntimeTestCard";
@@ -97,6 +100,8 @@ import { useProposalReview } from "../pages/secrets/proposal-review";
 import { AGENT_ACCESS_CONFIG_PATH_PREFIX } from "../lib/secret-delivery";
 import { shouldShowLegacyWorkingDirectoryField } from "../lib/legacy-agent-config";
 import { listAdapterOptions, listVisibleAdapterTypes } from "../adapters/metadata";
+import { useCloudInstance } from "@/hooks/useCloudInstance";
+import { useCloudHarnessPolicy } from "@/hooks/useCloudHarnessPolicy";
 import { getAdapterDisplay, getAdapterLabel } from "../adapters/adapter-display-registry";
 import { useDisabledAdaptersSync } from "../adapters/use-disabled-adapters";
 import { buildAgentUpdatePatch, omitUndefinedEntries, type AgentConfigOverlay } from "../lib/agent-config-patch";
@@ -115,6 +120,7 @@ import {
   type CreateConfigValues,
 } from "@penclipai/adapter-utils";
 import { Badge } from "@/components/ui/badge";
+import { ANALYTICS_NO_CAPTURE_CLASS } from "@/lib/analytics/privacy";
 
 /* ---- Props ---- */
 
@@ -545,8 +551,11 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
   type RecordOverlayGroup = "identity" | "adapterConfig" | "heartbeat" | "debug" | "runtime";
 
+  const displayedOriginals = new Map<string, unknown>();
+
   /** Read effective value: overlay if dirty, else original */
   function eff<T>(group: RecordOverlayGroup, field: string, original: T): T {
+    displayedOriginals.set(`${group}.${field}`, original);
     const o = overlay[group];
     if (field in o) return o[field] as T;
     return original;
@@ -554,10 +563,16 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
   /** Mark field dirty in overlay */
   function mark(group: RecordOverlayGroup, field: string, value: unknown) {
-    setOverlay((prev) => ({
-      ...prev,
-      [group]: { ...prev[group], [field]: value },
-    }));
+    const key = `${group}.${field}`;
+    setOverlay((prev) => {
+      const next = { ...prev[group] };
+      if (displayedOriginals.has(key) && overlayValuesEqual(value, displayedOriginals.get(key))) {
+        delete next[field];
+      } else {
+        next[field] = value;
+      }
+      return { ...prev, [group]: next };
+    });
   }
 
   function flushEnvironmentDraft() {
@@ -630,8 +645,11 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   // ---- Resolve values ----
   const config = !isCreate ? ((props.agent.adapterConfig ?? {}) as Record<string, unknown>) : {};
   const runtimeConfig = !isCreate ? ((props.agent.runtimeConfig ?? {}) as Record<string, unknown>) : {};
+  const runtimeOverlay = overlay.runtime.runtimeConfig as Record<string, unknown> | undefined;
+  const currentAiConnection = (runtimeOverlay ?? runtimeConfig).aiConnection;
   const heartbeat = !isCreate ? ((runtimeConfig.heartbeat ?? {}) as Record<string, unknown>) : {};
   const debug = !isCreate ? ((runtimeConfig.debug ?? {}) as Record<string, unknown>) : {};
+  displayedOriginals.set("runtime.runtimeConfig", { ...runtimeConfig, aiConnection: runtimeConfig.aiConnection });
 
   const adapterType = isCreate
     ? props.values.adapterType
@@ -1034,15 +1052,50 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       ? "Paperclip Sandbox"
       : "Local";
 
-  const modelProvider = adapterType === "opencode_local" && aiConnectionBindingSchema.safeParse(
-    (overlay.runtime.runtimeConfig as Record<string, unknown> | undefined)?.aiConnection ?? runtimeConfig.aiConnection,
-  ).data?.provider === "openrouter" ? "openrouter" : runnerProvider;
+  const modelProvider = adapterType === "opencode_local" && aiConnectionBindingSchema.safeParse(currentAiConnection).data?.provider === "openrouter" ? "openrouter" : runnerProvider;
   const runnerAcpxAgent = adapterType === "paperclip_runner" && runnerProvider === "acpx"
     ? String(isCreate ? props.values.adapterSchemaValues?.acpxAgent ?? "claude" : eff("adapterConfig", "acpxAgent", config.acpxAgent ?? "claude")) : undefined;
-  const modelAiBinding = aiConnectionBindingSchema.safeParse((overlay.runtime.runtimeConfig as Record<string, unknown> | undefined)?.aiConnection ?? runtimeConfig.aiConnection).data;
+  const cloud = Boolean(useCloudInstance());
+  const harnessPolicy = useCloudHarnessPolicy();
+  const cloudHarnessAllowed = !cloud || harnessPolicy.isCloudHarnessAllowed(adapterType, { provider: runnerProvider, acpxAgent: runnerAcpxAgent });
+  const modelAiBinding = aiConnectionBindingSchema.safeParse(currentAiConnection).data;
+  const aiAccounts = useQuery({
+    queryKey: ["ai-connections", selectedCompanyId, isCreate ? undefined : props.agent.id],
+    queryFn: () => aiConnectionsApi.list(selectedCompanyId!, isCreate ? undefined : props.agent.id),
+    enabled: !isCreate && Boolean(selectedCompanyId && currentAiConnection),
+  });
+  const selectedHarness = aiRoutingHarness(adapterType, runnerProvider, runnerAcpxAgent);
+  const selectedConnectionModel = isCreate ? undefined : String(eff("adapterConfig", "model", config.model) ?? "");
+  useEffect(() => {
+    if (isCreate || agentHarnessType(props.agent.adapterType, props.agent.adapterConfig)
+      === agentHarnessType(adapterType, { provider: runnerProvider, acpxAgent: runnerAcpxAgent })) return;
+    const binding = aiRuntimeConnectionBindingSchema.safeParse(currentAiConnection).data;
+    if (!binding) return;
+    let compatible: boolean;
+    if (binding.mode === "router") {
+      const pool = aiAccounts.data?.pools?.find(pool => pool.id === binding.connectionId);
+      if (!pool) return;
+      compatible = pool.members.some(member => isAiConnectionCompatible(member.binding, adapterType,
+        member.profile.model, member.profile.provider, member.profile.acpxAgent));
+    } else {
+      const accounts = aiAccounts.data;
+      const account = binding.mode === "responsible_user"
+        ? personalAiDefault(accounts?.connections ?? [], { companyId: selectedCompanyId!, provider: binding.provider }, accounts?.currentUserId ?? "")
+        : accounts?.connections.find(account => account.id === binding.connectionId && account.grantId === binding.grantId);
+      // Fixed API bindings carry no routing metadata. Wait for the account
+      // before deciding whether its endpoint supports the new harness.
+      if (!account && binding.mode !== "responsible_user" && binding.method === "api_key" && !accounts) return;
+      compatible = isAiConnectionCompatibleForSelection(account ?? binding, selectedHarness, selectedConnectionModel);
+    }
+    if (!compatible) setOverlay(prev => {
+      const { aiConnection: _removed, ...nextRuntime } = (prev.runtime.runtimeConfig as Record<string, unknown> | undefined) ?? runtimeConfig;
+      return { ...prev, runtime: { ...prev.runtime, runtimeConfig: nextRuntime } };
+    });
+  }, [isCreate, adapterType, runnerProvider, runnerAcpxAgent, props, selectedHarness, selectedConnectionModel, currentAiConnection, aiAccounts.data, selectedCompanyId, runtimeConfig]);
   const accountBoundCatalog = isAccountBoundAcpxAgent(runnerAcpxAgent);
+  const antigravityPickerGroup = useMemo(() => antigravityModelGroup(modelAiBinding?.method), [modelAiBinding?.method]);
   const modelCacheIdentity = accountBoundCatalog ? `${modelProvider}:${runnerAcpxAgent}:${isCreate ? "new" : props.agent.id}:${JSON.stringify(modelAiBinding ?? null)}` : runnerAcpxAgent ? `${modelProvider}:${runnerAcpxAgent}` : modelProvider;
-  const connectionModels = useConnectionModels(isExternalRunner ? null : selectedCompanyId, isCreate ? undefined : modelAiBinding, aiRoutingHarness(adapterType, runnerProvider, runnerAcpxAgent));
+  const connectionModels = useConnectionModels(isExternalRunner || !cloudHarnessAllowed ? null : selectedCompanyId, isCreate ? undefined : modelAiBinding, aiRoutingHarness(adapterType, runnerProvider, runnerAcpxAgent));
   // Fetch adapter models for the effective provider, including unsaved changes.
   const modelAdapterType = accountBoundCatalog ? "paperclip_runner" : isRunnerHarness ? harnessType : adapterType;
   const modelQueryKey = selectedCompanyId
@@ -1058,14 +1111,14 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       agentId: isCreate ? undefined : props.agent.id,
     }),
     ...(accountBoundCatalog ? ACCOUNT_BOUND_MODEL_DISCOVERY_QUERY_OPTIONS : {}),
-    enabled: Boolean(selectedCompanyId) && !isExternalRunner && !connectionModels,
+    enabled: Boolean(selectedCompanyId) && cloudHarnessAllowed && !isExternalRunner && !connectionModels,
   });
   const { data: fetchedModels, error: fetchedModelsError, isLoading: fetchingModels, refetch: refreshConnectionModels } = fetchedModelsQuery;
   const fetchedModelsView = useQueryView(fetchedModelsQuery);
   const accountModelScope = accountBoundCatalog ? JSON.stringify(modelQueryKey) : null;
   useEffect(() => {
-    if (accountModelScope && selectedCompanyId && !isExternalRunner && !connectionModels) void refreshConnectionModels();
-  }, [accountModelScope, selectedCompanyId, isExternalRunner, connectionModels, refreshConnectionModels]);
+    if (accountModelScope && selectedCompanyId && cloudHarnessAllowed && !isExternalRunner && !connectionModels) void refreshConnectionModels();
+  }, [accountModelScope, selectedCompanyId, cloudHarnessAllowed, isExternalRunner, connectionModels, refreshConnectionModels]);
   const [refreshModelsError, setRefreshModelsError] = useState<string | null>(null);
   const [refreshingModels, setRefreshingModels] = useState(false);
   const models = connectionModels?.models ?? fetchedModels ?? externalModels ?? [];
@@ -1087,7 +1140,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       }
       return agentsApi.detectModel(selectedCompanyId, adapterType);
     },
-    enabled: Boolean(selectedCompanyId && isLocal && adapterType !== "opencode_local" && adapterType !== "paperclip_runner"),
+    enabled: Boolean(selectedCompanyId && cloudHarnessAllowed && isLocal && adapterType !== "opencode_local" && adapterType !== "paperclip_runner"),
   });
   const detectedModel = detectedModelData?.model ?? null;
   const detectedModelCandidates = detectedModelData?.candidates ?? [];
@@ -1120,6 +1173,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     // every adapter without a per-adapter edit.
     hideInstructionsFile: hideInstructionsFile || hideHostPaths || isExternalRunner,
     managedSandboxOnly: hideHostPaths || isExternalRunner,
+    availableHarnesses: cloud ? harnessPolicy.availableHarnesses : undefined,
     openAiDotEnabled: experimentalSettings?.enableOpenAiDot === true,
     museEnabled: experimentalSettings?.enableMuse === true && experimentalSettings?.enableNativeRunner === true,
   };
@@ -1236,7 +1290,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       const adapterConfig = buildAdapterConfigForTest(adapterConfigPatch);
       const agentId = isCreate ? undefined : props.agent.id;
       const aiConnection = isCreate ? undefined : aiRuntimeConnectionBindingSchema.safeParse(
-        (overlay.runtime.runtimeConfig as Record<string, unknown> | undefined)?.aiConnection ?? props.agent.runtimeConfig.aiConnection,
+        currentAiConnection,
       ).data;
       const testRunnerSelection = isCursorCloudRunner
         ? { runner: "paperclip" as const }
@@ -1329,18 +1383,12 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   // advertises the login pseudo-terminal capability. Read the capability for the
   // effective environment provider. The form reads the adapter login capability,
   // not the adapter name: every adapter login gates on this provider capability.
-  const effectiveLoginProvider =
-    typeof effectiveLoginEnvironment?.config?.provider === "string"
-      ? effectiveLoginEnvironment.config.provider
-      : null;
-  const providerSupportsLoginPty =
-    effectiveLoginProvider != null &&
-    environmentCapabilities?.sandboxProviders?.[effectiveLoginProvider]?.supportsLoginPty === true;
+  const providerSupportsLoginPty = environmentSupportsLoginPty(effectiveLoginEnvironment, environmentCapabilities, isRunnerHarness ? harnessType : adapterType);
   const loginNeedsPty = adapterCaps.login != null;
   const showAdapterLogin =
-    (isCreate || !((overlay.runtime.runtimeConfig as Record<string, unknown> | undefined)?.aiConnection ?? runtimeConfig.aiConnection)) &&
+    (isCreate || !currentAiConnection) &&
     adapterSupportsSandboxLogin &&
-    effectiveLoginEnvironment?.driver === "sandbox" &&
+    (effectiveLoginEnvironment?.driver === "sandbox" || (effectiveLoginEnvironment?.driver === "plugin" && !isCreate)) &&
     Boolean(effectiveLoginEnvironmentId) &&
     Boolean(selectedCompanyId) &&
     Boolean(authMissingCheck) &&
@@ -1518,7 +1566,15 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     };
   }, [isCreate, overlay.heartbeat, runtimeConfig, val]);
   const effectiveHeartbeat = asObject(effectiveRuntimeConfig.heartbeat);
-  const maxTurnContinuation = asObject(effectiveHeartbeat.maxTurnContinuation);
+  const savedContinuation = asObject(heartbeat.maxTurnContinuation);
+  const continuationDefaults = {
+    ...savedContinuation,
+    enabled: asBoolean(savedContinuation.enabled, true),
+    maxAttempts: clampInteger(asFiniteNumber(savedContinuation.maxAttempts, MAX_TURN_CONTINUATION_DEFAULT_MAX_ATTEMPTS), 0, MAX_TURN_CONTINUATION_MAX_ATTEMPTS_CAP),
+    delayMs: clampInteger(asFiniteNumber(savedContinuation.delayMs, MAX_TURN_CONTINUATION_DEFAULT_DELAY_SEC * 1000) / 1000, 0, MAX_TURN_CONTINUATION_MAX_DELAY_SEC) * 1000,
+  };
+  const maxTurnContinuation = isCreate ? asObject(effectiveHeartbeat.maxTurnContinuation)
+    : eff("heartbeat", "maxTurnContinuation", continuationDefaults);
   const maxTurnContinuationEnabled = asBoolean(maxTurnContinuation.enabled, true);
   const maxTurnContinuationMaxAttempts = clampInteger(
     asFiniteNumber(maxTurnContinuation.maxAttempts, MAX_TURN_CONTINUATION_DEFAULT_MAX_ATTEMPTS),
@@ -1618,7 +1674,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     <div className="space-y-6">
       {showRunnerUpgrade && !runnerUpgraded ? (
         <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
-          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div className="agent-runner-upgrade flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div className="min-w-0 flex-1 space-y-1">
               <p className="text-sm font-medium">{translateInstant("agentConfig.runnerUpgrade.title")}</p>
               <p className="text-sm text-muted-foreground">
@@ -1896,10 +1952,10 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
               onRetry={runnerDiscoveryView.retry} />
           )}
           {!isExternalRunner && !isCreate && selectedCompanyId && <AiConnectionField companyId={selectedCompanyId} agentId={props.agent.id} agentName={props.agent.name} adapterType={aiRoutingHarness(adapterType, eff("adapterConfig", "provider", config.provider), eff("adapterConfig", "acpxAgent", config.acpxAgent))}
-            routerAdapterType={adapterType} value={aiRuntimeConnectionBindingSchema.safeParse((overlay.runtime.runtimeConfig as Record<string, unknown> | undefined)?.aiConnection ?? runtimeConfig.aiConnection).data}
+            routerAdapterType={adapterType} value={aiRuntimeConnectionBindingSchema.safeParse(currentAiConnection).data}
             model={String(eff("adapterConfig", "model", config.model) ?? "")} environmentId={currentDefaultEnvironmentId || undefined} legacy
             onChange={binding => {
-              mark("runtime", "runtimeConfig", { ...runtimeConfig, aiConnection: binding });
+              mark("runtime", "runtimeConfig", { ...(runtimeOverlay ?? runtimeConfig), aiConnection: binding });
               if (accountBoundCatalog && hashKey([modelAiBinding ?? null]) === hashKey([binding ?? null])) void refreshConnectionModels();
             }} />}
 
@@ -1915,6 +1971,8 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
           {showInlineAdapterTestEnvironmentFeedback && showAdapterLogin && (
             <AdapterLoginPanel
+              requiresAgent={effectiveLoginEnvironment?.driver === "plugin"}
+              agentId={!isCreate && effectiveLoginEnvironment?.driver === "plugin" ? props.agent.id : undefined}
               key={`${adapterType}:${effectiveLoginEnvironmentId}`}
               companyId={selectedCompanyId!}
               adapterType={isRunnerHarness ? harnessType : adapterType}
@@ -1953,7 +2011,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
           )}
 
           {renderAdapterFields("adapter")}
-          {isLocal && (<>
+          {isLocal && cloudHarnessAllowed && (<>
               <ModelDropdown
                 models={models}
                 loadingModels={connectionModels?.isLoading ?? (fetchingModels || fetchedModelsView.kind === "reconnecting")}
@@ -1981,7 +2039,8 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 allowDefault={adapterType !== "opencode_local" && adapterType !== "pi_local" && adapterType !== "paperclip_runner" && !isCursorCloudRunner}
                 required={adapterType === "opencode_local" || adapterType === "pi_local" || isCursorCloudRunner || runnerAcpxAgent === "antigravity"}
                 groupByProvider={!connectionModels && (adapterType === "opencode_local" || adapterType === "pi_local")}
-                preserveOrder={Boolean(connectionModels) || adapterCuratesModelOrder(adapterType)}
+                preserveOrder={Boolean(connectionModels) || adapterCuratesModelOrder(adapterType) || runnerAcpxAgent === "antigravity"}
+                groupModel={runnerAcpxAgent === "antigravity" && !connectionModels ? antigravityPickerGroup : undefined}
                 creatable
                 detectedModel={connectionModels ? undefined : detectedModel}
                 detectedModelCandidates={[]}
@@ -2491,6 +2550,7 @@ function AdapterLoginTerminalState({
 // environment for one company. A parent that lifts the test feedback renders
 // the panel from this descriptor.
 export type AdapterLoginDescriptor = {
+  agentId?: string;
   companyId: string;
   adapterType: string;
   environmentId: string;
@@ -2513,6 +2573,7 @@ export type AdapterLoginDescriptor = {
 // correctly, and the first thing to rot would have been the timeout and
 // cleanup paths, which are the ones nobody exercises by hand.
 export type AdapterLoginPanelProps = AdapterLoginDescriptor & {
+  requiresAgent?: boolean;
   active?: boolean;
   aiConnection?: import("@penclipai/shared").AiConnectionLoginIntent;
   onStored?: (storedSessionId: string) => void;
@@ -2578,11 +2639,10 @@ function adapterLoginTitle(adapterType: string): string {
 
 export function AdapterLoginPanel(props: AdapterLoginPanelProps) {
   const getCapabilities = useAdapterCapabilities();
-  const panelMode = getCapabilities(props.adapterType).login?.panelMode;
-  if (panelMode === "submitted_browser_code") {
-    return <SubmittedBrowserCodeLoginPanel {...props} />;
-  }
-  return <DisplayedCodeLoginPanel {...props} />;
+  const Panel = getCapabilities(props.adapterType).login?.panelMode === "submitted_browser_code"
+    ? SubmittedBrowserCodeLoginPanel : DisplayedCodeLoginPanel;
+  const agentId = props.requiresAgent ? props.agentId : undefined;
+  return <Panel key={agentId} {...props} agentId={agentId} />;
 }
 
 class AdapterLoginConflictError extends Error {
@@ -2593,9 +2653,11 @@ class AdapterLoginConflictError extends Error {
 
 function DisplayedCodeLoginPanel({
   active: loginActive = true,
+  requiresAgent,
   companyId,
   adapterType,
   environmentId,
+  agentId,
   autoStart,
   onConnected,
   onAccountBinding,
@@ -2607,6 +2669,7 @@ function DisplayedCodeLoginPanel({
 }: AdapterLoginPanelProps) {
   useTranslation();
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const automaticComputer = Boolean(requiresAgent && !agentId && aiConnection);
   const cancellation = useAdapterLoginCancellation(loginActive, companyId, adapterType, false, sessionId, { environmentId, aiConnection });
   const [retrying, setRetrying] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
@@ -2630,7 +2693,7 @@ function DisplayedCodeLoginPanel({
   const resumedRef = useRef(false);
 
   const startLogin = useMutation({
-    mutationFn: () => cancellation.accept(() => agentsApi.startAdapterAuthLogin(companyId, adapterType, { environmentId, aiConnection })),
+    mutationFn: () => cancellation.accept(() => agentsApi.startAdapterAuthLogin(companyId, adapterType, { environmentId, ...(agentId ? { agentId } : {}), ...(aiConnection ? { aiConnection } : {}) })),
     onSuccess: (session) => {
       if (!session || !cancellation.isActive()) return;
       resumedRef.current = false;
@@ -2669,12 +2732,16 @@ function DisplayedCodeLoginPanel({
   // browser rediscovers its own session after a reload with no local state. A
   // 404 means no active session for the caller.
   const activeSessionQuery = useQuery({
-    queryKey: ["adapter-login-active-session", companyId, adapterType],
+    queryKey: ["adapter-login-active-session", companyId, adapterType, environmentId, agentId],
     queryFn: async ({ signal }) => {
       try {
         const active = await cancellation.resume(() => agentsApi.getActiveAdapterAuthLoginSession(companyId, adapterType, { signal }));
         if (!active) return null;
-        if ((aiConnection && active.environmentId !== environmentId) || Boolean(active.aiConnection) !== Boolean(aiConnection) || (aiConnection && (active.aiConnection?.provider !== aiConnection.provider || active.aiConnection?.method !== aiConnection.method || active.aiConnection?.connectionId !== aiConnection.connectionId || active.aiConnection?.ownership !== aiConnection.ownership || active.aiConnection?.allAgents !== aiConnection.allAgents || JSON.stringify(active.aiConnection?.agentIds) !== JSON.stringify(aiConnection.agentIds)))) throw new AdapterLoginConflictError(active.sessionId);
+        const wrongComputer = !automaticComputer && active.agentId !== agentId;
+        const wrongConnection = aiConnection
+          ? !matchesAdapterLoginTarget(active, { environmentId, aiConnection })
+          : Boolean(active.aiConnection);
+        if (wrongComputer || wrongConnection) throw new AdapterLoginConflictError(active.sessionId);
         return active;
       } catch (error) {
         if (error instanceof ApiError && error.status === 404) return null;
@@ -2929,6 +2996,7 @@ function DisplayedCodeLoginPanel({
       <ProviderSubscriptionCard
         loading={retryLogin.isPending || (!prompt && !failure)}
         failure={failure}
+        failureMessage={automaticComputer ? startError ?? undefined : undefined}
         onRetry={!onRetryReady && retryReady ? retryAction : undefined}
         providerName={connectSourceName(adapterType)}
         authorizationUrl={prompt?.url}
@@ -3018,8 +3086,9 @@ function DisplayedCodeLoginPanel({
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
-                {translateInstant("1. Code")}</div>
-              <span className="font-mono text-xs text-foreground break-all">{prompt.code}</span>
+                {translateInstant("1. Code")}
+              </div>
+              <span className={cn("font-mono text-xs text-foreground break-all", ANALYTICS_NO_CAPTURE_CLASS)}>{prompt.code}</span>
             </div>
             <AdapterLoginCopyButton value={prompt.code} label={translateInstant("agentConfig.copyCode")} />
           </div>
@@ -3127,9 +3196,11 @@ const CLAUDE_LOGIN_TIMED_OUT_MESSAGE = "The login timed out. Start the login aga
 // only the server `stored` state as success, and it never shows the OAuth token.
 function SubmittedBrowserCodeLoginPanel({
   active: loginActive = true,
+  requiresAgent,
   companyId,
   adapterType,
   environmentId,
+  agentId,
   onStored,
   onApplyStored,
   autoStart,
@@ -3145,6 +3216,7 @@ function SubmittedBrowserCodeLoginPanel({
 }: AdapterLoginPanelProps) {
   useTranslation();
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const automaticComputer = Boolean(requiresAgent && !agentId && aiConnection);
   const cancellation = useAdapterLoginCancellation(loginActive, companyId, adapterType, true, sessionId, { environmentId, aiConnection });
   const [retrying, setRetrying] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
@@ -3229,7 +3301,8 @@ function SubmittedBrowserCodeLoginPanel({
     mutationFn: () => cancellation.accept(() =>
       agentsApi.startClaudeSetupTokenLogin(companyId, {
         environmentId,
-        aiConnection,
+        ...(agentId ? { agentId } : {}),
+        ...(aiConnection ? { aiConnection } : {}),
         // When the owner already has a stored token, the login rotates it under
         // the captured version, so a replacement login never conflicts with an
         // existing value. Without a stored token the login is a first write.
@@ -3306,12 +3379,16 @@ function SubmittedBrowserCodeLoginPanel({
   // session id, so the browser rediscovers its own session after a reload
   // with no local state. A 404 means no active session for the caller.
   const activeSessionQuery = useQuery({
-    queryKey: ["claude-setup-token-active-session", companyId],
+    queryKey: ["claude-setup-token-active-session", companyId, environmentId, agentId],
     queryFn: async ({ signal }) => {
       try {
         const active = await cancellation.resume(() => agentsApi.getActiveClaudeSetupTokenLoginSession(companyId, { signal }));
         if (!active) return null;
-        if ((aiConnection && active.environmentId !== environmentId) || Boolean(active.aiConnection) !== Boolean(aiConnection) || (aiConnection && (active.aiConnection?.provider !== aiConnection.provider || active.aiConnection?.method !== aiConnection.method || active.aiConnection?.connectionId !== aiConnection.connectionId || active.aiConnection?.ownership !== aiConnection.ownership || active.aiConnection?.allAgents !== aiConnection.allAgents || JSON.stringify(active.aiConnection?.agentIds) !== JSON.stringify(aiConnection.agentIds)))) throw new Error("Another sign-in attempt is active. Finish or cancel it in its original account setup before starting this one.");
+        const wrongComputer = !automaticComputer && active.agentId !== agentId;
+        const wrongConnection = aiConnection
+          ? !matchesAdapterLoginTarget(active, { environmentId, aiConnection })
+          : Boolean(active.aiConnection);
+        if (wrongComputer || wrongConnection) throw new Error("Another sign-in attempt is active. Finish or cancel it in its original account setup before starting this one.");
         return active;
       } catch (error) {
         if (error instanceof ApiError && error.status === 404) return null;
@@ -3716,6 +3793,7 @@ function SubmittedBrowserCodeLoginPanel({
       <ProviderSubscriptionCard
         loading={retryLogin.isPending || (!authorizationUrl && !failure)}
         failure={failure}
+        failureMessage={automaticComputer ? startError ?? undefined : undefined}
         onRetry={!onRetryReady && retryReady ? retryAction : undefined}
         providerName={connectSourceName(adapterType)}
         authorizationUrl={authorizationUrl ?? undefined}
@@ -3985,15 +4063,17 @@ export function AdapterTypeDropdown({
   museEnabled?: boolean;
   nativeRunnerEnabled?: boolean;
 }) {
+  const cloud = Boolean(useCloudInstance());
+  const harnessPolicy = useCloudHarnessPolicy();
   const selectedDisplay = getAdapterDisplay(value);
   const adapterLabels = getAdapterLabels();
   const adapterList = useMemo(() =>
     [...listAdapterOptions(type => adapterLabels[type] ?? getAdapterLabel(type)),
       ...(openAiDotEnabled ? [{ value: "openai_dot", label: "OpenAI Dot", experimental: true, comingSoon: false }] : []),
       ...(museEnabled ? [{ value: "muse", label: "Muse — Personal agent", experimental: true, comingSoon: false }] : []),
-    ].filter(item => !item.comingSoon && (item.value !== "paperclip_runner" || nativeRunnerEnabled) && !disabledTypes.has(item.value))
+    ].filter(item => (!cloud || harnessPolicy.isCloudHarnessAllowed(item.value)) && !item.comingSoon && (item.value !== "paperclip_runner" || nativeRunnerEnabled) && !disabledTypes.has(item.value))
       .sort((a, b) => Number(a.value === "paperclip_runner") - Number(b.value === "paperclip_runner")),
-    [adapterLabels, disabledTypes, openAiDotEnabled, nativeRunnerEnabled, museEnabled]);
+    [cloud, harnessPolicy, adapterLabels, disabledTypes, openAiDotEnabled, nativeRunnerEnabled, museEnabled]);
   return <SelectPopover aria-label={translateInstant("Harness", { defaultValue: "Harness" })} value={value} onValueChange={onChange}
     displayValue={<span className="inline-flex min-w-0 items-center gap-1.5">
       <span aria-hidden="true" className="inline-flex shrink-0"><AdapterMark type={value} className="size-4" /></span>
@@ -4013,6 +4093,8 @@ function ExperimentalBadge() {
       {translateInstant("Experimental")}</span>
   );
 }
+
+export type ModelGroupEntry = { group: string; label: string; note?: string };
 
 export function ModelDropdown({
   models,
@@ -4035,6 +4117,7 @@ export function ModelDropdown({
   emptyDetectHint,
   defaultLabel,
   presentation = "searchable",
+  groupModel,
 }: {
   models: AdapterModel[];
   value: string;
@@ -4057,6 +4140,9 @@ export function ModelDropdown({
   emptyDetectHint?: string;
   defaultLabel?: string;
   presentation?: "searchable" | "native";
+  /** Groups a curated list by model family, keeping its order; each entry shows
+   * the variant (for example a thinking level) and an optional note. */
+  groupModel?: (model: AdapterModel) => ModelGroupEntry | null;
 }) {
   useTranslation();
   const [modelSearch, setModelSearch] = useState("");
@@ -4092,7 +4178,18 @@ export function ModelDropdown({
       );
     });
   }, [models, modelSearch, promotedModelIds]);
-  const groupedModels = useMemo(() => {
+  const groupedModels = useMemo((): Array<{ provider: string; heading?: string; entries: AdapterModel[] }> => {
+    if (groupModel && !groupByProvider) {
+      const groups = new Map<string, AdapterModel[]>();
+      const other: AdapterModel[] = [];
+      for (const model of filteredModels) {
+        const group = groupModel(model)?.group;
+        if (!group) { other.push(model); continue; }
+        groups.set(group, [...(groups.get(group) ?? []), model]);
+      }
+      return [...[...groups].map(([group, entries]) => ({ provider: group, heading: group, entries })),
+        ...(other.length ? [{ provider: "other", heading: groups.size ? translateInstant("agentConfig.otherModels", { defaultValue: "Other models" }) : undefined, entries: other }] : [])];
+    }
     if (!groupByProvider) {
       // A hand-ordered list (newest release of each family first, older releases at the end) is
       // shown as the adapter ordered it; a discovered list has no stable order, so sort it.
@@ -4112,7 +4209,11 @@ export function ModelDropdown({
         provider,
         entries: [...entries].sort((a, b) => a.id.localeCompare(b.id)),
       }));
-  }, [filteredModels, groupByProvider, preserveOrder]);
+  }, [filteredModels, groupByProvider, preserveOrder, groupModel]);
+  const entryLabel = (model: AdapterModel) => {
+    const entry = groupModel?.(model);
+    return entry ? (entry.note ? `${entry.label} · ${entry.note}` : entry.label) : model.label;
+  };
 
   async function handleDetectModel() {
     if (!onDetectModel) return;
@@ -4149,11 +4250,11 @@ export function ModelDropdown({
             {allowDefault ? (defaultLabel ?? "Default") : loadingModels ? "Loading models…" : required ? "Select model (required)" : "Select model"}
           </option>
           {extraModels.map(id => <option key={id} value={id}>{models.find(model => model.id === id)?.label ?? id}</option>)}
-          {groupedModels.map(({ provider, entries }) => groupByProvider ? (
-            <optgroup key={provider} label={provider}>
-              {entries.map(model => <option key={model.id} value={model.id}>{model.label}</option>)}
+          {groupedModels.map(({ provider, heading, entries }) => groupByProvider || heading ? (
+            <optgroup key={provider} label={heading ?? provider}>
+              {entries.map(model => <option key={model.id} value={model.id}>{groupByProvider ? model.label : entryLabel(model)}</option>)}
             </optgroup>
-          ) : entries.map(model => <option key={model.id} value={model.id}>{model.label}</option>))}
+          ) : entries.map(model => <option key={model.id} value={model.id}>{entryLabel(model)}</option>))}
           {creatable && <option value={customOption}>{translateInstant("Enter custom model…")}</option>}
         </NativeSelect>
         {enteringCustomModel && (
@@ -4337,6 +4438,11 @@ export function ModelDropdown({
                     {group.provider} ({group.entries.length})
                   </div>
                 )}
+                {!groupByProvider && group.heading && (
+                  <div role="presentation" className="px-2 py-1 text-xs font-medium text-muted-foreground">
+                    {group.heading}
+                  </div>
+                )}
                 {group.entries.map((m) => (
                   <button
                     type="button"
@@ -4351,9 +4457,16 @@ export function ModelDropdown({
                       onOpenChange(false);
                     }}
                   >
-                    <span className="block w-full text-left truncate" title={m.id}>
-                      {groupByProvider ? extractModelName(m.id) : m.label}
-                    </span>
+                    {groupByProvider ? (
+                      <span className="block w-full text-left truncate" title={m.id}>{extractModelName(m.id)}</span>
+                    ) : groupModel?.(m) ? (
+                      <span className="flex w-full min-w-0 items-baseline gap-2 text-left" title={m.id}>
+                        <span className="truncate">{groupModel(m)!.label}</span>
+                        {groupModel(m)!.note && <span className="truncate text-xs text-muted-foreground">{groupModel(m)!.note}</span>}
+                      </span>
+                    ) : (
+                      <span className="block w-full text-left truncate" title={m.id}>{m.label}</span>
+                    )}
                   </button>
                 ))}
               </div>

@@ -18,6 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { ToolConnection } from "@penclipai/shared";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 export function ArcadeDiscoverySetup({
   connection,
@@ -51,12 +52,12 @@ export function ArcadeDiscoverySetup({
         if (!open && !save.isPending) onClose();
       }}
     >
-      <DialogContent>
+      <DialogContent className={ANALYTICS_MASK_CLASS}>
         <DialogHeader>
           <DialogTitle>{translateInstant("Sync Arcade accounts")}</DialogTitle>
           <DialogDescription>
             {translateInstant("See apps available through “")}
-            {connection.name}
+            <span className={ANALYTICS_MASK_CLASS}>{connection.name}</span>
             {translateInstant("”. Your gateway works without account sync.")}
           </DialogDescription>
         </DialogHeader>

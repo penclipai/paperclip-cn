@@ -114,6 +114,11 @@
     "zh-CN": "实时",
     "reviewedEnglishHash": "b64ac05f17e64d037db81a98f51e2688216e292ae9748f979f04dfbac49fd7fc"
   },
+  "issuesList.loadingArchived": {
+    "en": "Loading archived tasks…",
+    "zh-CN": "正在加载已归档任务…",
+    "reviewedEnglishHash": "ef85b79d1ad0c8b51f651b79c2a5524b67ca99aa590e4b52b128ac151d5ceee1"
+  },
   "issuesList.loadingMoreIssues": {
     "en": "Loading more tasks...",
     "zh-CN": "正在加载更多任务...",
@@ -243,6 +248,11 @@
     "en": "Showing up to",
     "zh-CN": "最多显示",
     "reviewedEnglishHash": "3cee7f3ff1068d04b24035d33ed629040223ef4559076fea1fc9aaf7a0f18a38"
+  },
+  "issuesList.signInToViewArchived": {
+    "en": "Sign in to view archived tasks.",
+    "zh-CN": "登录后即可查看已归档任务。",
+    "reviewedEnglishHash": "3876b9c41bf891f9a5713badb76e90c6514f9c451f6fff1d799712a733bdd340"
   },
   "issuesList.statusSegmentTitle": {
     "en": "{{status}}: {{count}}",

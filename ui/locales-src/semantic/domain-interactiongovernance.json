@@ -74,6 +74,26 @@
     "zh-CN": "逐项裁决",
     "reviewedEnglishHash": "7023d1056988ae1c0e92e56492056cc349af28f9f74033f16cb39bcb8c02cd42"
   },
+  "interactionGovernance.kind.proposedAutomations": {
+    "en": "Proposed automations",
+    "zh-CN": "提议的自动化",
+    "reviewedEnglishHash": "11b2d807eb89150c9e9643d2c12f9367e419b675b99d544e7a00423600b339bf"
+  },
+  "interactionGovernance.kind.proposedBars": {
+    "en": "Proposed bars",
+    "zh-CN": "提议的职责栏",
+    "reviewedEnglishHash": "42528b7d1425a7deff0246f10fb29c4fd0950851581ec5d96b1b040857183d0c"
+  },
+  "interactionGovernance.kind.proposedDashboardChanges": {
+    "en": "Proposed dashboard changes",
+    "zh-CN": "提议的仪表盘变更",
+    "reviewedEnglishHash": "42d3c7a849800e9fc09e7f12e10d3b8ec2b8c4bb47d8a66064e067b8c4e15ccf"
+  },
+  "interactionGovernance.kind.routineOffers": {
+    "en": "Routine offers",
+    "zh-CN": "例行任务提议",
+    "reviewedEnglishHash": "0e7d040df029e6f709db36fdef46ff553f7dee8613b42b64c8c51ec6d8997fa6"
+  },
   "interactionGovernance.kind.suggestTasks": {
     "en": "Suggested tasks",
     "zh-CN": "建议任务",

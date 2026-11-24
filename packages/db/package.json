@@ -38,7 +38,7 @@
     "embedded-postgres"
   ],
   "scripts": {
-    "check:migrations": "tsx src/check-migration-numbering.ts && tsx src/check-migration-safety.ts",
+    "check:migrations": "tsx src/check-migration-numbering.ts && tsx src/check-migration-safety.ts && tsx scripts/migration-compatibility.ts --check",
     "build": "pnpm run check:migrations && tsc && node scripts/migration-assets.mjs copy",
     "clean": "node ../../scripts/fs-ops.mjs rm dist",
     "typecheck": "pnpm run check:migrations && tsc --noEmit",

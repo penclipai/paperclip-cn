@@ -46,6 +46,7 @@ import {
 } from "./ProfileActionDialog";
 import { allowsLabel, STATUS_LABEL } from "./profile-summary";
 import { useProfilesData } from "./useProfilesData";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 type DialogKind =
   | "edit"
@@ -648,7 +649,7 @@ function NewToolsReviewDialog({
                       {tool.description}
                     </p>
                   ) : null}
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className={cn("mt-1 text-xs text-muted-foreground", ANALYTICS_MASK_CLASS)}>
                     {tool.applicationName ??
                       tool.connectionName ??
                       translateInstant("tools.profiles.review.appTool")}{" "}

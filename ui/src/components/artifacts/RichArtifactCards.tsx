@@ -33,6 +33,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
+import { cn } from "@/lib/utils";
 
 // Renderers contain UI labels only. All artifact-specific content is passed in.
 // Example values live exclusively in the individual stories' args.
@@ -90,9 +92,10 @@ function Card({ children }: { children: ReactNode }) {
 }
 
 function SourceLink({ url, children }: { url: string; children: ReactNode }) {
-  return url ? (
+  const safeUrl = artifactUrl(url);
+  return safeUrl ? (
     <Button variant="outline" size="sm" asChild>
-      <a href={url} target="_blank" rel="noreferrer">
+      <a href={safeUrl} target="_blank" rel="noreferrer">
         {children}
         <ExternalLink className="size-3" />
       </a>
@@ -310,7 +313,7 @@ export function CommitCard(props: CommitCardProps) {
 
 function Markdown({ body, preview = false }: { body: string; preview?: boolean }) {
   return (
-    <div className="flex flex-col gap-3 text-sm leading-relaxed">
+    <div className={cn("flex flex-col gap-3 text-sm leading-relaxed", ANALYTICS_MASK_CLASS)}>
       <ReactMarkdown
         components={{
           pre: ({ children }) => <pre className={preview
@@ -391,9 +394,9 @@ export function DocumentCard(props: DocumentCardProps) {
   useTranslation();
   const patch = props.patch ?? isPatchFile(props.filename);
   const content = (body: string, preview = false) => patch
-    ? <pre className={preview
+    ? <pre className={cn(ANALYTICS_MASK_CLASS, preview
       ? "paperclip-patch-preview m-0 min-w-0 overflow-hidden whitespace-pre font-mono text-xs leading-5"
-      : "m-0 min-w-0 whitespace-pre-wrap wrap-anywhere font-mono text-xs leading-5"}><code><PatchLines text={body} /></code></pre>
+      : "m-0 min-w-0 whitespace-pre-wrap wrap-anywhere font-mono text-xs leading-5", ANALYTICS_MASK_CLASS)}><code><PatchLines text={body} /></code></pre>
     : <Markdown body={body} preview={preview} />;
   return (
     <Card>
@@ -457,7 +460,7 @@ function DataTable({ columns, rows }: Pick<DataCardProps, "columns" | "rows">) {
   useTranslation();
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-left text-xs">
+      <table className={cn("w-full text-left text-xs", ANALYTICS_MASK_CLASS)}>
         <thead>
           <tr>
             {columns.map((column, i) => (
@@ -527,7 +530,7 @@ export function DataCard(props: DataCardProps) {
                 <a
                   download={props.filename}
                   href={
-                    props.downloadUrl ||
+                    artifactUrl(props.downloadUrl) ||
                     `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`
                   }
                 >
@@ -737,10 +740,11 @@ export function FileCard(props: FileCardProps) {
             {props.openUrl && (
               <SourceLink url={props.openUrl}>{translateInstant("issueDetail.openFileShortcut")}</SourceLink>
             )}
-            {props.downloadUrl ? (
+            {artifactUrl(props.downloadUrl) ? (
               <Button asChild size="sm" variant="outline">
-                <a href={props.downloadUrl} download={props.filename}>
-                  {translateInstant("artifacts.downloadFile")}</a>
+                <a href={artifactUrl(props.downloadUrl)} download={props.filename}>
+                  {translateInstant("artifacts.downloadFile")}
+                </a>
               </Button>
             ) : (
               <Button size="sm" variant="outline" disabled>

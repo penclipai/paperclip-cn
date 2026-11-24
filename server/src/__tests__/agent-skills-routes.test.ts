@@ -970,7 +970,7 @@ describe("agent skill routes", () => {
           }),
         }),
       }),
-      { runnerResolved: true, aiConnectionInstall: undefined, createdByUserId: "local-board", responsibleUserId: "local-board", claudeLogin: { storedSessionId: null, ownerUserId: "local-board", applyExistingWithoutClaim: false } },
+      { runnerResolved: true, aiConnectionInstall: undefined, createdByAgentId: null, interactionTexts: [expect.any(String)], createdByUserId: "local-board", responsibleUserId: "local-board", claudeLogin: { storedSessionId: null, ownerUserId: "local-board", applyExistingWithoutClaim: false } },
     );
     expect(mockTrackAgentCreated).toHaveBeenCalledWith(
       expect.anything(),
@@ -1022,7 +1022,7 @@ describe("agent skill routes", () => {
       expect.objectContaining({
         role: "security",
       }),
-      { runnerResolved: true, aiConnectionInstall: undefined, createdByUserId: "local-board", responsibleUserId: "local-board", claudeLogin: { storedSessionId: null, ownerUserId: "local-board", applyExistingWithoutClaim: false } },
+      { runnerResolved: true, aiConnectionInstall: undefined, createdByAgentId: null, interactionTexts: [expect.any(String)], createdByUserId: "local-board", responsibleUserId: "local-board", claudeLogin: { storedSessionId: null, ownerUserId: "local-board", applyExistingWithoutClaim: false } },
     );
     expect(mockTrackAgentCreated).toHaveBeenCalledWith(
       expect.anything(),
@@ -1477,6 +1477,8 @@ describe("agent skill routes", () => {
       {
         runnerResolved: true,
         aiConnectionInstall: undefined,
+        createdByAgentId: null,
+        interactionTexts: [expect.any(String)],
         createdByUserId: "local-board", responsibleUserId: "local-board",
         claudeLogin: {
           storedSessionId: null,

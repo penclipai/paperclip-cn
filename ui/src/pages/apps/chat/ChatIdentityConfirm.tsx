@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { queryKeys } from "@/lib/queryKeys";
 import { Navigate, useSearchParams } from "@/lib/router";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
+import { cn } from "@/lib/utils";
 
 const providerNames: Record<ChatProvider, string> = {
   speko: "Speko",
@@ -144,7 +146,7 @@ export function ChatIdentityConfirm() {
           <h1 className="text-xl font-bold">
             {translateInstant("Identity linked")}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className={cn("mt-1 text-sm text-muted-foreground", ANALYTICS_MASK_CLASS)}>
             {translateInstant("Future messages from")} {identity.externalLabel}{" "}
             {translateInstant("use your current Paperclip permissions in")}{" "}
             {identity.companyName}
@@ -173,7 +175,7 @@ export function ChatIdentityConfirm() {
           {translateInstant("Link your external identity")}
         </h1>
       </div>
-      <dl className="divide-y divide-border border-y border-border">
+      <dl className={cn("divide-y divide-border border-y border-border", ANALYTICS_MASK_CLASS)}>
         <div className="flex items-center justify-between gap-4 py-3">
           <dt className="text-sm text-muted-foreground">
             {translateInstant("Provider")}
@@ -186,7 +188,7 @@ export function ChatIdentityConfirm() {
           <dt className="text-sm text-muted-foreground">
             {translateInstant("External identity")}
           </dt>
-          <dd className="text-right text-sm font-medium">
+          <dd className={cn("text-right text-sm font-medium", ANALYTICS_MASK_CLASS)}>
             {identity.externalLabel}
             {identity.externalDetail ? ` · ${identity.externalDetail}` : ""}
           </dd>

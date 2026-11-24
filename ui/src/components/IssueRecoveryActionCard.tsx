@@ -42,6 +42,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { agentUrl } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { ProviderLimitMessage } from "./ProviderLimitMessage";
 import { Badge } from "@/components/ui/badge";
 import {
   deriveRecoveryDisplayState,
@@ -53,6 +54,7 @@ import {
   readRecoveryRetryLineage,
   type RecoveryRetryLineage,
 } from "@/lib/recovery-lineage";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 export type RecoveryCardCardState = RecoveryDisplayState;
 export const deriveRecoveryCardState = deriveRecoveryDisplayState;
@@ -770,10 +772,10 @@ function readWakePolicySummary(action: IssueRecoveryAction): string | null {
   if (type === "bounded_owner_disposition_repair") {
     return "Paperclip is retrying the original owner";
   }
-  if (type === "bounded_recovery_owner") return "A recovery owner is repairing the next step";
-  if (type === "board_escalation") return "Board decision required";
+  if (type === "bounded_recovery_owner") return "An agent is choosing the next step";
+  if (type === "board_escalation") return "Waiting for you";
   if (type === "manual") return "Manual follow-up needed";
-  if (type === "manual_repair_required") return "Repair needed before retry";
+  if (type === "manual_repair_required") return "Needs a fix before Retry";
   if (type === "monitor") {
     const interval = readEvidenceString(policy.intervalLabel);
     return interval ? `Check scheduled · ${interval}` : "Check scheduled";
@@ -1166,7 +1168,7 @@ export function IssueRecoveryActionCard({
               </>
             ) : null}
           </div>
-          <p className="mt-1 text-sm leading-6">{headline}</p>
+          <p className={cn("mt-1 text-sm leading-6", ANALYTICS_MASK_CLASS)}>{headline}</p>
         </div>
       </header>
       {variant === "compact" ? null : (
@@ -1305,18 +1307,18 @@ export function IssueRecoveryActionCard({
         <MetadataRow label={translateInstant("issueRecoveryAction.metadata.evidence", { defaultValue: "Evidence" })}>
           {evidenceSummary ? (
             evidenceSummary.isCode ? (
-              <span className="break-words font-mono text-(length:--text-micro) text-foreground/80">
+              <span className={cn("break-words font-mono text-(length:--text-micro) text-foreground/80", ANALYTICS_MASK_CLASS)}>
                 {evidenceSummary.text}
               </span>
             ) : (
-              <span className="text-xs leading-5 text-foreground/80">{evidenceSummary.text}</span>
+              <span className={cn("text-xs leading-5 text-foreground/80", ANALYTICS_MASK_CLASS)}>{evidenceSummary.text}</span>
             )
           ) : (
             <MissingValue />
           )}
         </MetadataRow>
         <MetadataRow label={translateInstant("issueRecoveryAction.metadata.nextAction", { defaultValue: "Next action" })}>
-          {action.nextAction ? <span>{action.nextAction}</span> : <MissingValue />}
+          {action.nextAction ? <span><ProviderLimitMessage>{action.nextAction}</ProviderLimitMessage></span> : <MissingValue />}
         </MetadataRow>
         <MetadataRow label="Follow-up">
           <span className="inline-flex flex-wrap items-center gap-1.5">
@@ -1380,7 +1382,7 @@ export function IssueRecoveryActionCard({
                       )}
                     >
                       <span className="font-medium leading-5">{option.label}</span>
-                      <span className="text-(length:--text-micro) leading-4 text-muted-foreground">{option.description}</span>
+                      <span className={cn("text-(length:--text-micro) leading-4 text-muted-foreground", ANALYTICS_MASK_CLASS)}>{option.description}</span>
                     </button>
                   ))}
                 </div>

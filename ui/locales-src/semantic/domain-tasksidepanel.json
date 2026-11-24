@@ -34,6 +34,41 @@
     "zh-CN": "正在关闭",
     "reviewedEnglishHash": "a71ee1d4ac5c2b7a820bdc4c3ac45e38885f52b41b4bfd3f5cd1328ce600f940"
   },
+  "taskSidePanel.closeOrChooseAnotherDocument": {
+    "en": "Close this tab or choose another document.",
+    "zh-CN": "请关闭此标签页或选择其他文档。",
+    "reviewedEnglishHash": "be3fcdc9c65e53167357bb8bc6e1067f7da952217fd48e0909d4ce8feb5bee6b"
+  },
+  "taskSidePanel.documentRevision": {
+    "en": "Revision {{revision}}",
+    "zh-CN": "修订 {{revision}}",
+    "reviewedEnglishHash": "1d27ad2c17e676e5bc54ea95775bafcba07d5618fa7d01d444d6b9d867e0f48b"
+  },
+  "taskSidePanel.documentUpdatedAt": {
+    "en": "Updated {{time}}",
+    "zh-CN": "更新于 {{time}}",
+    "reviewedEnglishHash": "6379f4b4efb9b0a5342283ad3b0d99edf9df796e29d5791b24e14999ac127e78"
+  },
+  "taskSidePanel.openSourceTask": {
+    "en": "Open source task",
+    "zh-CN": "打开源任务",
+    "reviewedEnglishHash": "235f4e7d2c8de5f42fc3f75596ad61af9b350f3dfdaf3556fae1eba6de70203c"
+  },
+  "taskSidePanel.reviewedRevisionUnavailable": {
+    "en": "Reviewed revision unavailable",
+    "zh-CN": "所审阅的修订版本不可用",
+    "reviewedEnglishHash": "a189552a82dfda61060ae451e968987d2a1422792d98a76901201584d2b10cd9"
+  },
+  "taskSidePanel.reviewedRevisionUnavailableDescription": {
+    "en": "The exact reviewed revision could not be found. The current version has not been substituted.",
+    "zh-CN": "未能找到所审阅的准确修订版本，因此未用当前版本替代。",
+    "reviewedEnglishHash": "cf438729e928bd71484679b437702a1ee29a035028a52943147c6f2e04afa7b5"
+  },
+  "taskSidePanel.reviewedVersionSuffix": {
+    "en": "· Reviewed version",
+    "zh-CN": "· 已审阅版本",
+    "reviewedEnglishHash": "36363885f626e61af4ab541273015e38f01d20edc78398c69f9dc964c7cb9eb7"
+  },
   "taskSidePanel.total": {
     "en": "{{count}} total",
     "zh-CN": "共 {{count}} 项",

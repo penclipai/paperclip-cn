@@ -149,15 +149,60 @@
     "zh-CN": "{{count}} 条决策",
     "reviewedEnglishHash": "8f0f22bf2a768ffff0b9fadb9c2b18b6da7937efc12b8d4be3e387b4e5818a78"
   },
+  "whatNeedsMe.decisionHistory": {
+    "en": "Decision history",
+    "zh-CN": "决策历史",
+    "reviewedEnglishHash": "b211a72680a81b58e4a35ed97fa044e3f6574bcc0242f2e2bb9116bef0496f56"
+  },
   "whatNeedsMe.empty.caughtUp": {
     "en": "You're all caught up",
     "zh-CN": "所有事项都已处理",
     "reviewedEnglishHash": "2f485b9971dfa582a6386835535ce5b524c439bc684a6b50a1c2b0ecb029e0a4"
   },
+  "whatNeedsMe.empty.caughtUp.all": {
+    "en": "No open cards for anyone.",
+    "zh-CN": "目前没有任何人的待处理卡片。",
+    "reviewedEnglishHash": "30e2054743892c6521706003957bab5c63ffcbbbefe21952b287ce00c6fd266d"
+  },
+  "whatNeedsMe.empty.caughtUp.archived": {
+    "en": "Nothing archived.",
+    "zh-CN": "暂无已归档内容。",
+    "reviewedEnglishHash": "7de17b49fdb9beb3ef36cfe022e205a550eaabea634f77fa260cb07ac12fc637"
+  },
+  "whatNeedsMe.empty.caughtUp.company": {
+    "en": "No company alerts right now.",
+    "zh-CN": "当前没有公司告警。",
+    "reviewedEnglishHash": "01ab05eb3a8b37acc4b798927f3080ac859a9284974349d688181e0c93851969"
+  },
+  "whatNeedsMe.empty.caughtUp.unassigned": {
+    "en": "No cards need an owner.",
+    "zh-CN": "没有需要认领负责人的卡片。",
+    "reviewedEnglishHash": "d76bfac6167ea0867f8d5b9d6456ea219676f490bbf7ec654487695ce5bf1ac4"
+  },
   "whatNeedsMe.empty.caughtUpSentence": {
     "en": "You're all caught up.",
     "zh-CN": "所有事项都已处理。",
     "reviewedEnglishHash": "aebca55641976f4b8900fb92eae1e81e1fc683bd64a1647ad030ebe709213fdf"
+  },
+  "whatNeedsMe.empty.detail.all": {
+    "en": "Nobody has a card waiting right now.",
+    "zh-CN": "当前没有人有待处理的卡片。",
+    "reviewedEnglishHash": "c7725cf350c69188efd697669c88bb02be2cbf10cf88156a23519ef44f73f06f"
+  },
+  "whatNeedsMe.empty.detail.archived": {
+    "en": "Cards you archive or snooze for yourself show here. Restore one to see it again.",
+    "zh-CN": "你为自己归档或暂缓的卡片会显示在这里。恢复后即可再次查看。",
+    "reviewedEnglishHash": "ce7e42f9a7c4a499fa145f2af4123ecdc7b4dff3ccef343e4062f97ddc68efee"
+  },
+  "whatNeedsMe.empty.detail.company": {
+    "en": "No failed runs, agent errors, budget stops or join requests.",
+    "zh-CN": "没有失败的运行、智能体错误、预算中止或加入请求。",
+    "reviewedEnglishHash": "3da2d1daeee519eba2a9aa2a8c362f7bbcd6344196ab56f4f3a05bae6c75160e"
+  },
+  "whatNeedsMe.empty.detail.unassigned": {
+    "en": "Every open card has an owner.",
+    "zh-CN": "每张待处理卡片都已有负责人。",
+    "reviewedEnglishHash": "3f10f7d4ee3bfe525b2a4afecc7f39b28da458390178f54b08d80440c5cd1052"
   },
   "whatNeedsMe.empty.filteredHelp": {
     "en": "Adjust or clear the filters to see the rest.",
@@ -169,10 +214,20 @@
     "zh-CN": "没有符合筛选条件的决策。",
     "reviewedEnglishHash": "080dd6d70ca9dd21a4c6f79448723a657262a4e15ff48dddc5d9bbc942dff0ff"
   },
+  "whatNeedsMe.empty.noSearchMatches": {
+    "en": "No decisions match your search or filters.",
+    "zh-CN": "没有符合搜索或筛选条件的决策。",
+    "reviewedEnglishHash": "3fc01f88a526722b53d9f494e4788eb1baa82b505473d712dcb20053d6df989c"
+  },
   "whatNeedsMe.empty.nothingNeedsDecision": {
     "en": "Nothing needs a decision from you right now.",
     "zh-CN": "当前没有需要你决策的事项。",
     "reviewedEnglishHash": "158178704c028e5e744efea3a36bddfa9fa3005fcadb2bd9c059f13eb99298e0"
+  },
+  "whatNeedsMe.empty.snoozedBelow": {
+    "en": "No archived cards. Snoozed cards are below.",
+    "zh-CN": "没有已归档卡片。已暂缓的卡片在下方。",
+    "reviewedEnglishHash": "b0ac6b080170451bda19df6f605814eb8e6a12ecfdf98d092474add0cc95d3a6"
   },
   "whatNeedsMe.filters.clear": {
     "en": "Clear",

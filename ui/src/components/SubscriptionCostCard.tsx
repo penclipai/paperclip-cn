@@ -4,13 +4,14 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { SUBSCRIPTION_CURRENCIES, centsToUsd, usdToCents, type SubscriptionAccountReport, type SubscriptionCostReport, type SubscriptionUsage } from "@penclipai/shared";
 import { subscriptionsApi } from "../api/subscriptions";
-import { formatCents, formatDateTime, formatTokens, providerDisplayName } from "../lib/utils";
+import { cn, formatCents, formatDateTime, formatTokens, providerDisplayName } from "../lib/utils";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Card } from "./ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 export function subscriptionMoney(cents: string, currency: string) {
   return currency === "USD" ? formatCents(Number(cents))
@@ -58,7 +59,7 @@ function SubscriptionEditor({ account, accounts, companyId, onDone }: {
     </form>
     {targets.length > 0 && <div className="space-y-2 border-t border-border pt-4">
       <Label htmlFor="subscription-link">{translateInstant("Same subscription as another account?")}</Label>
-      <select id="subscription-link" className={selectClass} value={targetId} onChange={event => setTargetId(event.target.value)}><option value="">{translateInstant("Choose an account")}</option>{targets.map(row => <option key={row.id} value={row.id}>{row.name} · {row.price.plan}</option>)}</select>
+      <select id="subscription-link" className={cn(selectClass, ANALYTICS_MASK_CLASS)} value={targetId} onChange={event => setTargetId(event.target.value)}><option value="">{translateInstant("Choose an account")}</option>{targets.map(row => <option key={row.id} value={row.id}>{row.name} · {row.price.plan}</option>)}</select>
       <p className="text-xs text-muted-foreground">{translateInstant("Linking counts these accounts once, combines their Paperclip usage, and keeps the selected account’s price. Only link the same subscription or paid seat.")}</p>
       {link.error && <p role="alert" className="text-sm text-destructive">{translateInstant("Could not link these accounts. Reopen their details and try again.")}</p>}
       <Button type="button" variant="outline" disabled={!targetId || busy} onClick={() => link.mutate()}>{translateInstant("Link accounts")}</Button>
@@ -101,7 +102,7 @@ export function SubscriptionCostCard({ companyId, report, error, onChanged }: {
           {report?.accounts.length === 0 && <p className="text-sm text-muted-foreground">{translateInstant("No subscriptions are visible to you yet. Connect an AI account or run an agent with a connected subscription.")}</p>}
           {report?.accounts.map(account => <div key={account.id} className="space-y-2 border-b border-border pb-4 last:border-0">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <div><div className="font-medium">{account.name}</div><div className="text-xs text-muted-foreground">{account.shared ? translateInstant("Shared") : account.ownerName ?? (account.ownerUserId ? translateInstant("Account owner") : translateInstant("Personal accounts"))} · {providerDisplayName(account.provider)} · {account.price.plan}</div></div>
+              <div className={ANALYTICS_MASK_CLASS}><div className="font-medium">{account.name}</div><div className="text-xs text-muted-foreground">{account.shared ? translateInstant("Shared") : account.ownerName ?? (account.ownerUserId ? translateInstant("Account owner") : translateInstant("Personal accounts"))} · {providerDisplayName(account.provider)} · {account.price.plan}</div></div>
               <div className="text-right"><div className="font-mono">{account.price.status !== "active" ? account.price.status === "ended" ? translateInstant("Ended") : translateInstant("Excluded") : account.price.monthlyCents == null ? translateInstant("Price unknown") : translateInstant("subscriptionCost.monthlyAmount", { amount: subscriptionMoney(account.price.monthlyCents, account.price.currency) })}</div><div className="text-xs text-muted-foreground">{account.price.source === "catalog" ? translateInstant("Estimated · before tax") : account.price.source === "user" ? translateInstant("User supplied") : ""}{account.price.cadence === "year" ? translateInstant("subscriptionCost.annualPaymentNote") : ""}</div></div>
             </div>
             <SubscriptionTokenUsage usage={account.usage} />

@@ -53,6 +53,7 @@ import { badRequest } from "../errors.js";
  * The hash portion must be at least 8 hex characters to avoid false positives.
  */
 const CONTENT_HASH_PATTERN = /[.-][a-fA-F0-9]{8,}\.\w+$/;
+const UUID_INPUT_PATTERN = /^[0-9a-f]{4}(?:-?[0-9a-f]{4}){7}$/i;
 
 /**
  * Cache-Control header for content-hashed files.
@@ -67,10 +68,6 @@ const CACHE_CONTROL_IMMUTABLE = `public, max-age=${ONE_YEAR_SECONDS}, immutable`
  * These files must be revalidated on each request (ETag-based).
  */
 const CACHE_CONTROL_REVALIDATE = "public, max-age=0, must-revalidate";
-
-/** UUID regex used to decide whether a route parameter can be queried as a DB id. */
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
  * MIME types for common plugin UI bundle file extensions.
@@ -249,12 +246,17 @@ export function pluginUiStaticRoutes(db: Db, options: PluginUiStaticRouteOptions
       return;
     }
 
-    // Step 1: Look up the plugin. Real database IDs are UUIDs; plugin keys
-    // such as "agent-pixels.camera" must avoid getById(), because Postgres
-    // will reject them before the key fallback can run.
-    const plugin = UUID_REGEX.test(pluginId)
-      ? (await registry.getById(pluginId)) ?? await registry.getByKey(pluginId)
-      : await registry.getByKey(pluginId);
+    // Step 1: Look up the plugin
+    let plugin = null;
+    const uuidInput = pluginId.startsWith("{") && pluginId.endsWith("}")
+      ? pluginId.slice(1, -1)
+      : pluginId;
+    if (UUID_INPUT_PATTERN.test(uuidInput)) {
+      plugin = await registry.getById(pluginId);
+    }
+    if (!plugin) {
+      plugin = await registry.getByKey(pluginId);
+    }
 
     if (!plugin) {
       res.status(404).json({ error: "Plugin not found" });

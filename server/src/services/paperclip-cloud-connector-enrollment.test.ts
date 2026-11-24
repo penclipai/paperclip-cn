@@ -529,7 +529,7 @@ describe("Paperclip Cloud self-host enrollment", () => {
       delete partialManagedEnv[omitted];
       expect(paperclipCloudConnectorEnrollmentStatus(partialManagedEnv)).toMatchObject({
         configured: false,
-        status: "unverified",
+        status: "misconfigured",
         instanceId: null,
         environment: "staging",
       });

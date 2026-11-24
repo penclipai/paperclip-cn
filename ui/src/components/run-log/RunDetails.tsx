@@ -11,6 +11,7 @@ import { redactHomePathUserSegments, redactHomePathUserSegmentsInValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { getCurrentLocale, translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 export const RUN_LOG_PAGE_BYTES = 256_000;
 
@@ -211,7 +212,7 @@ export function RunInvocationCard({
             {commandLine && (
               <div className="text-xs break-all">
                 <span className="text-muted-foreground">{translateInstant("runDetails.commandLabel")} </span>
-                <span className="font-mono">{commandLine}</span>
+                <span className={cn("font-mono", ANALYTICS_MASK_CLASS)}>{commandLine}</span>
               </div>
             )}
             {Array.isArray(payload.commandNotes) && payload.commandNotes.length > 0 && (
@@ -221,7 +222,7 @@ export function RunInvocationCard({
                   {payload.commandNotes
                     .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
                     .map((note, idx) => (
-                      <li key={`${idx}-${note}`} className="text-xs break-all font-mono">
+                      <li key={`${idx}-${note}`} className={cn("text-xs break-all font-mono", ANALYTICS_MASK_CLASS)}>
                         {note}
                       </li>
                     ))}
@@ -231,7 +232,7 @@ export function RunInvocationCard({
             {payload.prompt !== undefined && (
               <div>
                 <div className="text-xs text-muted-foreground mb-1">{translateInstant("runDetails.prompt")}</div>
-                <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap">
+                <pre className={cn("bg-neutral-100 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap", ANALYTICS_MASK_CLASS)}>
                   {typeof payload.prompt === "string"
                     ? redactPathText(payload.prompt, censorUsernameInLogs)
                     : JSON.stringify(redactPathValue(payload.prompt, censorUsernameInLogs), null, 2)}
@@ -241,7 +242,7 @@ export function RunInvocationCard({
             {payload.context !== undefined && (
               <div>
                 <div className="text-xs text-muted-foreground mb-1">{translateInstant("runDetails.context")}</div>
-                <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap">
+                <pre className={cn("bg-neutral-100 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap", ANALYTICS_MASK_CLASS)}>
                   {JSON.stringify(redactPathValue(payload.context, censorUsernameInLogs), null, 2)}
                 </pre>
               </div>
@@ -249,7 +250,7 @@ export function RunInvocationCard({
             {payload.env !== undefined && (
               <div>
                 <div className="text-xs text-muted-foreground mb-1">{translateInstant("runDetails.environment")}</div>
-                <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap font-mono">
+                <pre className={cn("bg-neutral-100 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap font-mono", ANALYTICS_MASK_CLASS)}>
                   {formatEnvForDisplay(payload.env, censorUsernameInLogs)}
                 </pre>
               </div>
@@ -483,7 +484,7 @@ export function WorkspaceOperationsSection({
               {operation.stderrExcerpt && operation.stderrExcerpt.trim() && (
                 <div>
                   <div className="mb-1 text-xs text-red-700 dark:text-red-300">{translateInstant("runLogViewer.stderrExcerpt")}</div>
-                  <pre className="rounded-md bg-red-50 p-2 text-xs whitespace-pre-wrap break-all text-red-800 dark:bg-neutral-950 dark:text-red-100">
+                  <pre className={cn("rounded-md bg-red-50 p-2 text-xs whitespace-pre-wrap break-all text-red-800 dark:bg-neutral-950 dark:text-red-100", ANALYTICS_MASK_CLASS)}>
                     {redactPathText(operation.stderrExcerpt, censorUsernameInLogs)}
                   </pre>
                 </div>
@@ -491,7 +492,7 @@ export function WorkspaceOperationsSection({
               {operation.stdoutExcerpt && operation.stdoutExcerpt.trim() && (
                 <div>
                   <div className="mb-1 text-xs text-muted-foreground">{translateInstant("runLogViewer.stdoutExcerpt")}</div>
-                  <pre className="rounded-md bg-neutral-100 p-2 text-xs whitespace-pre-wrap break-all dark:bg-neutral-950">
+                  <pre className={cn("rounded-md bg-neutral-100 p-2 text-xs whitespace-pre-wrap break-all dark:bg-neutral-950", ANALYTICS_MASK_CLASS)}>
                     {redactPathText(operation.stdoutExcerpt, censorUsernameInLogs)}
                   </pre>
                 </div>

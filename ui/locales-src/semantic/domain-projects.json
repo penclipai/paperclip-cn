@@ -1,4 +1,9 @@
 {
+  "projects.noSearchMatches": {
+    "en": "No projects match your search.",
+    "zh-CN": "没有符合搜索条件的项目。",
+    "reviewedEnglishHash": "d87821ba1a366b1b796b106333174db360d1568598bef3bb3eed3c6318d4c3e5"
+  },
   "projects.projectCount": {
     "en": "{{count}} projects",
     "zh-CN": "{{count}} 个项目",

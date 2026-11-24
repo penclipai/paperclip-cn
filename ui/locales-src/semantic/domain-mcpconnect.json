@@ -1,0 +1,12 @@
+{
+  "mcpConnect.allowAgentConnection": {
+    "en": "Allow agent connection",
+    "zh-CN": "允许智能体连接",
+    "reviewedEnglishHash": "e5cca09f239247c84648bf7d7d72864c1b16da7a19befb7ad51b364606f25797"
+  },
+  "mcpConnect.dotPairingPrompt": {
+    "en": "Enter the one-use code from Paperclip’s agent setup to review this connection’s access. Keep the code out of Bot chat. Access is granted only when you approve the named agent below.",
+    "zh-CN": "输入来自 Paperclip 智能体设置的一次性配对码以查看此连接的访问权限。请勿在机器人对话中发送该配对码。仅当你批准下方指定的智能体后才会授予访问权限。",
+    "reviewedEnglishHash": "4eab777a4a8a6c374778269a7ab5e9f6ad60fc1b7df3fe1fbcece23221282c17"
+  }
+}

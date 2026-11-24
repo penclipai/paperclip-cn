@@ -14,7 +14,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn, formatDateTime } from "@/lib/utils";
 import { fileResourcesApi } from "@/api/file-resources";
-import { projectsApi } from "@/api/projects";
 import { ApiError } from "@/api/client";
 import { describeError } from "@/api/errors";
 import { queryViewKind } from "@/components/QueryView";
@@ -29,6 +28,7 @@ import type {
   WorkspaceFileSelector,
 } from "@penclipai/shared";
 import { translateInstant } from "../i18n";
+import { companyProjectsQuery } from "@/lib/company-projects-query";
 
 type BrowserSource = "current" | "other";
 
@@ -544,8 +544,7 @@ export function WorkspaceFileBrowser({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const projectsQuery = useQuery({
-    queryKey: companyId ? queryKeys.projects.list(companyId) : ["projects", "__none__"],
-    queryFn: () => projectsApi.list(companyId!),
+    ...companyProjectsQuery(companyId ?? ""),
     enabled: source === "other" && !!companyId,
     staleTime: 30_000,
   });

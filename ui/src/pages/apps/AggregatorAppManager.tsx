@@ -17,14 +17,9 @@ import { Link } from "@/lib/router";
 import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
+import { cn } from "@/lib/utils";
 
 export function AggregatorAppManager({
   app,
@@ -52,7 +47,7 @@ export function AggregatorAppManager({
         if (!open) onClose();
       }}
     >
-      <DialogContent>
+      <DialogContent className={ANALYTICS_MASK_CLASS}>
         <DialogHeader>
           <DialogTitle>
             {translateInstant("Manage")} {app.name}
@@ -72,7 +67,7 @@ export function AggregatorAppManager({
             </Label>
             <select
               id="manage-aggregator-gateway"
-              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+              className={cn("h-9 w-full rounded-md border border-input bg-background px-3 text-sm", ANALYTICS_MASK_CLASS)}
               value={connectionId}
               onChange={(event) => setConnectionId(event.target.value)}
             >
@@ -173,7 +168,7 @@ function AccountObservations({
         <div className="divide-y divide-border">
           {accounts.map(({ account, snapshot }) => (
             <div key={`${snapshot.toolkit}:${account.id}`} className="py-3">
-              <p className="text-sm font-medium">
+              <p className={cn("text-sm font-medium", ANALYTICS_MASK_CLASS)}>
                 {account.alias || `${app.name} account`}
               </p>
               <p className="text-xs text-muted-foreground">
@@ -205,7 +200,7 @@ function AccountObservations({
         <Link
           to={`/apps/${connection.id}/permissions`}
           onClick={onClose}
-          className="underline underline-offset-2"
+          className={cn("underline underline-offset-2", ANALYTICS_MASK_CLASS)}
         >
           “{connection.name}”
         </Link>

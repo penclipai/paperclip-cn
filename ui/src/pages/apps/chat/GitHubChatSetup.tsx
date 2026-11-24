@@ -32,6 +32,8 @@ import {
 } from "./GitHubConnectionRecovery";
 import type { GitHubConnectionCompleteLocationState } from "./GitHubConnectionComplete";
 import { describeError } from "@/api/errors";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
+import { cn } from "@/lib/utils";
 
 /** Restrict native manifest submission to GitHub registration endpoints. */
 export function gitHubAppManifestAction(
@@ -372,6 +374,7 @@ export function GitHubChatSetup() {
             ? "Connect your account"
             : translateInstant("Connect GitHub")}
       </h1>
+      <div className={cn("space-y-6", ANALYTICS_MASK_CLASS)}>
       {error ? (
         <p role="alert" className="text-sm text-destructive">
           {error}
@@ -512,7 +515,7 @@ export function GitHubChatSetup() {
             <>
               <p role="status" className="text-sm">
                 {translateInstant("GitHub account")}{" "}
-                <strong>{legacyIdentity?.login}</strong>{" "}
+                <strong className={ANALYTICS_MASK_CLASS}>{legacyIdentity?.login}</strong>{" "}
                 {translateInstant(
                   "connected. You can now mention this bot on GitHub.",
                 )}
@@ -523,7 +526,7 @@ export function GitHubChatSetup() {
             <>
               <p className="text-sm">
                 {translateInstant("Connect GitHub account")}{" "}
-                <strong>{state.identity.login}</strong>{" "}
+                <strong className={ANALYTICS_MASK_CLASS}>{state.identity.login}</strong>{" "}
                 {translateInstant("to your Paperclip account.")}
               </p>
               {footer("Confirm my account", async () => {
@@ -548,7 +551,7 @@ export function GitHubChatSetup() {
                   </Label>
                   <select
                     id="github-personal-account"
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className={cn("w-full rounded-md border border-input bg-background px-3 py-2 text-sm", ANALYTICS_MASK_CLASS)}
                     value={legacyAccount}
                     onChange={(event) => {
                       setLegacyAccount(event.target.value);
@@ -576,7 +579,7 @@ export function GitHubChatSetup() {
                   {legacyIdentity && (
                     <p className="text-sm">
                       {translateInstant("GitHub account:")}{" "}
-                      <strong>{legacyIdentity.login}</strong>
+                      <strong className={ANALYTICS_MASK_CLASS}>{legacyIdentity.login}</strong>
                     </p>
                   )}
                 </>
@@ -735,7 +738,7 @@ export function GitHubChatSetup() {
             </Label>
             <select
               id="github-owner-type"
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className={cn("w-full rounded-md border border-input bg-background px-3 py-2 text-sm", ANALYTICS_MASK_CLASS)}
               value={accountChoice}
               disabled={busy || !!state?.registration}
               onChange={(event) => {
@@ -833,6 +836,7 @@ export function GitHubChatSetup() {
           )}
         </>
       )}
+      </div>
     </div>
   );
 }

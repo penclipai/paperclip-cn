@@ -19,6 +19,61 @@
     "zh-CN": "产物",
     "reviewedEnglishHash": "314ae71b8c8dc9c952f0ffc58e35e6d9a41b5cf4756471c7cab0c9476cd5d20b"
   },
+  "sidebar.chat.agentCount_one": {
+    "en": "{{count}} agent",
+    "zh-CN": "{{count}} 个智能体",
+    "reviewedEnglishHash": "fbddbb9eca4b3148dfd4a959da033c74fd47246f4f6cdd2a17be7fba5ddf5645"
+  },
+  "sidebar.chat.agentCount_other": {
+    "en": "{{count}} agents",
+    "zh-CN": "{{count}} 个智能体",
+    "reviewedEnglishHash": "977a7422900b40a5ade4526c98653a1b04619b8ff81240ead3699dea1b7df70e"
+  },
+  "sidebar.chat.browseChats": {
+    "en": "Browse chats",
+    "zh-CN": "浏览聊天",
+    "reviewedEnglishHash": "6005c228164d558df87587feae9e1704e484836a95b80d94972e66fa305322d5"
+  },
+  "sidebar.chat.chooseAgentToStart": {
+    "en": "Choose an agent to start a conversation.",
+    "zh-CN": "选择一个智能体开始对话。",
+    "reviewedEnglishHash": "5503a35b069ecd83b5dae9be0c13e510ec57e6f86bb9691c191c28e21aaaea15"
+  },
+  "sidebar.chat.contactsHeading": {
+    "en": "Chat contacts",
+    "zh-CN": "聊天联系人",
+    "reviewedEnglishHash": "e2204222d82c62cb55f71107472631958bfbced52724d87a00e9e1b40118af2d"
+  },
+  "sidebar.chat.loadingAgents": {
+    "en": "Loading agents",
+    "zh-CN": "正在加载智能体",
+    "reviewedEnglishHash": "1190fd966776a8b0af854b945ba8bb1bd37c51dfe60c088cee3228041d0ded7d"
+  },
+  "sidebar.chat.noAgentsFound": {
+    "en": "No agents found",
+    "zh-CN": "未找到智能体",
+    "reviewedEnglishHash": "066161514989572069af64f6f7eb7c966137bbace4f92a8701be824f6c6c0437"
+  },
+  "sidebar.chat.noChatsYet": {
+    "en": "No chats yet",
+    "zh-CN": "暂无聊天",
+    "reviewedEnglishHash": "269208e48532e4b964ab69da91871698262b44305fb89f287371ae209b1644c0"
+  },
+  "sidebar.chat.searchChats": {
+    "en": "Search chats",
+    "zh-CN": "搜索聊天",
+    "reviewedEnglishHash": "02a39c4adce06d9905231d40b8e2f5e930f227e4916d0017dca9d2d8a6e04d98"
+  },
+  "sidebar.chat.unreadMessagesFrom": {
+    "en": "Unread messages from {{agentName}}",
+    "zh-CN": "来自 {{agentName}} 的未读消息",
+    "reviewedEnglishHash": "1dd1e67543983cf74400ec7c29f2ea444044e07a2e527bbceaa837577c6f87a2"
+  },
+  "sidebar.commentary": {
+    "en": "Commentary",
+    "zh-CN": "智能体评论",
+    "reviewedEnglishHash": "4a7a75ab79cde05b0b1baa8f7a704c991586ea44d7e7793e57178ef56f778ff8"
+  },
   "sidebar.company": {
     "en": "Company",
     "zh-CN": "公司",
@@ -224,6 +279,11 @@
     "zh-CN": "时间线",
     "reviewedEnglishHash": "9dcff98e275f0cb911f1523ef5c629c0aabe9e3b642a6b71ac7d2569e9717121"
   },
+  "sidebar.unreadChats": {
+    "en": "unread chats",
+    "zh-CN": "未读对话",
+    "reviewedEnglishHash": "81025be613f09710fde2043ed724a5987bd1754424e13f0fd9769e0aa89e29df"
+  },
   "sidebar.work": {
     "en": "Work",
     "zh-CN": "工作",
@@ -233,10 +293,5 @@
     "en": "Workspaces",
     "zh-CN": "工作区",
     "reviewedEnglishHash": "1377264ba3b0a7172621971b49ac3e82e33b64b14328d9275d02807e67ea8460"
-  },
-  "sidebar.unreadChats": {
-    "en": "unread chats",
-    "zh-CN": "未读对话",
-    "reviewedEnglishHash": "81025be613f09710fde2043ed724a5987bd1754424e13f0fd9769e0aa89e29df"
   }
 }

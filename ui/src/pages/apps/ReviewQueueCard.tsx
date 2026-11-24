@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2, ShieldQuestion, X } from "lucide-react";
 import type { ToolActionRequestListItem } from "@penclipai/shared";
-import { humanizeConnectionDisplayName } from "@penclipai/shared";
+import { googleWorkspaceToolTitle, humanizeConnectionDisplayName } from "@penclipai/shared";
 import { useCompany } from "@/context/CompanyContext";
 import { useToast } from "@/context/ToastContext";
 import { queryKeys } from "@/lib/queryKeys";
@@ -218,7 +218,7 @@ function ReviewRow({
 
 function actionLabel(item: ToolActionRequestListItem): string {
   if (!item.toolTitle && !item.toolName) return "This action";
-  return humanizeConnectionDisplayName(item.toolName ?? "", { title: item.toolTitle });
+  return humanizeConnectionDisplayName(item.toolName ?? "", { title: googleWorkspaceToolTitle(item.toolName ?? "", item.toolTitle) });
 }
 
 function failToast(

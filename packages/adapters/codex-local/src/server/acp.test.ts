@@ -97,6 +97,7 @@ const originalOpenAiApiKey = process.env.OPENAI_API_KEY;
 // workspace. Windows process and filesystem startup regularly exceeds the
 // default Vitest budget even though the same operations complete correctly.
 const remoteSandboxTestTimeoutMs = process.platform === "win32" ? 60_000 : 15_000;
+const originalCodexApiKey = process.env.CODEX_API_KEY;
 
 // Older/newer ISO timestamps for the copy-back monotonic (strictly-newer)
 // decision predicate, plus a subscription-shaped auth.json fixture matching the
@@ -149,6 +150,8 @@ afterEach(async () => {
   else process.env.CODEX_HOME = originalCodexHome;
   if (originalOpenAiApiKey === undefined) delete process.env.OPENAI_API_KEY;
   else process.env.OPENAI_API_KEY = originalOpenAiApiKey;
+  if (originalCodexApiKey === undefined) delete process.env.CODEX_API_KEY;
+  else process.env.CODEX_API_KEY = originalCodexApiKey;
   await Promise.all(
     tempRoots.splice(0).map((root) =>
       fs.rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 }),
@@ -451,7 +454,7 @@ describe("codex_local ACP lane", () => {
     });
   });
 
-  it("reports unavailable ACP for non-sandbox remote auto runs", async () => {
+  it("reports unavailable ACP for SSH host authentication", async () => {
     setNodeVersion("v24.11.0");
     await expect(
       resolveCodexExecutionEngineForRun({
@@ -475,7 +478,7 @@ describe("codex_local ACP lane", () => {
     ).resolves.toMatchObject({
       engine: "acp",
       explicit: false,
-      unavailableReason: expect.stringContaining("sandbox remote targets only"),
+      unavailableReason: expect.stringContaining("agent-managed SSH account"),
     });
   });
 
@@ -1253,6 +1256,54 @@ describe("codex_local ACP lane", () => {
     // intentionally-persisted staged temp ourselves to avoid leaking it.
     await Promise.all(stagedDirs.map((dir) => fs.rm(dir, { recursive: true, force: true })));
   }, remoteSandboxTestTimeoutMs);
+
+  it.each(["none", "OPENAI_API_KEY", "CODEX_API_KEY"])("copies selected subscription refreshes to the current home with controller key %s", async controllerKey => {
+    const root = await makeTempRoot("paperclip-codex-acp-rebind-");
+    const localCwd = path.join(root, "workspace");
+    const remoteCwd = path.join(root, "remote");
+    const firstHome = path.join(root, "first-account-home");
+    const nextHome = path.join(root, "next-account-home");
+    for (const dir of [localCwd, remoteCwd, firstHome, nextHome]) await fs.mkdir(dir);
+    const originalAuth = subscriptionAuthJson("acct-same", OLDER_REFRESH, "original");
+    for (const home of [firstHome, nextHome]) await fs.writeFile(path.join(home, "auth.json"), originalAuth, { mode: 0o600 });
+    process.env.OPENAI_API_KEY = "";
+    process.env.CODEX_API_KEY = "";
+    if (controllerKey !== "none") process.env[controllerKey] = "fixture-unselected-controller-key";
+    const stagedRuntimes = new Map();
+    const execute = createCodexAcpExecutor({
+      createRuntime: options => new FakeRuntime(options) as never,
+      stagedRuntimes, stagingLocks: new Map(),
+    });
+    const result = await execute(buildContext(localCwd, {
+      runId: `run-rebind-home-${randomUUID()}`,
+      config: {
+        engine: "acp", cwd: localCwd, agentCommand: "node ./fake-acp.js", stateDir: path.join(root, "state"),
+        managedAiConnection: { identity: "selected-account", sessionIdentity: "selected-account-session" },
+        env: { CODEX_HOME: firstHome, OPENAI_API_KEY: "", CODEX_API_KEY: "" }, promptTemplate: "Do the assigned work.",
+      },
+      context: { issueId: "issue-1", paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" } },
+      executionTarget: { kind: "remote", transport: "sandbox", providerKey: "fake-plugin", remoteCwd, runner: createLocalSandboxRunner() } as never,
+      authToken: "fixture-run-jwt",
+    }));
+    expect(result.exitCode).toBe(0);
+    expect(stagedRuntimes.size).toBe(1);
+    const entry = [...stagedRuntimes.values()][0]!;
+    try {
+      await fs.rm(firstHome, { recursive: true });
+      const currentLogs: string[] = [];
+      await entry.rebindRun({ env: { CODEX_HOME: nextHome }, onLog: async (_stream: string, chunk: string) => { currentLogs.push(chunk); } });
+      await fs.writeFile(path.join(entry.stagedRuntime.assetDirs.home, "auth.json"), subscriptionAuthJson("acct-same", NEWER_REFRESH, "refreshed"));
+      expect(await entry.teardown()).toMatchObject({ ok: true });
+      const auth = JSON.parse(await fs.readFile(path.join(nextHome, "auth.json"), "utf8"));
+      expect(auth.tokens.refresh_token).toBe("ref-refreshed");
+      expect(auth.last_refresh).toBe(NEWER_REFRESH);
+      expect((await fs.stat(path.join(nextHome, "auth.json"))).mode & 0o777).toBe(0o600);
+      await expect(fs.stat(firstHome)).rejects.toMatchObject({ code: "ENOENT" });
+      expect(currentLogs.some(line => line.includes("Codex auth"))).toBe(true);
+    } finally {
+      await entry.dispose();
+    }
+  });
 
   it("removes the host staged Codex home when a failed turn drops the staged runtime", async () => {
     // The complementary guardrail: when the staged runtime IS dropped (here, a

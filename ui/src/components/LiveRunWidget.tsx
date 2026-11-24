@@ -13,6 +13,7 @@ import { Identity } from "./Identity";
 import { RunChatSurface } from "./RunChatSurface";
 import { StatusBadge } from "./StatusBadge";
 import { useLiveRunTranscripts } from "./transcript/useLiveRunTranscripts";
+import { readFromIssueChatBootstrap } from "@/lib/issue-chat-bootstrap";
 
 interface LiveRunWidgetProps {
   issueId: string;
@@ -39,7 +40,7 @@ export function LiveRunWidget({ issueId, companyId }: LiveRunWidgetProps) {
 
   const { data: liveRuns } = useQuery({
     queryKey: queryKeys.issues.liveRuns(issueId),
-    queryFn: () => heartbeatsApi.liveRunsForIssue(issueId),
+    queryFn: () => readFromIssueChatBootstrap(queryClient, queryKeys.issues.liveRuns(issueId), issueId, (item) => item.liveRuns, () => heartbeatsApi.liveRunsForIssue(issueId)),
     enabled: !!issueId,
     refetchInterval: liveRunRefetchInterval,
   });

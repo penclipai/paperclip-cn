@@ -125,6 +125,7 @@ const mockHeartbeatService = vi.hoisted(() => ({
   reportRunActivity: vi.fn(async () => undefined),
   getRun: vi.fn(async (): Promise<unknown> => null),
   getActiveRunForAgent: vi.fn(async (): Promise<unknown> => null),
+  getQueuedAssignmentRunForIssue: vi.fn(async (): Promise<unknown> => null),
   cancelRun: vi.fn(async (): Promise<unknown> => null),
   resumeTaskRetry: vi.fn(async () => undefined),
 }));
@@ -174,6 +175,7 @@ const mockRequestTaskRetry = vi.hoisted(() => vi.fn());
 const mockOnboardingFirstTaskDependenciesAllowed = vi.hoisted(() => vi.fn(async () => undefined));
 const mockGetExperimental = vi.hoisted(() => vi.fn());
 const mockResumeWorkspaceFinalization = vi.hoisted(() => vi.fn());
+const mockRecordNativeHumanSelfHandoff = vi.hoisted(() => vi.fn(async () => true));
 
 function registerRouteMocks() {
   vi.doMock("../services/instance-settings.js", async () => {
@@ -190,10 +192,12 @@ function registerRouteMocks() {
   vi.doMock("../services/task-interruption-presentation.js", () => ({
     taskInterruptionPresentation: vi.fn(async () => null),
     taskInterruptionPresentations: vi.fn(async () => new Map()),
+    taskRetryRefusal: vi.fn(async () => null),
   }));
   vi.doMock("../services/native-runtime/native-workspace-owner-recovery.js", () => ({ resumeNativeWorkspaceAfterOwnerStop: mockResumeWorkspaceFinalization }));
   vi.doMock("../services/native-runtime/native-workspace-export-retry.js", () => ({ retryNativeWorkspaceExport: mockRetryWorkspaceExport }));
   vi.doMock("../services/workspace-recovery.js", () => ({ requestWorkspaceRecovery: mockRequestWorkspaceRecovery }));
+  vi.doMock("../services/native-runtime/native-human-self-handoff.js", () => ({ recordNativeHumanSelfHandoff: mockRecordNativeHumanSelfHandoff }));
   vi.doMock("@penclipai/shared/telemetry", () => ({
     trackAgentTaskCompleted: vi.fn(),
     trackErrorHandlerCrash: vi.fn(),
@@ -392,24 +396,36 @@ function createRunContextDb(
     }
     return [{ id: runAgentId, companyId: runAgentCompanyId, permissions: {}, role: "engineer", reportsTo: null }];
   };
-  const buildQuery = (selection: Record<string, unknown>, chatBindingQuery = false, settledRecoveryQuery = false) => {
+  const buildQuery = (selection: Record<string, unknown>, chatBindingQuery = false, settledRecoveryQuery = false,
+    policyTable?: "issues" | "agents") => {
+    let selectedIds: string[] = [];
+    const selectedRows = async () => {
+      if (policyTable) {
+        const getById = policyTable === "issues" ? mockIssueService.getById : mockAgentService.getById;
+        return (await Promise.all(selectedIds.map(id => getById(id))))
+          .filter(row => row && selectedIds.includes(row.id));
+      }
+      return rowsForSelection(selection, chatBindingQuery, settledRecoveryQuery);
+    };
     const whereResult = {
-      orderBy: vi.fn(async () => []),
+      orderBy: vi.fn((): unknown => policyTable ? whereResult : Promise.resolve([])),
       limit: vi.fn(() => ({
-        then: async (resolve: (limitedRows: unknown[]) => unknown) => resolve(await rowsForSelection(selection, chatBindingQuery, settledRecoveryQuery)),
+        then: async (resolve: (limitedRows: unknown[]) => unknown) => resolve(await selectedRows()),
         for: vi.fn(() => ({
-          then: async (resolve: (lockedRows: unknown[]) => unknown) => resolve(await rowsForSelection(selection, chatBindingQuery, settledRecoveryQuery)),
+          then: async (resolve: (lockedRows: unknown[]) => unknown) => resolve(await selectedRows()),
         })),
       })),
       for: vi.fn(() => ({
-        then: async (resolve: (selectedRows: unknown[]) => unknown) => resolve(await rowsForSelection(selection, chatBindingQuery, settledRecoveryQuery)),
+        then: async (resolve: (rows: unknown[]) => unknown) => resolve(await selectedRows()),
       })),
-      then: async (resolve: (selectedRows: unknown[]) => unknown) => resolve(await rowsForSelection(selection, chatBindingQuery, settledRecoveryQuery)),
+      then: async (resolve: (rows: unknown[]) => unknown) => resolve(await selectedRows()),
     };
     const query = {
       innerJoin: vi.fn(() => query),
       where: vi.fn((condition: SQL) => {
         if (chatBindingQuery) chatBindingQueries.push(new PgDialect().sqlToQuery(condition));
+        if (policyTable) selectedIds = [...new Set(new PgDialect().sqlToQuery(condition).params
+          .filter((value): value is string => typeof value === "string" && value !== companyId))];
         return whereResult;
       }),
     };
@@ -437,6 +453,12 @@ function createRunContextDb(
         }
         if (getTableName(table) === "issue_thread_interactions") {
           return { where: vi.fn(() => ({ limit: vi.fn(async () => []) })) };
+        }
+        if (getTableName(table) === "issues" && "conversationAgentId" in selection) {
+          return buildQuery(selection, false, false, "issues");
+        }
+        if (getTableName(table) === "agents" && Object.keys(selection).sort().join(",") === "companyId,id,permissions") {
+          return buildQuery(selection, false, false, "agents");
         }
         return buildQuery(selection, getTableName(table) === "chat_conversations", getTableName(table) === "issue_recovery_actions");
       }),
@@ -922,14 +944,12 @@ describe("agent issue mutation checkout ownership", () => {
   });
 
   it.each([
-    { owner: "another-user", enabled: true, status: 403 },
-    { owner: "board-user", enabled: false, status: 404 },
-    { owner: "board-user", enabled: true, status: 202 },
-  ])("gates Agent Chat task Retry by owner and feature ($owner, $enabled)", async ({ owner, enabled, status }) => {
+    { owner: "another-user", status: 403 },
+    { owner: "board-user", status: 202 },
+  ])("gates Agent Chat task Retry by owner ($owner)", async ({ owner, status }) => {
     mockIssueService.getById.mockResolvedValue(makeIssue({
       conversationAgentId: ownerAgentId, conversationUserId: owner,
     }));
-    mockGetExperimental.mockResolvedValue({ enableAgentChat: enabled });
     const response = await request(createApp(boardActor())).post(`/api/issues/${issueId}/retry`).send({
       idempotencyKey: recoveryActionId, observedRunId: ownerRunId,
     });
@@ -1254,6 +1274,7 @@ describe("agent issue mutation checkout ownership", () => {
           changedFiles: 3,
         }),
       }),
+      ownerAgentId,
     );
   });
 
@@ -1283,6 +1304,7 @@ describe("agent issue mutation checkout ownership", () => {
       expect.objectContaining({
         metadata: expect.objectContaining({ additions: 11, deletions: 3, changedFiles: 2 }),
       }),
+      ownerAgentId,
     );
   });
 
@@ -1707,7 +1729,7 @@ describe("agent issue mutation checkout ownership", () => {
       expect.any(Object),
     );
     expect(mockDocumentService.upsertIssueDocument).toHaveBeenCalled();
-    expect(mockWorkProductService.update).toHaveBeenCalledWith("product-1", { title: "Updated product" });
+    expect(mockWorkProductService.update).toHaveBeenCalledWith("product-1", { title: "Updated product" }, ownerAgentId);
   });
 
   it("preserves board mutations on active checkouts", async () => {
@@ -2916,8 +2938,11 @@ describe("agent issue mutation checkout ownership", () => {
       }));
     });
 
-    it.each(["in_progress", "in_review"])("persists a human handoff from %s without waiting for its own slow shutdown", async status => {
+    it.each([
+      ["legacy", "in_progress"], ["legacy", "in_review"], ["native", "in_progress"], ["native", "in_review"],
+    ])("persists a %s run's human handoff from %s without cancelling the run", async (runtimeMode, status) => {
       mockIssueService.getById.mockResolvedValue(makeIssue({ status, executionRunId: ownerRunId }));
+      mockHeartbeatService.getRun.mockResolvedValue({ ...runningRun, runtimeMode });
       mockHeartbeatService.cancelRun.mockRejectedValue(new Error("Execution is still stopping; termination has not been verified."));
 
       const res = await request(handoffApp({ ...ownerActor(), source: "agent_jwt" }))
@@ -2926,6 +2951,14 @@ describe("agent issue mutation checkout ownership", () => {
       expect(res.status, JSON.stringify(res.body)).toBe(200);
       expect(res.body).toMatchObject(handoff);
       expect(mockHeartbeatService.cancelRun).not.toHaveBeenCalled();
+      if (runtimeMode === "native") {
+        expect(mockRecordNativeHumanSelfHandoff).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+          runId: ownerRunId, agentId: ownerAgentId, issueId, assigneeUserId: "board-user" }));
+        expect(mockRecordNativeHumanSelfHandoff.mock.invocationCallOrder[0])
+          .toBeLessThan(mockIssueService.update.mock.invocationCallOrder[0]!);
+      } else {
+        expect(mockRecordNativeHumanSelfHandoff).not.toHaveBeenCalled();
+      }
       expect(mockIssueService.update.mock.calls[0]?.[1]).toMatchObject({
         ...handoff,
         actorRunId: ownerRunId,
@@ -2937,6 +2970,17 @@ describe("agent issue mutation checkout ownership", () => {
         details: handoff,
       });
       expect(mockHeartbeatService.wakeup).not.toHaveBeenCalled();
+    });
+
+    it("refuses a native hand-off when the run can no longer record it, without saving the assignment", async () => {
+      mockHeartbeatService.getRun.mockResolvedValue({ ...runningRun, runtimeMode: "native" });
+      mockRecordNativeHumanSelfHandoff.mockResolvedValueOnce(false);
+      const res = await request(handoffApp({ ...ownerActor(), source: "agent_jwt" }))
+        .patch(`/api/issues/${issueId}`).send(handoff);
+      expect(res.status, JSON.stringify(res.body)).toBe(409);
+      expect(res.body.code ?? res.body.details?.code).toBe("native_self_handoff_run_changed");
+      expect(mockIssueService.update).not.toHaveBeenCalled();
+      expect(mockHeartbeatService.cancelRun).not.toHaveBeenCalled();
     });
 
     it("recognizes the caller when the active run is resolved without an issue execution lock", async () => {
@@ -2991,15 +3035,15 @@ describe("agent issue mutation checkout ownership", () => {
       expect(mockHeartbeatService.cancelRun).not.toHaveBeenCalled();
     });
 
-    it.each(["board", "agent_key", "other_run", "native", "other_issue", "other_agent", "other_company"])(
+    it.each(["board", "agent_key", "other_run", "native_board", "other_issue", "other_agent", "other_company"])(
       "still requires a verified stop for %s reassignment", async scenario => {
         let actor: Record<string, unknown> = { ...ownerActor(), source: "agent_jwt" };
-        if (scenario === "board") actor = boardActor();
+        if (scenario === "board" || scenario === "native_board") actor = boardActor();
         if (scenario === "agent_key") actor = ownerActor();
         const run = {
           ...runningRun,
           ...(scenario === "other_run" ? { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" } : {}),
-          ...(scenario === "native" ? { runtimeMode: "native" } : {}),
+          ...(scenario === "native_board" ? { runtimeMode: "native" } : {}),
           ...(scenario === "other_issue" ? { contextSnapshot: { issueId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" } } : {}),
           ...(scenario === "other_agent" ? { agentId: peerAgentId } : {}),
           ...(scenario === "other_company" ? { companyId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" } : {}),
@@ -3281,10 +3325,7 @@ describe("agent issue mutation checkout ownership", () => {
       expect(mockIssueService.update.mock.calls[0]?.[1]).toMatchObject({ status: "in_review" });
     });
 
-    it("does not intercept a native run handing its task to a human", async () => {
-      // A native handoff still stops the outgoing run first; confirm that stop
-      // so the request reaches the update instead of the stop-unconfirmed 409.
-      mockHeartbeatService.cancelRun.mockResolvedValue({ ...nativeRun, status: "cancelled" });
+    it("does not intercept a native run handing its task to a human, and does not cancel that run", async () => {
       const handoff = { assigneeAgentId: null, assigneeUserId: "board-user", status: "in_review" };
 
       const res = await request(createApp(runActor(), createRunContextDb({}, ownerAgentId, ownerRunId, [], true)))
@@ -3292,10 +3333,8 @@ describe("agent issue mutation checkout ownership", () => {
 
       expect(res.status, JSON.stringify(res.body)).toBe(200);
       expect(res.body).toMatchObject(handoff);
-      expect(mockHeartbeatService.cancelRun).toHaveBeenCalledWith(ownerRunId, expect.anything(), expect.anything());
+      expect(mockHeartbeatService.cancelRun).not.toHaveBeenCalled();
       expect(mockIssueService.update).toHaveBeenCalledTimes(1);
-      expect(mockHeartbeatService.cancelRun.mock.invocationCallOrder[0])
-        .toBeLessThan(mockIssueService.update.mock.invocationCallOrder[0]!);
       expect(mockIssueService.update.mock.calls[0]?.[1]).toMatchObject(handoff);
     });
 
@@ -3482,6 +3521,7 @@ describe("agent issue mutation checkout ownership", () => {
       ancestryParentId?: string | null;
       watchdogRows?: Record<string, unknown>[];
     } = {}) {
+      const policyDb = createRunContextDb();
       const watchedIssueId = options.watchedIssueId ?? issueId;
       const runRows = [{
         id: watchdogRunId,
@@ -3530,8 +3570,13 @@ describe("agent issue mutation checkout ownership", () => {
       return {
         transaction: async (callback: (tx: Record<string, never>) => Promise<unknown>) => callback({}),
         select: vi.fn((selection: Record<string, unknown> = {}) => ({
-          from: vi.fn((table: Parameters<typeof getTableName>[0]) => getTableName(table) === "case_handoffs"
-            ? emptyCaseHandoffQuery() : buildQuery(selection)),
+          from: vi.fn((table: Parameters<typeof getTableName>[0]) => {
+            if ((getTableName(table) === "issues" && "conversationAgentId" in selection)
+              || (getTableName(table) === "agents" && Object.keys(selection).sort().join(",") === "companyId,id,permissions")) {
+              return policyDb.select(selection).from(table);
+            }
+            return getTableName(table) === "case_handoffs" ? emptyCaseHandoffQuery() : buildQuery(selection);
+          }),
         })),
       };
     }

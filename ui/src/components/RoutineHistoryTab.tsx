@@ -45,6 +45,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "./EmptyState";
 import { MarkdownBody } from "./MarkdownBody";
 import { Badge } from "@/components/ui/badge";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
+import { cn } from "@/lib/utils";
 
 type AgentLookup = Map<string, { id: string; name: string }>;
 type ProjectLookup = Map<string, { id: string; name: string }>;
@@ -1061,7 +1063,7 @@ function DiffTable({ rows }: { rows: DiffRow[] }) {
           <span className="select-none px-3 text-center text-muted-foreground">
             {markerByKind[row.kind]}
           </span>
-          <pre className="overflow-x-auto whitespace-pre-wrap break-words px-3 py-0 text-inherit">
+          <pre className={cn("overflow-x-auto whitespace-pre-wrap break-words px-3 py-0 text-inherit", ANALYTICS_MASK_CLASS)}>
             {row.text.length > 0 ? row.text : " "}
           </pre>
         </div>
@@ -1104,6 +1106,11 @@ function summarizeTriggerSnapshot(trigger: RoutineRevisionSnapshotTriggerV1, t?:
         : `replay ${trigger.replayWindowSec}s`
       : "";
     return [trigger.signingMode, replay].filter(Boolean).join(" · ");
+  }
+  if (trigger.kind === "heartbeat") {
+    return t
+      ? t("routineHistory.triggerHeartbeat", { defaultValue: "Standing check on each wake-up" })
+      : "Standing check on each wake-up";
   }
   return t ? t("routineHistory.triggerApi", { defaultValue: "API" }) : "API";
 }

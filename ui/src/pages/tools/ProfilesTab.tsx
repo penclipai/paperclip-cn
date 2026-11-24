@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { translateInstant } from "@/i18n";
+import { companyProjectsQuery } from "@/lib/company-projects-query";
 import { useMemo, useState } from "react";
 import {
   useMutation,
@@ -29,7 +30,6 @@ import type {
   ToolRiskLevel,
 } from "@penclipai/shared";
 import { agentsApi } from "@/api/agents";
-import { projectsApi } from "@/api/projects";
 import { routinesApi } from "@/api/routines";
 import {
   toolsApi,
@@ -423,8 +423,7 @@ function useLookupData(companyId: string) {
     queryFn: () => agentsApi.list(companyId),
   });
   const projects = useQuery({
-    queryKey: queryKeys.projects.list(companyId, { includeArchived: true }),
-    queryFn: () => projectsApi.list(companyId, { includeArchived: true }),
+    ...companyProjectsQuery(companyId, { includeArchived: true }),
   });
   const routines = useQuery({
     queryKey: queryKeys.routines.list(companyId),

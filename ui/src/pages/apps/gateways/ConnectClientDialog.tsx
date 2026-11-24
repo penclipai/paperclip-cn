@@ -42,6 +42,7 @@ import {
 } from "./gateway-helpers";
 import { gatewaysQueryKey } from "./NewGatewayDialog";
 import { describeError } from "@/api/errors";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 type PanelKey = string;
 type ClientIcon = ComponentType<{ className?: string }>;
@@ -181,7 +182,7 @@ export function ConnectClientDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className={cn("sm:max-w-2xl", ANALYTICS_MASK_CLASS)}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {translateInstant("tools.gateways.snippets.title")}<Tooltip>
@@ -190,8 +191,9 @@ export function ConnectClientDialog({
                   <HelpCircle className="h-4 w-4" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs text-xs">
-                {translateInstant("Give this MCP gateway configuration to your tool. It does not give it access to Paperclip or skills; it only gateways calls between the client and the tools exposed here.")}</TooltipContent>
+              <TooltipContent className={cn("max-w-xs text-xs", ANALYTICS_MASK_CLASS)}>
+                {translateInstant("Give this MCP gateway configuration to your tool. It does not give it access to Paperclip or skills; it only gateways calls between the client and the tools exposed here.")}
+              </TooltipContent>
             </Tooltip>
           </DialogTitle>
           <DialogDescription>

@@ -64,6 +64,16 @@
     "zh-CN": "此时间范围内没有活动。",
     "reviewedEnglishHash": "885e0c5769e98ba8508e49d168b273fd3b315dff684602dc069786aec7bd22a0"
   },
+  "timeline.noProjectActivity": {
+    "en": "No project activity in this window.",
+    "zh-CN": "此时间范围内没有项目活动。",
+    "reviewedEnglishHash": "536e6b637ecb24a4228b0a7c05ed4ad0f350d43ba30ed426fdb994912ba0fe73"
+  },
+  "timeline.projectTitle": {
+    "en": "Project Timeline",
+    "zh-CN": "项目时间线",
+    "reviewedEnglishHash": "da2fd084302a987e88847cfbc669f091dc7f8fd65e5e7fb7d86a422cd09de010"
+  },
   "timeline.range": {
     "en": "Range",
     "zh-CN": "时间范围",

@@ -74,6 +74,9 @@ vi.mock("@tanstack/react-query", () => ({
     if (queryKey[0] === "tools" && queryKey[2] === "connections") {
       return { ...listQueryResult, data: { connections: [] } };
     }
+    if (queryKey[0] === "health") {
+      return { data: undefined, isLoading: false, isError: false, isFetched: true };
+    }
     if (queryKey[0] === "instance" && queryKey[1] === "experimental-settings") {
       return { data: undefined, isLoading: false, isError: false, isFetched: true };
     }

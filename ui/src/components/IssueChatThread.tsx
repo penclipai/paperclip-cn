@@ -1,5 +1,7 @@
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { createUuid } from "@/lib/uuid";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 import { useCurrentAccountGuard } from "../hooks/useAccountBoundMutation";
 import { resolveIssueChatHumanAuthor } from "@/lib/issue-chat-human-author";
 import {
@@ -287,6 +289,7 @@ import {
 import { SourceTrustBadge } from "./SourceTrustBadge";
 import { CommentAttributionChip } from "./CommentAttributionChip";
 import { resolveCommentAttribution } from "../lib/comment-attribution";
+import { safeExternalHttpUrl } from "../lib/safe-url";
 
 interface IssueChatMessageContext {
   feedbackDataSharingPreference: FeedbackDataSharingPreference;
@@ -846,6 +849,10 @@ export function IssueAssigneePausedNotice({
     issueStatusIsTerminalDisposition(issueStatus)
   )
     return null;
+
+  // Lifecycle setup is shown by the queued turn and its inline connection card.
+  // Resume changes operator holds; it cannot complete verification.
+  if (!agent.pauseReason && ["preparing", "verifying", "resuming"].includes(agent.lifecycleState ?? "")) return null;
 
   // A freshly created agent is stored as paused with pauseReason "setup" until
   // its setup finishes. That is not an operator pause, so say what is actually
@@ -1943,11 +1950,7 @@ function IssueChatProviderActivity({
                 typeof entry === "object" && entry !== null
                   ? (entry as Record<string, unknown>)
                   : {};
-              const href =
-                typeof source.url === "string" &&
-                /^https?:\/\//.test(source.url)
-                  ? source.url
-                  : null;
+              const href = safeExternalHttpUrl(source.url);
               return (
                 <div key={String(source.sourceId ?? index)}>
                   {href ? (
@@ -5433,7 +5436,7 @@ const IssueChatComposer = forwardRef<
         setBody(trimmed);
         return;
       }
-      attemptId = crypto.randomUUID();
+      attemptId = createUuid();
       if (requestOwner === undefined) markRequestUnbound(attemptId);
       // The exact request is stored before it is sent, so a lost response or
       // an outage can resend it with the same ID instead of losing it.
@@ -6575,7 +6578,7 @@ export function IssueChatThread({
       runSettings,
     ) => {
       pendingSubmitScrollRef.current = true;
-      clientRequestId ??= crypto.randomUUID();
+      clientRequestId ??= createUuid();
       const attempt = beginSubmission(clientRequestId, undefined, reopen);
       try {
         await (runSettings
@@ -7062,7 +7065,7 @@ export function IssueChatThread({
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       <IssueChatCtx.Provider value={chatCtx}>
-        <div className={cn(variant === "embedded" ? "space-y-3" : "space-y-4")}>
+        <div className={cn(variant === "embedded" ? "space-y-3" : "space-y-4", ANALYTICS_MASK_CLASS)}>
           {resolvedShowJumpToLatest ? (
             <div className="flex justify-end">
               <button
@@ -7299,7 +7302,9 @@ export function IssueChatThread({
                 mentions={mentions}
                 agentMap={agentMap}
                 hasActiveRun={!!hasActiveRun}
-                onStop={hasActiveRun ? onCancelRun : undefined}
+                // A run still waiting in line is stoppable too: Stop takes the
+                // task out of the agent's queue before it ever starts.
+                onStop={activeRunIds.size > 0 ? onCancelRun : undefined}
                 stopPending={stopPending}
                 stopScope={stopScope}
                 currentUserId={currentUserId}

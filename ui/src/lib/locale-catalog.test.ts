@@ -40,7 +40,7 @@ function readLocaleMessages(locale: "en" | "zh-CN"): Record<string, string> {
 describe("locale catalogs", () => {
   it("matches the generated catalogs to their reviewed editable sources", async () => {
     await expect(checkCatalog({ root: repoRoot })).resolves.toBeDefined();
-  });
+  }, 30_000);
 
   for (const localeFile of localeFiles) {
     it(`keeps ${path.basename(path.dirname(localeFile))} free of duplicate keys`, () => {

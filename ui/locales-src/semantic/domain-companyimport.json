@@ -99,6 +99,16 @@
     "zh-CN": "，以及",
     "reviewedEnglishHash": "4aa9bfd2f175a94ad5a7cb321e1aea9790c73eb366a3415b47a00aeaa9fbf24a"
   },
+  "companyImport.chooseAvailableCloudHarnessError": {
+    "en": "Choose an available Cloud harness for each imported agent.",
+    "zh-CN": "请为每个导入的智能体选择一个可用的 Cloud 执行器。",
+    "reviewedEnglishHash": "063a1045cf434b532c7867b2d5e9058d375b5c8549df810b11414c6e78630caa"
+  },
+  "companyImport.chooseAvailableHarness": {
+    "en": "Choose an available harness",
+    "zh-CN": "选择一个可用的执行器",
+    "reviewedEnglishHash": "f352be3d080297a7fe44fa968b72bf63c5a8a80eed0555acdf95f960a81cb040"
+  },
   "companyImport.chooseForPreview": {
     "en": "Choose a package above to enable the preview.",
     "zh-CN": "选择上方的包以启用预览。",

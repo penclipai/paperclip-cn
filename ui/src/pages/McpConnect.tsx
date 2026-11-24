@@ -20,6 +20,8 @@ import { CompanyPatternIcon } from "@/components/CompanyPatternIcon";
 import { useResilientFetch } from "@/hooks/useResilientFetch";
 import { api } from "../api/client";
 import { describeError } from "../api/errors";
+import { cn } from "@/lib/utils";
+import { ANALYTICS_NO_CAPTURE_CLASS } from "@/lib/analytics/privacy";
 
 const PAIRING_CODE_PATTERN = /^[A-Za-z0-9_-]{32}$/;
 
@@ -297,7 +299,7 @@ function McpConnectRequest({
         {device && (
           <p className="text-sm">
             {translateInstant("Confirm this matches the code shown by your assistant:", { defaultValue: "Confirm this matches the code shown by your assistant:" })}{" "}
-            <strong className="font-mono">{id.toUpperCase()}</strong>
+            <strong className={cn("font-mono", ANALYTICS_NO_CAPTURE_CLASS)}>{id.toUpperCase()}</strong>
           </p>
         )}
         {(requestView.kind === "loading" ||
@@ -333,9 +335,7 @@ function McpConnectRequest({
             }}
           >
             <p className="text-sm">
-              {translateInstant(
-                "Enter the one-use code from your Dot setup prompt to review this agent’s access. Access is granted when you click “Connect Dot with pairing code”.",
-              )}
+              {translateInstant("mcpConnect.dotPairingPrompt")}
             </p>
             <label htmlFor="dot-pairing-code" className="text-sm">
               {translateInstant("Pairing code", { defaultValue: "Pairing code" })}
@@ -421,7 +421,7 @@ function McpConnectRequest({
               >
                 {pairDot.isPending
                   ? translateInstant("Connecting…")
-                  : translateInstant("Connect Dot with pairing code")}
+                  : translateInstant("mcpConnect.allowAgentConnection")}
               </Button>
             </div>
           </form>

@@ -40,6 +40,7 @@ import {
   QuarantineBadge,
 } from "./shared";
 import { describeError } from "@/api/errors";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 export const TRANSPORT_LABEL: Record<string, string> = {
   mcp_remote: "remote http",
@@ -95,7 +96,7 @@ export function CatalogDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            {t("tools.connections.catalogPrefix")} {connection.name}
+            {t("tools.connections.catalogPrefix")} <span className={ANALYTICS_MASK_CLASS}>{connection.name}</span>
           </DialogTitle>
         </DialogHeader>
         {catalog.isLoading || catalogView.kind === "reconnecting" ? (

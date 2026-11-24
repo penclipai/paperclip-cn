@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { toolTaxonomy } from "../task-chat/tool-taxonomy";
 import { translateInstant as tr } from "@/i18n";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 /** Family glyph for a tool block/row; the taxonomy falls back to Wrench. */
 function ToolFamilyIcon({ name, className }: { name: string; className?: string }) {
@@ -909,7 +910,7 @@ function TranscriptProviderActivity({ block, density }: { block: Extract<Transcr
       {steps.length > 0 ? <ol className="space-y-1">{steps.map((step, index) => <li key={String(step.stepId ?? index)}><span className="mr-2" aria-hidden="true">{step.status === "completed" ? "✓" : step.status === "blocked" ? "!" : "○"}</span>{String(step.body ?? "")}</li>)}</ol> : null}
       {children.length > 0 ? <ul className="space-y-1">{children.map((child, index) => <li key={String(child.childId ?? index)}><strong>{String(child.role ?? "Child agent")}</strong> · {String(child.status ?? "unknown")}<div className="text-muted-foreground">{String(child.summary ?? "")}</div></li>)}</ul> : null}
       {sources.length > 0 ? <ul className="space-y-1">{sources.map((source, index) => { const url = typeof source.url === "string" && /^https?:\/\//.test(source.url) ? source.url : null; return <li key={String(source.sourceId ?? index)}>{url ? <a className="underline" href={url} target="_blank" rel="noreferrer">{String(source.title ?? url)}</a> : String(source.title ?? "Unavailable source")} <span className="text-muted-foreground">{tr("Provider-reported")}</span></li>; })}</ul> : null}
-      {output ? <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded bg-background p-2 font-mono">{output}</pre> : null}
+      {output ? <pre className={cn("max-h-64 overflow-auto whitespace-pre-wrap rounded bg-background p-2 font-mono", ANALYTICS_MASK_CLASS)}>{output}</pre> : null}
       {block.family === "provider_notice" && Array.isArray(block.payload.details) ? <dl className="space-y-1">{block.payload.details.slice(0, 64).map((value, index) => { const detail = asRecord(value); return detail && typeof detail.name === "string" && typeof detail.value === "string" ? <div key={index}><dt className="text-muted-foreground">{detail.name}</dt><dd className="whitespace-pre-wrap break-words">{detail.value}</dd></div> : null; })}</dl> : null}
       {block.family === "model_identity" ? <div><span className="text-muted-foreground">{tr("Requested")}</span> {String(block.payload.requestedModel ?? "—")} · <span className="text-muted-foreground">{tr("Effective")}</span> {String(block.payload.effectiveModel ?? "—")}</div> : null}
     </div> : null}
@@ -1149,7 +1150,7 @@ function TranscriptToolCard({
                 <div className="mb-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
                   {t("runTranscript.input", { defaultValue: "Input" })}
                 </div>
-                <pre className="overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) text-foreground/80">
+                <pre className={cn("overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) text-foreground/80", ANALYTICS_MASK_CLASS)}>
                   {formatToolPayload(block.input) || "<empty>"}
                 </pre>
               </div>
@@ -1157,7 +1158,7 @@ function TranscriptToolCard({
                 <div className="mb-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
                   {t("runTranscript.result", { defaultValue: "Result" })}
                 </div>
-                <pre className={cn(
+                <pre className={cn(ANALYTICS_MASK_CLASS, 
                   "overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro)",
                   block.status === "error" ? "text-red-700 dark:text-red-300" : "text-foreground/80",
                 )}>
@@ -1310,7 +1311,7 @@ function TranscriptCommandGroup({
                 </span>
               </div>
               {item.result && (
-                <pre className={cn(
+                <pre className={cn(ANALYTICS_MASK_CLASS, 
                   "overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro)",
                   item.status === "error" ? "text-red-700 dark:text-red-300" : "text-foreground/80",
                 )}>
@@ -1464,7 +1465,7 @@ function TranscriptToolGroup({
                   <div className="mb-0.5 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
                     {t("runTranscript.input", { defaultValue: "Input" })}
                   </div>
-                  <pre className="overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) text-foreground/80">
+                  <pre className={cn("overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) text-foreground/80", ANALYTICS_MASK_CLASS)}>
                     {formatToolPayload(item.input) || "<empty>"}
                   </pre>
                 </div>
@@ -1473,7 +1474,7 @@ function TranscriptToolGroup({
                     <div className="mb-0.5 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
                       {t("runTranscript.result", { defaultValue: "Result" })}
                     </div>
-                    <pre className={cn(
+                    <pre className={cn(ANALYTICS_MASK_CLASS, 
                       "overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro)",
                       item.status === "error" ? "text-red-700 dark:text-red-300" : "text-foreground/80",
                     )}>
@@ -1569,7 +1570,7 @@ function TranscriptEventRow({
             </div>
           )}
           {block.detail && (
-            <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) text-foreground/75">
+            <pre className={cn("mt-2 overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) text-foreground/75", ANALYTICS_MASK_CLASS)}>
               {block.detail}
             </pre>
           )}
@@ -1622,7 +1623,7 @@ function TranscriptDiffGroup({
         {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
       </div>
       {open && (
-        <pre className={cn(
+        <pre className={cn(ANALYTICS_MASK_CLASS, 
           "mt-2 overflow-x-auto whitespace-pre-wrap break-words font-mono pl-5",
           compact ? "text-(length:--text-micro)" : "text-xs",
         )}>
@@ -1701,7 +1702,7 @@ function TranscriptStderrGroup({
         {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
       </div>
       {open && (
-        <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) text-amber-700/80 dark:text-amber-300/80 pl-5">
+        <pre className={cn("mt-2 overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) text-amber-700/80 dark:text-amber-300/80 pl-5", ANALYTICS_MASK_CLASS)}>
           {block.lines.map((line, i) => (
             <span key={`${line.ts}-${i}`}>
               <span className="select-none text-amber-500/50 dark:text-amber-400/40">{i > 0 ? "\n" : ""}</span>
@@ -1739,7 +1740,7 @@ function TranscriptSystemGroup({
         {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
       </div>
       {open && (
-        <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) text-blue-700/80 dark:text-blue-300/80 pl-5">
+        <pre className={cn("mt-2 overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) text-blue-700/80 dark:text-blue-300/80 pl-5", ANALYTICS_MASK_CLASS)}>
           {block.lines.map((line, i) => (
             <span key={`${line.ts}-${i}`}>
               <span className="select-none text-blue-500/40 dark:text-blue-400/30">{i > 0 ? "\n" : ""}</span>
@@ -1779,7 +1780,7 @@ function TranscriptStdoutRow({
         </button>
       </div>
       {open && (
-        <pre className={cn(
+        <pre className={cn(ANALYTICS_MASK_CLASS, 
           "mt-2 overflow-x-auto whitespace-pre-wrap break-words font-mono text-foreground/80",
           density === "compact" ? "text-(length:--text-micro)" : "text-xs",
         )}>
@@ -1899,7 +1900,7 @@ function RawTranscriptView({
           <span className="text-(length:--text-nano) uppercase tracking-(--tracking-caps) text-muted-foreground">
             {entry.kind}
           </span>
-          <pre className="min-w-0 whitespace-pre-wrap break-words text-foreground/80">
+          <pre className={cn("min-w-0 whitespace-pre-wrap break-words text-foreground/80", ANALYTICS_MASK_CLASS)}>
             {rawEntryContent(entry)}
           </pre>
         </div>
@@ -1934,7 +1935,7 @@ export function RunTranscriptView({
 
   if (entries.length === 0) {
     return (
-      <div className={cn("rounded-2xl border border-dashed border-border/70 bg-background/40 p-4 text-sm text-muted-foreground", className)}>
+      <div className={cn("rounded-2xl border border-dashed border-border/70 bg-background/40 p-4 text-sm text-muted-foreground", className, ANALYTICS_MASK_CLASS)}>
         {emptyMessage}
       </div>
     );
@@ -1942,14 +1943,14 @@ export function RunTranscriptView({
 
   if (mode === "raw") {
     return (
-      <div className={className}>
+      <div className={cn(className, ANALYTICS_MASK_CLASS)}>
         <RawTranscriptView entries={visibleEntries} density={density} />
       </div>
     );
   }
 
   return (
-    <div className={cn("space-y-3", className)}>
+    <div className={cn("space-y-3", className, ANALYTICS_MASK_CLASS)}>
       {keyedBlocks.map(({ block, key }, index) => (
         <div
           key={key}

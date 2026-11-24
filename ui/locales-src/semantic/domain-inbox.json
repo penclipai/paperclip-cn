@@ -199,6 +199,26 @@
     "zh-CN": "工作区",
     "reviewedEnglishHash": "87bb59ba2f92f2a5a9f13e021fd58dd14ae5c065b1046146875e6e68d5ebc8b7"
   },
+  "inbox.interruption.projectAccess": {
+    "en": "Agent needs project access",
+    "zh-CN": "智能体需要项目访问权限",
+    "reviewedEnglishHash": "a05899c9fb8154c8c6f5f5eb987f23db8bd418e521cbff172831d51d1a08bc1d"
+  },
+  "inbox.interruption.providerBilling": {
+    "en": "Review provider billing and usage",
+    "zh-CN": "检查提供方账单与用量",
+    "reviewedEnglishHash": "17d991fe70571c03a891a03a9c574ca6cf0b47a9618d84e5474094faa3d0202e"
+  },
+  "inbox.interruption.question": {
+    "en": "Respond to the pending question",
+    "zh-CN": "回复待处理的问题",
+    "reviewedEnglishHash": "2a57f608443daeaf0255cc6a26eeb30e98c37225cd5cba8a19142aa0001ecd80"
+  },
+  "inbox.interruption.unblock": {
+    "en": "The agent needs your help",
+    "zh-CN": "智能体需要你的协助",
+    "reviewedEnglishHash": "a601889f1614955ff14ca9181c74038f54fdf538f02f498e64840bcc6c030cf0"
+  },
   "inbox.joinRequests": {
     "en": "Join requests",
     "zh-CN": "加入请求",
@@ -339,10 +359,10 @@
     "zh-CN": "未读",
     "reviewedEnglishHash": "1b9f384c1436f607447ff66db22dcfe569141506b7499589a9b4857580075b26"
   },
-  "inbox.interruption.projectAccess": {
-    "en": "Agent needs project access",
-    "zh-CN": "智能体需要项目访问权限",
-    "reviewedEnglishHash": "a05899c9fb8154c8c6f5f5eb987f23db8bd418e521cbff172831d51d1a08bc1d"
+  "inbox.taskArchived": {
+    "en": "Task archived",
+    "zh-CN": "任务已归档",
+    "reviewedEnglishHash": "0e7819fbca2c6d94a8a3c20e2cdf54d3ba649c2a7bfa632233faedbd2309be7a"
   },
   "inbox.title": {
     "en": "Inbox",
