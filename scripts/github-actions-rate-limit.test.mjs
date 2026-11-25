@@ -4,6 +4,7 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { createActionsReader } from "./github-actions-reader.mjs";
 
 function fixture(responses, options = {}) {
@@ -110,9 +111,9 @@ test("the release CLI reports safe quota evidence and cannot publish proof or ca
     };`);
     for (const args of [[], ["--require-proof"], ["--check-proof"]]) {
       writeFileSync(output, "");
-      const result = spawnSync(process.execPath, ["--import", mock, new URL("./watch-release-source.mjs", import.meta.url).pathname, ...args], {
+      const result = spawnSync(process.execPath, ["--import", pathToFileURL(mock).href, fileURLToPath(new URL("./watch-release-source.mjs", import.meta.url)), ...args], {
         encoding: "utf8", timeout: 5000, env: { ...process.env, GITHUB_TOKEN: "fixture-secret", GITHUB_TOKEN_SOURCE: "github.token",
-          GITHUB_REPOSITORY: "paperclipai/paperclip", GITHUB_REF: "refs/heads/master", GITHUB_SHA: "a".repeat(40),
+          GITHUB_REPOSITORY: "penclipai/paperclip-cn", GITHUB_REF: "refs/heads/master", GITHUB_SHA: "a".repeat(40),
           GITHUB_RUN_ID: "1", GITHUB_RUN_ATTEMPT: "1", GITHUB_OUTPUT: output },
       });
       assert.equal(result.status, 1, result.stderr);
