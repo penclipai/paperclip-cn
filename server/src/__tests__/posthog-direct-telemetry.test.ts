@@ -100,6 +100,7 @@ describe("server telemetry sender selection", () => {
     const body = String((fetchMock.mock.calls[0]![1] as RequestInit).body);
     const parsed = JSON.parse(body);
     const state = readState();
+    const hashedAgentId = createHash("sha256").update(state.salt + "agent-1").digest("hex").slice(0, 16);
     const hashedTaskId = createHash("sha256").update(state.salt + "task-raw-id").digest("hex").slice(0, 16);
     // Byte-identical to the envelope the collector path has always sent.
     expect(body).toBe(
@@ -113,7 +114,7 @@ describe("server telemetry sender selection", () => {
           {
             name: "agent.task_run",
             occurredAt: parsed.events[1].occurredAt,
-            dimensions: { agent_id: "agent-1", state: "succeeded", task_id: hashedTaskId },
+            dimensions: { agent_id: hashedAgentId, state: "succeeded", task_id: hashedTaskId },
           },
         ],
         batchId: parsed.batchId,
@@ -134,18 +135,20 @@ describe("server telemetry sender selection", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const body = String((fetchMock.mock.calls[0]![1] as RequestInit).body);
     const parsed = JSON.parse(body);
+    const state = readState();
+    const hashedAgentId = createHash("sha256").update(state.salt + "agent-1").digest("hex").slice(0, 16);
     expect(body).toBe(
       JSON.stringify({
         app: "paperclip",
         schemaVersion: "1",
-        installId: readState().installId,
+        installId: state.installId,
         version: serverVersion,
         events: [
           { name: "server.started", occurredAt: parsed.events[0].occurredAt, dimensions: { os_platform: process.platform } },
           {
             name: "agent.task_run",
             occurredAt: parsed.events[1].occurredAt,
-            dimensions: { agent_id: "agent-1", state: "succeeded" },
+            dimensions: { agent_id: hashedAgentId, state: "succeeded" },
           },
           {
             name: "routine.run",
@@ -172,18 +175,20 @@ describe("server telemetry sender selection", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const body = String((fetchMock.mock.calls[0]![1] as RequestInit).body);
     const parsed = JSON.parse(body);
+    const state = readState();
+    const hashedAgentId = createHash("sha256").update(state.salt + "agent-1").digest("hex").slice(0, 16);
     expect(body).toBe(
       JSON.stringify({
         app: "paperclip",
         schemaVersion: "1",
-        installId: readState().installId,
+        installId: state.installId,
         version: serverVersion,
         events: [
           { name: "server.started", occurredAt: parsed.events[0].occurredAt, dimensions: { os_platform: process.platform } },
           {
             name: "agent.task_run",
             occurredAt: parsed.events[1].occurredAt,
-            dimensions: { agent_id: "agent-1", state: "succeeded" },
+            dimensions: { agent_id: hashedAgentId, state: "succeeded" },
           },
         ],
         batchId: parsed.batchId,
@@ -254,7 +259,7 @@ describe("server telemetry sender selection", () => {
     expect(run.groups).toEqual({ workspace: "stack-123" });
     expect(run.disableGeoip).toBe(true);
     expect(run.properties).toMatchObject({
-      agent_id: "agent-1",
+      agent_id: createHash("sha256").update(salt + "agent-1").digest("hex").slice(0, 16),
       task_id: "task-raw-id",
       stack_id: "stack-123",
       environment: "staging",

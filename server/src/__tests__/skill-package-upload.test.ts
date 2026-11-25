@@ -106,7 +106,7 @@ describe.skipIf(!support.supported)("skill package upload recovery", () => {
     vi.spyOn(storageModule, "getStorageService").mockReturnValue(storage);
     vi.spyOn(storage, "putFile").mockRejectedValueOnce(new Error("upload disconnected"));
     const skills = companySkillService(db);
-    const requested = ["paperclipai/paperclip/paperclip-create-agent", "paperclipai/paperclip/first-task"];
+    const requested = ["penclipai/paperclip-cn/paperclip-create-agent", "penclipai/paperclip-cn/first-task"];
     await expect(skills.resolveRequestedSkillEntries(companyId, requested)).rejects.toThrow("upload disconnected");
     const result = await skills.resolveRequestedSkillEntries(companyId, requested);
     expect(result.unresolved).toEqual([]);

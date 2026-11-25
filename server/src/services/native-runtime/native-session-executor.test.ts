@@ -376,20 +376,34 @@ vi.mock("./paperclip-control-plane-port.js", async importOriginal => {
 });
 
 const grokCopyBack = vi.hoisted(() => vi.fn(async (_input: { readSandboxAuth: () => Promise<Buffer>; hostHomeDir: string }) => undefined));
-const prepareGrokCredentials = vi.hoisted(() => vi.fn());
-const readLocalAiCredential = vi.hoisted(() => vi.fn());
+const grokCredentialsMock = vi.hoisted(() => ({
+  fn: vi.fn(),
+  original: undefined as ((...args: any[]) => any) | undefined,
+}));
+const localAiCredentialMock = vi.hoisted(() => ({
+  fn: vi.fn(),
+  original: undefined as ((...args: any[]) => any) | undefined,
+}));
+const prepareGrokCredentials = grokCredentialsMock.fn;
+const readLocalAiCredential = localAiCredentialMock.fn;
 vi.mock("@penclipai/adapter-grok-local/server", async importOriginal => ({
   ...await importOriginal<typeof import("@penclipai/adapter-grok-local/server")>(),
   copyBackGrokAuth: grokCopyBack,
 }));
-vi.mock("./grok-runner-credentials.js", async importOriginal => ({
-  ...await importOriginal<typeof import("./grok-runner-credentials.js")>(),
-  prepareGrokRunnerCredentials: prepareGrokCredentials,
-}));
-vi.mock("../local-ai-credential-file.js", async importOriginal => ({
-  ...await importOriginal<typeof import("../local-ai-credential-file.js")>(),
-  readLocalAiCredentialFile: readLocalAiCredential,
-}));
+vi.mock("./grok-runner-credentials.js", async importOriginal => {
+  const original = await importOriginal<typeof import("./grok-runner-credentials.js")>();
+  grokCredentialsMock.original = original.prepareGrokRunnerCredentials;
+  grokCredentialsMock.fn.mockImplementation((...args: Parameters<typeof original.prepareGrokRunnerCredentials>) =>
+    original.prepareGrokRunnerCredentials(...args));
+  return { ...original, prepareGrokRunnerCredentials: grokCredentialsMock.fn };
+});
+vi.mock("../local-ai-credential-file.js", async importOriginal => {
+  const original = await importOriginal<typeof import("../local-ai-credential-file.js")>();
+  const { readFile: readUtf8File } = await import("node:fs/promises");
+  localAiCredentialMock.original = async (filename: string) => readUtf8File(filename, "utf8");
+  localAiCredentialMock.fn.mockImplementation((filename: string) => readUtf8File(filename, "utf8"));
+  return { ...original, readLocalAiCredentialFile: localAiCredentialMock.fn };
+});
 
 vi.mock("../../vendor/paperclip-runner/index.js", async (importOriginal) => {
   const original = await importOriginal<
@@ -8447,6 +8461,7 @@ function leaseDb(
       const query = {
         then: Promise.resolve(rows).then.bind(Promise.resolve(rows)),
         leftJoin: () => query,
+        innerJoin: () => query,
         where: () => query,
         orderBy: () => query,
         for: () => query,
@@ -17181,12 +17196,16 @@ describe("native process ownership", () => {
 
 describe("runnerd provider runtime wiring", () => {
   beforeEach(() => {
-    // The local credential reader is mocked so Grok tests can assert its exact
-    // launch path. Restore its safe fixture-file behavior for every runnerd
-    // test after any one-shot Grok override has been consumed.
-    readLocalAiCredential.mockReset().mockImplementation(
-      async (filename: string) => readFile(filename, "utf8"),
-    );
+    // Restore real credential helpers for every runnerd test after any one-shot
+    // Grok override has been consumed.
+    if (grokCredentialsMock.original) {
+      prepareGrokCredentials.mockReset().mockImplementation((...args: unknown[]) =>
+        grokCredentialsMock.original!(...args));
+    }
+    if (localAiCredentialMock.original) {
+      readLocalAiCredential.mockReset().mockImplementation((...args: unknown[]) =>
+        localAiCredentialMock.original!(...args));
+    }
   });
 
   it("keeps remote warm turns open while retaining verified close semantics", async () => {

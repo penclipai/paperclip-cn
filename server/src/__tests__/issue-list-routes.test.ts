@@ -110,6 +110,7 @@ describe("issue list routes", () => {
         status: ["todo", "in_progress", "blocked"],
         assigneeAgentId: "00000000-0000-4000-8000-000000000001",
       }),
+      undefined,
     );
   });
 });

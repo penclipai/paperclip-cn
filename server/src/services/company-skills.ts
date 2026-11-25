@@ -2223,7 +2223,10 @@ function resolveSkillReference(
 
   const normalizedKey = normalizeSkillKey(trimmed);
   if (normalizedKey) {
-    const byKey = skills.find((skill) => skill.key === normalizedKey);
+    const canonicalBundledKey = getBundledPaperclipSkillIdentity(normalizedKey);
+    const byKey =
+      skills.find((skill) => skill.key === normalizedKey)
+      ?? (canonicalBundledKey ? skills.find((skill) => skill.key === canonicalBundledKey) : undefined);
     if (byKey) {
       return { skill: byKey, ambiguous: false };
     }

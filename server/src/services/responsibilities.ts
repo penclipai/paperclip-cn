@@ -83,6 +83,7 @@ import {
   ONBOARDING_FIRST_TASK_SKILL_KEY,
   PAPERCLIP_CORE_SKILL_KEYS,
 } from "./company-skills.js";
+import { getBundledPaperclipSkillIdentity } from "./bundled-paperclip-skills.js";
 import { issueService } from "./issues.js";
 import { responsibilityAreaService } from "./responsibility-areas.js";
 import { archivePrimaryMirror, recordPrimaryReading, type MetricActor } from "./responsibility-metric-store.js";
@@ -1073,7 +1074,7 @@ export function responsibilityService(db: Db, deps: { routines?: ReturnType<type
     ]);
     const byId = new Map<string, ResponsibilitySkillSummary>();
     for (const { skill, agentIds: holders } of assigned) {
-      if (PLUMBING_SKILL_KEYS.has(skill.key)) continue;
+      if (PLUMBING_SKILL_KEYS.has(getBundledPaperclipSkillIdentity(skill.key) ?? skill.key)) continue;
       byId.set(skill.id, {
         linkId: null,
         computed: true,

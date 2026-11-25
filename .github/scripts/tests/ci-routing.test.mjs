@@ -473,8 +473,10 @@ const notifierEvent = (workflowRun = {}) => ({
   event_name: "workflow_run",
   event: { workflow_run: { head_repository: ownRepository, actor: ownerRun, triggering_actor: ownerRun, ...workflowRun } },
 });
+const upstreamNotifierContext = { repository: "paperclipai/paperclip", repository_id: "1170821064" };
 const notifierPlacementCases = [
-  ["CODEOWNER PR run", shortJobVars, notifierEvent(), reservedFleet],
+  ["CODEOWNER PR run on upstream", shortJobVars, { ...notifierEvent({ head_repository: ownRepository }), ...upstreamNotifierContext }, reservedFleet],
+  ["CN fork PR run", shortJobVars, notifierEvent()],
   ["not yet enabled", {}, notifierEvent()],
   ["AWS CI disabled", { ...shortJobVars, AWS_CI_ENABLED: "false" }, notifierEvent()],
   ["stale snapshot", { ...shortJobVars, AWS_CI_TRUSTED_USER_IDS: "[34892728,999]" }, notifierEvent()],
@@ -502,7 +504,8 @@ const reviewEvent = (pullRequest = {}, sender = ownerRun) => ({
   event: { pull_request: { user: ownerRun, head: { repo: ownRepository }, ...pullRequest }, sender },
 });
 const reviewPlacementCases = [
-  ["CODEOWNER PR", shortJobVars, reviewEvent(), reservedFleet],
+  ["CODEOWNER PR on upstream", shortJobVars, { ...reviewEvent({ head: { repo: ownRepository } }), ...upstreamNotifierContext }, reservedFleet],
+  ["CN fork PR", shortJobVars, reviewEvent()],
   ["not yet enabled", {}, reviewEvent()],
   ["AWS CI disabled", { ...shortJobVars, AWS_CI_ENABLED: "false" }, reviewEvent()],
   ["missing admission members", { ...shortJobVars, AWS_CI_ROUTING_USER_IDS: "" }, reviewEvent()],

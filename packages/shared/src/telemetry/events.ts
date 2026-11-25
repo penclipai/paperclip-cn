@@ -12,8 +12,12 @@ function asEventDimension<T extends string>(value: RawDimension<T>): T {
  * hashes it with `hashPrivateRef()`. Only a client whose transport declares
  * `hashesPrivateRefs: false` (Paperclip Cloud direct delivery) emits the raw id.
  */
+function hashPrivateRef(client: TelemetryClient, value: string): string {
+  return typeof client.hashPrivateRef === "function" ? client.hashPrivateRef(value) : value;
+}
+
 function emitPrivateRef(client: TelemetryClient, value: string): string {
-  return client.privateRefsHashed === false ? value : client.hashPrivateRef(value);
+  return client.privateRefsHashed === false ? value : hashPrivateRef(client, value);
 }
 
 export function trackInstallStarted(client: TelemetryClient): void {
@@ -48,7 +52,7 @@ export function trackCompanyImported(
   }
   // `isPrivate` is compatibility-only: this transport has no verified public
   // catalog boundary, so no import ref is safe to emit verbatim.
-  const ref = client.hashPrivateRef(sourceRef);
+  const ref = hashPrivateRef(client, sourceRef);
   client.track("company.imported", {
     source_type: asEventDimension(dims.sourceType),
     source_ref: ref,
@@ -95,7 +99,7 @@ export function trackAgentCreated(
 ): void {
   client.track("agent.created", {
     agent_role: asEventDimension(dims.agentRole),
-    agent_id: client.hashPrivateRef(dims.agentId),
+    agent_id: hashPrivateRef(client, dims.agentId),
   });
 }
 
@@ -121,7 +125,7 @@ export function trackAgentFirstHeartbeat(
 ): void {
   client.track("agent.first_heartbeat", {
     agent_role: asEventDimension(dims.agentRole),
-    agent_id: client.hashPrivateRef(dims.agentId),
+    agent_id: hashPrivateRef(client, dims.agentId),
   });
 }
 
@@ -137,7 +141,7 @@ export function trackAgentTaskCompleted(
 ): void {
   client.track("agent.task_completed", {
     agent_role: asEventDimension(dims.agentRole),
-    agent_id: client.hashPrivateRef(dims.agentId),
+    agent_id: hashPrivateRef(client, dims.agentId),
     adapter_type: asEventDimension(dims.adapterType),
     ...(dims.model ? { model: dims.model } : {}),
     ...(dims.taskId ? { task_id: emitPrivateRef(client, dims.taskId) } : {}),
@@ -161,7 +165,7 @@ export function trackAgentTaskRun(
   },
 ): void {
   client.track("agent.task_run", {
-    agent_id: client.hashPrivateRef(dims.agentId),
+    agent_id: hashPrivateRef(client, dims.agentId),
     state: asEventDimension(dims.state),
     ...(dims.adapterType ? { adapter_type: asEventDimension(dims.adapterType) } : {}),
     ...(dims.agentRole ? { agent_role: asEventDimension(dims.agentRole) } : {}),

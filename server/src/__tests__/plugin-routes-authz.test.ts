@@ -175,67 +175,6 @@ describe("plugin install and upgrade authz", () => {
     expect(typeof byPackageName.get("@penclipai/plugin-workspace-diff")?.hasBuiltEntrypoints).toBe("boolean");
   }, 20_000);
 
-  it("lists bundled plugins from packaged runtime dist manifests", async () => {
-    const previousBundledPluginsDir = process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR;
-    const pluginRoot = mkdtempSync(path.join(tmpdir(), "paperclip-bundled-plugins-"));
-    const pluginDir = path.join(pluginRoot, "examples", "packaged-plugin");
-    mkdirSync(path.join(pluginDir, "dist"), { recursive: true });
-    writeFileSync(
-      path.join(pluginDir, "package.json"),
-      JSON.stringify({
-        name: "@penclipai/plugin-packaged-smoke",
-        version: "1.0.0",
-        type: "module",
-        paperclipPlugin: {
-          manifest: "./dist/manifest.js",
-          worker: "./dist/worker.js",
-        },
-      }, null, 2),
-    );
-    writeFileSync(
-      path.join(pluginDir, "dist", "manifest.js"),
-      [
-        "export default {",
-        '  id: "paperclip.packaged-smoke",',
-        '  apiVersion: "v1",',
-        '  version: "1.0.0",',
-        '  displayName: "Packaged Smoke",',
-        '  description: "Loaded from a staged Electron runtime manifest.",',
-        "  capabilities: []",
-        "};",
-        "",
-      ].join("\n"),
-    );
-
-    try {
-      process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR = pluginRoot;
-      vi.resetModules();
-      const { app } = await createApp(boardActor());
-
-      const res = await request(app).get("/api/plugins/examples");
-
-      expect(res.status).toBe(200);
-      expect(res.body).toEqual([
-        expect.objectContaining({
-          packageName: "@penclipai/plugin-packaged-smoke",
-          pluginKey: "paperclip.packaged-smoke",
-          displayName: "Packaged Smoke",
-          description: "Loaded from a staged Electron runtime manifest.",
-          localPath: pluginDir,
-          tag: "example",
-        }),
-      ]);
-    } finally {
-      if (previousBundledPluginsDir === undefined) {
-        delete process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR;
-      } else {
-        process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR = previousBundledPluginsDir;
-      }
-      vi.resetModules();
-      rmSync(pluginRoot, { recursive: true, force: true });
-    }
-  }, 20_000);
-
   it("rejects plugin installation for non-admin board users", async () => {
     const { app, loader } = await createApp({
       type: "board",
@@ -1326,5 +1265,72 @@ describe("operator-hidden plugin management floor", () => {
     const res = await request(app).get("/api/plugins/examples");
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
+  }, 20_000);
+});
+
+describe("packaged runtime bundled plugin manifests", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("lists bundled plugins from packaged runtime dist manifests", async () => {
+    const previousBundledPluginsDir = process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR;
+    const pluginRoot = mkdtempSync(path.join(tmpdir(), "paperclip-bundled-plugins-"));
+    const pluginDir = path.join(pluginRoot, "examples", "packaged-plugin");
+    mkdirSync(path.join(pluginDir, "dist"), { recursive: true });
+    writeFileSync(
+      path.join(pluginDir, "package.json"),
+      JSON.stringify({
+        name: "@penclipai/plugin-packaged-smoke",
+        version: "1.0.0",
+        type: "module",
+        paperclipPlugin: {
+          manifest: "./dist/manifest.js",
+          worker: "./dist/worker.js",
+        },
+      }, null, 2),
+    );
+    writeFileSync(
+      path.join(pluginDir, "dist", "manifest.js"),
+      [
+        "export default {",
+        '  id: "paperclip.packaged-smoke",',
+        '  apiVersion: "v1",',
+        '  version: "1.0.0",',
+        '  displayName: "Packaged Smoke",',
+        '  description: "Loaded from a staged Electron runtime manifest.",',
+        "  capabilities: []",
+        "};",
+        "",
+      ].join("\n"),
+    );
+
+    try {
+      process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR = pluginRoot;
+      vi.resetModules();
+      const { app } = await createApp(boardActor());
+
+      const res = await request(app).get("/api/plugins/examples");
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual([
+        expect.objectContaining({
+          packageName: "@penclipai/plugin-packaged-smoke",
+          pluginKey: "paperclip.packaged-smoke",
+          displayName: "Packaged Smoke",
+          description: "Loaded from a staged Electron runtime manifest.",
+          localPath: pluginDir,
+          tag: "example",
+        }),
+      ]);
+    } finally {
+      if (previousBundledPluginsDir === undefined) {
+        delete process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR;
+      } else {
+        process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR = previousBundledPluginsDir;
+      }
+      vi.resetModules();
+      rmSync(pluginRoot, { recursive: true, force: true });
+    }
   }, 20_000);
 });

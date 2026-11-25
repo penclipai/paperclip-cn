@@ -16,6 +16,7 @@ import { promises as fs } from "node:fs";
 import { mkdtemp, realpath, rm, access, readFile, writeFile, stat } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { and, eq, sql } from "drizzle-orm";
 import { createDb, type Db, companies, agents, agentTaskSessions, heartbeatRuns, companyMemberships, connectionGrants, toolApplications, connectionGrantDelegations, connectionGrantMembers, toolConnections, toolConnectionInstalls, aiConnectionDefaults, aiProviderDefaults, adapterAuthSessions, environments, plugins, issues, issueThreadInteractions, issueRecoveryActions, connectionIntentDeliveries, agentWakeupRequests, companySecrets, companySecretVersions, secretAccessEvents, userSecretDefinitions, principalPermissionGrants } from "@penclipai/db";
 import { startEmbeddedPostgresTestDatabase } from "@penclipai/db/test-embedded-postgres";
@@ -895,7 +896,7 @@ describe("managed AI connections", () => {
   });
 
   it("requires sign-in after the receiver process dies with an exchanged but unsaved token", async () => {
-    const owner = "quota-receiver-process-loss";
+    const owner = `quota-receiver-process-loss-${randomUUID()}`;
     await db.insert(companyMemberships).values({ companyId, principalId: owner, principalType: "user", status: "active", membershipRole: "member" });
     const original = JSON.stringify({ tokens: { access_token: "expired-process", refresh_token: "single-use-process" } });
     await service.save(companyId, owner, { provider: "openai", method: "subscription", ownership: "personal", name: owner, loginSessionId: "fixture", agentIds: [], allAgents: true }, original);
@@ -919,11 +920,13 @@ describe("managed AI connections", () => {
     });
     provider.listen(0, "127.0.0.1"); await once(provider, "listening");
     const address = provider.address() as { port: number };
-    const child = spawn(process.execPath, ["--import", createRequire(import.meta.url).resolve("tsx"), new URL("./helpers/quota-credential-process.ts", import.meta.url).pathname], {
+    let childStderr = "";
+    const child = spawn(process.execPath, ["--import", pathToFileURL(createRequire(import.meta.url).resolve("tsx")).href, fileURLToPath(new URL("./helpers/quota-credential-process.ts", import.meta.url))], {
       env: { ...process.env, CREDENTIAL_TEST_DATABASE_URL: database.connectionString,
         CREDENTIAL_TEST_PROVIDER_URL: `http://127.0.0.1:${address.port}`, CREDENTIAL_TEST_COMPANY_ID: companyId, CREDENTIAL_TEST_OWNER: owner },
-      stdio: "ignore",
+      stdio: ["ignore", "ignore", "pipe"],
     });
+    child.stderr?.on("data", chunk => { childStderr += String(chunk); });
     const exited = once(child, "exit");
     try {
       let blocked = false;
@@ -934,7 +937,7 @@ describe("managed AI connections", () => {
         blocked = exchanges === 1 && rows.length > 0;
         if (!blocked) await new Promise(resolve => setTimeout(resolve, 25));
       }
-      expect(blocked).toBe(true);
+      expect(blocked, `exchanges=${exchanges} exitCode=${child.exitCode} stderr=${childStderr}`).toBe(true);
       child.kill("SIGKILL"); await exited;
     } finally {
       if (child.exitCode === null && child.signalCode === null) { child.kill("SIGKILL"); await exited; }

@@ -32,7 +32,7 @@ const reviewedSetup = new Map([
     external: ["supertest/lib/test.js"],
   }],
   ["server/src/services/instance-settings-cache.ts", {
-    hash: "d5535ee52e7a8e2c776534a67912a30632ed79e6adf7a0a6929844244d387ff5",
+    hash: "88afab149b0ba77fcbe19f18bd2b8672b86d06d6ad98f7eebd114f81b9e1265a",
     external: ["drizzle-orm", "drizzle-orm/pg-core", "@penclipai/db/work-signals"],
   }],
   ["server/src/__tests__/helpers/isolated-test-home.ts", {

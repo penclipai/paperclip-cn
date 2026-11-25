@@ -106,7 +106,7 @@ placement: { root?: string; launcherKey?: string } = {}) {
       key,
       typeof value === "string" && process.platform === "win32" ? value.replace(root, remoteRoot).replaceAll("\\", "/") : value,
     ]));
-    const prepared = prepareTestPosixShell({ command, args, env: { ...process.env, ...remoteEnv, PATH: remote ? fixturePath : remoteEnv.PATH } });
+    const prepared = prepareTestPosixShell({ command, args, env: { ...process.env, ...remoteEnv, ...(remote ? { PATH: fixturePath } : {}) } });
     const executePrepared = async (preparedArgs = prepared.args) => {
       const child = promisify(execFile)(prepared.command, preparedArgs, {
         cwd: input.cwd ?? root, env: prepared.env, timeout: 15_000, maxBuffer: 4 * 1024 * 1024,
@@ -364,8 +364,15 @@ it.each([false, true])("keeps one live parent and its original launcher environm
   const b = await broker(undefined, remote);
   const parent = spawn(process.execPath, ["-e", `
     const {execFile}=require('node:child_process');
+    const {existsSync}=require('node:fs');
     require('node:readline').createInterface({input:process.stdin}).on('line', () => {
-      execFile(process.execPath, [process.env.PAPERCLIP_FIXTURE_LAUNCHER], (error, stdout, stderr) => console.log(JSON.stringify({pid:process.pid, value:stdout, error:error?.message, stderr})));
+      if (process.platform !== 'win32') {
+        execFile('gh', [], (error, stdout, stderr) => console.log(JSON.stringify({pid:process.pid, value:stdout, error:error?.message, stderr})));
+      } else if (existsSync(process.env.PAPERCLIP_FIXTURE_LAUNCHER)) {
+        execFile(process.execPath, [process.env.PAPERCLIP_FIXTURE_LAUNCHER], (error, stdout, stderr) => console.log(JSON.stringify({pid:process.pid, value:stdout, error:error?.message, stderr})));
+      } else {
+        execFile('gh.cmd', [], {shell:true}, (error, stdout, stderr) => console.log(JSON.stringify({pid:process.pid, value:stdout, error:error?.message, stderr})));
+      }
     });
   `], { env: { ...process.env, ...b.parentEnv, PAPERCLIP_API_KEY: "stale-api-key",
     PAPERCLIP_FIXTURE_LAUNCHER: path.join(b.env.PAPERCLIP_GITHUB_LAUNCHER_DIR, "gh") }, stdio: ["pipe", "pipe", "pipe"] });
@@ -400,8 +407,15 @@ it.each([false, true])("keeps one live parent and its original launcher environm
 function liveParent(env: Record<string, string>) {
   const parent = spawn(process.execPath, ["-e", `
     const {execFile}=require('node:child_process');
+    const {existsSync}=require('node:fs');
     require('node:readline').createInterface({input:process.stdin}).on('line', () => {
-      execFile(process.execPath, [process.env.PAPERCLIP_FIXTURE_LAUNCHER], (error, stdout, stderr) => console.log(JSON.stringify({pid:process.pid, value:stdout, error:error?.message, stderr})));
+      if (process.platform !== 'win32') {
+        execFile('gh', [], (error, stdout, stderr) => console.log(JSON.stringify({pid:process.pid, value:stdout, error:error?.message, stderr})));
+      } else if (existsSync(process.env.PAPERCLIP_FIXTURE_LAUNCHER)) {
+        execFile(process.execPath, [process.env.PAPERCLIP_FIXTURE_LAUNCHER], (error, stdout, stderr) => console.log(JSON.stringify({pid:process.pid, value:stdout, error:error?.message, stderr})));
+      } else {
+        execFile('gh.cmd', [], {shell:true}, (error, stdout, stderr) => console.log(JSON.stringify({pid:process.pid, value:stdout, error:error?.message, stderr})));
+      }
     });
   `], { env: { ...process.env, ...env, PAPERCLIP_FIXTURE_LAUNCHER: path.join(env.PAPERCLIP_GITHUB_LAUNCHER_DIR!, "gh") }, stdio: ["pipe", "pipe", "pipe"] });
   cleanups.push(async () => { const exited = new Promise<void>(resolve => parent.once("exit", () => resolve())); parent.kill(); await exited; });

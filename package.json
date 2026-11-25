@@ -155,7 +155,8 @@
       "@codemirror/state": "^6.7.2",
       "@codemirror/view": "^6.43.11",
       "@lezer/common": "^1.5.2",
-      "glob@13.0.6>minimatch": "11.0.4"
+      "glob@13.0.6>minimatch": "11.0.4",
+      "undici@>=6.0.0 <6.29.1": ">=6.29.1"
     }
   }
 }

@@ -36,7 +36,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
 COPY packages/paperclip-eval-kernel/package.json packages/paperclip-eval-kernel/
 COPY packages/paperclip-runner/package.json packages/paperclip-runner/
 COPY patches/ patches/
-RUN pnpm install --frozen-lockfile --lockfile-only --offline --ignore-scripts --filter '@paperclipai/paperclip-runner...' > /tmp/runner-lockfile.log 2>&1 \
+RUN pnpm install --frozen-lockfile --lockfile-only --offline --ignore-scripts --filter '@penclipai/paperclip-runner...' > /tmp/runner-lockfile.log 2>&1 \
   || { cat /tmp/runner-lockfile.log >&2; \
     if grep -Eq 'ERR_PNPM_OUTDATED_LOCKFILE|ERR_PNPM_LOCKFILE_CONFIG_MISMATCH' /tmp/runner-lockfile.log; then \
       echo "ERROR: pnpm-lock.yaml is behind the manifests the Runner is installed from: package.json, pnpm-workspace.yaml, patches, packages/paperclip-runner/package.json or packages/paperclip-eval-kernel/package.json. The image build installs the Runner with a frozen lockfile, so it stops here. Run this command in the checkout, then build again: pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile" >&2; \
@@ -241,7 +241,7 @@ RUN set -eu; \
     if [ -n "$publication" ] && [ -z "$revision" ]; then echo "ERROR: a publication build needs PAPERCLIP_RUNNER_SOURCE_REVISION" >&2; exit 1; fi; \
     find packages/paperclip-runner/runner packages/paperclip-runner/protocol -type f -exec touch -d @0 {} +; \
     touch -d @0 packages/paperclip-runner/rust-toolchain.toml packages/paperclip-runner/acpx-profiles.json packages/paperclip-runner/antigravity-distributions.json; \
-    pnpm install --frozen-lockfile --filter '@paperclipai/paperclip-runner...' || { \
+    pnpm install --frozen-lockfile --filter '@penclipai/paperclip-runner...' || { \
       echo "ERROR: the frozen install failed. If pnpm reported ERR_PNPM_OUTDATED_LOCKFILE, the committed pnpm-lock.yaml is behind the Runner's manifests. The repository's lockfile refresh fixes that on master. For a local build only, resolve it first: pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile" >&2; \
       exit 1; \
     }; \
