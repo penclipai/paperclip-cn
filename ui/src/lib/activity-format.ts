@@ -1,4 +1,4 @@
-import type { Agent } from "@penclipai/shared";
+import { googleWorkspaceToolTitle, type Agent } from "@penclipai/shared";
 import { getCurrentLocale, translateInstant } from "@/i18n";
 import type { CompanyUserProfile } from "./company-members";
 import { formatReviewPolicyValue } from "./review-policy";
@@ -77,7 +77,10 @@ const ACTIVITY_ROW_VERBS: Record<string, string> = {
   "issue.accepted_plan_decomposition_updated": "updated accepted-plan decomposition on",
   "issue.recovery_action_opened": "opened a recovery action on",
   "issue.workspace_recovered": "recovered saved work for",
+  "issue.retry_continued_from_saved_work": "continued from saved work on",
   "issue.workspace_recovery_requested": "requested workspace recovery for",
+  "issue.previous_run_files_waiting": "is still working to save the previous run's files on",
+  "issue.previous_run_files_lost": "continued from the last save on",
   "issue.recovery_action_resolved": "resolved the recovery action on",
   "issue.recovery_action_escalated": "escalated the recovery action on",
   "agent.created": "created",
@@ -157,17 +160,25 @@ const ACTIVITY_ROW_VERBS: Record<string, string> = {
   "tool_app.oauth_access_finalized": "activityFormat.row.tool_app.oauth_access_finalized",
   "tool_app.finished": "activityFormat.row.tool_app.finished",
   "tool_app.reconnected": "activityFormat.row.tool_app.reconnected",
+  "tool_application.archived": "activityFormat.row.tool_application.archived",
   "tool_connection.created": "created",
   "tool_connection.updated": "updated",
   "tool_connection.archived": "activityFormat.row.tool_connection.archived",
+  "tool_connection.sign_in_cancelled": "activityFormat.row.tool_connection.sign_in_cancelled",
   "tool_connection.catalog_refresh": "activityFormat.row.tool_connection.catalog_refresh",
   "tool_connection.installs_synced": "activityFormat.row.tool_connection.installs_synced",
   "tool_connection.install_access_extended": "activityFormat.row.tool_connection.install_access_extended",
   "tool_connection.grant_audience_replaced": "activityFormat.row.tool_connection.grant_audience_replaced",
   "tool_connection.grant_added": "activityFormat.row.tool_connection.grant_added",
   "tool_connection.grant_revoked": "activityFormat.row.tool_connection.grant_revoked",
+  "tool_connection.google_access_ended": "activityFormat.row.tool_connection.google_access_ended",
+  "tool_connection.google_access_not_ended": "activityFormat.row.tool_connection.google_access_not_ended",
   "tool_connection.grant_delegated": "activityFormat.row.tool_connection.grant_delegated",
   "tool_connection.grant_delegation_revoked": "activityFormat.row.tool_connection.grant_delegation_revoked",
+  "tool_connection.content_deletion_requested": "activityFormat.row.tool_connection.content_deletion_requested",
+  "tool_connection.content_deleted": "activityFormat.row.tool_connection.content_deleted",
+  "issue.connection_content_deleted": "activityFormat.row.issue.connection_content_deleted",
+  "issue.connection_content_deletion_incomplete": "activityFormat.row.issue.connection_content_deletion_incomplete",
 };
 
 const ISSUE_ACTIVITY_LABELS: Record<string, string> = {
@@ -206,7 +217,10 @@ const ISSUE_ACTIVITY_LABELS: Record<string, string> = {
   "issue.attribution_spoof_rejected": "tried to choose its own responsible user",
   "issue.recovery_action_opened": "Opened a source-scoped recovery action",
   "issue.workspace_recovered": "Saved work recovered.",
+  "issue.retry_continued_from_saved_work": "Retry continued from saved work.",
   "issue.workspace_recovery_requested": "Requested workspace recovery",
+  "issue.previous_run_files_waiting": "Still working to save the previous run's unsaved files. New runs start once they are saved. Paperclip keeps trying on its own.",
+  "issue.previous_run_files_lost": "Could not save the previous run's unsaved files because they were already gone. This task continues from its last save.",
   "issue.recovery_action_resolved": "Resolved the recovery action",
   "issue.recovery_action_escalated": "Escalated the recovery action",
   "issue.accepted_plan_decomposition_updated": "updated the accepted-plan decomposition",
@@ -234,6 +248,8 @@ const ISSUE_ACTIVITY_LABELS: Record<string, string> = {
   "issue.thread_interaction_expired": "expired the request",
   "issue.thread_interaction_item_verdicts_submitted": "submitted verdicts on the request",
   "issue.stalled_review_decided": "recorded a review verdict",
+  "issue.connection_content_deleted": "deleted connected app content",
+  "issue.connection_content_deletion_incomplete": "partly deleted connected app content; some is still in use",
 };
 
 const ISSUE_ACTIVITY_TRANSLATION_KEYS: Record<string, string> = {
@@ -297,8 +313,55 @@ const ISSUE_ACTIVITY_TRANSLATION_KEYS: Record<string, string> = {
   "issue.thread_interaction_expired": "activityFormat.interaction.expiredRequest",
   "issue.thread_interaction_item_verdicts_submitted": "activityFormat.interaction.submittedVerdicts",
   "issue.stalled_review_decided": "activityFormat.stalledReview.recordedVerdict",
+  "issue.connection_content_deleted": "activityFormat.action.issue.connection_content_deleted",
+  "issue.connection_content_deletion_incomplete": "activityFormat.action.issue.connection_content_deletion_incomplete",
 };
 
+const ENTITY_LABEL_ENTRIES: Record<string, { key: string; defaultValue: string }> = {
+  company: { key: "activityFormat.entity.company", defaultValue: "the organization" },
+  agent: { key: "activityFormat.entity.agent", defaultValue: "an agent" },
+  goal: { key: "activityFormat.entity.goal", defaultValue: "a goal" },
+  project: { key: "activityFormat.entity.project", defaultValue: "a project" },
+  routine: { key: "activityFormat.entity.routine", defaultValue: "a routine" },
+  heartbeat_run: { key: "activityFormat.entity.heartbeatRun", defaultValue: "a run" },
+  approval: { key: "activityFormat.entity.approval", defaultValue: "an approval" },
+  tool_connection: { key: "activityFormat.entity.toolConnection", defaultValue: "the connection" },
+  tool_application: { key: "activityFormat.entity.toolApplication", defaultValue: "the app" },
+};
+
+function readText(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function googleProviderAccessResult(details: ActivityDetails): string | null {
+  const access = asRecord(details?.providerAccess);
+  return access?.provider === "google" ? readText(access.result) : null;
+}
+
+function formatToolLabel(details: ActivityDetails): string {
+  const name = readText(details?.upstreamToolName)
+    ?? readText(details?.tool)?.replace(/^(?:mcp|app)\.[^:]*:|^(?:mcp|app)\.[a-z0-9-]*-[0-9a-f]{8}\./, "").replace(/-[0-9a-f]{16}$/, "");
+  const title = readText(details?.toolTitle);
+  if (!name) return title ?? translateInstant("activityFormat.toolGateway.appAction", { defaultValue: "an app action" });
+  return googleWorkspaceToolTitle(name, title) ?? name.replace(/[._-]+/g, " ");
+}
+
+export function formatActivityEntityLabel(entityType: string, details?: Record<string, unknown> | null): string {
+  const name = readText(details?.name);
+  if (entityType === "tool_application" && name) return name;
+  if (entityType === "tool_connection" && googleProviderAccessResult(details)) {
+    return translateInstant("activityFormat.entity.googleWorkspaceConnection", { defaultValue: "the Google Workspace connection" });
+  }
+  const entry = ENTITY_LABEL_ENTRIES[entityType];
+  return entry ? translateInstant(entry.key, { defaultValue: entry.defaultValue }) : entityType.replace(/[._]+/g, " ");
+}
+
+export function formatActivityOutcome(action: string, details?: Record<string, unknown> | null): string | null {
+  if (action === "tool_application.archived" && details?.reason === "last_connection_removed") {
+    return translateInstant("activityFormat.outcome.lastConnectionRemoved", { defaultValue: "Its last connection was removed." });
+  }
+  return null;
+}
 /**
  * `issue.stalled_review_decided` carries the verb the actor chose, so the line
  * names the verdict ("approved the review") rather than the generic action.
@@ -642,11 +705,7 @@ export function formatActivityVerb(
   options: ActivityFormatOptions = {},
 ): string {
   if (action.startsWith("tool_gateway.")) {
-    const tool = typeof details?.tool === "string"
-      ? details.tool
-      : typeof details?.upstreamToolName === "string"
-        ? details.upstreamToolName
-        : translateInstant("activityFormat.toolGateway.appAction", { defaultValue: "an app action" });
+    const tool = formatToolLabel(details);
     const isTest = details?.source === "test";
     if (action === "tool_gateway.call_completed") return translateInstant(
       isTest ? "activityFormat.toolGateway.testedOn" : "activityFormat.toolGateway.usedOn",
@@ -658,6 +717,14 @@ export function formatActivityVerb(
     );
     if (action === "tool_gateway.call_denied") return translateInstant("activityFormat.toolGateway.blockedUsingOn", { tool, defaultValue: `was blocked from using ${tool} on` });
     if (action === "tool_gateway.approval_requested") return translateInstant("activityFormat.toolGateway.askedToUseOn", { tool, defaultValue: `asked to use ${tool} on` });
+    if (action === "tool_gateway.call_failed") return translateInstant(
+      isTest ? "activityFormat.toolGateway.testFailedOn" : "activityFormat.toolGateway.failedUsingOn",
+      { tool, defaultValue: `could not ${isTest ? "test" : "use"} ${tool} on` },
+    );
+    if (action === "tool_gateway.call_deferred") return translateInstant(
+      isTest ? "activityFormat.toolGateway.testDeferredOn" : "activityFormat.toolGateway.deferredUsingOn",
+      { tool, defaultValue: `could not finish ${isTest ? "testing" : "using"} ${tool} on` },
+    );
     if (action === "tool_gateway.session_created") return translateInstant("activityFormat.toolGateway.openedSessionFor", { defaultValue: "opened an app session for" });
     if (action === "tool_gateway.session_rejected") return translateInstant("activityFormat.toolGateway.blockedSessionFor", { defaultValue: "was blocked from opening an app session for" });
     if (action === "tool_gateway.discovery") return translateInstant("activityFormat.toolGateway.discoveredActionsFor", { defaultValue: "discovered app actions for" });

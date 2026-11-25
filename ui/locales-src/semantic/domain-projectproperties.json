@@ -29,6 +29,11 @@
     "zh-CN": "归档中…",
     "reviewedEnglishHash": "af9e1c99f1935d3d96e657af2f1694c11773e1270b6fcfcb7765adb72b21cec6"
   },
+  "projectProperties.availableIn": {
+    "en": "Available in",
+    "zh-CN": "可用环境",
+    "reviewedEnglishHash": "59e5d85f147daf2fa3663fae32692db52c07f5bdacb7fc9c822ed4adf8815c91"
+  },
   "projectProperties.baseRef": {
     "en": "Base ref",
     "zh-CN": "基础引用",
@@ -144,6 +149,11 @@
     "zh-CN": "确认取消归档“{{name}}”吗？",
     "reviewedEnglishHash": "65af16e12123c2ac44d5dabe3319f200ceba3aad5fb0c6b61041c0ca147bc186"
   },
+  "projectProperties.coreLocalStorage": {
+    "en": "Core / local",
+    "zh-CN": "核心 / 本地",
+    "reviewedEnglishHash": "387ca7478f512252425684bef48fa2c6750ee3f6f12d36d3c3940f53e6427c7b"
+  },
   "projectProperties.created": {
     "en": "Created",
     "zh-CN": "创建时间",
@@ -153,6 +163,16 @@
     "en": "Danger Zone",
     "zh-CN": "危险操作",
     "reviewedEnglishHash": "3c1c01b405853556e3e1c12bbd758e94d73f5ed474a5643bb068eaa7cb549c6e"
+  },
+  "projectProperties.decisionOwner": {
+    "en": "Decision owner",
+    "zh-CN": "决策负责人",
+    "reviewedEnglishHash": "ebbd3727d5e99851a31e184b3bb36029cb022a30745f087f1d74ad90a7a3b7cd"
+  },
+  "projectProperties.decisionOwnerHelp": {
+    "en": "A Needs You card on this project's work that names no person goes to this user's For you list.",
+    "zh-CN": "此项目工作中未指定处理人的“需要您处理”卡片将进入该用户的“待我处理”列表。",
+    "reviewedEnglishHash": "9a3535634bdd79497d88d6182ea905958f7ece07c35728d596c1dcdd02a4a5bc"
   },
   "projectProperties.defaultIsolatedCheckout": {
     "en": "New issues default to isolated checkout",
@@ -279,6 +299,11 @@
     "zh-CN": "这个项目中仍保留额外的旧版工作区记录。Paperclip CN 当前会把主工作区作为代码库视图。",
     "reviewedEnglishHash": "b6a3ee68d98a02faeb48c5ed4df467fc0c572d1ceb3ad791df0f8cb6381ba29d"
   },
+  "projectProperties.loadingEnvironments": {
+    "en": "Loading environments…",
+    "zh-CN": "正在加载环境…",
+    "reviewedEnglishHash": "72041c784ebd7073ea0efd2137410de815f53cb606a1fcfb57df40d07c358f6c"
+  },
   "projectProperties.localFolder": {
     "en": "Local folder",
     "zh-CN": "本地目录",
@@ -298,6 +323,11 @@
     "en": "Name",
     "zh-CN": "名称",
     "reviewedEnglishHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "projectProperties.noAvailableEnvironments": {
+    "en": "No available environments",
+    "zh-CN": "无可用环境",
+    "reviewedEnglishHash": "fa2d2cd201d381a02946d682c6f9b35cd70c5126b006444998a7e5e26bfe50a0"
   },
   "projectProperties.noDescription": {
     "en": "No description",
@@ -398,6 +428,16 @@
     "en": "Status",
     "zh-CN": "状态",
     "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "projectProperties.storageChoiceFixed": {
+    "en": "{{provider}} workspace storage was chosen when this project was created and does not change.",
+    "zh-CN": "创建此项目时已选择 {{provider}} 工作区存储，且不可更改。",
+    "reviewedEnglishHash": "764eb206bdb6c821994dc94e36f8e4a571c08c3f969fa8191ba8838febed544d"
+  },
+  "projectProperties.storagePluginUnavailable": {
+    "en": "Storage plugin unavailable",
+    "zh-CN": "存储插件不可用",
+    "reviewedEnglishHash": "cbaa4f07f922ad7282282a8944fea2ff282e7aeb56c6e152622cc3e25bd5c884"
   },
   "projectProperties.targetDate": {
     "en": "Target Date",

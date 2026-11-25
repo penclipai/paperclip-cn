@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeEach, expect, it, vi } from "vitest";
 import { api } from "../api/client";
 import { McpConnectPage, McpDevicePage } from "./McpConnect";
+import { isBlockedFromReplay } from "@/lib/analytics/replay-recording.test-utils";
 
 const route = vi.hoisted(() => ({ id: "request-one", companyId: null as string | null, unavailable: false, canWrite: true, requestedWrite: true, requestedConfigure: false, agentConnection: false, requiresSignIn: false, clientName: "Assistant", clientOrigin: null as string | null, setupUrl: "https://my.paperclip.app/orgs/new", reverseCompanies: false, hideFirst: false }));
 vi.mock("@/lib/router", () => ({
@@ -48,6 +49,14 @@ function setup(device = false, agentPairingOnly = false) {
   };
 }
 
+it("blocks the device code being confirmed from session replay", async () => {
+  const page = setup(true);
+  try {
+    await vi.waitFor(() => expect(page.container.textContent).toContain("Confirm this matches the code shown by your assistant"));
+    expect(isBlockedFromReplay("MIST-YPED", page.container)).toBe(true);
+  } finally { page.cleanup(); }
+});
+
 it("lets a person correct an invalid device code without reloading", async () => {
   vi.mocked(api.get).mockRejectedValueOnce(new Error("Invalid code"));
   const page = setup(true);
@@ -69,7 +78,7 @@ it.each([false, true])("lets Dot use the operator pairing capability without sig
     await vi.waitFor(() => expect(page.container.querySelector("#dot-pairing-code")).not.toBeNull());
     const input = page.container.querySelector<HTMLInputElement>("#dot-pairing-code")!;
     expect(input.type).toBe("password");
-    const connect = Array.from(page.container.querySelectorAll("button")).find(button => button.textContent === "Connect Dot with pairing code")!;
+    const connect = Array.from(page.container.querySelectorAll("button")).find(button => button.textContent === "Allow agent connection")!;
     expect(connect.disabled).toBe(true);
     flushSync(() => {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, "x".repeat(32));
@@ -94,7 +103,7 @@ it("keeps approval disabled while replacing a code and ignores an older preview 
   try {
     await vi.waitFor(() => expect(page.container.querySelector("#dot-pairing-code")).not.toBeNull());
     const input = page.container.querySelector<HTMLInputElement>("#dot-pairing-code")!;
-    const connect = Array.from(page.container.querySelectorAll("button")).find(button => button.textContent === "Connect Dot with pairing code")!;
+    const connect = Array.from(page.container.querySelectorAll("button")).find(button => button.textContent === "Allow agent connection")!;
     const enter = (value: string) => flushSync(() => {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, value);
       input.dispatchEvent(new Event("input", { bubbles: true }));
@@ -327,7 +336,7 @@ it("shows the fixed Grok agent and authorizing person before granting a Cursor c
   try {
     await vi.waitFor(() => expect(page.container.querySelector("#dot-pairing-code")).not.toBeNull());
     const input = page.container.querySelector<HTMLInputElement>("#dot-pairing-code")!;
-    const connect = [...page.container.querySelectorAll("button")].find(button => button.textContent === "Connect Dot with pairing code")!;
+    const connect = [...page.container.querySelectorAll("button")].find(button => button.textContent === "Allow agent connection")!;
     expect(connect.disabled).toBe(true);
     expect(page.container.textContent).not.toContain("Connect Dot agent");
     flushSync(() => {
@@ -387,7 +396,7 @@ it("explains a rejected pairing code in readable copy and clears it when the cod
   try {
     await vi.waitFor(() => expect(page.container.querySelector("#dot-pairing-code")).not.toBeNull());
     const input = page.container.querySelector<HTMLInputElement>("#dot-pairing-code")!;
-    const connect = Array.from(page.container.querySelectorAll("button")).find(button => button.textContent === "Connect Dot with pairing code")!;
+    const connect = Array.from(page.container.querySelectorAll("button")).find(button => button.textContent === "Allow agent connection")!;
     const enter = (value: string) => flushSync(() => {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, value);
       input.dispatchEvent(new Event("input", { bubbles: true }));

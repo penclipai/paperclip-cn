@@ -17,7 +17,6 @@ import { useCompany } from "@/context/CompanyContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { EmptyState } from "@/components/EmptyState";
 import { PageSkeleton } from "@/components/PageSkeleton";
-import { RequestCollapsedSidebar } from "@/components/RequestCollapsedSidebar";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -281,8 +280,8 @@ function TimelineSummaryStats({
     { label: translateInstant("timeline.stats.runTime"), value: formatDuration(0, summary.activeMs), icon: Clock3 },
     {
       label: translateInstant("timeline.stats.tokensUsed"),
-      value: summary.totalTokens > 0 ? formatCompactInteger(summary.totalTokens) : "Not tracked",
       icon: Coins,
+      value: summary.totalTokens > 0 ? formatCompactInteger(summary.totalTokens) : translateInstant("timeline.stats.notTracked"),
     },
   ];
 
@@ -323,7 +322,7 @@ export function Timeline({ embedded = false }: { embedded?: boolean } = {}) {
 
   useEffect(() => {
     if (!embedded) {
-      setBreadcrumbs([{ label: scopedProjectId ? "Project Timeline" : translateInstant("timeline.breadcrumb") }]);
+      setBreadcrumbs([{ label: scopedProjectId ? translateInstant("timeline.projectTitle", { defaultValue: "Project Timeline" }) : translateInstant("timeline.breadcrumb") }]);
     }
   }, [embedded, scopedProjectId, setBreadcrumbs]);
 
@@ -361,10 +360,7 @@ export function Timeline({ embedded = false }: { embedded?: boolean } = {}) {
 
   if (!selectedCompanyId) {
     return (
-      <>
-        {!embedded && <RequestCollapsedSidebar />}
-        <EmptyState icon={GanttChartSquare} message={translateInstant("Select an organization to view its work timeline.")} />
-      </>
+      <EmptyState icon={GanttChartSquare} message={translateInstant("Select an organization to view its work timeline.")} />
     );
   }
 
@@ -372,7 +368,7 @@ export function Timeline({ embedded = false }: { embedded?: boolean } = {}) {
     <div className="flex items-center gap-2">
       <GanttChartSquare className="h-6 w-6 text-muted-foreground" />
       <h1 className="text-3xl font-semibold tracking-tight">
-        {scopedProjectId ? "Project Timeline" : translateInstant("timeline.title")}
+        {scopedProjectId ? translateInstant("timeline.projectTitle", { defaultValue: "Project Timeline" }) : translateInstant("timeline.title")}
       </h1>
     </div>
   );
@@ -475,7 +471,6 @@ export function Timeline({ embedded = false }: { embedded?: boolean } = {}) {
 
   return (
     <div className="space-y-6">
-      {!embedded && <RequestCollapsedSidebar />}
       {header}
       {toolbar}
 
@@ -505,7 +500,7 @@ export function Timeline({ embedded = false }: { embedded?: boolean } = {}) {
           <div className="space-y-3">
             <EmptyState
               icon={GanttChartSquare}
-              message={scopedProjectId ? "No project activity in this window." : translateInstant("timeline.noActivity")}
+              message={scopedProjectId ? translateInstant("timeline.noProjectActivity", { defaultValue: "No project activity in this window." }) : translateInstant("timeline.noActivity")}
             />
             <div className="flex flex-wrap items-center justify-end gap-3">
               {rangeControls}

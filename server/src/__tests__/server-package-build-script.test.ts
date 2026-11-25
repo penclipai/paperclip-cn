@@ -75,7 +75,7 @@ describe("server package build script", () => {
     expect(packageJson.scripts?.build).toContain("pnpm run prepare:runner-vendor");
     const buildSteps = packageJson.scripts?.build?.split(" && ") ?? [];
     const vendorStep = buildSteps.indexOf("pnpm run prepare:runner-vendor");
-    const compileStep = buildSteps.indexOf("node ../scripts/run-tsc.mjs");
+    const compileStep = buildSteps.findIndex((step) => step.startsWith("node ../scripts/run-tsc.mjs"));
     expect(vendorStep).toBeGreaterThanOrEqual(0);
     expect(compileStep).toBeGreaterThanOrEqual(0);
     expect(vendorStep).toBeLessThan(compileStep);

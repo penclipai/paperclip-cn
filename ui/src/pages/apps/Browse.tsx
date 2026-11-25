@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { translateInstant } from "@/i18n";
+import { connectionRemovalToast } from "@/features/connections/googleAccessRemoval";
 import {
   AGGREGATOR_NAMES,
   aggregatorManagementUrl,
@@ -26,6 +27,9 @@ import {
   AssistantConnectionCard,
   useAssistantConnections,
 } from "./AssistantConnection";
+import { TailscaleConnectorCard } from "./TailscaleConnector";
+import { useTailscaleConnections } from "@/hooks/useTailscaleConnections";
+import type { TailscaleConnection } from "@/api/tailscale";
 import { ManagedAiConnectionRow } from "@/components/ai-connections/ManagedAiConnectionDetails";
 import { useAiConnectionDefaults } from "@/components/ai-connections/useAiConnectionDefaults";
 import {
@@ -116,6 +120,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -169,6 +174,8 @@ import {
   connectionOwnerProfile,
   type ConnectionOwnerProfile,
 } from "./connection-owner";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
+import { cn } from "@/lib/utils";
 
 type ConnectorRowModel = {
   key: string;
@@ -182,6 +189,7 @@ type ConnectorRowModel = {
   applications: ToolApplication[];
   connections: ToolConnection[];
   chatEndpoints: ChatEndpoint[];
+  networkConnections?: TailscaleConnection[];
   aggregatorApp?: AggregatorAppCatalogEntry;
   upstreamApps?: (ComposioAppSnapshot &
     Partial<
@@ -389,6 +397,19 @@ function upstreamAccountState(
               };
 }
 
+export function pendingFirstSignInOnlyApplicationIds(
+  connections: readonly Pick<ToolConnection, "applicationId" | "status" | "firstSignInPending">[],
+): Set<string> {
+  const pending = new Set<string>();
+  const listed = new Set<string>();
+  for (const connection of connections) {
+    if (connection.firstSignInPending) pending.add(connection.applicationId);
+    else if (connection.status !== "archived") listed.add(connection.applicationId);
+  }
+  for (const applicationId of listed) pending.delete(applicationId);
+  return pending;
+}
+
 function connectionRank(connection: ToolConnection): number {
   return connection.status === "draft" ? 0 : 1;
 }
@@ -397,6 +418,7 @@ function rowRank(row: ConnectorRowModel): number {
   if (
     row.chatEndpoints.some((endpoint) => endpoint.status !== "draft") ||
     row.connections.some((connection) => connectionRank(connection) === 1) ||
+    row.networkConnections?.some(connection => connection.status === "connected") ||
     row.upstreamApps?.some((app) => app.status === "connected")
   )
     return 2;
@@ -407,7 +429,12 @@ function isInstalled(row: ConnectorRowModel) {
   return (
     row.connections.length > 0 ||
     row.chatEndpoints.length > 0 ||
-    Boolean(row.upstreamApps?.some((app) => app.accounts.length > 0))
+    Boolean(row.upstreamApps?.some((app) => app.accounts.length > 0)) ||
+    Boolean(
+      row.networkConnections?.some(
+        (connection) => connection.status === "connected",
+      ),
+    )
   );
 }
 
@@ -528,6 +555,7 @@ export function Browse({
   const { pushToast } = useToast();
   const { selectedCompanyId } = useCompany();
   const assistantConnections = useAssistantConnections();
+  const tailscaleConnections = useTailscaleConnections(selectedCompanyId);
   const { userId: viewingUserId, settled: identitySettled } =
     useAccountIdentity();
   const { enabled: chatConnectorsEnabled, githubEnabled } =
@@ -557,6 +585,7 @@ export function Browse({
   } | null>(null);
   const [initialAggregatorProvider, setInitialAggregatorProvider] =
     useState<AggregatorAppCatalogEntry["routes"][number]["provider"]>();
+  const [deleteStoredContent, setDeleteStoredContent] = useState(false);
   const [connectionToRemove, setConnectionToRemove] =
     useState<ConnectionRemovalTarget | null>(null);
 
@@ -788,10 +817,11 @@ export function Browse({
           target.poolRevision,
         );
       } else {
-        await toolsApi.archiveConnection(target.id);
+        return toolsApi.archiveConnection(target.id, { deleteStoredContent });
       }
+      return null;
     },
-    onSuccess: (_connection, target) => {
+    onSuccess: (removed, target) => {
       queryClient.invalidateQueries({
         queryKey: ["email-inboxes", selectedCompanyId!],
       });
@@ -807,17 +837,25 @@ export function Browse({
       queryClient.invalidateQueries({
         queryKey: queryKeys.apps.attention(selectedCompanyId!),
       });
-      pushToast({
-        title: translateInstant("Connection removed"),
-        body: target.pool
-          ? "The connections in the pool are kept."
-          : target.kind === "chat"
-            ? `${target.providerName} is disconnected. Existing Paperclip tasks remain available.`
-            : target.remainingConnectionCount > 0
-              ? `${target.providerName} still has ${target.remainingConnectionCount} active ${target.remainingConnectionCount === 1 ? "connection" : "connections"} available to agents.`
-              : `${target.providerName} is no longer available to agents through this connection. Its saved credentials were deleted.`,
-        tone: "success",
-      });
+      const body = target.pool
+        ? "The connections in the pool are kept."
+        : target.kind === "chat"
+          ? `${target.providerName} is disconnected. Existing Paperclip tasks remain available.`
+          : target.remainingConnectionCount > 0
+            ? `${target.providerName} still has ${target.remainingConnectionCount} active ${target.remainingConnectionCount === 1 ? "connection" : "connections"} available to agents.`
+            : `${target.providerName} is no longer available to agents through this connection. Its saved credentials were deleted.`;
+      pushToast(
+        connectionRemovalToast({
+          title:
+            deleteStoredContent && !target.pool && target.kind !== "chat"
+              ? translateInstant("apps.browse.connectionRemovedDeletingData", {
+                  defaultValue: "Connection removed. Deleting its saved data.",
+                })
+              : translateInstant("Connection removed"),
+          body,
+          providerAccess: removed?.removal?.providerAccess,
+        }),
+      );
       setConnectionToRemove(null);
     },
     onError: (error) =>
@@ -829,6 +867,7 @@ export function Browse({
   });
   async function requestConnectionRemoval(target: ConnectionRemovalTarget) {
     removeConnection.reset();
+    setDeleteStoredContent(false);
     if (!target.pool) {
       setConnectionToRemove(target);
       return;
@@ -907,13 +946,16 @@ export function Browse({
     const activeConnections = (connectionsQuery.data?.connections ?? []).filter(
       (connection) =>
         connection.status !== "archived" &&
+        !connection.firstSignInPending &&
         connection.connectionPurpose !== "channel",
     );
+    const pendingOnlyApplicationIds = pendingFirstSignInOnlyApplicationIds(connectionsQuery.data?.connections ?? []);
     const activeApplications = (
       applicationsQuery.data?.applications ?? []
     ).filter(
       (application) =>
         application.status !== "archived" &&
+        !pendingOnlyApplicationIds.has(application.id) &&
         application.type !== "chat" &&
         application.metadata?.purpose !== "channel",
     );
@@ -935,6 +977,22 @@ export function Browse({
       ]),
     );
     const rowsBySlug = new Map<string, ConnectorRowModel>();
+    if (tailscaleConnections.canManage)
+      rowsBySlug.set("tailscale", {
+        key: "network:tailscale",
+        slug: "tailscale",
+        name: "Tailscale",
+        description: translateInstant("apps.browse.tailscaleDescription", {
+          defaultValue:
+            "Connect your tailnet to use its machines in SSH environments.",
+        }),
+        brandKey: "tailscale",
+        entry: null,
+        applications: [],
+        connections: [],
+        chatEndpoints: [],
+        networkConnections: tailscaleConnections.data ?? [],
+      });
     for (const entry of gallery) {
       const slug = appDefinitionSlug(entry);
       rowsBySlug.set(slug, {
@@ -1304,6 +1362,8 @@ export function Browse({
     chatConnectorsEnabled,
     githubEnabled,
     connectionsQuery.data,
+    tailscaleConnections.data,
+    tailscaleConnections.canManage,
     gallery,
     galleryQuery.data,
     googleWorkspaceConnectorEnabled,
@@ -1339,6 +1399,9 @@ export function Browse({
           row.description,
           ...(row.aggregatorApp?.aliases ?? []),
           ...row.connections.map((connection) => connection.name),
+          ...(row.networkConnections ?? []).map(
+            (connection) => connection.name,
+          ),
           ...(row.upstreamApps ?? []).flatMap((app) =>
             app.accounts.map((account) => account.alias),
           ),
@@ -1579,7 +1642,7 @@ export function Browse({
         </div>
       ) : (
         <div
-          className="space-y-3"
+          className={cn("space-y-3", ANALYTICS_MASK_CLASS)}
           role="list"
           aria-label={translateInstant("Connector list")}
         >
@@ -1587,7 +1650,7 @@ export function Browse({
             <AssistantConnectionCard onNavigate={navigate} />
           )}
           {paginatedRows.map((row) => (
-            <ConnectorCard
+            row.networkConnections ? <TailscaleConnectorCard key={row.key} onNavigate={navigate} /> : <ConnectorCard
               renderAccountDetails={renderAccountDetails}
               aiDefaults={aiDefaults}
               key={row.key}
@@ -1742,9 +1805,9 @@ export function Browse({
           }
         }}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className={ANALYTICS_MASK_CLASS}>
           <AlertDialogHeader>
-            <AlertDialogTitle>
+            <AlertDialogTitle className={ANALYTICS_MASK_CLASS}>
               {translateInstant("Remove")}{" "}
               {connectionToRemove?.accountName ?? "this"}{" "}
               {translateInstant("connection?")}
@@ -1765,6 +1828,31 @@ export function Browse({
                       : "The saved credentials are deleted and agents lose access immediately. Connecting it again later requires a new sign-in or key."}
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {connectionToRemove &&
+          !connectionToRemove.pool &&
+          connectionToRemove.kind !== "chat" ? (
+            <label className="flex items-start gap-2 text-sm text-foreground">
+              <Checkbox
+                className="mt-0.5"
+                checked={deleteStoredContent}
+                disabled={removeConnection.isPending}
+                onCheckedChange={(checked) =>
+                  setDeleteStoredContent(checked === true)
+                }
+              />
+              <span>
+                {translateInstant("apps.browse.alsoDeleteData", {
+                  defaultValue: "Also delete data read through this connection",
+                })}
+                <span className="block text-xs text-muted-foreground">
+                  {translateInstant("apps.browse.alsoDeleteDataHint", {
+                    defaultValue:
+                      "Permanently removes saved tool results and the transcripts of runs that used it. This cannot be undone.",
+                  })}
+                </span>
+              </span>
+            </label>
+          ) : null}
           {removeConnection.error ? (
             <p role="alert" className="text-sm text-destructive">
               {describeError(removeConnection.error).body}
@@ -1872,13 +1960,6 @@ export function ConnectorCard({
     ),
     preselectedAgentId,
   );
-  const copilotMethod =
-    row.slug === "github"
-      ? getAppStoreDefinition(row.slug)?.methods.find(
-          (method) =>
-            method.purpose === "ai" && method.ai?.provider === "github",
-        )
-      : undefined;
   const upstreamAccounts = (row.upstreamApps ?? []).flatMap((snapshot) => {
     const connection = connectionById?.get(snapshot.connectionId);
     return connection
@@ -1985,7 +2066,9 @@ export function ConnectorCard({
                       />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent>{label}</TooltipContent>
+                  <TooltipContent className={ANALYTICS_MASK_CLASS}>
+                    {label}
+                  </TooltipContent>
                 </Tooltip>
               );
             })}
@@ -2009,20 +2092,6 @@ export function ConnectorCard({
               : row.description}
           </p>
         </div>
-        {copilotMethod && (
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() =>
-              onNavigate(
-                `/apps/connect?source=github&method=${encodeURIComponent(copilotMethod.key)}`,
-              )
-            }
-          >
-            Connect Copilot
-          </Button>
-        )}
         {setupEnabled && (
           <Button
             type="button"
@@ -2178,7 +2247,10 @@ export function ConnectorCard({
                           <span>Managed by {providerName} ·</span>
                           <button
                             type="button"
-                            className="max-w-full truncate hover:underline"
+                            className={cn(
+                              "max-w-full truncate hover:underline",
+                              ANALYTICS_MASK_CLASS,
+                            )}
                             onClick={() =>
                               onNavigate(`/apps/${connection.id}/permissions`)
                             }
@@ -2201,7 +2273,10 @@ export function ConnectorCard({
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent
+                          className={ANALYTICS_MASK_CLASS}
+                          align="end"
+                        >
                           {managementUrl ? (
                             <DropdownMenuItem asChild>
                               <a
@@ -2320,13 +2395,18 @@ export function ConnectorCard({
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent
+                        className={ANALYTICS_MASK_CLASS}
+                        align="end"
+                      >
                         <DropdownMenuItem
                           onSelect={() =>
                             onNavigate(`/apps/chat/${endpoint.id}/settings`)
                           }
                         >
-                          {translateInstant("Manage", { defaultValue: "Manage" })}
+                          {translateInstant("Manage", {
+                            defaultValue: "Manage",
+                          })}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -2452,7 +2532,7 @@ function ConnectionAccountRow({
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent className={ANALYTICS_MASK_CLASS} align="end">
           {account?.canSetDefault &&
             aiDefaults &&
             !aiDefaults.accounts.error && (
@@ -2532,7 +2612,10 @@ function ConnectionAccountRowLayout({
           <div className="flex min-w-0 items-center gap-2">
             <button
               type="button"
-              className="block max-w-full cursor-pointer truncate text-left text-sm font-medium text-foreground hover:underline focus-visible:underline"
+              className={cn(
+                "block max-w-full cursor-pointer truncate text-left text-sm font-medium text-foreground hover:underline focus-visible:underline",
+                ANALYTICS_MASK_CLASS,
+              )}
               aria-label={openLabel}
               onClick={onOpen}
             >

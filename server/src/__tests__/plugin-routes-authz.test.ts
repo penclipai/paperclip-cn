@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import request from "supertest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { PluginWorkerUnavailableError } from "../services/plugin-worker-unavailable-error.js";
 
 const mockRegistry = vi.hoisted(() => ({
   getById: vi.fn(),
@@ -172,67 +173,6 @@ describe("plugin install and upgrade authz", () => {
     expect(byPackageName.get("@penclipai/plugin-modal")?.experimental).toBe(true);
     expect(byPackageName.get("@penclipai/plugin-authoring-smoke-example")?.experimental).toBe(false);
     expect(typeof byPackageName.get("@penclipai/plugin-workspace-diff")?.hasBuiltEntrypoints).toBe("boolean");
-  }, 20_000);
-
-  it("lists bundled plugins from packaged runtime dist manifests", async () => {
-    const previousBundledPluginsDir = process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR;
-    const pluginRoot = mkdtempSync(path.join(tmpdir(), "paperclip-bundled-plugins-"));
-    const pluginDir = path.join(pluginRoot, "examples", "packaged-plugin");
-    mkdirSync(path.join(pluginDir, "dist"), { recursive: true });
-    writeFileSync(
-      path.join(pluginDir, "package.json"),
-      JSON.stringify({
-        name: "@penclipai/plugin-packaged-smoke",
-        version: "1.0.0",
-        type: "module",
-        paperclipPlugin: {
-          manifest: "./dist/manifest.js",
-          worker: "./dist/worker.js",
-        },
-      }, null, 2),
-    );
-    writeFileSync(
-      path.join(pluginDir, "dist", "manifest.js"),
-      [
-        "export default {",
-        '  id: "paperclip.packaged-smoke",',
-        '  apiVersion: "v1",',
-        '  version: "1.0.0",',
-        '  displayName: "Packaged Smoke",',
-        '  description: "Loaded from a staged Electron runtime manifest.",',
-        "  capabilities: []",
-        "};",
-        "",
-      ].join("\n"),
-    );
-
-    try {
-      process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR = pluginRoot;
-      vi.resetModules();
-      const { app } = await createApp(boardActor());
-
-      const res = await request(app).get("/api/plugins/examples");
-
-      expect(res.status).toBe(200);
-      expect(res.body).toEqual([
-        expect.objectContaining({
-          packageName: "@penclipai/plugin-packaged-smoke",
-          pluginKey: "paperclip.packaged-smoke",
-          displayName: "Packaged Smoke",
-          description: "Loaded from a staged Electron runtime manifest.",
-          localPath: pluginDir,
-          tag: "example",
-        }),
-      ]);
-    } finally {
-      if (previousBundledPluginsDir === undefined) {
-        delete process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR;
-      } else {
-        process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR = previousBundledPluginsDir;
-      }
-      vi.resetModules();
-      rmSync(pluginRoot, { recursive: true, force: true });
-    }
   }, 20_000);
 
   it("rejects plugin installation for non-admin board users", async () => {
@@ -1078,6 +1018,26 @@ describe("plugin tool and bridge authz", () => {
     });
   });
 
+  it("reports WORKER_UNAVAILABLE when no worker is registered for the plugin", async () => {
+    readyPlugin();
+    const message = `No worker registered for plugin "${pluginId}"`;
+    const call = vi.fn().mockRejectedValue(
+      new PluginWorkerUnavailableError({ pluginId, workerStatus: null, message }),
+    );
+    const { app } = await createApp(boardActor(), {}, {
+      bridgeDeps: {
+        workerManager: { call },
+      },
+    });
+
+    const res = await request(app)
+      .post(`/api/plugins/${pluginId}/data/source-objects`)
+      .send({ companyId: companyA });
+
+    expect(res.status).toBe(502);
+    expect(res.body).toMatchObject({ code: "WORKER_UNAVAILABLE", message });
+  });
+
   it("rejects manual job triggers for non-admin board users", async () => {
     const scheduler = { triggerJob: vi.fn() };
     const jobStore = { getJobByIdForPlugin: vi.fn() };
@@ -1305,5 +1265,72 @@ describe("operator-hidden plugin management floor", () => {
     const res = await request(app).get("/api/plugins/examples");
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
+  }, 20_000);
+});
+
+describe("packaged runtime bundled plugin manifests", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("lists bundled plugins from packaged runtime dist manifests", async () => {
+    const previousBundledPluginsDir = process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR;
+    const pluginRoot = mkdtempSync(path.join(tmpdir(), "paperclip-bundled-plugins-"));
+    const pluginDir = path.join(pluginRoot, "examples", "packaged-plugin");
+    mkdirSync(path.join(pluginDir, "dist"), { recursive: true });
+    writeFileSync(
+      path.join(pluginDir, "package.json"),
+      JSON.stringify({
+        name: "@penclipai/plugin-packaged-smoke",
+        version: "1.0.0",
+        type: "module",
+        paperclipPlugin: {
+          manifest: "./dist/manifest.js",
+          worker: "./dist/worker.js",
+        },
+      }, null, 2),
+    );
+    writeFileSync(
+      path.join(pluginDir, "dist", "manifest.js"),
+      [
+        "export default {",
+        '  id: "paperclip.packaged-smoke",',
+        '  apiVersion: "v1",',
+        '  version: "1.0.0",',
+        '  displayName: "Packaged Smoke",',
+        '  description: "Loaded from a staged Electron runtime manifest.",',
+        "  capabilities: []",
+        "};",
+        "",
+      ].join("\n"),
+    );
+
+    try {
+      process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR = pluginRoot;
+      vi.resetModules();
+      const { app } = await createApp(boardActor());
+
+      const res = await request(app).get("/api/plugins/examples");
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual([
+        expect.objectContaining({
+          packageName: "@penclipai/plugin-packaged-smoke",
+          pluginKey: "paperclip.packaged-smoke",
+          displayName: "Packaged Smoke",
+          description: "Loaded from a staged Electron runtime manifest.",
+          localPath: pluginDir,
+          tag: "example",
+        }),
+      ]);
+    } finally {
+      if (previousBundledPluginsDir === undefined) {
+        delete process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR;
+      } else {
+        process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR = previousBundledPluginsDir;
+      }
+      vi.resetModules();
+      rmSync(pluginRoot, { recursive: true, force: true });
+    }
   }, 20_000);
 });

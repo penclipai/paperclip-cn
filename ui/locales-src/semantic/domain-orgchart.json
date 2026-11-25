@@ -1,12 +1,82 @@
 {
+  "orgChart.agentFallback": {
+    "en": "Agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "11b39c93777e8f1f3983bdba7c72b22fe68cfea20c677e9de53e17cb7dbfb19f"
+  },
   "orgChart.empty": {
     "en": "No agents in the organization. Create agents to build your org chart.",
     "zh-CN": "组织里还没有智能体。先创建一些智能体，再来查看组织结构。",
     "reviewedEnglishHash": "30519ad7322a683610d21d763548157a3a899be2f1caafb490537c3cb259e922"
   },
+  "orgChart.loadingRunningTasks": {
+    "en": "Loading running tasks…",
+    "zh-CN": "正在加载运行中的任务…",
+    "reviewedEnglishHash": "e533069b3770519d37c878e99fe61872a64cf3648108fd3df95083ab7efb013e"
+  },
+  "orgChart.noRunningTasks": {
+    "en": "No running tasks",
+    "zh-CN": "没有正在运行的任务",
+    "reviewedEnglishHash": "531bf994c817f1043489fd4a3452598ca294b9a14149cfd4949f3b7b8e587b73"
+  },
+  "orgChart.openAgentOverviewAria": {
+    "en": "Open {{name}} overview",
+    "zh-CN": "打开 {{name}} 概览",
+    "reviewedEnglishHash": "7ba58f58a419c4354259e74e856f1a9c47cf98c7e20e39f1c36852f87fdcc876"
+  },
+  "orgChart.runningTaskCount_one": {
+    "en": "{{count}} running task",
+    "zh-CN": "{{count}} 个运行中的任务",
+    "reviewedEnglishHash": "5563eb5303db57accc94ec6394c8e928e53cc64cbd5a04db53508d05110594fc"
+  },
+  "orgChart.runningTaskCount_other": {
+    "en": "{{count}} running tasks",
+    "zh-CN": "{{count}} 个运行中的任务",
+    "reviewedEnglishHash": "61702ff758b5155cf38de85d90266b355f51dcec8f6229e6fe9cf7a929ed443c"
+  },
   "orgChart.selectCompany": {
     "en": "Select a company to view org chart.",
     "zh-CN": "请选择一家公司以查看组织结构图。",
     "reviewedEnglishHash": "589a7bab640550af4f1bd53ad8ac71a41a8d8fb875779fcb3d77fa7ebff978a3"
+  },
+  "orgChart.showingFirst100Runs": {
+    "en": " · showing first 100 runs",
+    "zh-CN": " · 仅显示前 100 次运行",
+    "reviewedEnglishHash": "4a92ab71a0e2f10edec76f9d36d51ffda2e2e2dfcde65fea7ba5d4d8561d646f"
+  },
+  "orgChart.simulatedRunningTasks": {
+    "en": "{{count}} simulated running tasks · preview only",
+    "zh-CN": "{{count}} 个模拟运行任务 · 仅预览",
+    "reviewedEnglishHash": "4a1af7e070997f4f4208e18917e77aecec4a22aa9142ea31245cda70542b8cdd"
+  },
+  "orgChart.simulatedTask": {
+    "en": "Simulated task",
+    "zh-CN": "模拟任务",
+    "reviewedEnglishHash": "8318a14b567daaa8c85f369aa76ce62845ae97b5ca9dd9a5a432717f78fa4772"
+  },
+  "orgChart.statusIdle": {
+    "en": "Idle",
+    "zh-CN": "空闲",
+    "reviewedEnglishHash": "ab0171ca0494d441cb6fe96e2efbe1c2a129f1d87cd6c17f03613cfd111149dd"
+  },
+  "orgChart.taskFallback": {
+    "en": "Task",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "4bc74b21357c6cf5cca8f66b4d4ee948be64d0396feb434c9645e168ad61ceaf"
+  },
+  "orgChart.taskUpdatesPaused": {
+    "en": "Task updates paused while reconnecting…",
+    "zh-CN": "重新连接期间任务更新已暂停…",
+    "reviewedEnglishHash": "73a2e286f8f627213926ba00d42164d80d256580ed9e307b2edcc5aeedd5d143"
+  },
+  "orgChart.tasks": {
+    "en": "Tasks",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "b3a60e61a5233d0506ac737405a2a45280349683cac68722f18d0b73eb495ef4"
+  },
+  "orgChart.workingPrefix": {
+    "en": "Working:",
+    "zh-CN": "处理中：",
+    "reviewedEnglishHash": "3bb4ae09d16f1fb12929e23dd2afeab0920b207ad1b7eaefc1730256c65b6269"
   }
 }

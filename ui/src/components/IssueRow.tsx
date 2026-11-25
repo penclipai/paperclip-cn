@@ -4,7 +4,7 @@ import { requiresExecutionReconciliation } from "@penclipai/shared";
 import { useState, type CSSProperties, type ReactNode } from "react";
 import type { ExternalObjectSummary, Issue, IssueRecoveryAction } from "@penclipai/shared";
 import { Link } from "@/lib/router";
-import { Archive, Flag, CircleAlert } from "lucide-react";
+import { Archive, ArchiveRestore, Flag, CircleAlert } from "lucide-react";
 import {
   createIssueDetailPath,
   rememberIssueDetailLocationState,
@@ -83,6 +83,7 @@ export interface IssueRowProps {
   onMarkRead?: () => void;
   onArchive?: () => void;
   archiveDisabled?: boolean;
+  archiveAction?: IssueRowArchiveAction;
   className?: string;
   /** Pointer entered the row (used by list keyboard nav to track hover). */
   onMouseEnter?: () => void;
@@ -97,20 +98,35 @@ export interface IssueRowProps {
   showDivider?: boolean;
 }
 
+export type IssueRowArchiveAction = {
+  archived: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+};
+
 export function InboxArchiveButton({
   onArchive,
   disabled,
   compact = false,
+  archived = false,
+  iconOnly = false,
 }: {
   onArchive: () => void;
   disabled?: boolean;
   compact?: boolean;
+  archived?: boolean;
+  iconOnly?: boolean;
 }) {
-  useTranslation();
+  const { t } = useTranslation();
+  const label = archived
+    ? t("issueRow.restoreFromArchive", { defaultValue: "Restore from archive" })
+    : translateInstant("Archive");
+  const Icon = archived ? ArchiveRestore : Archive;
   return (
     <button
       type="button"
       data-slot="icon-button"
+      data-task-archive=""
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -124,13 +140,15 @@ export function InboxArchiveButton({
       }}
       disabled={disabled}
       className={cn(
-        "inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30",
-        compact ? "h-5 py-0" : "py-1",
+        "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md text-xs font-medium text-muted-foreground transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30",
+        iconOnly ? "size-7 sm:pointer-fine:opacity-0" : compact ? "h-5 px-2 py-0 opacity-0" : "px-2 py-1 opacity-0",
       )}
-      aria-label={translateInstant("Archive")}
+      aria-label={label}
+      title={iconOnly ? label : undefined}
     >
-      <Archive className="h-3.5 w-3.5" />
-      {translateInstant("Archive")}</button>
+      <Icon className="size-3.5" aria-hidden />
+      {iconOnly ? null : label}
+    </button>
   );
 }
 
@@ -167,6 +185,7 @@ export function IssueRow({
   onMarkRead,
   onArchive,
   archiveDisabled,
+  archiveAction,
   className,
   onMouseEnter,
   treeGuides = 0,
@@ -237,6 +256,15 @@ export function IssueRow({
       <Flag className="h-2.5 w-2.5" aria-hidden />
       {translateInstant("issueBlocked.parkedWork")}
     </Badge>
+  ) : null;
+
+  const personalArchiveControl = archiveAction ? (
+    <InboxArchiveButton
+      iconOnly
+      archived={archiveAction.archived}
+      disabled={archiveAction.disabled}
+      onArchive={archiveAction.onClick}
+    />
   ) : null;
 
   if (presentation === "task") {
@@ -445,6 +473,14 @@ export function IssueRow({
               </>
             )}
           </span>
+          {personalArchiveControl ? (
+            <span
+              role={refreshed && columnValues ? "cell" : undefined}
+              className={refreshed && columnValues ? "absolute end-2 top-1/2 -translate-y-1/2" : "shrink-0 self-center"}
+            >
+              {personalArchiveControl}
+            </span>
+          ) : null}
         </div>
       </HoveredCellContext.Provider>
     );
@@ -595,6 +631,7 @@ export function IssueRow({
           ) : null}
         </span>
       ) : null}
+      {personalArchiveControl ? <span className="shrink-0 self-center sm:order-4">{personalArchiveControl}</span> : null}
       {showUnreadDot ? (
         // Inbox rows reserve a mobile gutter on both read and unread rows. The
         // full control stays inside overflow-clipping row containers while its

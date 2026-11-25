@@ -589,6 +589,16 @@
     "zh-CN": "Kubernetes 沙箱",
     "reviewedEnglishHash": "97ff93c7c3380debb7cd765e29b032f6316a03562dc16ca6728f78a3657473a2"
   },
+  "agentConfig.lifecycleAutomatic": {
+    "en": "Automatic",
+    "zh-CN": "自动",
+    "reviewedEnglishHash": "d461a493a3753877c9486cffa3444265a33370af8a7fff242fb119b71750839c"
+  },
+  "agentConfig.lifecycleModesHint": {
+    "en": "Automatic keeps Codex and OpenCode warm on this computer for 5 minutes after a run, so a follow-up starts faster, and runs other harnesses turn by turn. Turn by turn suspends after each run. Warm keeps the same provider process available between governed runs.",
+    "zh-CN": "自动模式会在运行结束后，将本机的 Codex 和 OpenCode 进程保留 5 分钟，方便快速继续；其他执行后端则逐轮运行。逐轮模式会在每次运行后暂停进程。常驻模式会保留同一提供商进程，供后续获准的运行使用。",
+    "reviewedEnglishHash": "7bead54acf144da9f5b83aa619892a347f7ac6a247c6385c0cdcaa55a3ac24ff"
+  },
   "agentConfig.liveOpenCodeDiscoveryLocalOnly": {
     "en": "Live OpenCode model discovery only runs for Local environments. Using the curated list and manual entry for {{environmentName}}.",
     "zh-CN": "实时 OpenCode 模型发现仅在本地环境中运行。当前将为 {{environmentName}} 使用内置列表和手动输入。",
@@ -719,6 +729,11 @@
     "zh-CN": "其他",
     "reviewedEnglishHash": "f97e9da0e3b879f0a9df979ae260a5f7e1371edb127c1862d4f861981166cdc1"
   },
+  "agentConfig.otherModels": {
+    "en": "Other models",
+    "zh-CN": "其他模型",
+    "reviewedEnglishHash": "1b8bc2ba488cf91904fda7e655c2947cc56d11ccfcc8da1439de2afe81e37bf8"
+  },
   "agentConfig.overridingInstanceDefault": {
     "en": "Overriding the instance default with {{name}}.",
     "zh-CN": "正在用 {{name}} 覆盖实例默认值。",
@@ -784,6 +799,11 @@
     "zh-CN": "提示词模板会在每次心跳时重放。请保持简洁稳定，避免不断堆叠上下文。",
     "reviewedEnglishHash": "7bf73cf7c64c90cc45467647bd1826d320f172e4e0c83b8f6002279e6d40d7f2"
   },
+  "agentConfig.qualifiedHarnessModelHint": {
+    "en": "Choose a qualified harness and enter its exact model ID.",
+    "zh-CN": "请选择已通过兼容性验证的执行后端，并填写准确的模型 ID。",
+    "reviewedEnglishHash": "e0faad94d56291831f3dd929e972bce77586ee83f107b4a4012f9f50c10e0414"
+  },
   "agentConfig.redetectFromConfig": {
     "en": "Re-detect from config",
     "zh-CN": "重新从配置中检测",
@@ -813,6 +833,46 @@
     "en": "Run policy",
     "zh-CN": "运行策略",
     "reviewedEnglishHash": "a8ff03979599f0fb03e6932498ee724398f7697b66b08284297633483d024e89"
+  },
+  "agentConfig.runnerUpgrade.action": {
+    "en": "Upgrade runner",
+    "zh-CN": "升级运行器",
+    "reviewedEnglishHash": "242bc76013bd702707106a08ea736b72d68f04167dd1e958852f19a1bc9d6079"
+  },
+  "agentConfig.runnerUpgrade.description": {
+    "en": "Keep {{runner}}, your model, account, and compatible settings. New sessions start fresh; past runs stay available.",
+    "zh-CN": "保留 {{runner}}、模型、账户和兼容设置。新会话将重新开始，历史运行记录仍可查看。",
+    "reviewedEnglishHash": "cbb6febbbd48eebabc5c93f0fce427476832a9856936460110505a40c3e12e5e"
+  },
+  "agentConfig.runnerUpgrade.saveComputerChange": {
+    "en": "Save your computer change before upgrading the runner.",
+    "zh-CN": "请先保存计算机设置的更改，再升级运行器。",
+    "reviewedEnglishHash": "dc0cb98fa4341e8465f073cfa5b8294bd0bad04007fb5f92bbd71b97aa3661d9"
+  },
+  "agentConfig.runnerUpgrade.success": {
+    "en": "Upgraded to Paperclip Runner.",
+    "zh-CN": "已升级到 Paperclip Runner。",
+    "reviewedEnglishHash": "6d95803e33d7c501af830302471c8405bc6cf131a1b35c31d99bb261215104e5"
+  },
+  "agentConfig.runnerUpgrade.title": {
+    "en": "Upgrade to Paperclip Runner",
+    "zh-CN": "升级到 Paperclip Runner",
+    "reviewedEnglishHash": "ffd95e5b0b42ef67449c8bbb4b8a9a7a221e680f99837218b6423700aab2fe8f"
+  },
+  "agentConfig.runnerUpgrade.unsavedChangesIncluded": {
+    "en": "Your unsaved changes will be included.",
+    "zh-CN": "未保存的更改将一并应用。",
+    "reviewedEnglishHash": "d1f6ae5eca6f0febdf4d0af9a5d116df244c2d294d8c02c764bc14b4a27d2ddf"
+  },
+  "agentConfig.runnerUpgrade.upgrading": {
+    "en": "Upgrading…",
+    "zh-CN": "正在升级…",
+    "reviewedEnglishHash": "085f9cab21395ce61dd3ad41c4f26ae16b0c4c5bc26acf1942ac2e85c3099d1b"
+  },
+  "agentConfig.runnerUpgrade.verifyComputer": {
+    "en": "The upgrade will verify your computer first. This can take a few minutes.",
+    "zh-CN": "升级前会先验证你的计算机，这可能需要几分钟。",
+    "reviewedEnglishHash": "779f7e61cb5190866c02e246773ab9baa408d7b2f69de5062d72a5a7611e81ee"
   },
   "agentConfig.runtimeServicesJson": {
     "en": "Runtime services JSON",
@@ -989,64 +1049,9 @@
     "zh-CN": "/absolute/path/to/workspace",
     "reviewedEnglishHash": "f8bdc2305f39d599cc8f63295a706d4b983d20d448928c2e41f6006af74c80df"
   },
-  "agentConfig.runnerUpgrade.action": {
-    "en": "Upgrade runner",
-    "zh-CN": "升级运行器",
-    "reviewedEnglishHash": "242bc76013bd702707106a08ea736b72d68f04167dd1e958852f19a1bc9d6079"
-  },
-  "agentConfig.runnerUpgrade.description": {
-    "en": "Keep {{runner}}, your model, account, and compatible settings. New sessions start fresh; past runs stay available.",
-    "zh-CN": "保留 {{runner}}、模型、账户和兼容设置。新会话将重新开始，历史运行记录仍可查看。",
-    "reviewedEnglishHash": "cbb6febbbd48eebabc5c93f0fce427476832a9856936460110505a40c3e12e5e"
-  },
-  "agentConfig.runnerUpgrade.saveComputerChange": {
-    "en": "Save your computer change before upgrading the runner.",
-    "zh-CN": "请先保存计算机设置的更改，再升级运行器。",
-    "reviewedEnglishHash": "dc0cb98fa4341e8465f073cfa5b8294bd0bad04007fb5f92bbd71b97aa3661d9"
-  },
-  "agentConfig.runnerUpgrade.success": {
-    "en": "Upgraded to Paperclip Runner.",
-    "zh-CN": "已升级到 Paperclip Runner。",
-    "reviewedEnglishHash": "6d95803e33d7c501af830302471c8405bc6cf131a1b35c31d99bb261215104e5"
-  },
-  "agentConfig.runnerUpgrade.title": {
-    "en": "Upgrade to Paperclip Runner",
-    "zh-CN": "升级到 Paperclip Runner",
-    "reviewedEnglishHash": "ffd95e5b0b42ef67449c8bbb4b8a9a7a221e680f99837218b6423700aab2fe8f"
-  },
-  "agentConfig.runnerUpgrade.unsavedChangesIncluded": {
-    "en": "Your unsaved changes will be included.",
-    "zh-CN": "未保存的更改将一并应用。",
-    "reviewedEnglishHash": "d1f6ae5eca6f0febdf4d0af9a5d116df244c2d294d8c02c764bc14b4a27d2ddf"
-  },
-  "agentConfig.runnerUpgrade.upgrading": {
-    "en": "Upgrading…",
-    "zh-CN": "正在升级…",
-    "reviewedEnglishHash": "085f9cab21395ce61dd3ad41c4f26ae16b0c4c5bc26acf1942ac2e85c3099d1b"
-  },
-  "agentConfig.runnerUpgrade.verifyComputer": {
-    "en": "The upgrade will verify your computer first. This can take a few minutes.",
-    "zh-CN": "升级前会先验证你的计算机，这可能需要几分钟。",
-    "reviewedEnglishHash": "779f7e61cb5190866c02e246773ab9baa408d7b2f69de5062d72a5a7611e81ee"
-  },
   "agentConfig.xhigh": {
     "en": "X-High",
     "zh-CN": "超高",
     "reviewedEnglishHash": "393d3e4bf2eea43ad08fcd583922c7db6a04ff13ba49467ac637a843510be575"
-  },
-  "agentConfig.lifecycleAutomatic": {
-    "en": "Automatic",
-    "zh-CN": "自动",
-    "reviewedEnglishHash": "d461a493a3753877c9486cffa3444265a33370af8a7fff242fb119b71750839c"
-  },
-  "agentConfig.lifecycleModesHint": {
-    "en": "Automatic keeps Codex and OpenCode warm on this computer for 5 minutes after a run, so a follow-up starts faster, and runs other harnesses turn by turn. Turn by turn suspends after each run. Warm keeps the same provider process available between governed runs.",
-    "zh-CN": "自动模式会在运行结束后，将本机的 Codex 和 OpenCode 进程保留 5 分钟，方便快速继续；其他执行后端则逐轮运行。逐轮模式会在每次运行后暂停进程。常驻模式会保留同一提供商进程，供后续获准的运行使用。",
-    "reviewedEnglishHash": "7bead54acf144da9f5b83aa619892a347f7ac6a247c6385c0cdcaa55a3ac24ff"
-  },
-  "agentConfig.qualifiedHarnessModelHint": {
-    "en": "Choose a qualified harness and enter its exact model ID.",
-    "zh-CN": "请选择已通过兼容性验证的执行后端，并填写准确的模型 ID。",
-    "reviewedEnglishHash": "e0faad94d56291831f3dd929e972bce77586ee83f107b4a4012f9f50c10e0414"
   }
 }

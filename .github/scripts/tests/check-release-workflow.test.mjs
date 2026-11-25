@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const releaseWorkflow = readFileSync(".github/workflows/release.yml", "utf8").replaceAll("\r\n", "\n");
+const canaryFinalizeWorkflow = readFileSync(".github/workflows/canary-finalize.yml", "utf8").replaceAll("\r\n", "\n");
 const desktopBuilderConfig = readFileSync("packages/desktop-electron/electron-builder.yml", "utf8").replaceAll("\r\n", "\n");
 
 test("canary reuses successful exact-source verification and stable calls the shared verifier", () => {
@@ -24,23 +25,28 @@ test("release publish jobs use GitHub OIDC without registry token injection", ()
 
 test("tokenless OIDC leaves canary and stable release gates intact", () => {
   const job = (name) => releaseWorkflow.match(new RegExp(`^  ${name}:\\n([\\s\\S]*?)(?=^  [a-z_]+:|$(?![\\s\\S]))`, "m"))?.[1] ?? "";
-  for (const lane of ["canary", "stable"]) {
-    const body = job(`publish_${lane}`);
-    assert.match(body, /contents: write/);
-    assert.match(body, /actions: write/);
-    assert.match(body, /GITHUB_ACTIONS: "true"/);
-  }
-  assert.match(job("publish_canary"), /needs: \[verify_canary, release_runner_source, release_runner_binaries\]/);
-  assert.match(job("publish_stable"), /needs: \[preflight_stable, verify_stable, release_runner_source, release_runner_binaries\]/);
+  const publishCanary = job("publish_canary");
+  assert.match(publishCanary, /contents: read/);
+  assert.match(publishCanary, /actions: write/);
+  assert.match(publishCanary, /gh workflow run canary-finalize\.yml/);
+  assert.match(canaryFinalizeWorkflow, /contents: write/);
+  assert.match(canaryFinalizeWorkflow, /actions: write/);
+  const publishStable = job("publish_stable");
+  assert.match(publishStable, /contents: write/);
+  assert.match(publishStable, /actions: write/);
+  assert.match(publishStable, /GITHUB_ACTIONS: "true"/);
+  assert.match(publishCanary, /needs: \[verify_canary, release_runner_source, release_runner_binaries\]/);
+  assert.match(publishStable, /needs: \[preflight_stable, verify_stable, release_runner_source, release_runner_binaries\]/);
 });
 
 test("release publish jobs trigger smoke and desktop follow-ups", () => {
-  for (const job of ["smoke_canary_onboarding", "desktop_stable", "smoke_stable"]) {
+  assert.match(canaryFinalizeWorkflow, /^  smoke_canary_onboarding:/m);
+  for (const job of ["desktop_stable", "smoke_stable"]) {
     assert.match(releaseWorkflow, new RegExp(`^  ${job}:`, "m"));
   }
 
-  assert.match(releaseWorkflow, /uses: \.\/\.github\/workflows\/release-smoke\.yml/);
-  assert.match(releaseWorkflow, /PAPERCLIPAI_VERSION: \$\{\{ needs\.publish_canary\.outputs\.canary_version \}\}/);
+  assert.match(canaryFinalizeWorkflow, /run: pnpm run test:canary-onboarding-smoke/);
+  assert.match(canaryFinalizeWorkflow, /PAPERCLIPAI_VERSION: \$\{\{ needs\.confirm_canary\.outputs\.version \}\}/);
   assert.match(releaseWorkflow, /paperclip_version: latest/);
   assert.match(releaseWorkflow, /uses: \.\/\.github\/workflows\/desktop-release\.yml/);
   assert.match(releaseWorkflow, /source_ref: \$\{\{ needs\.publish_stable\.outputs\.stable_tag \}\}/);

@@ -42,6 +42,7 @@ import {
 } from "./GitHubBotConfiguration";
 import { ChatExecutionDefaults } from "./ChatExecutionDefaults";
 import { describeError } from "@/api/errors";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 export function GitHubRepositoryAccess({
   endpointId,
@@ -127,7 +128,7 @@ export function GitHubRepositoryAccess({
               <MoreHorizontal className="size-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent className={ANALYTICS_MASK_CLASS} align="end">
             <DropdownMenuItem asChild>
               <a href={managementUrl} target="_blank" rel="noreferrer">
                 {translateInstant("Manage on GitHub")}

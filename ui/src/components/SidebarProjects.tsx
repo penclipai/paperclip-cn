@@ -18,10 +18,9 @@ import { useCompany } from "../context/CompanyContext";
 import { useDialogActions } from "../context/DialogContext";
 import { useSidebar } from "../context/SidebarContext";
 import { authApi } from "../api/auth";
-import { projectsApi } from "../api/projects";
 import { SIDEBAR_SCROLL_RESET_STATE } from "../lib/navigation-scroll";
 import { queryKeys } from "../lib/queryKeys";
-import { cn, projectRouteRef, SIDEBAR_RAIL_HIDDEN_LABEL } from "../lib/utils";
+import { cn, projectRouteRef } from "../lib/utils";
 import { useProjectOrder } from "../hooks/useProjectOrder";
 import { resourceMembershipState, useResourceMembershipMutation, useResourceMemberships } from "../hooks/useResourceMemberships";
 import { useProjectExternalObjectSummary } from "../hooks/useIssueExternalObjects";
@@ -36,7 +35,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { PluginSlotMount, usePluginSlots } from "@/plugins/slots";
 import {
   getProjectSortModeStorageKey,
@@ -47,6 +45,7 @@ import {
   writeProjectSortMode,
 } from "../lib/project-order";
 import type { Project } from "@penclipai/shared";
+import { companyProjectsQuery } from "@/lib/company-projects-query";
 
 type ProjectSidebarSlot = ReturnType<typeof usePluginSlots>["slots"][number];
 
@@ -64,7 +63,6 @@ type ProjectItemProps = {
   isMobile: boolean;
   project: Project;
   projectSidebarSlots: ProjectSidebarSlot[];
-  rail: boolean;
   setSidebarOpen: (open: boolean) => void;
   onLeaveProject: (project: Project) => void;
   leaving?: boolean;
@@ -119,7 +117,6 @@ function ProjectItem({
   isMobile,
   project,
   projectSidebarSlots,
-  rail,
   setSidebarOpen,
   onLeaveProject,
   leaving = false,
@@ -148,33 +145,18 @@ function ProjectItem({
       )}
     >
       <ProjectTile color={project.color ?? null} icon={project.icon ?? null} size="xs" />
-      <span className={rail ? SIDEBAR_RAIL_HIDDEN_LABEL : "flex-1 truncate"}>{project.name}</span>
-            {!rail && project.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-label={translateInstant("Private project")} /> : null}
-      {!rail ? <ExternalObjectStatusSummary summary={externalObjectsSummary} compact /> : null}
-      {!rail && project.pauseReason === "budget" ? <BudgetSidebarMarker title={translateInstant("Project paused by budget")} /> : null}
+      <span className="flex-1 truncate">{project.name}</span>
+      {project.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-label={translateInstant("Private project")} /> : null}
+      <ExternalObjectStatusSummary summary={externalObjectsSummary} compact />
+      {project.pauseReason === "budget" ? <BudgetSidebarMarker title={translateInstant("Project paused by budget")} /> : null}
     </NavLink>
   );
 
   return (
     <div className="flex flex-col gap-0.5">
       <div className="group/project relative flex items-center">
-        {rail ? (
-          // Anchor the tooltip to a wrapper, not the NavLink: Radix `asChild`
-          // (Slot) drops React Router's function className, which would strip
-          // `flex` off the <a> and let the in-flow label stack under the icon,
-          // growing the row. Keeping the <a> out of Slot preserves a 1:1 row
-          // height with the expanded state so the icon never moves (PAP-10676).
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="min-w-0 flex-1">{link}</div>
-            </TooltipTrigger>
-            <TooltipContent side="right">{project.name}</TooltipContent>
-          </Tooltip>
-        ) : (
-          link
-        )}
+        {link}
 
-        {!rail && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -204,9 +186,8 @@ function ProjectItem({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        )}
       </div>
-      {!rail && projectSidebarSlots.length > 0 && (
+      {projectSidebarSlots.length > 0 && (
         <div className="ml-5 flex flex-col gap-0.5">
           {projectSidebarSlots.map((slot) => (
             <PluginSlotMount
@@ -261,14 +242,12 @@ export function SidebarProjects() {
   const [open, setOpen] = useState(true);
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { openNewProject } = useDialogActions();
-  const { isMobile, setSidebarOpen, collapsed, peeking } = useSidebar();
-  const rail = collapsed && !peeking;
+  const { isMobile, setSidebarOpen } = useSidebar();
   const fineReorderPointer = useFineReorderPointer();
   const location = useLocation();
 
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId!),
-    queryFn: () => projectsApi.list(selectedCompanyId!),
+    ...companyProjectsQuery(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
   const membershipsQuery = useResourceMemberships(selectedCompanyId);
@@ -405,7 +384,6 @@ export function SidebarProjects() {
       isMobile={isMobile}
       project={project}
       projectSidebarSlots={projectSidebarSlots}
-      rail={rail}
       setSidebarOpen={setSidebarOpen}
       onLeaveProject={leaveProject}
       leaving={projectLeaving(project)}
@@ -453,7 +431,6 @@ export function SidebarProjects() {
                   isMobile={isMobile}
                   project={project}
                   projectSidebarSlots={projectSidebarSlots}
-                  rail={rail}
                   setSidebarOpen={setSidebarOpen}
                   onLeaveProject={leaveProject}
                   leaving={projectLeaving(project)}

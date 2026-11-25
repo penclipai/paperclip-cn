@@ -3,11 +3,9 @@ import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Project } from "@penclipai/shared";
-import { projectsApi } from "../api/projects";
 import { useCompany } from "../context/CompanyContext";
 import { useDialogActions } from "../context/DialogContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
-import { queryKeys } from "../lib/queryKeys";
 import { EntityRow } from "../components/EntityRow";
 import { ProjectTile } from "../components/ProjectTile";
 import { StatusBadge } from "../components/StatusBadge";
@@ -29,29 +27,11 @@ import {
   useResourceMembershipMutation,
   useResourceMemberships,
 } from "../hooks/useResourceMemberships";
-import { ProjectsToolbar } from "@/components/ProjectsToolbar";
-import { ArrowUpDown, Check, Hexagon, Plus } from "lucide-react";
+import { ProjectsToolbar, type ProjectSortField, type ProjectSortDir } from "@/components/ProjectsToolbar";
+import { Hexagon } from "lucide-react";
 import { Lock } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-
-type ProjectSortField = "name" | "updated" | "created" | "targetDate";
-type ProjectSortDir = "asc" | "desc";
-
-const PROJECT_SORT_OPTIONS: Array<{
-  field: ProjectSortField;
-  labelKey: string;
-}> = [
-  { field: "name", labelKey: "Name" },
-  { field: "updated", labelKey: "Updated" },
-  { field: "created", labelKey: "Created" },
-  { field: "targetDate", labelKey: "newProject.targetDatePlaceholder" },
-];
+import { companyProjectsQuery } from "@/lib/company-projects-query";
 function compareProjectNames(left: Project, right: Project) {
   const nameDiff = left.name.localeCompare(right.name, undefined, {
     sensitivity: "base",
@@ -128,8 +108,7 @@ export function Projects() {
   }, [setBreadcrumbs]);
 
   const projectsQuery = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId!),
-    queryFn: () => projectsApi.list(selectedCompanyId!),
+    ...companyProjectsQuery(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
   const { data: allProjects, isLoading } = projectsQuery;
@@ -164,10 +143,6 @@ export function Projects() {
 
     return groups;
   }, [membershipsQuery.data, sortedProjects]);
-  const sortLabel = translateInstant(
-    PROJECT_SORT_OPTIONS.find((option) => option.field === sortField)
-      ?.labelKey ?? "Name",
-  );
 
   if (!selectedCompanyId) {
     return (
@@ -197,66 +172,17 @@ export function Projects() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-fit text-xs"
-              title={translateInstant("Sort")}
-            >
-              <ArrowUpDown className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
-              <span>
-                {translateInstant("searchFilters.sortPrefix")} {sortLabel}
-              </span>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-44 p-0">
-            <div className="p-2 space-y-0.5">
-              {PROJECT_SORT_OPTIONS.map((option) => (
-                <button
-                  key={option.field}
-                  type="button"
-                  className={`flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm ${
-                    sortField === option.field
-                      ? "bg-accent/50 text-foreground"
-                      : "text-muted-foreground hover:bg-accent/50"
-                  }`}
-                  onClick={() => {
-                    if (sortField === option.field) {
-                      setSortDir((current) =>
-                        current === "asc" ? "desc" : "asc",
-                      );
-                      return;
-                    }
-                    setSortField(option.field);
-                    setSortDir(
-                      option.field === "name" || option.field === "targetDate"
-                        ? "asc"
-                        : "desc",
-                    );
-                  }}
-                >
-                  <span>{translateInstant(option.labelKey)}</span>
-                  {sortField === option.field ? (
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Check className="h-3 w-3" />
-                      {sortDir === "asc"
-                        ? translateInstant("Asc")
-                        : translateInstant("Desc")}
-                    </span>
-                  ) : null}
-                </button>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-        <Button size="sm" variant="outline" onClick={openNewProject}>
-          <Plus className="h-4 w-4 mr-1" />
-          {translateInstant("Add Project")}
-        </Button>
-      </div>
+      <ProjectsToolbar
+        query={query}
+        onQueryChange={setQuery}
+        sortField={sortField}
+        sortDir={sortDir}
+        onSortChange={(field, direction) => {
+          setSortField(field);
+          setSortDir(direction);
+        }}
+        onNewProject={openNewProject}
+      />
 
       {!isLoading && projects.length === 0 && (
         <EmptyState
@@ -271,7 +197,7 @@ export function Projects() {
 
       {projects.length > 0 && sortedProjects.length === 0 && (
         <p className="text-sm text-muted-foreground">
-          No projects match your search.
+          {translateInstant("projects.noSearchMatches", { defaultValue: "No projects match your search." })}
         </p>
       )}
 

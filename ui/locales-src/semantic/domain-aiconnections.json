@@ -1,4 +1,19 @@
 {
+  "aiConnections.connectAnAccount": {
+    "en": "Connect an account",
+    "zh-CN": "连接账户",
+    "reviewedEnglishHash": "efeac437f9897cf977016fed79d1aa4856fdfc17d08e28da89f16b3cc944b8b3"
+  },
+  "aiConnections.connectOrChooseAnother": {
+    "en": "Connect an account or choose another connection.",
+    "zh-CN": "请连接账户或选择其他连接。",
+    "reviewedEnglishHash": "d825b7904e9521b0ffbafd5d224b5339df3e701e12596f68c26210c7d5acd3f1"
+  },
+  "aiConnections.incompatibleWithHarnessAndModel": {
+    "en": "Incompatible with this harness and model",
+    "zh-CN": "与当前执行器和模型不兼容",
+    "reviewedEnglishHash": "0794b0cb2cb63e1466d7021048fef5e7b040a377070ccc743892528704c71cbc"
+  },
   "aiConnections.localLogin.hostedUnavailable": {
     "en": "Server-host subscription sign-in is unavailable on this hosted instance. Choose a supported sign-in environment or use an API key.",
     "zh-CN": "此托管实例不支持服务器端订阅登录。请使用支持的登录环境，或通过 API 密钥连接。",
@@ -8,5 +23,25 @@
     "en": "Server-host subscription sign-in is unavailable on Windows because Paperclip cannot safely read isolated credential files on this platform. Choose a supported sign-in environment or use an API key.",
     "zh-CN": "Windows 暂不支持服务器端订阅登录，因为 Paperclip CN 无法在此平台上安全读取隔离的凭据文件。请使用支持的登录环境，或通过 API 密钥连接。",
     "reviewedEnglishHash": "b0d5d8af9159faddeb96759e97578698b1c3d7446c216a0bea238b31cd4914ce"
+  },
+  "aiConnections.noDefaultAccountPrefix": {
+    "en": "You have no default account for this provider.",
+    "zh-CN": "你还没有此服务商的默认账户。",
+    "reviewedEnglishHash": "5a5c62b2a8a4a122e4573bb5c1ab88fc9286885bc9e18aad6fd96fd73772c92c"
+  },
+  "aiConnections.orChooseAnotherConnection": {
+    "en": "or choose another connection.",
+    "zh-CN": "或选择其他连接。",
+    "reviewedEnglishHash": "a15082c869f78192e1af5aed08a523e1675def1e2a445dde8b1bf5686d51e669"
+  },
+  "aiConnections.picker.incompatibleWithHarnessAndModel": {
+    "en": "Incompatible with this harness and model.",
+    "zh-CN": "与此运行器和模型不兼容。",
+    "reviewedEnglishHash": "65cdc55e7a116775b9e71c18fcb7306ae64f039fa06775947cccd4483d65b09c"
+  },
+  "aiConnections.useHarnessSignIn": {
+    "en": "Use harness sign-in",
+    "zh-CN": "使用执行器登录",
+    "reviewedEnglishHash": "f9665cb3883442b517e3d07b5990e4b68aee145f575d89ad575253fd231640d2"
   }
 }

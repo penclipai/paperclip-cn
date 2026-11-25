@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { translateInstant } from "@/i18n";
 import { AlertTriangle } from "lucide-react";
-import type { ToolProfileWithDetails } from "@penclipai/shared";
+import type { ToolProfileListItem } from "@penclipai/shared";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,7 +24,7 @@ export function ProfileActionDialog({
   onDelete,
 }: {
   kind: ProfileActionDialogKind | null;
-  profile: ToolProfileWithDetails | null;
+  profile: Pick<ToolProfileListItem, "summary"> | null;
   pending: boolean;
   onClose: () => void;
   onArchive: () => void;
@@ -38,21 +38,46 @@ export function ProfileActionDialog({
   const copy = {
     archive: {
       title: translateInstant("tools.profiles.actions.archive.title"),
-      body: `This profile stops applying to ${profile.summary.appliesToAgentCount} ${profile.summary.appliesToAgentCount === 1 ? "agent" : "agents"}. You can restore it later.`,
+      body: translateInstant(
+        profile.summary.appliesToAgentCount === 1
+          ? "tools.profiles.actions.archive.body_one"
+          : "tools.profiles.actions.archive.body_other",
+        {
+          count: profile.summary.appliesToAgentCount,
+          defaultValue:
+            profile.summary.appliesToAgentCount === 1
+              ? "This profile stops applying to {{count}} agent. You can restore it later."
+              : "This profile stops applying to {{count}} agents. You can restore it later.",
+        },
+      ),
       confirm: translateInstant("Archive"),
       action: onArchive,
     },
     restore: {
       title: translateInstant("tools.profiles.actions.restore.title"),
-      body: "This profile will be active again and can be assigned to agents.",
+      body: translateInstant("tools.profiles.actions.restore.body"),
       confirm: translateInstant("Restore"),
       action: onRestore,
     },
     delete: {
       title: translateInstant("tools.profiles.actions.delete.title"),
       body: defaultDeleteBlocked
-        ? "This profile is the organization default. Reassign the organization default to another profile before deleting it."
-        : `This permanently deletes the profile and removes ${profile.summary.assignmentCount} ${profile.summary.assignmentCount === 1 ? "assignment" : "assignments"}.`,
+        ? translateInstant("tools.profiles.actions.delete.organizationDefaultBlocked", {
+            defaultValue:
+              "This profile is the organization default. Reassign the organization default to another profile before deleting it.",
+          })
+        : translateInstant(
+            profile.summary.assignmentCount === 1
+              ? "tools.profiles.actions.delete.body_one"
+              : "tools.profiles.actions.delete.body_other",
+            {
+              count: profile.summary.assignmentCount,
+              defaultValue:
+                profile.summary.assignmentCount === 1
+                  ? "This permanently deletes the profile and removes {{count}} assignment."
+                  : "This permanently deletes the profile and removes {{count}} assignments.",
+            },
+          ),
       confirm: translateInstant("Delete"),
       action: onDelete,
     },

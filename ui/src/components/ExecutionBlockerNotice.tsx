@@ -62,17 +62,31 @@ export function ExecutionBlockerNotice({ presentation, canRetry, onRetry, optimi
     && ["working", "retry_scheduled"].includes(presentation.state) ? recoveryStepText[presentation.recoveryStep] : null;
   const seconds = Math.max(0, Math.ceil((Date.parse(presentation?.nextRetryAt ?? "") - Date.now()) / 1000));
   const retryIn = t("projectAccess.retryScheduled", { duration: seconds > 60 ? `${Math.ceil(seconds / 60)}m` : `${seconds}s`, defaultValue: "Trying again in {{duration}}…" });
+  if (!optimistic && presentation?.state === "waiting_for_user" && presentation.userAction === "question")
+    return <div role="status" data-testid="task-execution-waiting" className={cn("flex items-center justify-between gap-2 text-sm text-muted-foreground", className)}>
+      <span>{t("projectAccess.respondPendingQuestion", { defaultValue: "Respond to the pending question to continue." })}</span>
+      {canRetry && presentation.canRetry && <Button variant="outline" size="sm" onClick={onRetry} data-testid="task-execution-retry">{t("projectAccess.retry", { defaultValue: "Retry" })}</Button>}
+    </div>;
   if (!optimistic && !presentation?.retryWait && presentation?.providerFailure && ["failed", "retry_scheduled", "waiting_for_user"].includes(presentation.state)) {
     // Saved-work recovery is what the task waits for, so name it over the
     // generic automatic-retry line while keeping the provider explanation.
     return <ProviderFailureNotice failure={presentation.providerFailure} className={className}
-      actions={canRetry && presentation.canRetry ? <Button variant="outline" size="sm" onClick={onRetry} data-testid="task-execution-retry">{t("projectAccess.retry", { defaultValue: "Retry" })}</Button> : undefined}>
+      actions={<>
+        {presentation.userAction === "provider_billing" && <Button variant="outline" size="sm" asChild><Link to="/apps">{t("projectAccess.reviewAiAccount", { defaultValue: "Review AI account" })}</Link></Button>}
+        {canRetry && presentation.canRetry && <Button variant="outline" size="sm" onClick={onRetry} data-testid="task-execution-retry">{t("projectAccess.retry", { defaultValue: "Retry" })}</Button>}
+      </>}>
       {presentation.state === "retry_scheduled" && <p>{step ? `${step}. ${retryIn}` : "Paperclip will retry automatically."}</p>}
+      {presentation.userAction === "provider_billing" && <p>Check your provider account’s billing and usage allowance, then retry.</p>}
       {isBudgetWait(presentation) && <p data-testid="task-execution-waiting">It is waiting for the budget to allow new work. Raise the budget in Costs.</p>}
     </ProviderFailureNotice>;
   }
   if (step && presentation?.state === "working") return <div role="status" aria-label={t("projectAccess.taskStatus", { defaultValue: "Task status" })}
     className={cn("text-sm text-muted-foreground", className)}>{`${step}…`}</div>;
+  if (!optimistic && presentation?.state === "working" && presentation.retryAction === "move_forward" && presentation.canRetry)
+    return <div role="status" aria-label="Task status" className={cn("flex items-center justify-between gap-3 text-sm text-muted-foreground", className)}>
+      <span className="min-w-0 flex-1">Waiting for the agent to finish other work. Paperclip continues this task by itself.</span>
+      {canRetry && <Button variant="outline" size="sm" className="shrink-0" onClick={onRetry} data-testid="task-execution-move-forward">Move it forward now</Button>}
+    </div>;
   // A task that has not started yet names the admission hold it waits for.
   if (!optimistic && presentation?.state === "working" && presentation.retryWait) {
     const dependencies = presentation.retryWait.reason === "dependency_blocked" ? blockers ?? [] : [];
@@ -125,10 +139,13 @@ export function ExecutionBlockerNotice({ presentation, canRetry, onRetry, optimi
       )}>
         {presentation.state === "failed" && <AlertCircle className="size-5 shrink-0 text-destructive" aria-hidden="true" />}
         <span className="min-w-0 flex-1">{presentation.state === "retry_scheduled"
-          ? step ? `${step}. ${retryIn}` : retryIn
+          ? step ? `${step}. ${retryIn}`
+            : presentation.setupFailure ? `${presentation.setupFailure.message}. ${retryIn}` : retryIn
           : presentation.retryWait ? presentation.retryWait.message
           : presentation.workspaceFailure
             ? <>Couldn’t prepare the task folders. {presentation.workspaceFailure.message}</>
+          : presentation.setupFailure
+            ? t("projectAccess.workspaceSetupFailed", { message: presentation.setupFailure.message, defaultValue: "Couldn’t set up the task workspace. {{message}}. Fix the command in the project’s workspace settings, then retry." })
             : t("projectAccess.attemptFailed", { defaultValue: "Couldn’t finish this attempt. Your message is saved." })}</span>
         {canRetry && presentation.canRetry && <Button variant="outline" size="sm" className="shrink-0" onClick={onRetry} data-testid="task-execution-retry">{t("projectAccess.retry", { defaultValue: "Retry" })}</Button>}
       </div>

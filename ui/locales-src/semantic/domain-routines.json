@@ -120,9 +120,9 @@
     "reviewedEnglishHash": "d5e520f554b1000e47dd32930855b555ba9fac79d86ca76a7d7542ebfcdaf398"
   },
   "routines.noActiveRoutines": {
-    "en": "No active routines. Use Create routine to define the first recurring workflow.",
+    "en": "No active routines. Use New routine to define the first recurring workflow.",
     "zh-CN": "暂无启用的例行任务。使用“新建例行任务”定义第一个重复工作流。",
-    "reviewedEnglishHash": "7ba430dfc06859c540c6dbab7b1ebab14947c80fe1348e95dec8736b7866c732"
+    "reviewedEnglishHash": "de4065920a583a1fccfe2be19deae60618dd4ad48e66d48188fed140936574ca"
   },
   "routines.noProject": {
     "en": "No project",
@@ -133,6 +133,16 @@
     "en": "No responsible found.",
     "zh-CN": "未找到责任人。",
     "reviewedEnglishHash": "045a8ffe4067d6d274a98c9df98f861c38048d1158dc5d2080fefb05bea81936"
+  },
+  "routines.noResponsibleUser": {
+    "en": "No responsible user",
+    "zh-CN": "无责任人",
+    "reviewedEnglishHash": "1c5a765739a41386bb227542726dca885fe13b06b8b4767901908b0ed942096d"
+  },
+  "routines.noRoutinesMatchSearch": {
+    "en": "No routines match your search.",
+    "zh-CN": "没有符合搜索条件的例行任务。",
+    "reviewedEnglishHash": "d841e90df9d5c21e0b1049311464dc689499e1801ea1b0d538869ecc0fe8a18e"
   },
   "routines.noSearchResults": {
     "en": "No routines match your search.",
@@ -189,6 +199,16 @@
     "zh-CN": "例行任务运行失败",
     "reviewedEnglishHash": "296c7ca6e9b82b39e4ddc83e5a9ab87dbe6d1f041045a313b739d1e846076425"
   },
+  "routines.runNowAria": {
+    "en": "Run now: {{name}}",
+    "zh-CN": "立即运行：{{name}}",
+    "reviewedEnglishHash": "857eb81f766daff06d167b56d8d39d391e3f2e9dc053b6f95a493edc1d1c0079"
+  },
+  "routines.runningRoutineAria": {
+    "en": "Running {{name}}",
+    "zh-CN": "正在运行 {{name}}",
+    "reviewedEnglishHash": "2456f816ef16067cdb27fe821edb43c3fe5e3e1a4b86bd86b07c55925dfb83d2"
+  },
   "routines.selectCompany": {
     "en": "Select a company to view routines.",
     "zh-CN": "选择一家公司以查看例行任务。",
@@ -233,6 +253,11 @@
     "en": "Unassigned",
     "zh-CN": "未分配",
     "reviewedEnglishHash": "14d33bd014e6b4e7c3590a8a12e1ec4951d777593d6d6aef9ebe5faac9c8dac0"
+  },
+  "routines.unavailableUser": {
+    "en": "Unavailable user",
+    "zh-CN": "不可用用户",
+    "reviewedEnglishHash": "217f1149616f184d97b6380e00b6d2797e0317d773816bdf882154c0459fd60b"
   },
   "routines.unknownAssignee": {
     "en": "Unknown agent",

@@ -1,14 +1,4 @@
 {
-  "agentDetail.navigationAriaLabel": {
-    "en": "{{name}} navigation",
-    "zh-CN": "{{name}}的导航",
-    "reviewedEnglishHash": "a42512333dbce8f6f0d4a56671570cbaf0ad0f70fd147c057190c9b5db502271"
-  },
-  "agentDetail.runBreadcrumb": {
-    "en": "Run {{id}}",
-    "zh-CN": "运行 {{id}}",
-    "reviewedEnglishHash": "b9766aac24cead007ee47439382b81df8584a25176224229f5dae49ab49784ee"
-  },
   "agentDetail.actionFailed": {
     "en": "Action failed",
     "zh-CN": "操作失败",
@@ -349,6 +339,11 @@
     "zh-CN": "退出码 {{code}}",
     "reviewedEnglishHash": "65448b1c1a8e2ba7051413447699fa5b2ed892062422001426f5c7221b2bc578"
   },
+  "agentDetail.exploreSkills": {
+    "en": "Explore skills",
+    "zh-CN": "探索技能",
+    "reviewedEnglishHash": "4b1b9e1c639f81645a273cc51db5f13e178a861adc2d2dcab658cf320fb89e19"
+  },
   "agentDetail.failedToClearSessions": {
     "en": "Failed to clear sessions",
     "zh-CN": "无法清除会话",
@@ -403,6 +398,16 @@
     "en": "File contents",
     "zh-CN": "文件内容",
     "reviewedEnglishHash": "69423babe8e61aab549f347bcc8b9d77b7dcaca198fb0597bde0b5f97f968e38"
+  },
+  "agentDetail.fileNameConflict": {
+    "en": "A file with this name already exists.",
+    "zh-CN": "已存在同名文件。",
+    "reviewedEnglishHash": "6ff4e79cb1a62657477388433674fa04ebe7f3f9c19e029dc447880f1cc3b764"
+  },
+  "agentDetail.fileNameRules": {
+    "en": "Use letters, numbers, hyphens or underscores.",
+    "zh-CN": "请使用字母、数字、连字符或下划线。",
+    "reviewedEnglishHash": "9b6ae0b495ff1a4e4768937965894512b64508e109e773a2e1dbf9571b833153"
   },
   "agentDetail.files": {
     "en": "Files",
@@ -619,6 +624,11 @@
     "zh-CN": "个任务",
     "reviewedEnglishHash": "e57109ca138964bda3202bdbd3822d39457dc998652a939524b16dd5ba677394"
   },
+  "agentDetail.navigationAriaLabel": {
+    "en": "{{name}} navigation",
+    "zh-CN": "{{name}}的导航",
+    "reviewedEnglishHash": "a42512333dbce8f6f0d4a56671570cbaf0ad0f70fd147c057190c9b5db502271"
+  },
   "agentDetail.newFileInBundle": {
     "en": "New file in this bundle",
     "zh-CN": "此文件包中的新文件",
@@ -804,10 +814,10 @@
     "zh-CN": "运行活动",
     "reviewedEnglishHash": "fe11724808acbe9ce7db7beebf168d0d09fc20d7c004fdc2fdf9f07590fd95d8"
   },
-  "agentDetail.runtime": {
-    "en": "Runtime",
-    "zh-CN": "运行环境",
-    "reviewedEnglishHash": "1093115897879aa3ad9511a1dc2850929cfb60ba45ec741605f69f5d20203472"
+  "agentDetail.runBreadcrumb": {
+    "en": "Run {{id}}",
+    "zh-CN": "运行 {{id}}",
+    "reviewedEnglishHash": "b9766aac24cead007ee47439382b81df8584a25176224229f5dae49ab49784ee"
   },
   "agentDetail.runCrumb": {
     "en": "Run {{id}}",
@@ -849,6 +859,11 @@
     "zh-CN": "运行",
     "reviewedEnglishHash": "848f54e89660cea4357644039ac5d7146f76c8e85df5c04076e08feb7e7547f0"
   },
+  "agentDetail.runtime": {
+    "en": "Runtime",
+    "zh-CN": "运行环境",
+    "reviewedEnglishHash": "1093115897879aa3ad9511a1dc2850929cfb60ba45ec741605f69f5d20203472"
+  },
   "agentDetail.saveFailed": {
     "en": "Save failed",
     "zh-CN": "保存失败",
@@ -868,6 +883,11 @@
     "en": "Saving soon...",
     "zh-CN": "即将保存...",
     "reviewedEnglishHash": "58ec588428651ed982424bd4d656ede3c9451336b9b152554ae7bbebe92bcfe7"
+  },
+  "agentDetail.secretsAndVariables": {
+    "en": "Secrets & variables",
+    "zh-CN": "密钥与变量",
+    "reviewedEnglishHash": "bd56b51ec5f5a033d145760b3de0dde3eeab4265d86f9ba08de5a046b1ee7235"
   },
   "agentDetail.seeAll": {
     "en": "See All",
@@ -959,6 +979,11 @@
     "zh-CN": "Paperclip 无法在这里管理 OpenClaw 技能。请前往你的 OpenClaw 实例管理此智能体的技能。",
     "reviewedEnglishHash": "49be839d7a6bc45254c97cc8b8e03bae1bfec0dc5309c4f204aee6512b673837"
   },
+  "agentDetail.startWithSuggestedTask": {
+    "en": "Start with a suggested task",
+    "zh-CN": "从推荐任务开始",
+    "reviewedEnglishHash": "7d8afdd90e685758524e06b7d3fba4b71be4d4c58ac86f1577d97bbc3b3916be"
+  },
   "agentDetail.stderrExcerpt": {
     "en": "stderr excerpt",
     "zh-CN": "stderr 摘要",
@@ -973,6 +998,11 @@
     "en": "Success Rate",
     "zh-CN": "成功率",
     "reviewedEnglishHash": "5068c6c343ffda3e486241d5e345451b8f730db575a59fdf6ec2ee78227c1aec"
+  },
+  "agentDetail.suggestedTasksAria": {
+    "en": "Suggested tasks",
+    "zh-CN": "推荐任务",
+    "reviewedEnglishHash": "5addd6fff8dd7969a12d449ba08a6d85be3de71d4b66f8797768be5f7e9da9aa"
   },
   "agentDetail.taskAssignHint.agentCreator": {
     "en": "Enabled automatically while this agent can create new agents.",
@@ -1138,11 +1168,6 @@
     "en": "succeeded",
     "zh-CN": "成功",
     "reviewedEnglishHash": "5dceaeceb6d8a49d3665594710ace68dfbc1800e2d663d7febb302b4dbee3d27"
-  },
-  "agentDetail.secretsAndVariables": {
-    "en": "Secrets & variables",
-    "zh-CN": "密钥与变量",
-    "reviewedEnglishHash": "bd56b51ec5f5a033d145760b3de0dde3eeab4265d86f9ba08de5a046b1ee7235"
   },
   "agentDetail.worktreeLabel": {
     "en": "Worktree:",

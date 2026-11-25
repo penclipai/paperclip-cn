@@ -1,4 +1,64 @@
 {
+  "decisionResolver.effect.applyDefault": {
+    "en": "Apply effect",
+    "zh-CN": "应用操作",
+    "reviewedEnglishHash": "4b92049abb62d2db28ec6abf254d387d2a3792d10d24ee1485223c9cdeb0d04a"
+  },
+  "decisionResolver.effect.assignIssue": {
+    "en": "Reassign {{target}}",
+    "zh-CN": "重新分配 {{target}}",
+    "reviewedEnglishHash": "7b6dcdb4e4b05c40bb0010b021164baa658ec8b94de9fb27e7b1d0a6a89be090"
+  },
+  "decisionResolver.effect.cancelIssueTree": {
+    "en": "Cancel {{target}} and its sub-tree",
+    "zh-CN": "取消 {{target}} 及其子任务树",
+    "reviewedEnglishHash": "feedaa91ac811072ea2e855fe6ecb199c7bc0556e8a75e92e4bd29670732a097"
+  },
+  "decisionResolver.effect.commentOnIssue": {
+    "en": "Comment on {{target}}",
+    "zh-CN": "在 {{target}} 上评论",
+    "reviewedEnglishHash": "4095f57f9cf2bb706973cf22541d02cad8bb2768f88220ac344693ac0415b23a"
+  },
+  "decisionResolver.effect.createIssue": {
+    "en": "Create “{{title}}”",
+    "zh-CN": "创建“{{title}}”",
+    "reviewedEnglishHash": "2196d3cd21040da023d4cda9e3481e20c8fdb70192d53016e3ac33f1a0aacd08"
+  },
+  "decisionResolver.effect.resolveBlocker": {
+    "en": "Unblock {{target}}",
+    "zh-CN": "解除 {{target}} 阻塞",
+    "reviewedEnglishHash": "613e68682d3caa81a52ff77d8e0cbe98319a4ef38a5e787a34f5515faf9f29f6"
+  },
+  "decisionResolver.effect.updateIssueStatus": {
+    "en": "Set {{target}} to {{status}}",
+    "zh-CN": "将 {{target}} 设为 {{status}}",
+    "reviewedEnglishHash": "64ef25ed2b3382b93a68db0e4c076348af0276b5d7f1927942f8a1efc6877b0c"
+  },
+  "decisionResolver.issueShort": {
+    "en": "issue {{id}}",
+    "zh-CN": "任务 {{id}}",
+    "reviewedEnglishHash": "0015efb086dd869f94d453eb6e8e4a23f5ff2921ab2570d5e0e78b4f88a2b0b8"
+  },
+  "decisionResolver.optionsAria": {
+    "en": "Options",
+    "zh-CN": "选项",
+    "reviewedEnglishHash": "d0db8b5e364b6989e4b8f38a2b3846b87d99a51c1592ebf35d21cc66405a8e39"
+  },
+  "decisionResolver.staleTargetNotice": {
+    "en": "A target changed since this was proposed, so options that need it unchanged are off.",
+    "zh-CN": "自提议以来目标已变更，因此要求目标保持不变的选项已禁用。",
+    "reviewedEnglishHash": "ac9b33a4f9ee69aa1309f6553f3ddbe72750831febdb7c4cf59b5751db38aa14"
+  },
+  "decisionResolver.submitChoice": {
+    "en": "Submit choice",
+    "zh-CN": "提交选择",
+    "reviewedEnglishHash": "b8caa531138ff594b7e67f9be194a1104038c934cce62cf96b99ca2b2cdf03ce"
+  },
+  "decisionResolver.targetChanged": {
+    "en": "Target changed",
+    "zh-CN": "目标已变更",
+    "reviewedEnglishHash": "0251584d14ae03ad1f8daf3e7807d3cc692eeda53d1e7badd83875c4a20b787b"
+  },
   "decisionResolver.unavailable": {
     "en": "This decision is no longer available — it may have been resolved elsewhere.",
     "zh-CN": "此决策已不可用，可能已在其他位置处理。",

@@ -8,7 +8,7 @@ import { projectRouteRef } from "@/lib/utils";
 import { issueStatusOrder } from "@/lib/issue-filters";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { RelationNavigationList, TaskDetailSubtasksPanel, TaskDetailTaskList } from "./TaskDetailRelationsPanel";
+import { RelationNavigationList, resolveTaskDetailSubtaskState, TaskDetailSubtasksPanel, TaskDetailTaskList } from "./TaskDetailRelationsPanel";
 import { IssueCreatedFromNote } from "./IssueCreatedFromNote";
 
 function TaskGroup({ name, projectPath, children }: { name: string; projectPath?: string; children: ReactNode }) {
@@ -25,7 +25,12 @@ function TaskGroup({ name, projectPath, children }: { name: string; projectPath?
             </CollapsibleTrigger>
           </h2>
           {projectPath && (
-            <Link to={projectPath} aria-label={`Go to ${name} project`} title={`Go to ${name} project`} className="ml-auto inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity duration-(--motion-duration-fast) ease-(--motion-ease-standard) hover:bg-accent hover:text-foreground group-hover/header:opacity-100 group-focus-within/header:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <Link
+              to={projectPath}
+              aria-label={translateInstant("issueDetail.goToProject", { name, defaultValue: `Go to ${name} project` })}
+              title={translateInstant("issueDetail.goToProject", { name, defaultValue: `Go to ${name} project` })}
+              className="ml-auto inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity duration-(--motion-duration-fast) ease-(--motion-ease-standard) hover:bg-accent hover:text-foreground group-hover/header:opacity-100 group-focus-within/header:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
               <ArrowUpRight aria-hidden className="h-3.5 w-3.5" />
             </Link>
           )}
@@ -52,15 +57,25 @@ export interface TaskDetailTasksPanelProps {
 
 export function TaskDetailTasksPanel({ ancestors = [], createdFrom = null, subtasks, createdTasks, projects, isLoading, hasError, onRetry, issueLinkState }: TaskDetailTasksPanelProps) {
   useTranslation();
+  const visibleAncestors = ancestors.filter((item) => item.id !== createdFrom?.issue.id);
   const sortedSubtasks = sortTasks(subtasks);
+  const displayedTaskIds = new Set([
+    ...(createdFrom ? [createdFrom.issue.id] : []),
+    ...ancestors.map((item) => item.id),
+    ...sortedSubtasks.map((item) => item.id),
+  ]);
+  const { rootBlocker } = resolveTaskDetailSubtaskState(sortedSubtasks);
+  if (rootBlocker) displayedTaskIds.add(rootBlocker.id);
+  const projectsById = new Map(projects.map((project) => [project.id, project]));
   const groups = new Map<string, { name: string; path?: string; tasks: Issue[] }>();
   for (const item of sortTasks(createdTasks)) {
+    if (displayedTaskIds.has(item.id)) continue;
     const key = item.projectId ?? "no-project";
     const project = item.projectId
-      ? projects.find((candidate) => candidate.id === item.projectId) ?? item.project
+      ? projectsById.get(item.projectId) ?? item.project
       : null;
     const group = groups.get(key) ?? {
-      name: project?.name ?? (item.projectId ? "Project" : "No project"),
+      name: project?.name ?? (item.projectId ? translateInstant("common.project") : translateInstant("issueDetail.noProject")),
       path: item.projectId ? `/projects/${projectRouteRef(project ?? { id: item.projectId })}/issues` : undefined,
       tasks: [],
     };
@@ -70,28 +85,28 @@ export function TaskDetailTasksPanel({ ancestors = [], createdFrom = null, subta
   return (
     <section className="flex flex-col gap-6" aria-label={translateInstant("issueProperties.relatedTasks")}>
       {createdFrom && (
-        <TaskGroup name="Created from">
+        <TaskGroup name={translateInstant("Created from")}>
           <IssueCreatedFromNote createdFrom={createdFrom} issueLinkState={issueLinkState} className="px-2 text-sm" />
         </TaskGroup>
       )}
-      {ancestors.length > 0 && (
-        <TaskGroup name="Ancestors">
+      {visibleAncestors.length > 0 && (
+        <TaskGroup name={translateInstant("issueDetail.ancestors", { defaultValue: "Ancestors" })}>
           <RelationNavigationList
-            items={[...ancestors].reverse()}
+            items={[...visibleAncestors].reverse()}
             emptyMessage=""
-            ariaLabel="Ancestor tasks, root to parent"
+            ariaLabel={translateInstant("issueDetail.ancestorTasksAria", { defaultValue: "Ancestor tasks, root to parent" })}
             issueLinkState={issueLinkState}
           />
         </TaskGroup>
       )}
       {sortedSubtasks.length > 0 && (
-        <TaskGroup name="Subtasks">
+        <TaskGroup name={translateInstant("issueDetail.subtasks", { defaultValue: "Subtasks" })}>
           <TaskDetailSubtasksPanel items={sortedSubtasks} issueLinkState={issueLinkState} />
         </TaskGroup>
       )}
       {[...groups.entries()].sort(([, a], [, b]) => a.name.localeCompare(b.name)).map(([id, group]) => (
         <TaskGroup key={id} name={group.name} projectPath={group.path}>
-          <TaskDetailTaskList items={group.tasks} ariaLabel={`${group.name} tasks`} issueLinkState={issueLinkState} />
+          <TaskDetailTaskList items={group.tasks} ariaLabel={translateInstant("issueDetail.projectTasksAria", { name: group.name, defaultValue: `${group.name} tasks` })} issueLinkState={issueLinkState} />
         </TaskGroup>
       ))}
       {isLoading && <p role="status" className="text-sm text-muted-foreground">{translateInstant("Loading tasks…")}</p>}

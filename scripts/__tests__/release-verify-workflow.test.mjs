@@ -155,6 +155,8 @@ test("canary can admit deferred exact-source checks while stable keeps full veri
   assert.match(canary, /ref: \$\{\{ github\.sha \}\}/);
   assert.match(canary, /SOURCE_SHA: \$\{\{ github\.sha \}\}/);
   assert.match(canary, /run: node scripts\/cloud-source-verification\.mjs "\$SOURCE_SHA"/);
+  // Two runner-loss retries of a deferred full readiness run fit inside the job.
+  assert.match(canary, /timeout-minutes: 100\n/);
   assert.doesNotMatch(canary, /release-verify\.yml|continue-on-error|always\(\)/);
   assert.match(releaseWorkflow, /publish_canary:\n\s+if: .*github\.event_name == 'push'.*\n\s+needs: \[verify_canary, release_runner_source, release_runner_binaries\]/);
   // The stable lane is gated on the stable channel since the nightly lane
@@ -389,76 +391,63 @@ test("post-publish stable follow-ups survive skipped inactive lane ancestors", (
   );
 });
 
-test("published canaries are gated by the exact-version onboarding browser smoke", () => {
-  const releaseWorkflow = readWorkflow("release.yml");
+function canaryJobs() {
+  const release = readWorkflow("release.yml");
+  const finalize = readWorkflow("canary-finalize.yml");
+  return {
+    release,
+    finalize,
+    publish: release.split("  publish_canary:\n")[1].split("  # ----- Nightly lane")[0],
+    confirm: finalize.split("  confirm_canary:\n")[1].split("  smoke_canary_onboarding:\n")[0],
+    smoke: finalize.split("  smoke_canary_onboarding:\n")[1],
+  };
+}
 
-  assert.match(
-    releaseWorkflow,
-    /publish_canary:[\s\S]*?outputs:\n\s+canary_version: \$\{\{ steps\.canary_tag\.outputs\.version \}\}/,
-  );
-  assert.match(
-    releaseWorkflow,
-    /smoke_canary_onboarding:\n\s+needs: publish_canary\n\s+if: \$\{\{ !cancelled\(\) && needs\.publish_canary\.result == 'success' \}\}/,
-  );
-  const smoke = releaseWorkflow.split("  smoke_canary_onboarding:\n")[1].split(/\n  [a-z_]+:\n/)[0];
-  const condition = smoke.match(/^    if: \$\{\{ (.+) \}\}$/m)?.[1];
-  assert.match(condition, /^!cancelled\(\) && needs\.publish_canary\.result == 'success'$/);
-  for (const [result, cancelled, expected] of [
-    ["success", false, true], ["failure", false, false],
-    ["cancelled", false, false], ["skipped", false, false], ["success", true, false],
-  ]) {
-    const needs = { publish_canary: { result }, release_runner_source: { result: "success" },
-      select_nightly: { result: "skipped" }, select_beta: { result: "skipped" }, preflight_stable: { result: "skipped" } };
-    assert.equal(runInNewContext(condition, { cancelled: () => cancelled, needs }), expected,
-      `Canary smoke: publisher=${result}, cancelled=${cancelled}`);
-  }
-  assert.match(
-    releaseWorkflow,
-    /PAPERCLIPAI_VERSION: \$\{\{ needs\.publish_canary\.outputs\.canary_version \}\}/,
-  );
-  assert.match(releaseWorkflow, /test:canary-onboarding-smoke/);
-  assert.match(
-    releaseWorkflow,
-    /smoke_canary_onboarding:[\s\S]*?uses: actions\/checkout@[0-9a-f]{40} # v7[\s\S]*?uses: pnpm\/action-setup@[0-9a-f]{40} # v6[\s\S]*?uses: actions\/setup-node@[0-9a-f]{40} # v7/,
-  );
-  assert.match(
-    releaseWorkflow,
-    /smoke_canary_onboarding:[\s\S]*?Install test dependencies\n\s+run: pnpm install --frozen-lockfile/,
-  );
-  assert.doesNotMatch(
-    releaseWorkflow.match(
-      /smoke_canary_onboarding:[\s\S]*?(?=\n  # ----- Nightly lane)/,
-    )?.[0] ?? "",
-    /cache: pnpm/,
-  );
-  assert.match(
-    releaseWorkflow,
-    /name: Smoke exact published canary through onboarding\n\s+env:\n\s+PAPERCLIP_CANARY_SMOKE_SERVER_LOG: \$\{\{ runner\.temp \}\}\/canary-onboarding-server\.log/,
-  );
-  assert.match(
-    releaseWorkflow,
-    /smoke_canary_onboarding:[\s\S]*?uses: actions\/upload-artifact@[0-9a-f]{40} # v7/,
-  );
-  assert.match(releaseWorkflow, /canary-onboarding-server\.log/);
-  assert.match(releaseWorkflow, /tests\/canary-onboarding\/playwright-report/);
+test("published canaries are confirmed, tagged and onboarding-smoked outside the release lock", () => {
+  const { release, finalize, publish, confirm, smoke } = canaryJobs();
+  assert.doesNotMatch(release, /smoke_canary_onboarding:|confirm-canary-publication/);
+  assert.match(publish, /outputs:\n\s+canary_version: \$\{\{ steps\.canary_tag\.outputs\.version \}\}/);
+  assert.match(publish, /run: \.\/scripts\/release\.sh canary --skip-verify --defer-registry-confirmation/);
+  assert.match(publish, /gh workflow run canary-finalize\.yml --ref master --repo "\$GITHUB_REPOSITORY" \\\n\s+-f version="\$version" -f source_sha="\$SOURCE_SHA" -f release_run_id="\$GITHUB_RUN_ID"/);
+  assert.match(publish, /SOURCE_SHA: \$\{\{ github\.sha \}\}/);
+  assert.match(publish, /permissions:\n\s+contents: read\n\s+id-token: write/);
+  assert.match(finalize, /^on:\n  workflow_dispatch:\n/m);
+  assert.match(finalize, /^permissions: \{\}$/m);
+  assert.match(confirm, /if: github\.repository == 'penclipai\/paperclip-cn' && github\.repository_id == '1192887762' && github\.ref == 'refs\/heads\/master'/);
+  assert.match(confirm, /permissions:\n\s+contents: write\n\s+actions: write/);
+  assert.match(confirm, /run: \.\/scripts\/confirm-canary-publication\.sh "\$VERSION" "\$SOURCE_SHA"/);
+  assert.match(confirm, /ref: \$\{\{ steps\.inputs\.outputs\.source_sha \}\}\n\s+fetch-depth: 0/, "the master-position check needs full history");
+  assert.match(confirm, /gh workflow run docker\.yml --ref "refs\/tags\/canary\/v\$VERSION"/);
+  const [validation, afterValidation] = confirm.split("      - uses: actions/checkout@");
+  assert.match(validation, /name: Validate inputs/);
+  assert.equal((validation.match(/\$\{\{ inputs\./g) ?? []).length, 3);
+  assert.doesNotMatch(afterValidation, /\$\{\{ inputs\./, "later steps read only the validated step outputs");
+  assert.doesNotMatch(smoke, /\$\{\{ inputs\./);
+  assert.match(smoke, /^    needs: confirm_canary$/m);
+  assert.doesNotMatch(smoke, /^    if: /m);
+  assert.match(smoke, /PAPERCLIPAI_VERSION: \$\{\{ needs\.confirm_canary\.outputs\.version \}\}/);
+  assert.match(smoke, /uses: actions\/checkout@[0-9a-f]{40} # v7[\s\S]*?uses: pnpm\/action-setup@[0-9a-f]{40} # v6[\s\S]*?uses: actions\/setup-node@[0-9a-f]{40} # v7/);
+  assert.match(smoke, /Install test dependencies\n\s+run: pnpm install --frozen-lockfile/);
+  assert.doesNotMatch(smoke, /cache: pnpm/);
+  assert.match(smoke, /run: pnpm run test:canary-onboarding-smoke/);
+  assert.match(smoke, /name: Smoke exact published canary through onboarding\n\s+env:\n\s+PAPERCLIP_CANARY_SMOKE_SERVER_LOG: \$\{\{ runner\.temp \}\}\/canary-onboarding-server\.log/);
+  assert.match(smoke, /uses: actions\/upload-artifact@[0-9a-f]{40} # v7/);
+  assert.match(smoke, /tests\/canary-onboarding\/playwright-report/);
+  assert.match(finalize, /NPM_PUBLISH_VERIFY_ATTEMPTS: "180"\n  NPM_PUBLISH_VERIFY_DELAY_SECONDS: "10"/);
 });
 
 test("canary smoke consumes its publisher's source-bound lockfile before frozen installation", () => {
-  const workflow = readWorkflow("release.yml");
-  const publish = workflow.split("  publish_canary:\n")[1].split("  smoke_canary_onboarding:\n")[0];
-  const smoke = workflow.split("  smoke_canary_onboarding:\n")[1].split("  # ----- Nightly lane")[0];
-  for (const job of [publish, smoke]) {
-    assert.match(job, /name: Checkout repository\n\s+uses: actions\/checkout@[^\n]+\n\s+with:\n\s+ref: \$\{\{ github\.sha \}\}/);
-    assert.match(job, /name: canary-smoke-lockfile-\$\{\{ github\.sha \}\}/);
-    assert.match(job, /version: 9\.15\.4/);
-  }
+  const { publish, smoke } = canaryJobs();
+  assert.match(publish, /name: Checkout repository\n\s+uses: actions\/checkout@[^\n]+\n\s+with:\n\s+ref: \$\{\{ github\.sha \}\}/);
+  assert.match(smoke, /name: Checkout repository\n\s+uses: actions\/checkout@[^\n]+\n\s+with:\n\s+ref: \$\{\{ needs\.confirm_canary\.outputs\.source_sha \}\}/);
+  for (const job of [publish, smoke]) assert.match(job, /version: 9\.15\.4/);
   assert.match(publish, /name: Save canary smoke lockfile\n\s+uses: actions\/upload-artifact@[0-9a-f]{40} # v4\n\s+with:\n\s+name: canary-smoke-lockfile-\$\{\{ github\.sha \}\}\n\s+path: pnpm-lock\.yaml\n\s+if-no-files-found: error\n\s+overwrite: true\n\s+retention-days: 14/);
   assert.ok(publish.indexOf("name: Install dependencies") < publish.indexOf("name: Save canary smoke lockfile"));
   assert.ok(publish.indexOf("name: Save canary smoke lockfile") < publish.indexOf("name: Restore tracked install-time changes"));
   assert.ok(publish.indexOf("name: Restore tracked install-time changes") < publish.indexOf("name: Publish canary"));
-  assert.match(smoke, /name: Restore canary smoke lockfile\n\s+uses: actions\/download-artifact@[0-9a-f]{40} # v4\n\s+with:\n\s+name: canary-smoke-lockfile-\$\{\{ github\.sha \}\}/);
+  assert.match(smoke, /name: Restore canary smoke lockfile\n\s+uses: actions\/download-artifact@[0-9a-f]{40} # v4\n\s+with:\n\s+name: canary-smoke-lockfile-\$\{\{ needs\.confirm_canary\.outputs\.source_sha \}\}\n\s+run-id: \$\{\{ needs\.confirm_canary\.outputs\.release_run_id \}\}\n\s+github-token: \$\{\{ github\.token \}\}/);
   assert.ok(smoke.indexOf("name: Restore canary smoke lockfile") < smoke.indexOf("name: Install test dependencies"));
-  assert.doesNotMatch(smoke, /run-id:|github-token:|repository:|continue-on-error|--no-frozen-lockfile/);
+  assert.doesNotMatch(smoke, /repository:|continue-on-error|--no-frozen-lockfile/);
 });
 
 for (const drift of ["patch", "manifest"]) {
@@ -484,9 +473,7 @@ for (const drift of ["patch", "manifest"]) {
       "--- a/index.js", "+++ b/index.js", "@@ -1 +1 @@",
       '-module.exports = "original";', `+module.exports = "${value}";`, "",
     ].join("\n"));
-    const workflow = readWorkflow("release.yml");
-    const publish = workflow.split("  publish_canary:\n")[1].split("  smoke_canary_onboarding:\n")[0];
-    const smoke = workflow.split("  smoke_canary_onboarding:\n")[1].split("  # ----- Nightly lane")[0];
+    const { publish, smoke } = canaryJobs();
     const installArgs = (name) => {
       const job = name === "Install dependencies" ? publish : smoke;
       const command = job.match(new RegExp(`name: ${name}\\n\\s+run: (pnpm install[^\\n]+)`))?.[1];
@@ -980,13 +967,27 @@ test("release daemon production uses exact-source native hosts and no publisher 
   assert.match(runner.scripts['build:binary'], /cargo build --release --manifest-path runner\/Cargo.toml --locked/);
   assert.match(runner.scripts['build:binary'], /&& node scripts\/stage-runner-binary.mjs$/);
   assert.match(producer, /stage-release-runner-binaries.mjs record/);
-  for (const job of ["runner_chaos_evals", "typecheck", "general_tests", "serialized_tests", "runner_workflow_evals", "verify_paperclip_runner", "build"]) {
+  for (const job of ["typecheck", "general_tests", "serialized_tests", "runner_workflow_evals", "verify_paperclip_runner", "build"]) {
     assert.ok(workflow.includes(`${job}:\n    if: \${{ !inputs.runner_binaries_only }}`));
   }
+  // Binary-only calls still skip the chaos evals; Cloud readiness also turns
+  // them off here and runs them as its own non-gating job (2026-11-12).
+  assert.ok(workflow.includes("runner_chaos_evals:\n    if: ${{ !inputs.runner_binaries_only && inputs.runner_chaos_evals }}"));
   const release = readWorkflow("release.yml");
   const source = release.split("  release_runner_source:\n")[1].split(/\n  [a-z_]+:\n/)[0];
   const binaries = release.split("  release_runner_binaries:\n")[1].split(/\n  [a-z_]+:\n/)[0];
-  assert.match(source, /needs: \[verify_canary, select_nightly, select_beta, preflight_stable\]/);
+  assert.match(source, /needs: \[select_nightly, select_beta, preflight_stable\]/);
+  const sourceCondition = source.match(/^    if: >-\n((?: {6}.+\n)+)/m)?.[1].replace(/\s+/g, " ").trim();
+  assert.ok(sourceCondition, "release_runner_source needs a condition");
+  const pushGithub = { event_name: "push", repository: "penclipai/paperclip-cn", repository_id: "1192887762", ref: "refs/heads/master" };
+  const skippedLanes = { select_nightly: { result: "skipped" }, select_beta: { result: "skipped" }, preflight_stable: { result: "skipped" } };
+  const selectsSource = (github) => runInNewContext(sourceCondition, { cancelled: () => false, github, needs: skippedLanes });
+  assert.equal(selectsSource(pushGithub), true, "a canary builds its daemons without waiting for the source proof");
+  for (const change of [{ repository: "someone/paperclip" }, { repository_id: "1" }, { ref: "refs/heads/feature" }, { event_name: "schedule" }]) {
+    assert.equal(selectsSource({ ...pushGithub, ...change }), false, JSON.stringify(change));
+  }
+  const publishCanary = release.split("  publish_canary:\n")[1].split(/\n  [a-z_]+:\n/)[0];
+  assert.match(publishCanary, /needs\.verify_canary\.result == 'success'/, "publication still waits for the source proof");
   assert.match(source, /!cancelled\(\)/);
   assert.match(binaries, /needs: release_runner_source/);
   assert.match(binaries, /ref: \$\{\{ needs\.release_runner_source\.outputs\.sha \}\}/);
@@ -994,7 +995,7 @@ test("release daemon production uses exact-source native hosts and no publisher 
   const condition = binaries.match(/^    if: (.+)$/m)?.[1].replace(/^\$\{\{\s*|\s*\}\}$/g, "");
   assert.match(condition, /^!cancelled\(\) && needs\.release_runner_source\.result == 'success' && needs\.release_runner_source\.outputs\.required == 'true'$/,
     "Native compilation must bypass deliberately skipped channel ancestors and require successful exact-source selection");
-  const laneJobs = ["verify_canary", "select_nightly", "select_beta", "preflight_stable"];
+  const laneJobs = ["select_nightly", "select_beta", "preflight_stable"];
   for (const activeLane of laneJobs) {
     for (const [result, required, cancelled, expected] of [
       ["success", "true", false, true], ["failure", "true", false, false],
@@ -1004,7 +1005,7 @@ test("release daemon production uses exact-source native hosts and no publisher 
     ]) {
       const needs = Object.fromEntries(laneJobs.map(job => [job, { result: job === activeLane ? "success" : "skipped" }]));
       needs.release_runner_source = { result, outputs: { required } };
-      assert.equal(Object.values(needs).filter(job => job.result === "skipped").length, result === "skipped" ? 4 : 3);
+      assert.equal(Object.values(needs).filter(job => job.result === "skipped").length, result === "skipped" ? 3 : 2);
       assert.equal(runInNewContext(condition, { cancelled: () => cancelled, needs }), expected,
         `${activeLane}: source=${result}, required=${required}, cancelled=${cancelled}`);
     }
@@ -1039,7 +1040,8 @@ test('native dependency caches are target-bound and unmerged master callers cann
   assert.match(cache, /workspaces: \$\{\{ steps.native_rust_workspace.outputs.path \}\} -> target/);
   const key = cache.match(/^\s*shared-key: (.+)$/m)?.[1];
   assert.ok(key?.startsWith("release-native-v2-${{ hashFiles('packages/paperclip-runner/runner/Cargo.toml', "));
-  assert.ok(key?.endsWith("-${{ matrix.host }}-${{ matrix.target }}-${{ hashFiles('packages/paperclip-runner/protocol/**', 'packages/paperclip-runner/src/**', 'packages/paperclip-runner/*.json') }}"));
+  assert.ok(key?.endsWith("-${{ matrix.host }}-${{ matrix.target }}"));
+  assert.doesNotMatch(key, /protocol\/\*\*|src\/\*\*/, "only dependency crates are cached, so runner source must not invalidate them");
   for (const option of ['cache-workspace-crates', 'cache-bin', 'cache-on-failure']) {
     assert.match(cache, new RegExp(option + ': false'));
   }
@@ -1148,7 +1150,7 @@ const wait = setInterval(() => {
   }
 }
 
-test('native preparation overlaps independent outputs and joins both before recording', async () => {
+test('native preparation overlaps independent outputs and joins both before recording', { skip: process.platform === 'win32' && 'POSIX executable pnpm shim fixture runs on Ubuntu CI' }, async () => {
   await withNativePreparationFixture('success', async ({ root, completed }) => {
     const result = await completed;
     assert.equal(result.status, 0, result.stderr);
@@ -1162,7 +1164,7 @@ test('native preparation overlaps independent outputs and joins both before reco
 });
 
 for (const name of ['typescript', 'native']) {
-  test(`${name} preparation failure fails the join and retires both owned process trees`, async () => {
+  test(`${name} preparation failure fails the join and retires both owned process trees`, { skip: process.platform === 'win32' && 'POSIX executable pnpm shim fixture runs on Ubuntu CI' }, async () => {
     await withNativePreparationFixture(name, async ({ root, completed }) => {
       const result = await completed;
       assert.equal(result.status, 1, result.stderr);
@@ -1314,8 +1316,12 @@ test("exact-source daemon matrices read inert data and never execute preview run
   const script = step.split('        run: |\n')[1].split('\n').map(line => line.startsWith('          ') ? line.slice(10) : line).join('\n');
   const root = mkdtempSync(path.join(tmpdir(), 'release-target-contract-'));
   try {
+    const gitDir = process.platform === 'win32' ? path.dirname(spawnSync('where.exe', ['git'], { encoding: 'utf8' }).stdout.trim().split(/\r?\n/)[0] || '') : '';
     const environment = {
-      PATH: `${path.dirname(process.execPath)}:/usr/bin:/bin`, HOME: root,
+      PATH: process.platform === 'win32'
+        ? [path.dirname(process.execPath), gitDir, process.env.SystemRoot ? path.join(process.env.SystemRoot, 'System32') : ''].filter(Boolean).join(path.delimiter)
+        : `${path.dirname(process.execPath)}:/usr/bin:/bin`,
+      HOME: root,
       GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: '/dev/null',
     };
     const git = args => {
@@ -1344,7 +1350,11 @@ test("exact-source daemon matrices read inert data and never execute preview run
     };
     const run = sha => {
       writeFileSync(output, '');
-      const result = spawnSync('bash', ['-euo', 'pipefail', '-c', script], { cwd: root, encoding: 'utf8', env: {
+      const toGitBashPath = value => `/${value.replace(/\\/g, '/').replace(/^([A-Za-z]):/, (_, d) => d.toLowerCase())}`;
+      const bashScript = process.platform === 'win32'
+        ? `export PATH="${[toGitBashPath(path.dirname(process.execPath)), gitDir ? toGitBashPath(gitDir) : '', '/usr/bin', '/bin'].filter(Boolean).join(':')}"; ${script}`
+        : script;
+      const result = spawnSync(bashCommand, ['-euo', 'pipefail', '-c', bashScript], { cwd: root, encoding: 'utf8', env: {
         ...environment, SOURCE_SHA: sha, GITHUB_OUTPUT: output,
       } });
       assert.equal(existsSync(marker), false, 'Candidate code must never execute while selecting runners');
@@ -1412,21 +1422,24 @@ test("historical promotion sources keep their packaging path while new sources r
     const tools = path.join(root, 'tools'); mkdirSync(tools);
     writeFileSync(path.join(tools, 'git'), '#!/bin/sh\ncase "$1" in\nrev-parse) printf "%s\\n" "$FIXTURE_HEAD";;\nshow) cat "$FIXTURE_SOURCE";;\n*) exit 3;;\nesac\n', { mode: 0o755 });
     const source = path.join(root, 'release.sh'), output = path.join(root, 'outputs');
+    const runSelector = (env) => {
+      const bashTools = process.platform === 'win32'
+        ? `/${tools.replace(/\\/g, '/').replace(/^([A-Za-z]):/, (_, d) => d.toLowerCase())}`
+        : tools;
+      return spawnSync(bashCommand, ['-euo', 'pipefail', '-c', `export PATH="${bashTools}:/usr/bin:/bin"; ${script}`], {
+        encoding: 'utf8',
+        env: { ...env, PATH: `${tools}${path.delimiter}/usr/bin${path.delimiter}/bin` },
+      });
+    };
     for (const [contents, required] of [['pnpm build\n', false], ['assemble-daemons "$PAPERCLIP_RELEASE_RUNNER_ARTIFACTS_DIR" "$SOURCE_SHA"\n', true]]) {
       writeFileSync(source, contents); writeFileSync(output, '');
-      const result = spawnSync('bash', ['-euo', 'pipefail', '-c', script], { encoding: 'utf8', env: {
-        PATH: `${tools}:/usr/bin:/bin`, SOURCE_SHA: 'a'.repeat(40), FIXTURE_HEAD: 'a'.repeat(40), FIXTURE_SOURCE: source, GITHUB_OUTPUT: output,
-      } });
+      const result = runSelector({ SOURCE_SHA: 'a'.repeat(40), FIXTURE_HEAD: 'a'.repeat(40), FIXTURE_SOURCE: source, GITHUB_OUTPUT: output });
       assert.equal(result.status, 0, result.stderr);
       assert.match(readFileSync(output, 'utf8'), new RegExp(`required=${required}`));
     }
-    const result = spawnSync('bash', ['-euo', 'pipefail', '-c', script], { encoding: 'utf8', env: {
-      PATH: `${tools}:/usr/bin:/bin`, SOURCE_SHA: 'a'.repeat(40), FIXTURE_HEAD: 'b'.repeat(40), FIXTURE_SOURCE: source, GITHUB_OUTPUT: output,
-    } });
+    const result = runSelector({ SOURCE_SHA: 'a'.repeat(40), FIXTURE_HEAD: 'b'.repeat(40), FIXTURE_SOURCE: source, GITHUB_OUTPUT: output });
     assert.equal(result.status, 1, 'Wrong checkout cannot opt out of mandatory assembly');
-    const unreadable = spawnSync('bash', ['-euo', 'pipefail', '-c', script], { encoding: 'utf8', env: {
-      PATH: `${tools}:/usr/bin:/bin`, SOURCE_SHA: 'a'.repeat(40), FIXTURE_HEAD: 'a'.repeat(40), FIXTURE_SOURCE: path.join(root, 'absent'), GITHUB_OUTPUT: output,
-    } });
+    const unreadable = runSelector({ SOURCE_SHA: 'a'.repeat(40), FIXTURE_HEAD: 'a'.repeat(40), FIXTURE_SOURCE: path.join(root, 'absent'), GITHUB_OUTPUT: output });
     assert.equal(unreadable.status, 1, 'A failed immutable source read must not masquerade as a legacy source');
 
   } finally { rmSync(root, { recursive: true, force: true }); }

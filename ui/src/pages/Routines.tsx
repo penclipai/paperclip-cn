@@ -1,68 +1,42 @@
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { translateInstant } from "@/i18n";
-import { AgentAvatar } from "@/components/AgentAvatar";
-import { startTransition, useEffect, useMemo, useRef, useState } from "react";
+import { useRoutineListView } from "../hooks/useRoutineListView";
+import { routineFilterKeys } from "../lib/routine-list-view";
+import { buildRoutineFilterOptions, selectRoutineRows } from "../lib/routine-list-data";
+import { RoutineTable } from "../components/RoutineTable";
+import { companyProjectsQuery } from "@/lib/company-projects-query";
+import { startTransition, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Navigate, useNavigate, useSearchParams } from "@/lib/router";
-import {
-  ArrowUpDown,
-  Check,
-  ChevronDown,
-  ChevronRight,
-  Layers,
-  Plus,
-  Repeat,
-} from "lucide-react";
+import { ChevronRight, Plus, Repeat } from "lucide-react";
 import { routinesApi } from "../api/routines";
 import { foldersApi } from "../api/folders";
 import { agentsApi } from "../api/agents";
-import { projectsApi } from "../api/projects";
+import { accessApi } from "../api/access";
 import { issuesApi } from "../api/issues";
 import { heartbeatsApi } from "../api/heartbeats";
-import { accessApi } from "../api/access";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useToastActions } from "../context/ToastContext";
-import { buildMarkdownMentionOptions } from "../lib/company-members";
+import { buildCompanyUserProfileMap } from "../lib/company-members";
 import { cn } from "../lib/utils";
 import { queryKeys } from "../lib/queryKeys";
+import { retryTransientOnly } from "../lib/query-client";
 import { groupBy } from "../lib/groupBy";
 import { createIssueDetailLocationState } from "../lib/issueDetailBreadcrumb";
 import { collectLiveIssueIds } from "../lib/liveIssueIds";
-import {
-  getRecentAssigneeIds,
-  sortAgentsByRecency,
-  trackRecentAssignee,
-} from "../lib/recent-assignees";
-import {
-  getRecentProjectIds,
-  trackRecentProject,
-} from "../lib/recent-projects";
 import { EmptyState } from "../components/EmptyState";
 import { IssuesList } from "../components/IssuesList";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { QueryErrorState, useQueryView } from "../components/QueryView";
 import { describeError } from "../api/errors";
 import { PageTabBar } from "../components/PageTabBar";
-import {
-  InlineEntitySelector,
-  type InlineEntityOption,
-} from "../components/InlineEntitySelector";
-import {
-  MarkdownEditor,
-  type MarkdownEditorRef,
-  type MentionOption,
-} from "../components/MarkdownEditor";
-import { RoutineListRow, nextRoutineStatus } from "../components/RoutineList";
+import { RoutineTableRow, nextRoutineStatus } from "../components/RoutineList";
 import {
   RoutineRunVariablesDialog,
   type RoutineRunDialogSubmitData,
 } from "../components/RoutineRunVariablesDialog";
-import {
-  RoutineVariablesEditor,
-  RoutineVariablesHint,
-} from "../components/RoutineVariablesEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -70,68 +44,31 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  RoutinesToolbar,
-  type RoutineGroupBy,
-  type RoutineSortField,
-  type RoutineSortDir,
-} from "@/components/RoutinesToolbar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { RoutinesToolbar, type RoutineGroupBy } from "@/components/RoutinesToolbar";
 import { auditSectionHref } from "./audit/audit-navigation";
-import { routineDetailHref } from "../components/RoutineContextualSidebar";
+import { RoutineCreateDialog } from "../components/routine-page/RoutineCreateDialog";
+import { routinePath } from "../components/routine-page/routine-routes";
 import {
   usePublishSharedQueryData,
   useSharedPollingQuery,
 } from "../hooks/useSharedPolling";
 import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
-import type { RoutineListItem, RoutineVariable } from "@penclipai/shared";
+import type { RoutineListItem } from "@penclipai/shared";
 import type { FolderListItem } from "@penclipai/shared";
 import { Tabs } from "@/components/ui/tabs";
 import {
   AllUnfiledBanner,
-  BulkBar,
   DeleteFolderDialog,
   FolderChip,
   FolderFormDialog,
   FolderRail,
-  FolderSwatch,
   MobileFolderSheet,
   MoveToMenu,
   folderSearchValue,
   normalizeFolderSelection,
-  selectedFolderFromList,
   type FolderSelection,
 } from "../components/folders/FolderControls";
 import { useUpdateIssueMutation } from "../hooks/useUpdateIssueMutation";
-
-const concurrencyPolicies = [
-  "coalesce_if_active",
-  "always_enqueue",
-  "skip_if_active",
-];
-const catchUpPolicies = ["skip_missed", "enqueue_missed_with_cap"];
-const concurrencyPolicyDescriptionKeys: Record<string, string> = {
-  coalesce_if_active: "routines.policyDescription.coalesceIfActive",
-  always_enqueue: "routines.policyDescription.alwaysEnqueue",
-  skip_if_active: "routines.policyDescription.skipIfActive",
-};
-const catchUpPolicyDescriptionKeys: Record<string, string> = {
-  skip_missed: "routines.policyDescription.skipMissed",
-  enqueue_missed_with_cap:
-    "routineDetail.policyDescription.enqueue_missed_with_cap",
-};
 
 const builtInRoutineTitleKeys: Record<string, string> = {
   "Refresh stale summary slots":
@@ -149,20 +86,7 @@ export function displayRoutineTitle(
   return key ? t(key, { defaultValue: routine.title }) : routine.title;
 }
 
-function autoResizeTextarea(element: HTMLTextAreaElement | null) {
-  if (!element) return;
-  element.style.height = "auto";
-  element.style.height = `${element.scrollHeight}px`;
-}
-
 type RoutinesTab = "routines" | "runs";
-
-type RoutineViewState = {
-  sortField: RoutineSortField;
-  sortDir: RoutineSortDir;
-  groupBy: RoutineGroupBy;
-  collapsedGroups: string[];
-};
 
 type RoutineGroup = {
   key: string;
@@ -172,63 +96,7 @@ type RoutineGroup = {
 
 const builtInRoutineGroupKey = "__built_in_routines";
 
-const defaultRoutineViewState: RoutineViewState = {
-  sortField: "title",
-  sortDir: "asc",
-  groupBy: "folder",
-  collapsedGroups: [],
-};
-
-function getRoutineViewState(key: string): RoutineViewState {
-  try {
-    const raw = localStorage.getItem(key);
-    if (raw) return { ...defaultRoutineViewState, ...JSON.parse(raw) };
-  } catch {
-    // Ignore malformed local state and fall back to defaults.
-  }
-  return { ...defaultRoutineViewState };
-}
-
-function saveRoutineViewState(key: string, state: RoutineViewState) {
-  localStorage.setItem(key, JSON.stringify(state));
-}
-
-function timestampValue(value: Date | string | null | undefined) {
-  if (!value) return Number.NEGATIVE_INFINITY;
-  const timestamp = new Date(value).getTime();
-  return Number.isFinite(timestamp) ? timestamp : Number.NEGATIVE_INFINITY;
-}
-
-function compareNullableText(
-  left: string | null | undefined,
-  right: string | null | undefined,
-) {
-  return (left ?? "").localeCompare(right ?? "", undefined, {
-    sensitivity: "base",
-  });
-}
-
 type RoutineFolderGroupMeta = { name: string; position?: number | null };
-
-function buildRoutineMutationPayload(input: {
-  title: string;
-  description: string;
-  projectId: string;
-  folderId: string | null;
-  assigneeAgentId: string;
-  priority: string;
-  concurrencyPolicy: string;
-  catchUpPolicy: string;
-  variables: RoutineVariable[];
-}) {
-  return {
-    ...input,
-    description: input.description.trim() || null,
-    projectId: input.projectId || null,
-    folderId: input.folderId || null,
-    assigneeAgentId: input.assigneeAgentId || null,
-  };
-}
 
 export function buildRoutineGroups(
   routines: RoutineListItem[],
@@ -386,32 +254,6 @@ export function buildRoutineSections(
   ];
 }
 
-export function sortRoutines(
-  routines: RoutineListItem[],
-  sortField: RoutineSortField,
-  sortDir: RoutineSortDir,
-): RoutineListItem[] {
-  const direction = sortDir === "asc" ? 1 : -1;
-  return [...routines].sort((left, right) => {
-    let result = 0;
-
-    if (sortField === "title") {
-      result = compareNullableText(left.title, right.title);
-    } else if (sortField === "created") {
-      result = timestampValue(left.createdAt) - timestampValue(right.createdAt);
-    } else if (sortField === "lastRun") {
-      result =
-        timestampValue(left.lastRun?.triggeredAt ?? left.lastTriggeredAt) -
-        timestampValue(right.lastRun?.triggeredAt ?? right.lastTriggeredAt);
-    } else {
-      result = timestampValue(left.updatedAt) - timestampValue(right.updatedAt);
-    }
-
-    if (result !== 0) return result * direction;
-    return compareNullableText(left.title, right.title);
-  });
-}
-
 function RoutineSectionHeader({
   label,
   count,
@@ -443,18 +285,12 @@ export function Routines() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { pushToast } = useToastActions();
-  const descriptionEditorRef = useRef<MarkdownEditorRef>(null);
-  const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
-  const assigneeSelectorRef = useRef<HTMLButtonElement | null>(null);
-  const projectSelectorRef = useRef<HTMLButtonElement | null>(null);
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const [folderDialogTarget, setFolderDialogTarget] =
     useState<FolderListItem | null>(null);
   const [deleteFolderTarget, setDeleteFolderTarget] =
     useState<FolderListItem | null>(null);
   const [mobileFoldersOpen, setMobileFoldersOpen] = useState(false);
-  const [selectMode, setSelectMode] = useState(false);
-  const [selectedRoutineIds, setSelectedRoutineIds] = useState<string[]>([]);
   const [moveAfterCreateIds, setMoveAfterCreateIds] = useState<string[]>([]);
   const [runningRoutineId, setRunningRoutineId] = useState<string | null>(null);
   const [statusMutationRoutineId, setStatusMutationRoutineId] = useState<
@@ -463,48 +299,18 @@ export function Routines() {
   const [runDialogRoutine, setRunDialogRoutine] =
     useState<RoutineListItem | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [createFolderId, setCreateFolderId] = useState<string | null>(null);
   const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const legacyRunsRequested = searchParams.get("tab") === "runs";
   const activeTab: RoutinesTab =
     !streamlinedUiEnabled && legacyRunsRequested ? "runs" : "routines";
-  const [draft, setDraft] = useState<{
-    title: string;
-    description: string;
-    projectId: string;
-    folderId: string | null;
-    assigneeAgentId: string;
-    priority: string;
-    concurrencyPolicy: string;
-    catchUpPolicy: string;
-    variables: RoutineVariable[];
-  }>({
-    title: "",
-    description: "",
-    projectId: "",
-    folderId: null,
-    assigneeAgentId: "",
-    priority: "medium",
-    concurrencyPolicy: "coalesce_if_active",
-    catchUpPolicy: "skip_missed",
-    variables: [],
-  });
-  const routineViewStateKey = selectedCompanyId
-    ? `paperclip:routines-view:${selectedCompanyId}`
-    : "paperclip:routines-view";
-  const [query, setQuery] = useState("");
-  const [routineViewState, setRoutineViewState] = useState<RoutineViewState>(
-    () => getRoutineViewState(routineViewStateKey),
-  );
+  const [routineViewState, updateRoutineView] = useRoutineListView(selectedCompanyId);
+  const query = routineViewState.query;
   const folderSelection = normalizeFolderSelection(searchParams.get("folder"));
 
   useEffect(() => {
     setBreadcrumbs([{ label: translateInstant("Routines") }]);
   }, [locale, setBreadcrumbs]);
-
-  useEffect(() => {
-    setRoutineViewState(getRoutineViewState(routineViewStateKey));
-  }, [routineViewStateKey]);
 
   const routinesQuery = useQuery({
     queryKey: queryKeys.routines.list(selectedCompanyId!),
@@ -513,29 +319,31 @@ export function Routines() {
   });
   const { data: routines, isLoading } = routinesQuery;
   const routinesView = useQueryView(routinesQuery);
-  const { data: routineFolders, isLoading: foldersLoading } = useQuery({
+  const foldersQuery = useQuery({
     queryKey: queryKeys.folders.list(selectedCompanyId!, "routine"),
-    queryFn: () => foldersApi.list(selectedCompanyId!, "routine"),
+    queryFn: ({ signal }) => foldersApi.list(selectedCompanyId!, "routine", { signal, timeoutMs: 15_000 }),
+    // Keep first reveal bounded by the request deadline; the page offers Retry.
+    retry: retryTransientOnly(0),
     enabled: !!selectedCompanyId,
   });
+  const { data: routineFolders, isLoading: foldersLoading } = foldersQuery;
+  const foldersView = useQueryView(foldersQuery);
   const { data: agents } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
     queryFn: () => agentsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId!, {
-      includeArchived: true,
-    }),
-    queryFn: () =>
-      projectsApi.list(selectedCompanyId!, { includeArchived: true }),
+    ...companyProjectsQuery(selectedCompanyId!, { includeArchived: true }),
     enabled: !!selectedCompanyId,
   });
-  const { data: companyMembers } = useQuery({
+  const companyMembersQuery = useQuery({
     queryKey: queryKeys.access.companyUserDirectory(selectedCompanyId!),
     queryFn: () => accessApi.listUserDirectory(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
+  const { data: companyMembers } = companyMembersQuery;
+  const companyMembersView = useQueryView(companyMembersQuery);
   const recentRunsQuery = useQuery({
     queryKey: [
       ...queryKeys.issues.list(selectedCompanyId!),
@@ -566,51 +374,6 @@ export function Routines() {
     refetchInterval: sharedLiveRuns.refetchInterval,
   });
   usePublishSharedQueryData(sharedLiveRuns, liveRuns, liveRunsUpdatedAt);
-  useEffect(() => {
-    autoResizeTextarea(titleInputRef.current);
-  }, [draft.title, composerOpen]);
-
-  const mentionOptions = useMemo<MentionOption[]>(() => {
-    return buildMarkdownMentionOptions({
-      agents,
-      projects: (projects ?? []).filter((project) => !project.archivedAt),
-      members: companyMembers?.users,
-    });
-  }, [agents, companyMembers?.users, projects]);
-
-  const createRoutine = useMutation({
-    mutationFn: () =>
-      routinesApi.create(
-        selectedCompanyId!,
-        buildRoutineMutationPayload(draft),
-      ),
-    onSuccess: async (routine) => {
-      setDraft({
-        title: "",
-        description: "",
-        projectId: "",
-        folderId: null,
-        assigneeAgentId: "",
-        priority: "medium",
-        concurrencyPolicy: "coalesce_if_active",
-        catchUpPolicy: "skip_missed",
-        variables: [],
-      });
-      setComposerOpen(false);
-      setAdvancedOpen(false);
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.routines.list(selectedCompanyId!),
-      });
-      pushToast({
-        title: translateInstant("Routine created"),
-        body: routine.assigneeAgentId
-          ? "Add the first trigger to turn it into a live workflow."
-          : "Draft saved. Add a default agent before enabling automation.",
-        tone: "success",
-      });
-      navigate(routineDetailHref(routine.id, "triggers"));
-    },
-  });
   const createFolder = useMutation({
     mutationFn: (payload: { name: string; color: string | null }) =>
       foldersApi.create(selectedCompanyId!, { kind: "routine", ...payload }),
@@ -834,34 +597,6 @@ export function Routines() {
     },
   });
 
-  const recentAssigneeIds = useMemo(
-    () => getRecentAssigneeIds(),
-    [composerOpen],
-  );
-  const recentProjectIds = useMemo(() => getRecentProjectIds(), [composerOpen]);
-  const assigneeOptions = useMemo<InlineEntityOption[]>(
-    () =>
-      sortAgentsByRecency(
-        (agents ?? []).filter((agent) => agent.status !== "terminated"),
-        recentAssigneeIds,
-      ).map((agent) => ({
-        id: agent.id,
-        label: agent.name,
-        searchText: `${agent.name} ${agent.role} ${agent.title ?? ""}`,
-      })),
-    [agents, recentAssigneeIds],
-  );
-  const projectOptions = useMemo<InlineEntityOption[]>(
-    () =>
-      (projects ?? [])
-        .filter((project) => !project.archivedAt)
-        .map((project) => ({
-          id: project.id,
-          label: project.name,
-          searchText: project.description ?? "",
-        })),
-    [projects],
-  );
   const agentById = useMemo(
     () => new Map((agents ?? []).map((agent) => [agent.id, agent])),
     [agents],
@@ -877,9 +612,11 @@ export function Routines() {
       ),
     [routineFolders],
   );
-  const visibleRoutines = useMemo(
-    () => (routines ?? []).filter((routine) => routine.status !== "archived"),
-    [routines],
+  const userById = useMemo(() => buildCompanyUserProfileMap(companyMembers?.users), [companyMembers]);
+  const filterOptions = useMemo(() => buildRoutineFilterOptions({ projects: projects ?? [], agents: agents ?? [], userById, routines: routines ?? [] }), [projects, agents, userById, routines]);
+  const { visibleRoutines, sortedRoutines, railFolderResult } = useMemo(
+    () => selectRoutineRows(routines ?? [], routineViewState, routineFolders, folderSelection),
+    [routines, routineViewState, routineFolders, folderSelection],
   );
   const liveIssueIds = useMemo(
     () => collectLiveIssueIds(liveRuns, routineExecutionIssues),
@@ -907,93 +644,14 @@ export function Routines() {
       navigate(nextTab === "runs" ? "/routines?tab=runs" : "/routines");
     });
   }
-  const folderFilteredRoutines = useMemo(() => {
-    if (routineViewState.groupBy !== "folder") return visibleRoutines;
-    if (folderSelection === "all") return visibleRoutines;
-    if (folderSelection === "unfiled")
-      return visibleRoutines.filter((routine) => !routine.folderId);
-    return visibleRoutines.filter(
-      (routine) => routine.folderId === folderSelection,
-    );
-  }, [folderSelection, routineViewState.groupBy, visibleRoutines]);
-  // Rail counts reflect the page's visible scope (archived hidden), not raw DB
-  // counts (ux-spec §5.3).
-  const railFolderResult = useMemo(() => {
-    if (!routineFolders) return routineFolders;
-    const counts = new Map<string, number>();
-    let unfiled = 0;
-    for (const routine of visibleRoutines) {
-      if (routine.folderId)
-        counts.set(routine.folderId, (counts.get(routine.folderId) ?? 0) + 1);
-      else unfiled += 1;
-    }
-    return {
-      ...routineFolders,
-      allCount: visibleRoutines.length,
-      unfiledCount: unfiled,
-      folders: routineFolders.folders.map((folder) => ({
-        ...folder,
-        itemCount: counts.get(folder.id) ?? 0,
-      })),
-    };
-  }, [routineFolders, visibleRoutines]);
-  const sortedRoutines = useMemo(() => {
-    const terms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
-    const matches = folderFilteredRoutines.filter((routine) => {
-      const text =
-        `${routine.title} ${routine.description ?? ""}`.toLowerCase();
-      return terms.every((term) => text.includes(term));
-    });
-    return sortRoutines(
-      matches,
-      routineViewState.sortField,
-      routineViewState.sortDir,
-    );
-  }, [
-    folderFilteredRoutines,
-    query,
-    routineViewState.sortDir,
-    routineViewState.sortField,
-  ]);
+  const effectiveGroupBy = routineViewState.groupBy === "folder" && !routineFolders ? "none" : routineViewState.groupBy;
   const routineSections = useMemo(
-    () =>
-      buildRoutineSections(
-        sortedRoutines,
-        routineViewState.groupBy,
-        projectById,
-        agentById,
-        folderById,
-      ),
-    [
-      agentById,
-      folderById,
-      locale,
-      projectById,
-      routineViewState.groupBy,
-      sortedRoutines,
-    ],
-  );
-  const currentAssignee = draft.assigneeAgentId
-    ? (agentById.get(draft.assigneeAgentId) ?? null)
-    : null;
-  const currentProject = draft.projectId
-    ? (projectById.get(draft.projectId) ?? null)
-    : null;
-  const activeFolder = selectedFolderFromList(
-    routineFolders?.folders ?? [],
-    folderSelection,
+    () => buildRoutineSections(sortedRoutines, effectiveGroupBy, projectById, agentById, folderById),
+    [agentById, folderById, projectById, effectiveGroupBy, sortedRoutines, locale],
   );
   const hasRoutineFolders = (routineFolders?.folders.length ?? 0) > 0;
   const showFolderRail =
     routineViewState.groupBy === "folder" && hasRoutineFolders;
-
-  function updateRoutineView(patch: Partial<RoutineViewState>) {
-    setRoutineViewState((current) => {
-      const next = { ...current, ...patch };
-      saveRoutineViewState(routineViewStateKey, next);
-      return next;
-    });
-  }
 
   function setFolderSelection(selection: FolderSelection) {
     setSearchParams((current) => {
@@ -1012,56 +670,9 @@ export function Routines() {
   }
 
   function openCreateRoutine() {
-    setDraft((current) => ({
-      ...current,
-      folderId:
-        folderSelection === "all" || folderSelection === "unfiled"
-          ? null
-          : folderSelection,
-    }));
+    setCreateFolderId(folderSelection === "all" || folderSelection === "unfiled" ? null : folderSelection);
     setComposerOpen(true);
   }
-
-  async function moveSelectedRoutines(folderId: string | null) {
-    const ids = selectedRoutineIds;
-    if (ids.length === 0) return;
-    try {
-      await Promise.all(
-        ids.map((itemId) =>
-          foldersApi.moveItem(selectedCompanyId!, {
-            kind: "routine",
-            itemId,
-            folderId,
-          }),
-        ),
-      );
-      setSelectedRoutineIds([]);
-      setSelectMode(false);
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.routines.list(selectedCompanyId!),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.folders.list(selectedCompanyId!, "routine"),
-        }),
-      ]);
-      pushToast({
-        title: translateInstant("Routines moved"),
-        body: translateInstant("folders.routineCountFiled", {
-          count: ids.length,
-        }),
-        tone: "success",
-      });
-    } catch (moveError) {
-      pushToast({
-        title: translateInstant("Failed to move routines"),
-        body: describeError(moveError, { action: "move the selected routines" })
-          .body,
-        tone: "error",
-      });
-    }
-  }
-
   function handleRunNow(routine: RoutineListItem) {
     setRunDialogRoutine(routine);
   }
@@ -1103,7 +714,9 @@ export function Routines() {
 
   // Keep loaded routines on screen through a failed refetch; only a real
   // failure, or an outage before the first load, replaces the page.
-  if (isLoading || routinesView.kind === "reconnecting") {
+  const waitingForFolders = activeTab === "routines" && routineViewState.groupBy === "folder"
+    && (foldersLoading || foldersView.kind === "reconnecting");
+  if (isLoading || routinesView.kind === "reconnecting" || waitingForFolders) {
     return <PageSkeleton variant="issues-list" />;
   }
 
@@ -1160,31 +773,23 @@ export function Routines() {
 
   return (
     <div className="space-y-6">
+      <h1 className="sr-only">{translateInstant("Routines")}</h1>
       <RoutinesToolbar
         query={query}
-        onQueryChange={setQuery}
+        onQueryChange={(nextQuery) => updateRoutineView({ query: nextQuery })}
         sortField={routineViewState.sortField}
         sortDir={routineViewState.sortDir}
         groupBy={routineViewState.groupBy}
-        onSortChange={(sortField, sortDir) =>
-          updateRoutineView({ sortField, sortDir })
-        }
-        onGroupChange={(groupBy) =>
-          updateRoutineView({ groupBy, collapsedGroups: [] })
-        }
-        onNewFolder={
-          routineViewState.groupBy === "folder" && !hasRoutineFolders
-            ? () => openCreateFolder()
-            : undefined
-        }
+        onSortChange={(sortField, sortDir) => updateRoutineView({ sortField, sortDir })}
+        onGroupChange={(groupBy) => updateRoutineView({ groupBy, collapsedGroups: [] })}
+        onNewFolder={routineViewState.groupBy === "folder" && routineFolders && !hasRoutineFolders ? () => openCreateFolder() : undefined}
         onCreateRoutine={openCreateRoutine}
+        filters={routineViewState}
+        filterOptions={filterOptions}
+        onFiltersChange={updateRoutineView}
+        columns={routineViewState.columns}
+        onColumnsChange={(columns) => updateRoutineView({ columns })}
         tasksHref="/issues?view=all&originKind=routine_execution&sortField=created&sortDir=desc"
-        selectMode={selectMode}
-        onToggleSelect={
-          showFolderRail
-            ? () => setSelectMode((current) => !current)
-            : undefined
-        }
       />
 
       {!streamlinedUiEnabled ? (
@@ -1201,522 +806,25 @@ export function Routines() {
         </Tabs>
       ) : null}
 
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
-            {translateInstant("folders.routineCount", {
-              count: visibleRoutines.length,
-            })}
-          </p>
-          <div className="flex items-center gap-1">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs"
-                  title={translateInstant("Sort")}
-                >
-                  <ArrowUpDown className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
-                  <span className="hidden sm:inline">
-                    {translateInstant("routines.sort")}
-                  </span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="end" className="w-44 p-0">
-                <div className="p-2 space-y-0.5">
-                  {(
-                    [
-                      ["updated", translateInstant("Updated")],
-                      ["created", translateInstant("Created")],
-                      ["lastRun", translateInstant("Last run")],
-                      ["title", translateInstant("Title")],
-                    ] as const
-                  ).map(([field, label]) => (
-                    <button
-                      key={field}
-                      className={`flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm ${
-                        routineViewState.sortField === field
-                          ? "bg-accent/50 text-foreground"
-                          : "text-muted-foreground hover:bg-accent/50"
-                      }`}
-                      onClick={() => {
-                        updateRoutineView(
-                          routineViewState.sortField === field
-                            ? {
-                                sortDir:
-                                  routineViewState.sortDir === "asc"
-                                    ? "desc"
-                                    : "asc",
-                              }
-                            : {
-                                sortField: field,
-                                sortDir: field === "title" ? "asc" : "desc",
-                              },
-                        );
-                      }}
-                    >
-                      <span>{label}</span>
-                      {routineViewState.sortField === field ? (
-                        <span className="text-xs text-muted-foreground">
-                          {routineViewState.sortDir === "asc"
-                            ? translateInstant("Asc")
-                            : translateInstant("Desc")}
-                        </span>
-                      ) : null}
-                    </button>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs"
-                  title={translateInstant("Group")}
-                >
-                  <Layers className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
-                  <span className="hidden sm:inline">
-                    {translateInstant("routines.group")}
-                  </span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="end" className="w-44 p-0">
-                <div className="p-2 space-y-0.5">
-                  {(
-                    [
-                      ["folder", translateInstant("Folder")],
-                      ["project", translateInstant("Project")],
-                      ["assignee", translateInstant("Agent")],
-                      ["none", translateInstant("None")],
-                    ] as const
-                  ).map(([value, label]) => (
-                    <button
-                      key={value}
-                      className={`flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm ${
-                        routineViewState.groupBy === value
-                          ? "bg-accent/50 text-foreground"
-                          : "text-muted-foreground hover:bg-accent/50"
-                      }`}
-                      onClick={() =>
-                        updateRoutineView({
-                          groupBy: value,
-                          collapsedGroups: [],
-                        })
-                      }
-                    >
-                      <span>{label}</span>
-                      {routineViewState.groupBy === value ? (
-                        <Check className="h-3.5 w-3.5" />
-                      ) : null}
-                    </button>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
-            {routineViewState.groupBy === "folder" && !hasRoutineFolders ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => openCreateFolder()}
-              >
-                <Plus className="mr-2 h-3.5 w-3.5" />
-                {translateInstant("folders.newFolder")}
-              </Button>
-            ) : null}
-            {showFolderRail ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs"
-                onClick={() => setSelectMode((current) => !current)}
-              >
-                {selectMode
-                  ? translateInstant("Done")
-                  : translateInstant("Select")}
-              </Button>
-            ) : null}
-          </div>
+      {routineViewState.groupBy === "folder" && routineFolders ? (
+        <div className="md:hidden">
+          <FolderChip
+            result={railFolderResult}
+            selection={folderSelection}
+            allLabel={translateInstant("folders.allRoutines")}
+            onClick={() => setMobileFoldersOpen(true)}
+          />
         </div>
-        {routineViewState.groupBy === "folder" ? (
-          <div className="md:hidden">
-            <FolderChip
-              result={railFolderResult}
-              selection={folderSelection}
-              allLabel="All routines"
-              onClick={() => setMobileFoldersOpen(true)}
-            />
-          </div>
-        ) : null}
-      </div>
+      ) : null}
 
-      <Dialog
-        open={composerOpen}
-        onOpenChange={(open) => {
-          if (!createRoutine.isPending) {
-            setComposerOpen(open);
-          }
-        }}
-      >
-        <DialogContent
-          showCloseButton={false}
-          className="flex max-h-(--sz-calc-18) max-w-3xl flex-col gap-0 overflow-hidden p-0"
-        >
-          <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-3">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-                {translateInstant("routines.newRoutine")}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {translateInstant(
-                  "Define the recurring work first. Default project and agent are optional for draft routines.",
-                )}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setComposerOpen(false);
-                setAdvancedOpen(false);
-              }}
-              disabled={createRoutine.isPending}
-            >
-              {translateInstant("common.cancel")}
-            </Button>
-          </div>
-
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            <div className="px-5 pt-5 pb-3">
-              <textarea
-                ref={titleInputRef}
-                className="w-full resize-none overflow-hidden bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/50"
-                placeholder={translateInstant("Routine title")}
-                rows={1}
-                value={draft.title}
-                onChange={(event) => {
-                  setDraft((current) => ({
-                    ...current,
-                    title: event.target.value,
-                  }));
-                  autoResizeTextarea(event.target);
-                }}
-                onKeyDown={(event) => {
-                  if (
-                    event.key === "Enter" &&
-                    !event.metaKey &&
-                    !event.ctrlKey &&
-                    !event.nativeEvent.isComposing
-                  ) {
-                    event.preventDefault();
-                    descriptionEditorRef.current?.focus();
-                    return;
-                  }
-                  if (event.key === "Tab" && !event.shiftKey) {
-                    event.preventDefault();
-                    if (draft.assigneeAgentId) {
-                      if (draft.projectId) {
-                        descriptionEditorRef.current?.focus();
-                      } else {
-                        projectSelectorRef.current?.focus();
-                      }
-                    } else {
-                      assigneeSelectorRef.current?.focus();
-                    }
-                  }
-                }}
-                autoFocus
-              />
-            </div>
-
-            <div className="px-5 pb-3">
-              <div className="overflow-x-auto overscroll-x-contain">
-                <div className="inline-flex min-w-full flex-wrap items-center gap-2 text-sm text-muted-foreground sm:min-w-max sm:flex-nowrap">
-                  <span>{translateInstant("routineComposer.forAssignee")}</span>
-                  <InlineEntitySelector
-                    ref={assigneeSelectorRef}
-                    value={draft.assigneeAgentId}
-                    options={assigneeOptions}
-                    recentOptionIds={recentAssigneeIds}
-                    placeholder={translateInstant("Responsible")}
-                    noneLabel="No responsible"
-                    searchPlaceholder="Search responsible..."
-                    emptyMessage={translateInstant(
-                      "routines.noResponsibleFound",
-                    )}
-                    onChange={(assigneeAgentId) => {
-                      if (assigneeAgentId) trackRecentAssignee(assigneeAgentId);
-                      setDraft((current) => ({ ...current, assigneeAgentId }));
-                    }}
-                    onConfirm={() => {
-                      if (draft.projectId) {
-                        descriptionEditorRef.current?.focus();
-                      } else {
-                        projectSelectorRef.current?.focus();
-                      }
-                    }}
-                    renderTriggerValue={(option) =>
-                      option ? (
-                        currentAssignee ? (
-                          <>
-                            <AgentAvatar
-                              agent={currentAssignee}
-                              size={16}
-                              className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                            />
-                            <span className="truncate">{option.label}</span>
-                          </>
-                        ) : (
-                          <span className="truncate">{option.label}</span>
-                        )
-                      ) : (
-                        <span className="text-muted-foreground">
-                          {translateInstant("routines.responsible")}
-                        </span>
-                      )
-                    }
-                    renderOption={(option) => {
-                      if (!option.id)
-                        return <span className="truncate">{option.label}</span>;
-                      const assignee = agentById.get(option.id);
-                      return (
-                        <>
-                          {assignee ? (
-                            <AgentAvatar
-                              agent={assignee}
-                              size={16}
-                              className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                            />
-                          ) : null}
-                          <span className="truncate">{option.label}</span>
-                        </>
-                      );
-                    }}
-                  />
-                  <span>{translateInstant("routineComposer.inProject")}</span>
-                  <InlineEntitySelector
-                    ref={projectSelectorRef}
-                    value={draft.projectId}
-                    options={projectOptions}
-                    recentOptionIds={recentProjectIds}
-                    placeholder={translateInstant("Project")}
-                    noneLabel={translateInstant("No project")}
-                    searchPlaceholder="Search projects..."
-                    emptyMessage={translateInstant("newIssue.noProjectsFound")}
-                    onChange={(projectId) => {
-                      if (projectId) trackRecentProject(projectId);
-                      setDraft((current) => ({ ...current, projectId }));
-                    }}
-                    onConfirm={() => descriptionEditorRef.current?.focus()}
-                    renderTriggerValue={(option) =>
-                      option && currentProject ? (
-                        <>
-                          <span
-                            className="h-3.5 w-3.5 shrink-0 rounded-sm"
-                            style={{
-                              backgroundColor:
-                                currentProject.color ?? "var(--project-none)",
-                            }}
-                          />
-                          <span className="truncate">{option.label}</span>
-                        </>
-                      ) : (
-                        <span className="text-muted-foreground">
-                          {translateInstant("routines.project")}
-                        </span>
-                      )
-                    }
-                    renderOption={(option) => {
-                      if (!option.id)
-                        return <span className="truncate">{option.label}</span>;
-                      const project = projectById.get(option.id);
-                      return (
-                        <>
-                          <span
-                            className="h-3.5 w-3.5 shrink-0 rounded-sm"
-                            style={{
-                              backgroundColor:
-                                project?.color ?? "var(--project-none)",
-                            }}
-                          />
-                          <span className="truncate">{option.label}</span>
-                        </>
-                      );
-                    }}
-                  />
-                  <span>{translateInstant("folders.filedIn")}</span>
-                  <Select
-                    value={draft.folderId ?? "__unfiled"}
-                    onValueChange={(value) =>
-                      setDraft((current) => ({
-                        ...current,
-                        folderId: value === "__unfiled" ? null : value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="h-8 w-auto min-w-32 border-0 bg-muted/50 px-2 shadow-none">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__unfiled">
-                        {translateInstant("folders.unfiled")}
-                      </SelectItem>
-                      {(routineFolders?.folders ?? []).map((folder) => (
-                        <SelectItem key={folder.id} value={folder.id}>
-                          {folder.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t border-border/60 px-5 py-4">
-              <MarkdownEditor
-                ref={descriptionEditorRef}
-                value={draft.description}
-                onChange={(description) =>
-                  setDraft((current) => ({ ...current, description }))
-                }
-                placeholder={translateInstant(
-                  "routines.instructionsPlaceholder",
-                )}
-                bordered={false}
-                contentClassName="min-h-(--sz-160px) text-sm text-muted-foreground"
-                mentions={mentionOptions}
-                onSubmit={() => {
-                  if (
-                    !createRoutine.isPending &&
-                    draft.title.trim() &&
-                    draft.projectId &&
-                    draft.assigneeAgentId
-                  ) {
-                    createRoutine.mutate();
-                  }
-                }}
-              />
-            </div>
-
-            <div className="border-t border-border/60 px-5 py-3">
-              <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
-                <CollapsibleTrigger className="flex w-full items-center justify-between text-left">
-                  <div>
-                    <p className="text-sm font-medium">
-                      {translateInstant("routines.advancedDeliverySettings")}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {translateInstant("routines.advancedDeliveryHint")}
-                    </p>
-                  </div>
-                  {advancedOpen ? (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pt-3">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-                        {translateInstant("routineHistory.field.concurrency")}
-                      </p>
-                      <Select
-                        value={draft.concurrencyPolicy}
-                        onValueChange={(concurrencyPolicy) =>
-                          setDraft((current) => ({
-                            ...current,
-                            concurrencyPolicy,
-                          }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {concurrencyPolicies.map((value) => (
-                            <SelectItem key={value} value={value}>
-                              {translateInstant(
-                                `routineDetail.policy.${value}`,
-                              )}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground">
-                        {translateInstant(
-                          concurrencyPolicyDescriptionKeys[
-                            draft.concurrencyPolicy
-                          ],
-                        )}
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-                        {translateInstant("routineHistory.field.catchUp")}
-                      </p>
-                      <Select
-                        value={draft.catchUpPolicy}
-                        onValueChange={(catchUpPolicy) =>
-                          setDraft((current) => ({ ...current, catchUpPolicy }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {catchUpPolicies.map((value) => (
-                            <SelectItem key={value} value={value}>
-                              {translateInstant(
-                                `routineDetail.policy.${value}`,
-                              )}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground">
-                        {translateInstant(
-                          catchUpPolicyDescriptionKeys[draft.catchUpPolicy],
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-            </div>
-          </div>
-
-          <div className="shrink-0 flex flex-col gap-3 border-t border-border/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm text-muted-foreground">
-              {translateInstant(
-                "After creation, Paperclip takes you straight to trigger setup. Draft routines stay paused until you add a default agent.",
-              )}
-            </div>
-            <div className="flex flex-col gap-2 sm:items-end">
-              <Button
-                onClick={() => createRoutine.mutate()}
-                disabled={createRoutine.isPending || !draft.title.trim()}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                {createRoutine.isPending
-                  ? translateInstant("Creating...")
-                  : translateInstant("Create routine")}
-              </Button>
-              {createRoutine.isError ? ( // query-error-ok: mutation result, not a query
-                <p role="alert" className="text-sm text-destructive">
-                  {
-                    describeError(createRoutine.error, {
-                      action: "create the routine",
-                    }).body
-                  }
-                </p>
-              ) : null}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {selectedCompanyId ? (
+        <RoutineCreateDialog
+          companyId={selectedCompanyId}
+          open={composerOpen}
+          onOpenChange={setComposerOpen}
+          folderId={createFolderId}
+        />
+      ) : null}
 
       {routinesView.kind === "error" ? (
         <QueryErrorState
@@ -1727,83 +835,47 @@ export function Routines() {
         />
       ) : null}
 
+      {companyMembersView.kind === "error" ? (
+        <QueryErrorState error={companyMembersView.error} action="load responsible people" size="inline"
+          onRetry={companyMembersView.retry} retrying={companyMembersView.isFetching} />
+      ) : null}
+
+      {routineViewState.groupBy === "folder" && foldersView.kind === "error" ? (
+        <QueryErrorState error={foldersView.error} action="load routine folders"
+          onRetry={foldersView.retry} retrying={foldersView.isFetching} />
+      ) : null}
+
       <div className={cn(showFolderRail && "flex gap-4")}>
-        {showFolderRail ? (
-          <FolderRail
-            result={railFolderResult}
-            selection={folderSelection}
-            allLabel="All routines"
-            itemLabelPlural="routines"
-            loading={foldersLoading}
-            onSelect={setFolderSelection}
-            onCreate={() => openCreateFolder()}
-            onRename={(folder, name) =>
-              updateFolder.mutate({ folderId: folder.id, payload: { name } })
-            }
-            onEdit={(folder) => {
-              setFolderDialogTarget(folder);
-              setFolderDialogOpen(true);
-            }}
-            onDelete={setDeleteFolderTarget}
-          />
-        ) : null}
-        <div className="min-w-0 flex-1">
-          {routineViewState.groupBy === "folder" && hasRoutineFolders ? (
-            <div className="mb-3 flex flex-wrap items-center gap-2">
-              {folderSelection === "all" ? (
-                <FolderIconHeader
-                  label={translateInstant("folders.allRoutines")}
-                  count={sortedRoutines.length}
-                />
-              ) : (
-                <div className="flex min-w-0 items-center gap-2 text-sm">
-                  <FolderSwatch color={activeFolder?.color} />
-                  <span className="truncate font-medium">
-                    {folderSelection === "unfiled"
-                      ? translateInstant("folders.unfiled")
-                      : (activeFolder?.name ?? translateInstant("Folder"))}
-                  </span>
-                  <span className="text-muted-foreground">
-                    {translateInstant("folders.routineCount", {
-                      count: sortedRoutines.length,
-                    })}
-                  </span>
-                </div>
-              )}
-            </div>
+          {showFolderRail ? (
+            <FolderRail
+              result={railFolderResult}
+              selection={folderSelection}
+              allLabel={translateInstant("folders.allRoutines")}
+              itemLabelPlural={translateInstant("folders.routines")}
+              loading={foldersLoading}
+              onSelect={setFolderSelection}
+              onCreate={() => openCreateFolder()}
+              onRename={(folder, name) => updateFolder.mutate({ folderId: folder.id, payload: { name } })}
+              onEdit={(folder) => {
+                setFolderDialogTarget(folder);
+                setFolderDialogOpen(true);
+              }}
+              onDelete={setDeleteFolderTarget}
+            />
           ) : null}
-          {routineViewState.groupBy === "folder" &&
-          !hasRoutineFolders &&
-          !foldersLoading &&
-          visibleRoutines.length > 0 ? (
+          <div className="min-w-0 flex-1">
+          {routineViewState.groupBy === "folder" && routineFolders && !hasRoutineFolders && !foldersLoading && visibleRoutines.length > 0 ? (
             <AllUnfiledBanner
               storageKey={`paperclip:routines-folder-nudge:${selectedCompanyId ?? "none"}`}
               itemLabelPlural={translateInstant("folders.routines")}
               onCreateFolder={() => openCreateFolder()}
             />
           ) : null}
-          {selectMode ? (
-            <BulkBar
-              selectedCount={selectedRoutineIds.length}
-              folders={routineFolders?.folders ?? []}
-              onMove={(folderId) => void moveSelectedRoutines(folderId)}
-              onCreateAndMove={() => openCreateFolder(selectedRoutineIds)}
-              onClear={() => setSelectedRoutineIds([])}
-              onDone={() => {
-                setSelectMode(false);
-                setSelectedRoutineIds([]);
-              }}
-            />
-          ) : null}
-          {visibleRoutines.length === 0 ? (
+          {visibleRoutines.length === 0 && !routineViewState.statuses.length ? (
             <div className="py-12">
               <EmptyState
                 icon={Repeat}
-                message={
-                  query.trim()
-                    ? translateInstant("routines.noSearchResults")
-                    : translateInstant("routines.noActiveRoutines")
-                }
+                message={t("routines.noActiveRoutines", { defaultValue: "No active routines. Use New routine to define the first recurring workflow." })}
               />
             </div>
           ) : sortedRoutines.length === 0 ? (
@@ -1813,7 +885,7 @@ export function Routines() {
                 message={
                   query.trim()
                     ? translateInstant("routines.noSearchResults")
-                    : folderSelection === "all"
+                    : routineFilterKeys.some((key) => routineViewState[key].length) || folderSelection === "all"
                       ? translateInstant("folders.noRoutinesMatch")
                       : translateInstant("folders.empty")
                 }
@@ -1855,77 +927,53 @@ export function Routines() {
                       />
                     ) : null}
                     <CollapsibleContent>
+                      <RoutineTable columns={routineViewState.columns} label={group.label ?? translateInstant("Routines")}>
                       {group.items.map((routine) => {
                         const displayedRoutine = isBuiltInRoutine(routine)
-                          ? {
-                              ...routine,
-                              title: displayRoutineTitle(routine, t),
-                            }
+                          ? { ...routine, title: displayRoutineTitle(routine, t) }
                           : routine;
                         return (
-                          <RoutineListRow
-                            key={routine.id}
-                            routine={displayedRoutine}
-                            projectById={projectById}
-                            agentById={agentById}
-                            runningRoutineId={runningRoutineId}
-                            statusMutationRoutineId={statusMutationRoutineId}
-                            href={`/routines/${routine.id}`}
-                            runNowButton
-                            divider={false}
-                            onRunNow={handleRunNow}
-                            onToggleEnabled={handleToggleEnabled}
-                            onToggleArchived={handleToggleArchived}
-                            selectMode={selectMode}
-                            selected={selectedRoutineIds.includes(routine.id)}
-                            onSelectChange={(selectedRoutine, selected) => {
-                              setSelectedRoutineIds((current) =>
-                                selected
-                                  ? Array.from(
-                                      new Set([...current, selectedRoutine.id]),
-                                    )
-                                  : current.filter(
-                                      (id) => id !== selectedRoutine.id,
-                                    ),
-                              );
-                            }}
-                            extraMenuItems={
-                              <MoveToMenu
-                                folders={routineFolders?.folders ?? []}
-                                currentFolderId={routine.folderId ?? null}
-                                onMove={(folderId) => {
-                                  const previousFolderId =
-                                    routine.folderId ?? null;
-                                  moveRoutineToFolder.mutate({
-                                    itemId: routine.id,
-                                    folderId,
-                                  });
-                                  pushToast({
-                                    title: translateInstant(
-                                      "folders.routineMoved",
-                                    ),
-                                    body: folderId
-                                      ? `Moved "${routine.title}" to ${routineFolders?.folders.find((folder) => folder.id === folderId)?.name ?? "folder"}.`
-                                      : `Moved "${routine.title}" to Unfiled.`,
-                                    tone: "success",
-                                    action: {
-                                      label: translateInstant("common.undo"),
-                                      onClick: () =>
-                                        moveRoutineToFolder.mutate({
-                                          itemId: routine.id,
-                                          folderId: previousFolderId,
-                                        }),
-                                    },
-                                  });
-                                }}
-                                onCreateAndMove={() =>
-                                  openCreateFolder([routine.id])
-                                }
-                              />
-                            }
-                          />
+                        <RoutineTableRow
+                          key={routine.id}
+                          routine={displayedRoutine}
+                          columns={routineViewState.columns}
+                          userById={userById}
+                          projectById={projectById}
+                          agentById={agentById}
+                          runningRoutineId={runningRoutineId}
+                          statusMutationRoutineId={statusMutationRoutineId}
+                          href={`/routines/${routine.id}`}
+                          runNowButton
+                          divider={false}
+                          onRunNow={handleRunNow}
+                          onToggleEnabled={handleToggleEnabled}
+                          onToggleArchived={handleToggleArchived}
+                          extraMenuItems={
+                            <MoveToMenu
+                              folders={routineFolders?.folders ?? []}
+                              currentFolderId={routine.folderId ?? null}
+                              onMove={(folderId) => {
+                                const previousFolderId = routine.folderId ?? null;
+                                moveRoutineToFolder.mutate({ itemId: routine.id, folderId });
+                                pushToast({
+                                  title: translateInstant("folders.routineMoved"),
+                                  body: folderId
+                                    ? `Moved "${routine.title}" to ${routineFolders?.folders.find((folder) => folder.id === folderId)?.name ?? "folder"}.`
+                                    : `Moved "${routine.title}" to Unfiled.`,
+                                  tone: "success",
+                                  action: {
+                                    label: translateInstant("common.undo"),
+                                    onClick: () => moveRoutineToFolder.mutate({ itemId: routine.id, folderId: previousFolderId }),
+                                  },
+                                });
+                              }}
+                              onCreateAndMove={() => openCreateFolder([routine.id])}
+                            />
+                          }
+                        />
                         );
                       })}
+                      </RoutineTable>
                     </CollapsibleContent>
                   </Collapsible>
                 );
@@ -1988,19 +1036,6 @@ export function Routines() {
           runRoutine.mutate({ id: runDialogRoutine.id, data });
         }}
       />
-    </div>
-  );
-}
-
-function FolderIconHeader({ label, count }: { label: string; count: number }) {
-  useTranslation();
-  return (
-    <div className="flex min-w-0 items-center gap-2 text-sm">
-      <Repeat className="h-3.5 w-3.5 text-muted-foreground" />
-      <span className="truncate font-medium">{label}</span>
-      <span className="text-muted-foreground">
-        {translateInstant("folders.routineCount", { count })}
-      </span>
     </div>
   );
 }

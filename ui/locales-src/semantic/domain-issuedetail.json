@@ -14,6 +14,16 @@
     "zh-CN": "添加描述...",
     "reviewedEnglishHash": "eed0f05bd942078d68a83ed8fce3f4ded530da32b24092842512234e395acab3"
   },
+  "issueDetail.ancestorTasksAria": {
+    "en": "Ancestor tasks, root to parent",
+    "zh-CN": "上级任务（从根任务到父任务）",
+    "reviewedEnglishHash": "c9dab125ef465114cfc2f419dbaf3379f139b47c72b1bc75c30903a256b0db62"
+  },
+  "issueDetail.ancestors": {
+    "en": "Ancestors",
+    "zh-CN": "上级任务",
+    "reviewedEnglishHash": "a354517dc3dc846a2867421d923d2f3fe06ebf391f7eed26c7a4e0c1ec800b23"
+  },
   "issueDetail.applying": {
     "en": "Applying...",
     "zh-CN": "正在应用...",
@@ -183,6 +193,11 @@
     "en": "Document import failed",
     "zh-CN": "文档导入失败",
     "reviewedEnglishHash": "39d8367909850f2eb89586ea9f9489ad58b922b1a0dd57047fe566576f3c9ba1"
+  },
+  "issueDetail.goToProject": {
+    "en": "Go to {{name}} project",
+    "zh-CN": "前往 {{name}} 项目",
+    "reviewedEnglishHash": "e58389b2ba07bc0abd7bf45157a072c2e5a92eef1d80acfc13ef96010bb85c06"
   },
   "issueDetail.hidden": {
     "en": "This task is hidden",
@@ -374,6 +389,11 @@
     "zh-CN": "生产力复查",
     "reviewedEnglishHash": "ea7d21e2add2f9969936ce7ec11cb0c07b245812166ac4a7033a85683c94ad7a"
   },
+  "issueDetail.projectTasksAria": {
+    "en": "{{name}} tasks",
+    "zh-CN": "{{name}} 的任务",
+    "reviewedEnglishHash": "1999c8e0ebfb2f86c1e32ea23938becce5aa8334a63f0a602662ec59ec99aaa1"
+  },
   "issueDetail.reasonOptional": {
     "en": "Reason (optional)",
     "zh-CN": "原因（可选）",
@@ -498,6 +518,11 @@
     "en": "Sub-tasks",
     "zh-CN": "子任务",
     "reviewedEnglishHash": "ede4f8886e7d356e8bf2eee5d30c8b948f91f24b9ce03c1739ca53608e8ec835"
+  },
+  "issueDetail.subtasks": {
+    "en": "Subtasks",
+    "zh-CN": "子任务",
+    "reviewedEnglishHash": "7eff0a1919b2f60ec6350f39093fcfeabe96591a8cb830be64a0e7044374d2e3"
   },
   "issueDetail.subtreeControlApplied": {
     "en": "Subtree control applied.",

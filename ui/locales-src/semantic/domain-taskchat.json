@@ -69,6 +69,11 @@
     "zh-CN": "，",
     "reviewedEnglishHash": "0a07f659461970d8d8dcefe4fff96a1745599810dc7d47391e95c803b7b2072c"
   },
+  "taskChat.blocker.nowRunning": {
+    "en": "Now running",
+    "zh-CN": "正在运行",
+    "reviewedEnglishHash": "44cdf35701cdac026f9b24306b9b9ad70bb9c45413aba514cec6fa79fd6f54c6"
+  },
   "taskChat.composer.modeDescription.ask": {
     "en": "Answer questions only, no changes",
     "zh-CN": "只回答问题，不执行变更",
@@ -99,15 +104,65 @@
     "zh-CN": "给 {{agent}} 留言 — 描述你希望完成的工作…",
     "reviewedEnglishHash": "aeee2e198fa6a13b5073f24c88620a3739e202b6e00943b7faf2db7f690a90cd"
   },
+  "taskChat.continuedAfterSteering": {
+    "en": "Continued after steering ·",
+    "zh-CN": "引导后继续 ·",
+    "reviewedEnglishHash": "d964b95eda2602c2a68fb7b80293eefb83b4cb4a326388fdac8839f7d2d04760"
+  },
+  "taskChat.durableInput.proposeAutomation": {
+    "en": "Proposed automation",
+    "zh-CN": "提议的自动化",
+    "reviewedEnglishHash": "55bd69bcbff774f0e8b8b6a54e46e341d3c6b95ce28b7711f4782327388d31bf"
+  },
+  "taskChat.durableInput.proposeDashboardChanges": {
+    "en": "Proposed dashboard changes",
+    "zh-CN": "提议的仪表盘变更",
+    "reviewedEnglishHash": "42d3c7a849800e9fc09e7f12e10d3b8ec2b8c4bb47d8a66064e067b8c4e15ccf"
+  },
+  "taskChat.durableInput.proposeResponsibilityBar": {
+    "en": "Proposed bar",
+    "zh-CN": "建议的职责栏",
+    "reviewedEnglishHash": "92d3ffef9966923e1f55fa59808492a5e276cbc57355dd93827a77c27b4f9e5a"
+  },
+  "taskChat.durableInput.proposeRoutine": {
+    "en": "Routine offer",
+    "zh-CN": "例行任务建议",
+    "reviewedEnglishHash": "54ba8a3e0c16e2943ec76e428e496da6b165aa203901c5edcced3045f58db3f2"
+  },
+  "taskChat.durableInput.suggestRoutine": {
+    "en": "Routine offer",
+    "zh-CN": "例行任务建议",
+    "reviewedEnglishHash": "54ba8a3e0c16e2943ec76e428e496da6b165aa203901c5edcced3045f58db3f2"
+  },
+  "taskChat.error.diskFull": {
+    "en": "Disk full",
+    "zh-CN": "磁盘空间已满",
+    "reviewedEnglishHash": "dc301aee29819d4795e137e85575b03e3a41004b604f2e41bc57eda244ea1442"
+  },
+  "taskChat.error.diskFullDetail": {
+    "en": "The agent filled the disk of its computer, so the run stopped. Ask the agent to use less disk space, then retry.",
+    "zh-CN": "智能体占满了其运行环境的磁盘空间，运行已停止。请让智能体减少磁盘占用后重试。",
+    "reviewedEnglishHash": "fde83eb6b477e04f0501392b855221c812a5e6361151ed0722a96eb8856b626f"
+  },
+  "taskChat.error.modelRejectedNamed": {
+    "en": "The provider rejected the model \"{{model}}\".",
+    "zh-CN": "提供方拒绝了模型“{{model}}”。",
+    "reviewedEnglishHash": "74dd8aa9da8c8ed43b9532a646269341570fe54781ad46e5f69744dc89436277"
+  },
   "taskChat.forDuration": {
     "en": "for {{duration}}",
     "zh-CN": "用时 {{duration}}",
     "reviewedEnglishHash": "f25e2940477b1892a44a0b586a17ec646284dd5bb9e6342c95a12ca149b7b925"
   },
-  "taskChat.continuedAfterSteering": {
-    "en": "Continued after steering ·",
-    "zh-CN": "引导后继续 ·",
-    "reviewedEnglishHash": "d964b95eda2602c2a68fb7b80293eefb83b4cb4a326388fdac8839f7d2d04760"
+  "taskChat.history.loadFailed": {
+    "en": "Earlier messages couldn’t load.",
+    "zh-CN": "无法加载更早的消息。",
+    "reviewedEnglishHash": "11aa16c5ba93b4f791773fb28eaa791bd289f40d81fb98003843432df6169536"
+  },
+  "taskChat.interaction.unansweredQuestion": {
+    "en": "Unanswered question",
+    "zh-CN": "待回答问题",
+    "reviewedEnglishHash": "a36c3c6b4b6b799623b5131974e7e2e14c6cb95e7382f8bb72ccc981b4f87d1b"
   },
   "taskChat.live.calledTools_one": {
     "en": "called {{count}} tool",
@@ -129,56 +184,6 @@
     "zh-CN": "运行了 {{count}} 条命令",
     "reviewedEnglishHash": "b2900611f4e71543021c2526bf4e1f4df9180a5b585aaeebbe8b545c06960dc4"
   },
-  "taskChat.planCreated": {
-    "en": "Plan created",
-    "zh-CN": "计划已创建",
-    "reviewedEnglishHash": "14a8bc6240fe73f9e24e111ac7c3722fc3be8150a94fffe0a1cdc8427a4911c9"
-  },
-  "taskChat.planRevisionDetail": {
-    "en": "Revision {{revision}} — see the Plan tab",
-    "zh-CN": "修订 {{revision}} — 请查看“计划”页签",
-    "reviewedEnglishHash": "c488d09ab8594a8cb3e637695c62364183332cb2d072ec640ca4b09e2d95cc5d"
-  },
-  "taskChat.planUpdated": {
-    "en": "Plan updated",
-    "zh-CN": "计划已更新",
-    "reviewedEnglishHash": "670b64743d66cba15de8e393dbd58415c540361f2266f3843e56e920477ee972"
-  },
-  "taskChat.stopped": {
-    "en": "Stopped",
-    "zh-CN": "已停止",
-    "reviewedEnglishHash": "1a4f630ac1b69fd00728fa8a672ded71d0eae8516cb23e78f94529113399b79b"
-  },
-  "taskChat.toolCount_one": {
-    "en": "{{count}} tool",
-    "zh-CN": "{{count}} 个工具",
-    "reviewedEnglishHash": "c2ce825c00366d503abbcf3fa6a8e1089360f4ce8bff74211df8c553f7199683"
-  },
-  "taskChat.toolCount_other": {
-    "en": "{{count}} tools",
-    "zh-CN": "{{count}} 个工具",
-    "reviewedEnglishHash": "f1b9324764c0a9c0633d57b1379cc777c4569958a3d59d097802a471fb08dba3"
-  },
-  "taskChat.working": {
-    "en": "Working",
-    "zh-CN": "正在工作",
-    "reviewedEnglishHash": "a92f0449a9f7235bf69dc2e8ff7070bfae3f00ec8f8f26e5457a9beac53466ac"
-  },
-  "taskChat.blocker.nowRunning": {
-    "en": "Now running",
-    "zh-CN": "正在运行",
-    "reviewedEnglishHash": "44cdf35701cdac026f9b24306b9b9ad70bb9c45413aba514cec6fa79fd6f54c6"
-  },
-  "taskChat.history.loadFailed": {
-    "en": "Earlier messages couldn’t load.",
-    "zh-CN": "无法加载更早的消息。",
-    "reviewedEnglishHash": "11aa16c5ba93b4f791773fb28eaa791bd289f40d81fb98003843432df6169536"
-  },
-  "taskChat.interaction.unansweredQuestion": {
-    "en": "Unanswered question",
-    "zh-CN": "待回答问题",
-    "reviewedEnglishHash": "a36c3c6b4b6b799623b5131974e7e2e14c6cb95e7382f8bb72ccc981b4f87d1b"
-  },
   "taskChat.open": {
     "en": "Open",
     "zh-CN": "打开",
@@ -194,14 +199,64 @@
     "zh-CN": "正在编写计划",
     "reviewedEnglishHash": "64c92e65a10a2d16b8908144ccfcdc3cc5e70725e0b06d231ea1bfabf18f9872"
   },
+  "taskChat.planCreated": {
+    "en": "Plan created",
+    "zh-CN": "计划已创建",
+    "reviewedEnglishHash": "14a8bc6240fe73f9e24e111ac7c3722fc3be8150a94fffe0a1cdc8427a4911c9"
+  },
+  "taskChat.planRevisionDetail": {
+    "en": "Revision {{revision}} — see the Plan tab",
+    "zh-CN": "修订 {{revision}} — 请查看“计划”页签",
+    "reviewedEnglishHash": "c488d09ab8594a8cb3e637695c62364183332cb2d072ec640ca4b09e2d95cc5d"
+  },
+  "taskChat.planUpdated": {
+    "en": "Plan updated",
+    "zh-CN": "计划已更新",
+    "reviewedEnglishHash": "670b64743d66cba15de8e393dbd58415c540361f2266f3843e56e920477ee972"
+  },
+  "taskChat.questionForm.addContextPlaceholder": {
+    "en": "Add context for the agent…",
+    "zh-CN": "为智能体补充上下文…",
+    "reviewedEnglishHash": "e5f5ea00e250b1a5d28c11355a5a4b77ea48ad5ae9f67d9885da66554ed32b03"
+  },
+  "taskChat.questionForm.optional": {
+    "en": "Optional",
+    "zh-CN": "选填",
+    "reviewedEnglishHash": "59be71333c960fd08e7e4fe9862206d9355f0a9884121a5b50ef8b36efdfe4cf"
+  },
+  "taskChat.questionForm.required": {
+    "en": "Required",
+    "zh-CN": "必填",
+    "reviewedEnglishHash": "4850b174b713d88cfc63de107830d5388929020e78abc91fc19bba7a6821625f"
+  },
   "taskChat.showFewer": {
     "en": "Show fewer",
     "zh-CN": "收起部分内容",
     "reviewedEnglishHash": "255beb6510e7827d37ec1cd22d080f910888ae00f29374dd9545c8b3d1fce43a"
   },
+  "taskChat.stopped": {
+    "en": "Stopped",
+    "zh-CN": "已停止",
+    "reviewedEnglishHash": "1a4f630ac1b69fd00728fa8a672ded71d0eae8516cb23e78f94529113399b79b"
+  },
   "taskChat.tool.changed": {
     "en": "Changed",
     "zh-CN": "已更改",
     "reviewedEnglishHash": "2a6141e43be0c2125e3b5d9f74b4ff1261a0b320ff927c83d4d9b1b65585bad7"
+  },
+  "taskChat.toolCount_one": {
+    "en": "{{count}} tool",
+    "zh-CN": "{{count}} 个工具",
+    "reviewedEnglishHash": "c2ce825c00366d503abbcf3fa6a8e1089360f4ce8bff74211df8c553f7199683"
+  },
+  "taskChat.toolCount_other": {
+    "en": "{{count}} tools",
+    "zh-CN": "{{count}} 个工具",
+    "reviewedEnglishHash": "f1b9324764c0a9c0633d57b1379cc777c4569958a3d59d097802a471fb08dba3"
+  },
+  "taskChat.working": {
+    "en": "Working",
+    "zh-CN": "正在工作",
+    "reviewedEnglishHash": "a92f0449a9f7235bf69dc2e8ff7070bfae3f00ec8f8f26e5457a9beac53466ac"
   }
 }

@@ -26,8 +26,6 @@ import { pathToFileURL } from "node:url";
 import { pluginApiUpgrade, proxyPluginApiWebSocket } from "../realtime/plugin-api-ws.js";
 import { trustedBoardMutationOrigin } from "../middleware/board-mutation-guard.js";
 import { authorizationService } from "../services/authorization.js";
-import { fileURLToPath } from "node:url";
-
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { and, desc, eq, gte, inArray } from "drizzle-orm";
@@ -70,6 +68,7 @@ import type { PluginToolDispatcher } from "../services/plugin-tool-dispatcher.js
 import { ToolGatewayHttpError, type ToolGatewayService } from "../services/tool-gateway.js";
 import type { PluginPerformActionActorContext, ToolRunContext } from "@penclipai/plugin-sdk";
 import { JsonRpcCallError, PLUGIN_RPC_ERROR_CODES } from "@penclipai/plugin-sdk";
+import { findPluginWorkerUnavailableError } from "../services/plugin-worker-unavailable-error.js";
 import {
   assertAuthenticated,
   assertBoard,
@@ -1423,7 +1422,11 @@ export function pluginRoutes(
     const message = err instanceof Error ? err.message : String(err);
 
     // Worker not running — surface as WORKER_UNAVAILABLE
-    if (message.includes("not running") || message.includes("not registered")) {
+    if (
+      findPluginWorkerUnavailableError(err) ||
+      message.includes("not running") ||
+      message.includes("not registered")
+    ) {
       return {
         code: "WORKER_UNAVAILABLE",
         message,

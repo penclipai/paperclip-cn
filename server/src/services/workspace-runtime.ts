@@ -3193,14 +3193,24 @@ function resolveRepoManagedWorkspaceCommand(command: string, repoRoot: string) {
  */
 export class WorkspaceCommandExitError extends Error {
   readonly exitCode: number | null;
+  /** The configured setup step and command, so the task page can name the setting that broke. */
+  readonly step: WorkspaceCommandPhase | null;
+  readonly command: string | null;
+  readonly output: string | null;
 
-  constructor(message: string, exitCode: number | null) {
+  constructor(message: string, exitCode: number | null, failure?: { step: WorkspaceCommandPhase; command: string; output: string }) {
     super(message);
     this.exitCode = exitCode;
+    this.step = failure?.step ?? null;
+    this.command = failure?.command ?? null;
+    this.output = failure?.output || null;
   }
 }
 
+type WorkspaceCommandPhase = "workspace_provision" | "workspace_seed" | "workspace_runtime_provision" | "workspace_teardown";
+
 async function runWorkspaceCommand(input: {
+  phase?: WorkspaceCommandPhase;
   command: string;
   resolvedCommand?: string;
   cwd: string;
@@ -3225,6 +3235,7 @@ async function runWorkspaceCommand(input: {
       ? `${input.label} failed: ${details}`
       : `${input.label} failed with exit code ${proc.code ?? -1}`,
     proc.code,
+    input.phase ? { step: input.phase, command: input.command, output: details } : undefined,
   );
 }
 
@@ -3353,7 +3364,7 @@ async function recordGitOperation(
 async function recordWorkspaceCommandOperation(
   recorder: WorkspaceOperationRecorder | null | undefined,
   input: {
-    phase: "workspace_provision" | "workspace_seed" | "workspace_runtime_provision" | "workspace_teardown";
+    phase: WorkspaceCommandPhase;
     command: string;
     resolvedCommand?: string;
     cwd: string;
@@ -3422,6 +3433,7 @@ async function recordWorkspaceCommandOperation(
       ? `${input.label} failed: ${details}`
       : `${input.label} failed with exit code ${code ?? -1}`,
     code,
+    { step: input.phase, command: input.command, output: details },
   );
 }
 

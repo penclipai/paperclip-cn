@@ -17,7 +17,6 @@ import { tmpdir } from "node:os";
 import { delimiter, join } from "node:path";
 import test from "node:test";
 import { createRequire } from "node:module";
-import { runInNewContext } from "node:vm";
 
 import cliEsbuildConfig from "../cli/esbuild.config.mjs";
 import { bundledCliNpmDependencies } from "./cli-bundled-npm-dependencies.mjs";
@@ -42,7 +41,7 @@ function esbuildFixture(t) {
     writeFileSync(join(location, "package.json"), JSON.stringify(metadata));
     return location;
   };
-  const acpx = writePackage(join(graph, "acpx"), { name: "acpx", version: "0.13.1" });
+  const acpx = writePackage(join(graph, "acpx"), { name: "acpx", version: "0.22.0" });
   const esbuild = writePackage(join(acpx, "node_modules/esbuild"), {
     name: "esbuild", version: "0.28.2", scripts: { postinstall: "node install.js" },
     optionalDependencies: Object.fromEntries([...nativeTargets, "win32-x64"].map(target => [`@esbuild/${target}`, "0.28.2"])),
@@ -52,13 +51,13 @@ function esbuildFixture(t) {
   });
   writePackage(join(graph, "unrelated-linux-x64"), { name: "unrelated-linux-x64", version: "1.0.0" });
   const publish = { name: "@penclipai/adapter-utils", version: "0.3.1", bundleDependencies: ["acpx"],
-    dependencies: { acpx: "0.13.1" }, optionalDependencies: { unrelated: "1.0.0" } };
+    dependencies: { acpx: "0.22.0" }, optionalDependencies: { unrelated: "1.0.0" } };
   return { directory, graph, esbuild, producerBinary, publish, writePackage };
 }
 const codexTargets = ["linux-x64", "linux-arm64", "darwin-x64", "darwin-arm64", "win32-x64", "win32-arm64"];
-const codexOptional = Object.fromEntries(codexTargets.map(target => [`@openai/codex-${target}`, `npm:@openai/codex@0.160.0-${target}`]));
+const codexOptional = Object.fromEntries(codexTargets.map(target => [`@openai/codex-${target}`, `npm:@openai/codex@0.170.0-${target}`]));
 const claudeTargets = [...codexTargets, "linux-x64-musl", "linux-arm64-musl"];
-const claudeOptional = Object.fromEntries(claudeTargets.map(target => [`@anthropic-ai/claude-agent-sdk-${target}`, "0.3.286"]));
+const claudeOptional = Object.fromEntries(claudeTargets.map(target => [`@anthropic-ai/claude-agent-sdk-${target}`, "0.3.328"]));
 function claudeFixture(t) {
   const directory = realpathSync(mkdtempSync(join(tmpdir(), "paperclip-bundled-claude-")));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
@@ -69,15 +68,15 @@ function claudeFixture(t) {
     return location;
   };
   const bridge = writePackage(join(graph, "@agentclientprotocol/claude-agent-acp"), {
-    name: "@agentclientprotocol/claude-agent-acp", version: "0.73.0", dependencies: { "@anthropic-ai/claude-agent-sdk": "0.3.286" },
+    name: "@agentclientprotocol/claude-agent-acp", version: "0.73.0", dependencies: { "@anthropic-ai/claude-agent-sdk": "0.3.328" },
   });
   writeFileSync(join(bridge, "index.js"), "export {};\n");
   const runtime = writePackage(join(graph, "@anthropic-ai/claude-agent-sdk"), {
-    name: "@anthropic-ai/claude-agent-sdk", version: "0.3.286", exports: { ".": "./sdk.mjs" }, optionalDependencies: claudeOptional,
+    name: "@anthropic-ai/claude-agent-sdk", version: "0.3.328", exports: { ".": "./sdk.mjs" }, optionalDependencies: claudeOptional,
   });
   writeFileSync(join(runtime, "sdk.mjs"), "// official JavaScript fixture, never executed\n");
   const producer = writePackage(join(graph, "@anthropic-ai/claude-agent-sdk-linux-x64"), {
-    name: "@anthropic-ai/claude-agent-sdk-linux-x64", version: "0.3.286", os: ["linux"], cpu: ["x64"],
+    name: "@anthropic-ai/claude-agent-sdk-linux-x64", version: "0.3.328", os: ["linux"], cpu: ["x64"],
   });
   writeFileSync(join(producer, "claude"), "producer native fixture, never executed");
   const profiles = [{ agent: "claude", ...profileData.profiles.claude }];
@@ -91,14 +90,14 @@ function codexFixture(t) {
   const writePackage = (location, metadata) => {
     mkdirSync(location, { recursive: true }); writeFileSync(join(location, "package.json"), JSON.stringify(metadata)); return location;
   };
-  const bridge = writePackage(join(graph, "@agentclientprotocol/codex-acp"), { name: "@agentclientprotocol/codex-acp", version: "1.6.2", dependencies: { "@openai/codex": "0.160.0" } });
+  const bridge = writePackage(join(graph, "@agentclientprotocol/codex-acp"), { name: "@agentclientprotocol/codex-acp", version: "1.6.2", dependencies: { "@openai/codex": "0.170.0" } });
   writeFileSync(join(bridge, "index.js"), "export {};\n");
-  const runtime = writePackage(join(graph, "@openai/codex"), { name: "@openai/codex", version: "0.160.0", bin: { codex: "bin/codex.js" }, optionalDependencies: codexOptional });
+  const runtime = writePackage(join(graph, "@openai/codex"), { name: "@openai/codex", version: "0.170.0", bin: { codex: "bin/codex.js" }, optionalDependencies: codexOptional });
   mkdirSync(join(runtime, "bin")); writeFileSync(join(runtime, "bin/codex.js"), "// official JavaScript fixture, never executed\n");
   mkdirSync(join(runtime, "vendor")); writeFileSync(join(runtime, "vendor/codex"), "producer fallback binary fixture, never executed");
-  const producer = writePackage(join(graph, "@openai/codex-linux-x64"), { name: "@openai/codex", version: "0.160.0-linux-x64", os: ["linux"], cpu: ["x64"] });
+  const producer = writePackage(join(graph, "@openai/codex-linux-x64"), { name: "@openai/codex", version: "0.170.0-linux-x64", os: ["linux"], cpu: ["x64"] });
   mkdirSync(join(producer, "vendor")); writeFileSync(join(producer, "vendor/codex"), "producer optional binary fixture, never executed");
-  const nested = writePackage(join(bridge, "node_modules/@openai/codex-darwin-arm64"), { name: "@openai/codex", version: "0.160.0-darwin-arm64", os: ["darwin"], cpu: ["arm64"] });
+  const nested = writePackage(join(bridge, "node_modules/@openai/codex-darwin-arm64"), { name: "@openai/codex", version: "0.170.0-darwin-arm64", os: ["darwin"], cpu: ["arm64"] });
   writePackage(join(graph, "unrelated-linux-x64"), { name: "unrelated-linux-x64", version: "1.0.0" });
   const profiles = [{ agent: "codex", ...profileData.profiles.codex }];
   const publish = { name: "paperclip-codex-pack-fixture", version: "1.0.0", dependencies: { "@agentclientprotocol/codex-acp": "1.6.2" }, bundleDependencies: ["@agentclientprotocol/codex-acp"] };
@@ -131,14 +130,15 @@ function packWithNpm(cwd) {
     timeout: 30_000,
     env: { ...process.env, HOME: cwd, npm_config_cache: join(cwd, "cache"), npm_config_update_notifier: "false" },
   };
-  if (process.platform === "win32") {
-    return JSON.parse(execFileSync(process.env.ComSpec?.trim() || "cmd.exe", ["/d", "/s", "/c", `npm.cmd ${args.join(" ")}`], options));
-  }
-  return JSON.parse(execFileSync("npm", args, options));
+  const raw = process.platform === "win32"
+    ? execFileSync(process.env.ComSpec?.trim() || "cmd.exe", ["/d", "/s", "/c", `npm.cmd ${args.join(" ")}`], options)
+    : execFileSync("npm", args, options);
+  const parsed = JSON.parse(raw);
+  return Array.isArray(parsed) ? parsed : Object.values(parsed);
 }
 
 const acpxRuntimePatch = await readFile(
-  new URL("../patches/acpx@0.13.1.patch", import.meta.url),
+  new URL("../patches/acpx@0.22.0.patch", import.meta.url),
   "utf8",
 );
 const claudeAcpPatch = await readFile(
@@ -146,7 +146,7 @@ const claudeAcpPatch = await readFile(
   "utf8",
 );
 
-for (const version of ["0.12.0", "0.13.1"]) {
+for (const version of ["0.22.0"]) {
   test(`ACPX ${version} release patch uses portable generated unified hunks`, async () => {
     const patch = await readFile(
       new URL(`../patches/acpx@${version}.patch`, import.meta.url),
@@ -205,14 +205,13 @@ for (const version of ["0.12.0", "0.13.1"]) {
 }
 
 test("published packages preserve the patched ACPX runtime", () => {
-  assert.equal(rootPackage.pnpm.patchedDependencies["acpx@0.12.0"], undefined);
   assert.equal(
-    rootPackage.pnpm.patchedDependencies["acpx@0.13.1"],
-    "patches/acpx@0.13.1.patch",
+    rootPackage.pnpm.patchedDependencies["acpx@0.22.0"],
+    "patches/acpx@0.22.0.patch",
   );
-  assert.equal(adapterUtilsPackage.dependencies.acpx, "0.13.1");
+  assert.equal(adapterUtilsPackage.dependencies.acpx, "0.22.0");
   assert.deepEqual(adapterUtilsPackage.bundleDependencies, ["acpx"]);
-  assert.equal(serverPackage.dependencies.acpx, "0.13.1");
+  assert.equal(serverPackage.dependencies.acpx, "0.22.0");
   assert.ok(serverPackage.bundleDependencies.includes("acpx"));
   assert.equal(bundledCliNpmDependencies.has("acpx"), true);
   assert.equal(cliEsbuildConfig.external.includes("acpx"), false);
@@ -225,7 +224,7 @@ test("published Claude bridge pins its qualified SDK and provider dependency clo
     serverPackage.bundleDependencies, rootPackage, profileData,
   );
   assert.deepEqual(installManifest.overrides["@agentclientprotocol/claude-agent-acp@0.73.0"], {
-    "@anthropic-ai/claude-agent-sdk": "0.3.286",
+    "@anthropic-ai/claude-agent-sdk": "0.3.328",
     "@agentclientprotocol/sdk": "1.4.0",
     zod: "4.4.3",
   });
@@ -335,7 +334,7 @@ test("Codex bundle validation fails before deleting producer binaries for altere
   const file = join(runtime, "package.json"), original = JSON.parse(readFileSync(file, "utf8"));
   writeFileSync(file, JSON.stringify({ ...original, version: "0.156.1" }));
   assert.throws(() => stageBundledProviderOptionalDependencies(directory, publish, profiles), /runtime version mismatch/);
-  writeFileSync(file, JSON.stringify({ ...original, optionalDependencies: { ...codexOptional, "@openai/codex-untrusted": "0.160.0" } }));
+  writeFileSync(file, JSON.stringify({ ...original, optionalDependencies: { ...codexOptional, "@openai/codex-untrusted": "0.170.0" } }));
   assert.throws(() => stageBundledProviderOptionalDependencies(directory, publish, profiles), /not qualified/);
   writeFileSync(file, JSON.stringify(original));
   const missing = { ...original }; delete missing.optionalDependencies;
@@ -351,7 +350,7 @@ test("Codex bundle validation fails before deleting producer binaries for altere
 
 test("Codex stripping rejects linked native payloads and wrapper fallback directories without touching external files", (t) => {
   const { directory, runtime, producer, profiles, publish, writePackage } = codexFixture(t);
-  const outside = writePackage(join(directory, "outside"), { name: "@openai/codex", version: "0.160.0-linux-x64", os: ["linux"], cpu: ["x64"] });
+  const outside = writePackage(join(directory, "outside"), { name: "@openai/codex", version: "0.170.0-linux-x64", os: ["linux"], cpu: ["x64"] });
   rmSync(producer, { recursive: true }); symlinkSync(outside, producer, "dir");
   assert.throws(() => stageBundledProviderOptionalDependencies(directory, publish, profiles), /escapes its producer graph/);
   rmSync(producer); rmSync(join(runtime, "vendor"), { recursive: true }); symlinkSync(outside, join(runtime, "vendor"), "dir");
@@ -421,19 +420,22 @@ test("bundled esbuild cannot follow a platform payload or package namespace outs
 });
 
 test("Paperclip Runner pins the qualified ACPX host callbacks", () => {
-  assert.equal(rootPackage.pnpm.patchedDependencies["acpx@0.13.1"], "patches/acpx@0.13.1.patch");
+  assert.equal(rootPackage.pnpm.patchedDependencies["acpx@0.22.0"], "patches/acpx@0.22.0.patch");
   assert.equal(
     rootPackage.pnpm.patchedDependencies["@agentclientprotocol/claude-agent-acp@0.73.0"],
     "patches/@agentclientprotocol__claude-agent-acp@0.73.0.patch",
   );
-  assert.equal(runnerPackage.dependencies.acpx, "0.13.1");
+  assert.equal(runnerPackage.dependencies.acpx, "0.22.0");
   assert.equal(runnerPackage.dependencies["@agentclientprotocol/claude-agent-acp"], "0.73.0");
   assert.equal(runnerPackage.dependencies["@agentclientprotocol/codex-acp"], "1.6.2");
   for (const callback of [
-    "spawnEnvironment", "spawnCwd", "spawnAgent", "isPlainStringEnvironment",
-    "onAgentSpawn", "onAgentStderr", "onAgentExit",
-    "onSessionNotification", "onClientOperation",
+    "spawnAgent", "requestExtension", "protocolGuardFactory",
   ]) assert.match(acpxRuntimePatch, new RegExp(callback));
+  // Moved to stock 0.22 hooks (spawnAgent, processLifecycle, onAcpMessage).
+  const added = acpxRuntimePatch.split("\n").filter(line => line.startsWith("+")).join("\n");
+  for (const removed of ["spawnCwd", "onAgentSpawn", "onAgentStderr", "onSessionNotification", "onClientOperation", "spawnEnvironment", "agentGoalCapability", "onAgentInitialize"]) {
+    assert.doesNotMatch(added, new RegExp(removed));
+  }
   assert.match(claudeAcpPatch, /usage: \{/);
   assert.match(claudeAcpPatch, /cache_creation_input_tokens/);
 });
@@ -613,7 +615,7 @@ test("server package staging applies every bundled runtime patch and preserves t
   mkdirSync(fixtureArtifacts);
   const nativePackage = join(fixtureArtifacts, "@openai/codex-linux-x64");
   mkdirSync(join(nativePackage, "vendor"), { recursive: true });
-  writeFileSync(join(nativePackage, "package.json"), JSON.stringify({ name: "@openai/codex", version: "0.160.0-linux-x64", os: ["linux"], cpu: ["x64"] }));
+  writeFileSync(join(nativePackage, "package.json"), JSON.stringify({ name: "@openai/codex", version: "0.170.0-linux-x64", os: ["linux"], cpu: ["x64"] }));
   writeFileSync(join(nativePackage, "vendor/codex"), "producer host fixture; never executed");
   mkdirSync(join(fixtureSourceRoot, "packages/paperclip-runner/src/drivers/acpx"), { recursive: true });
   writeFileSync(join(fixtureSourceRoot, "package.json"), JSON.stringify(rootPackage));
@@ -677,7 +679,7 @@ mkdirSync("node_modules/@openai/codex/vendor", { recursive: true });
 writeFileSync("node_modules/@openai/codex/vendor/codex", "producer fallback fixture");
 mkdirSync(join("node_modules", "acpx", "dist"), { recursive: true });
 writeFileSync(join("node_modules", "acpx", "dist", "runtime.js"), "unpatched runtime\\n");
-writeFileSync(join("node_modules", "acpx", "package.json"), JSON.stringify({ name: "acpx", version: "0.13.1" }));
+writeFileSync(join("node_modules", "acpx", "package.json"), JSON.stringify({ name: "acpx", version: "0.22.0" }));
 mkdirSync("node_modules/esbuild", { recursive: true });
 writeFileSync("node_modules/esbuild/package.json", JSON.stringify({ name: "esbuild", version: "0.28.2", scripts: { postinstall: "node install.js" }, optionalDependencies: Object.fromEntries(["linux-x64", "darwin-arm64", "darwin-x64"].map((target) => ["@esbuild/" + target, "0.28.2"])) }));
 mkdirSync("node_modules/@esbuild/linux-x64", { recursive: true });
@@ -697,10 +699,9 @@ const patchInput = readFileSync(0, "utf8");
 const target = args[targetIndex].replace(/^"(.*)"$/, "$1");
 writeFileSync(join(target, "applied.patch"), patchInput.trimEnd() + "\\n");
 if (!target.endsWith("/acpx") && !target.endsWith("\\\\acpx")) process.exit(0);
-assert.match(patchInput, /spawnEnvironment/);
+assert.match(patchInput, /requestExtension/);
 assert.match(patchInput, /spawnAgent/);
-assert.match(patchInput, /onAgentStderr/);
-writeFileSync(join(target, "dist", "runtime.js"), "patched spawnEnvironment runtime\\n");
+writeFileSync(join(target, "dist", "runtime.js"), "patched requestExtension runtime\\n");
 `,
   );
 
@@ -744,7 +745,7 @@ writeFileSync(join(target, "dist", "runtime.js"), "patched spawnEnvironment runt
   assert.equal(JSON.parse(readFileSync(join(destinationDir, "node_modules/esbuild/package.json"))).scripts.postinstall, "node install.js");
   assert.match(
     readFileSync(join(stagedAcpxDir, "dist/runtime.js"), "utf8"),
-    /spawnEnvironment/,
+    /requestExtension/,
   );
   assert.match(
     readFileSync(callLog, "utf8"),
@@ -794,21 +795,3 @@ test("npm builds use corepack instead of requiring a global pnpm", () => {
 });
 
 
-test("installed ACPX runtime persists and restores optional goal capabilities", () => {
-  const requireRunner = createRequire(new URL("../packages/paperclip-runner/package.json", import.meta.url));
-  const runtimeSource = readFileSync(requireRunner.resolve("acpx/runtime"), "utf8");
-  const start = runtimeSource.indexOf("function persistedGoalCapability(");
-  const end = runtimeSource.indexOf("function planUpdateEvent(", start);
-  assert.ok(start >= 0 && end > start, "the installed patch must define both goal helpers");
-  const helpers = runInNewContext(runtimeSource.slice(start, end) + ";({ persistedGoalCapability, restoredGoalCapability })", {
-    isRecord: (value) => value !== null && typeof value === "object" && !Array.isArray(value),
-  });
-  assert.equal(helpers.persistedGoalCapability(undefined), undefined);
-  assert.equal(helpers.restoredGoalCapability(undefined), undefined);
-  const goal = { version: 1, controlMethod: "_session/goal", actions: ["set", "pause", "clear"] };
-  const saved = JSON.parse(JSON.stringify(helpers.persistedGoalCapability(goal)));
-  assert.equal(saved.control_method, "_session/goal");
-  assert.deepEqual(JSON.parse(JSON.stringify(helpers.restoredGoalCapability(saved))), goal);
-  assert.equal(helpers.persistedGoalCapability({ ...goal, version: 2 }), undefined);
-  assert.equal(helpers.persistedGoalCapability({ ...goal, actions: ["set"] }), undefined);
-});

@@ -1,5 +1,6 @@
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { connectionRemovalToast } from "@/features/connections/googleAccessRemoval";
 import { useAuthorizationWindow } from "@/hooks/useAuthorizationWindow";
 import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE } from "@penclipai/shared";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
@@ -56,6 +57,7 @@ import {
   type ConnectionOwnerProfile,
 } from "./connection-owner";
 import { describeError } from "@/api/errors";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 const BROWSE_HREF = "/apps";
 
@@ -167,6 +169,9 @@ export function Connections() {
   const connectorEnrollmentQuery = useQuery({
     queryKey: ["cloud-connector", "enrollment"],
     queryFn: () => toolsApi.getCloudConnectorEnrollment(),
+    // An unanswered Cloud check is a successful response, so query retries do
+    // not run; check again on a timer until Cloud answers.
+    refetchInterval: (query) => query.state.data?.status === "unreachable" ? CLOUD_RECHECK_INTERVAL_MS : false,
   });
   const authorization = useAuthorizationWindow();
   const galleryView = useQueryView(galleryQuery);
@@ -194,17 +199,24 @@ export function Connections() {
 
     }) =>
       toolsApi.archiveConnection(target.id),
-    onSuccess: (_connection, target) => {
+    onSuccess: (removed, target) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tools.connections(selectedCompanyId!) });
       queryClient.invalidateQueries({ queryKey: queryKeys.tools.applications(selectedCompanyId!) });
       queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
-      pushToast({
+      const body = target.remainingConnectionCount > 0
+        ? translateInstant("apps.connections.toast.deletedRemaining", {
+            appName: target.appName,
+            count: target.remainingConnectionCount,
+          })
+        : translateInstant("apps.connections.toast.deletedUnavailableWithCredentials", {
+            appName: target.appName,
+            defaultValue: `${target.appName} is no longer available to agents and its credentials are deleted. Connecting it again needs a new sign-in or key.`,
+          });
+      pushToast(connectionRemovalToast({
         title: translateInstant("apps.connections.toast.deletedTitle"),
-        body: target.remainingConnectionCount > 0
-          ? `${target.appName} still has ${target.remainingConnectionCount} active ${target.remainingConnectionCount === 1 ? "connection" : "connections"} available to agents.`
-          : `${target.appName} is no longer available to agents and its credentials are deleted. Connecting it again needs a new sign-in or key.`,
-        tone: "success",
-      });
+        body,
+        providerAccess: removed?.removal?.providerAccess,
+      }));
       setConnectionToDelete(null);
     },
     onError: (error) =>
@@ -406,7 +418,7 @@ export function Connections() {
             </button>
           )}
 
-          <div className="overflow-hidden rounded-lg border border-border">
+          <div className={cn("overflow-hidden rounded-lg border border-border", ANALYTICS_MASK_CLASS)}>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/40 text-left text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
@@ -465,7 +477,7 @@ export function Connections() {
                           />
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className="font-medium text-foreground">{row.displayName}</span>
+                              <span className={cn("font-medium text-foreground", ANALYTICS_MASK_CLASS)}>{row.displayName}</span>
                               <ConnectionProvenanceChip connection={row.connection} />
                             </div>
                             {hint && (
@@ -553,7 +565,7 @@ export function Connections() {
           if (!open && !deleteConnection.isPending) setConnectionToDelete(null);
         }}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className={ANALYTICS_MASK_CLASS}>
           <AlertDialogHeader>
             <AlertDialogTitle>
               {translateInstant("Delete")}{" "}{connectionToDelete?.appName ?? "this"} {translateInstant("connection?")}</AlertDialogTitle>
@@ -583,6 +595,8 @@ export function Connections() {
   );
 }
 
+const CLOUD_RECHECK_INTERVAL_MS = 15_000;
+
 function CloudConnectorEnrollmentBanner({
   status,
   unavailable,
@@ -607,11 +621,19 @@ function CloudConnectorEnrollmentBanner({
       </div>
     );
   }
-  if (unavailable) {
+  // Neither state can be fixed by enrolling: Cloud did not answer, or the
+  // managed settings are incomplete and only an administrator can finish them.
+  if (unavailable || status?.status === "unreachable" || status?.status === "misconfigured") {
     return (
       <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
         <Cloud className="h-5 w-5 text-muted-foreground" />
-        <div className="text-sm text-muted-foreground">{translateInstant("Paperclip Cloud enrollment status is unavailable.")}</div>
+        <div className="text-sm text-muted-foreground">
+          {status?.status === "unreachable"
+            ? translateInstant("apps.connections.cloudUnreachable", { defaultValue: "Paperclip couldn’t reach Paperclip Cloud. Managed sign-in will be checked again shortly." })
+            : status?.status === "misconfigured"
+            ? translateInstant("apps.connections.cloudMisconfigured", { defaultValue: "Paperclip Cloud settings on this instance are incomplete. Ask your instance administrator to finish them." })
+            : translateInstant("Paperclip Cloud enrollment status is unavailable.")}
+        </div>
       </div>
     );
   }
@@ -620,14 +642,18 @@ function CloudConnectorEnrollmentBanner({
       <Cloud className="h-5 w-5 text-muted-foreground" />
       <div className="min-w-0 flex-1">
         <div className="text-sm font-semibold text-foreground">
-          {status?.status === "pending" ? "Finish Paperclip Cloud enrollment" : "Enable Paperclip-managed sign-in"}
+          {status?.status === "pending"
+            ? translateInstant("apps.connections.finishCloudEnrollment", { defaultValue: "Finish Paperclip Cloud enrollment" })
+            : translateInstant("apps.connections.enableManagedSignIn", { defaultValue: "Enable Paperclip-managed sign-in" })}
         </div>
         <div className="text-xs text-muted-foreground">
           {translateInstant("Confirm this server’s exact address before Cloud can return encrypted Google credentials to it.")}</div>
       </div>
       <Button variant="outline" size="sm" disabled={busy} onClick={onEnable}>
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-        {status?.status === "pending" ? "Continue enrollment" : translateInstant("Enable")}
+        {status?.status === "pending"
+          ? translateInstant("apps.connections.continueEnrollment", { defaultValue: "Continue enrollment" })
+          : translateInstant("Enable")}
       </Button>
     </div>
   );

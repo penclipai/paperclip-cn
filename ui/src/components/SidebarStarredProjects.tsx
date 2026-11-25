@@ -6,10 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Lock, Loader2, LogOut, MoreHorizontal, Star } from "lucide-react";
 import { useCompany } from "../context/CompanyContext";
 import { useSidebar } from "../context/SidebarContext";
-import { projectsApi } from "../api/projects";
 import { SIDEBAR_SCROLL_RESET_STATE } from "../lib/navigation-scroll";
-import { queryKeys } from "../lib/queryKeys";
-import { cn, projectRouteRef, SIDEBAR_RAIL_HIDDEN_LABEL } from "../lib/utils";
+import { cn, projectRouteRef } from "../lib/utils";
 import {
   isStarred,
   starredResourceIds,
@@ -27,8 +25,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Project } from "@penclipai/shared";
+import { companyProjectsQuery } from "@/lib/company-projects-query";
 
 // Sidebar star reveals with the row's own group, not the shared unnamed group.
 const STAR_ROW_REVEAL =
@@ -44,13 +42,11 @@ const STAR_ROW_REVEAL =
 export function SidebarStarredProjects() {
   const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
-  const { isMobile, setSidebarOpen, collapsed, peeking } = useSidebar();
-  const rail = collapsed && !peeking;
+  const { isMobile, setSidebarOpen } = useSidebar();
   const location = useLocation();
 
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId!),
-    queryFn: () => projectsApi.list(selectedCompanyId!),
+    ...companyProjectsQuery(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
   const membershipsQuery = useResourceMemberships(selectedCompanyId);
@@ -125,16 +121,16 @@ export function SidebarStarredProjects() {
             }}
             className={cn(
               "flex min-w-0 flex-1 items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 pr-8 text-(length:--text-compact) font-medium transition-colors",
-              !rail && "pl-6",
+              "pl-6",
               isActive
                 ? "bg-sidebar-accent text-sidebar-accent-foreground"
                 : "text-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
             )}
           >
             <ProjectTile color={project.color ?? null} icon={project.icon ?? null} size="xs" />
-            <span className={rail ? SIDEBAR_RAIL_HIDDEN_LABEL : "flex-1 truncate"}>{project.name}</span>
-            {!rail && project.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-label={translateInstant("Private project")} /> : null}
-            {!rail && project.pauseReason === "budget" ? (
+            <span className="flex-1 truncate">{project.name}</span>
+            {project.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-label={translateInstant("Private project")} /> : null}
+            {project.pauseReason === "budget" ? (
               <BudgetSidebarMarker title={t("Project paused by budget")} />
             ) : null}
           </NavLink>
@@ -142,18 +138,9 @@ export function SidebarStarredProjects() {
 
         return (
           <div key={project.id} className="group/starred-project relative flex items-center">
-            {rail ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="min-w-0 flex-1">{link}</div>
-                </TooltipTrigger>
-                <TooltipContent side="right">{project.name}</TooltipContent>
-              </Tooltip>
-            ) : (
-              link
-            )}
+            {link}
 
-            {!rail && !isMobile ? (
+            {!isMobile ? (
               // Desktop: quiet inline unstar revealed on hover/focus.
               <span className="absolute right-3 top-1/2 -translate-y-1/2">
                 <StarToggle
@@ -168,7 +155,7 @@ export function SidebarStarredProjects() {
               </span>
             ) : null}
 
-            {!rail && isMobile ? (
+            {isMobile ? (
               // Touch: explicit ⋯ menu (no hover). Star action + separated Leave.
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 export function ExecutorManagementSetup({ connection, onClose }: { connection: ToolConnection; onClose: () => void }) {
   useTranslation();
@@ -20,14 +21,14 @@ export function ExecutorManagementSetup({ connection, onClose }: { connection: T
   const { userId, settled } = useAccountIdentity();
   const save = useMutation({ mutationFn: async () => {
     const managementUrl = aggregatorManagementUrl("executor", url.trim());
-    if (!managementUrl) throw new Error("Enter an HTTPS console URL without credentials.");
+    if (!managementUrl) throw new Error(translateInstant("apps.executor.invalidConsoleUrl", { defaultValue: "Enter an HTTPS console URL without credentials." }));
     await toolsApi.updateConnection(connection.id, { config: { ...connection.config, managementUrl } });
     await queries.invalidateQueries({ queryKey: queryKeys.tools.aggregatorApps(connection.id, userId) });
     const result = await toolsApi.syncAggregatorApps(connection.id, true);
     queries.setQueryData(queryKeys.tools.aggregatorApps(connection.id, userId), result);
   }, onSuccess: async () => { await queries.invalidateQueries({ queryKey: queryKeys.tools.connections(connection.companyId) }); onClose(); } });
-  return <Dialog open onOpenChange={open => { if (!open && !save.isPending) onClose(); }}><DialogContent>
-    <DialogHeader><DialogTitle>{translateInstant("Executor console")}</DialogTitle><DialogDescription>{translateInstant("Choose where to manage accounts for “")}{connection.name}{translateInstant("”. Include your workspace path.")}</DialogDescription></DialogHeader>
+  return <Dialog open onOpenChange={open => { if (!open && !save.isPending) onClose(); }}><DialogContent className={ANALYTICS_MASK_CLASS}>
+    <DialogHeader><DialogTitle>{translateInstant("Executor console")}</DialogTitle><DialogDescription>{translateInstant("apps.executor.consoleDescriptionPrefix", { defaultValue: "Choose where to manage accounts for " })}<span className={ANALYTICS_MASK_CLASS}>“{connection.name}”</span>{translateInstant("apps.executor.consoleDescriptionSuffix", { defaultValue: ". Include your workspace path." })}</DialogDescription></DialogHeader>
     <form className="space-y-4" onSubmit={event => { event.preventDefault(); save.mutate(); }}>
       <div className="space-y-2"><Label htmlFor="executor-console-url">{translateInstant("Console URL")}</Label><Input id="executor-console-url" type="url" required value={url} onChange={event => setUrl(event.target.value)} /></div>
       {save.error ? <p role="alert" className="text-sm text-destructive">{describeError(save.error).body}</p> : null}

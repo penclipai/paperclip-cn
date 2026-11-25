@@ -153,5 +153,25 @@
     "en": "Org chart view",
     "zh-CN": "组织图视图",
     "reviewedEnglishHash": "a33c82404434fb9d0cf1f51e65ce733cb0452899d70a081962647c32b247a1b4"
+  },
+  "agents.retryWelcome": {
+    "en": "Retry welcome",
+    "zh-CN": "重试欢迎消息",
+    "reviewedEnglishHash": "fa609da0124f6a2e99679437be5f19705e9ad48b08e77f042bc693475e93bd36"
+  },
+  "agents.starAgentToPin": {
+    "en": "Star agent to pin",
+    "zh-CN": "收藏以置顶智能体",
+    "reviewedEnglishHash": "28d20be60a21a827660b3719ec3d4bb7581506766a1c895f39badd9ae8a8f996"
+  },
+  "agents.unstarAgent": {
+    "en": "Unstar agent",
+    "zh-CN": "取消收藏智能体",
+    "reviewedEnglishHash": "87f2a385a20f0cda7efee5ea107082bb0564641ab63ab728a734ef08a35d96c1"
+  },
+  "agents.welcomeStartFailed": {
+    "en": "The welcome could not start.",
+    "zh-CN": "无法启动欢迎消息。",
+    "reviewedEnglishHash": "72e23746be67a0518b7423cd9cdc3cb3839901ec3e431e8ee2aa856af496a4ba"
   }
 }

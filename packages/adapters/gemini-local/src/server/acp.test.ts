@@ -322,7 +322,7 @@ describe("gemini_local ACP lane", () => {
     ).resolves.toMatchObject({ engine: "acp", explicit: true, unavailableReason: expect.stringContaining("Node") });
   });
 
-  it("reports unavailable ACP for non-sandbox remote auto runs", async () => {
+  it("reports unavailable ACP for SSH runs without a managed account", async () => {
     setNodeVersion("v24.11.0");
     await expect(
       resolveGeminiExecutionEngineForRun({
@@ -346,7 +346,7 @@ describe("gemini_local ACP lane", () => {
     ).resolves.toMatchObject({
       engine: "acp",
       explicit: false,
-      unavailableReason: expect.stringContaining("sandbox remote targets only"),
+      unavailableReason: expect.stringContaining("agent-managed SSH account"),
     });
   });
 

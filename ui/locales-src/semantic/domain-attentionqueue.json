@@ -1,29 +1,4 @@
 {
-  "attentionQueue.decideBy.this_week": {
-    "en": "This week",
-    "zh-CN": "本周",
-    "reviewedEnglishHash": "8c4eef5ab2532515ef24a662db70f6e5b8063c7f924342b2a463f763f1091634"
-  },
-  "attentionQueue.decideBy.today": {
-    "en": "Today",
-    "zh-CN": "今天",
-    "reviewedEnglishHash": "2b065c7c9ce466e5ebcad757987d5d660ee4c9ea708bc62c43444b53334738ba"
-  },
-  "attentionQueue.decideBy.whenever": {
-    "en": "Whenever",
-    "zh-CN": "任意时间",
-    "reviewedEnglishHash": "4591883cc0562025560f450a27f45b293948fa3f21b70894c47ad0c339414ac8"
-  },
-  "attentionQueue.noLinkedTaskToAskAbout": {
-    "en": "No linked task to ask about",
-    "zh-CN": "没有可咨询的关联任务",
-    "reviewedEnglishHash": "47568dec81d6fefad6eb7385686f93ba9bf8841e4293872f56048eaf1a555642"
-  },
-  "attentionQueue.pickDate": {
-    "en": "Pick date",
-    "zh-CN": "选择日期",
-    "reviewedEnglishHash": "9ad828afb62738885e52eaef79dc5b2d1cd28dd22433597ac4ef13b19323f566"
-  },
   "attentionQueue.actions.accept": {
     "en": "Accept",
     "zh-CN": "接受",
@@ -53,6 +28,11 @@
     "en": "Approve",
     "zh-CN": "批准",
     "reviewedEnglishHash": "6007acbe30b2cd98703e83350ea665c06009fcd51f26dd73b309294235f45f21"
+  },
+  "attentionQueue.approveHire": {
+    "en": "Approve hire",
+    "zh-CN": "批准雇佣",
+    "reviewedEnglishHash": "7913aabbe31e1fe3edbc1c20ab70c7b1bb7c677147fab14550356708bc13fdd4"
   },
   "attentionQueue.approved": {
     "en": "approved",
@@ -84,6 +64,21 @@
     "zh-CN": "自定义",
     "reviewedEnglishHash": "494ca78f7374e46fb2de9ad9f2dbd4aaae89b50b2ca044177a1566a59e06627e"
   },
+  "attentionQueue.decideBy.this_week": {
+    "en": "This week",
+    "zh-CN": "本周",
+    "reviewedEnglishHash": "8c4eef5ab2532515ef24a662db70f6e5b8063c7f924342b2a463f763f1091634"
+  },
+  "attentionQueue.decideBy.today": {
+    "en": "Today",
+    "zh-CN": "今天",
+    "reviewedEnglishHash": "2b065c7c9ce466e5ebcad757987d5d660ee4c9ea708bc62c43444b53334738ba"
+  },
+  "attentionQueue.decideBy.whenever": {
+    "en": "Whenever",
+    "zh-CN": "任意时间",
+    "reviewedEnglishHash": "4591883cc0562025560f450a27f45b293948fa3f21b70894c47ad0c339414ac8"
+  },
   "attentionQueue.decisionActions": {
     "en": "Decision actions",
     "zh-CN": "决策操作",
@@ -114,6 +109,41 @@
     "zh-CN": "另有 {{count}} 张",
     "reviewedEnglishHash": "e3d6d4345ad8bde8395491aa9d90d87477e5e590ccbc84aadc7663fb57f9ccdd"
   },
+  "attentionQueue.joinRequest.agentAccess": {
+    "en": "Agent access",
+    "zh-CN": "智能体访问权限",
+    "reviewedEnglishHash": "f504d02bff251b0f45346d2c8b1dac0de177b563dae505967616db23094495c1"
+  },
+  "attentionQueue.joinRequest.agentNote": {
+    "en": "Approval adds this agent to the company.",
+    "zh-CN": "批准后将把此智能体添加到组织中。",
+    "reviewedEnglishHash": "7eeb8dccf21c3a314d18d170a0ff5be3c416e9bd52bd49025940120abb98d5c6"
+  },
+  "attentionQueue.joinRequest.approveAccess": {
+    "en": "Approve access",
+    "zh-CN": "批准访问",
+    "reviewedEnglishHash": "3c04b868ea53a639ed4687798c71e59e29885e8ec891a1113512e6a0cffefd9d"
+  },
+  "attentionQueue.joinRequest.decline": {
+    "en": "Decline",
+    "zh-CN": "拒绝",
+    "reviewedEnglishHash": "a2d285b352873457207a34a015267524bb4613c3e8c961c8998da4e08e0d5745"
+  },
+  "attentionQueue.joinRequest.memberAccess": {
+    "en": "Member access",
+    "zh-CN": "成员访问权限",
+    "reviewedEnglishHash": "007ccdd236086da8cb77e341bc5a83fbce441994f78e497585e3ed8f6c6926d9"
+  },
+  "attentionQueue.joinRequest.memberNote": {
+    "en": "Approval adds them to the company as a member.",
+    "zh-CN": "批准后将把对方作为成员添加到组织中。",
+    "reviewedEnglishHash": "3dcef50cf1ec142380e62756fbb762dd3dcb4639f7368e7daa2ec39356c0191c"
+  },
+  "attentionQueue.joinRequest.title": {
+    "en": "Join request",
+    "zh-CN": "加入请求",
+    "reviewedEnglishHash": "d7d9cd19632538b7ce6d66bce2e347dc37cb601512314a67efebae3d22476b50"
+  },
   "attentionQueue.joinRequestResult": {
     "en": "Join request {{result}}",
     "zh-CN": "加入申请{{result}}",
@@ -134,6 +164,11 @@
     "zh-CN": "另外 {{count}} 张",
     "reviewedEnglishHash": "e3d6d4345ad8bde8395491aa9d90d87477e5e590ccbc84aadc7663fb57f9ccdd"
   },
+  "attentionQueue.noLinkedTaskToAskAbout": {
+    "en": "No linked task to ask about",
+    "zh-CN": "没有可咨询的关联任务",
+    "reviewedEnglishHash": "47568dec81d6fefad6eb7385686f93ba9bf8841e4293872f56048eaf1a555642"
+  },
   "attentionQueue.open": {
     "en": "Open",
     "zh-CN": "打开",
@@ -148,6 +183,11 @@
     "en": "Optional decision note…",
     "zh-CN": "可选决策备注…",
     "reviewedEnglishHash": "17872ddbd6e98572088478781853ec531266221295a0885d9edbecde6ee65a6b"
+  },
+  "attentionQueue.pickDate": {
+    "en": "Pick date",
+    "zh-CN": "选择日期",
+    "reviewedEnglishHash": "9ad828afb62738885e52eaef79dc5b2d1cd28dd22433597ac4ef13b19323f566"
   },
   "attentionQueue.reappears": {
     "en": "Reappears {{time}}",
@@ -348,6 +388,16 @@
     "en": "Please try again.",
     "zh-CN": "请重试。",
     "reviewedEnglishHash": "eea4fb33efd382834952e3e7ab52f8dc41ccc2c3f5c3f246f0505235e0e962aa"
+  },
+  "attentionQueue.viewConfiguration": {
+    "en": "View configuration",
+    "zh-CN": "查看配置",
+    "reviewedEnglishHash": "e11373b8ea202eea8d93958e64bf0e3ef5a0544c9972e605c6af7ba9c9cce5c7"
+  },
+  "attentionQueue.viewDetails": {
+    "en": "View details",
+    "zh-CN": "查看详情",
+    "reviewedEnglishHash": "d1bf045bb524dae5b02c471c230958bcd1bf232d7a49367b1cdf977855a06b41"
   },
   "attentionQueue.viewIssue": {
     "en": "View issue",

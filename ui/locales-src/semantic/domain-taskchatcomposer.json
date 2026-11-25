@@ -1,4 +1,14 @@
 {
+  "taskChatComposer.command.planDescription": {
+    "en": "Plan before acting. Nothing changes until you accept the plan.",
+    "zh-CN": "先制定计划再行动。在你接受计划前不会做任何改动。",
+    "reviewedEnglishHash": "2d8a70b8939859a777ac90487e1773f3833c43dcc5595a75d343e022f8eeb014"
+  },
+  "taskChatComposer.command.planName": {
+    "en": "Plan",
+    "zh-CN": "计划",
+    "reviewedEnglishHash": "fa8ed0bdabdd6bcb1c0746f1d3e15212f7f3439d74339fbaaf16c60c0a80fb8e"
+  },
   "taskChatComposer.defaultAgentName": {
     "en": "the agent",
     "zh-CN": "智能体",
@@ -33,5 +43,10 @@
     "en": "Plan with {{agentName}} — shapes the plan doc, no code changes…",
     "zh-CN": "与 {{agentName}} 制定计划 — 仅完善计划文档，不改动代码…",
     "reviewedEnglishHash": "1cd15c30feb1998af348ce7eb537cc3ad9f734ff55ca312e0ca7f223761acb8b"
+  },
+  "taskChatComposer.placeholder.workWith": {
+    "en": "Work with {{agentName}}",
+    "zh-CN": "与 {{agentName}} 协作",
+    "reviewedEnglishHash": "9509c26046aa1fa6a9b6d2a71aa55c037f5c75104f9cbd7cb99fcba87d3476e1"
   }
 }

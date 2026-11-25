@@ -22,6 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
+import { cn } from "@/lib/utils";
 
 function getRevisionLabel(revision: DocumentRevision, t: TFunction) {
   const actor = revision.createdByUserId
@@ -171,7 +173,7 @@ export function DocumentDiffModal({
                   <span className="select-none px-3 text-center text-muted-foreground">
                     {markerByKind[row.kind]}
                   </span>
-                  <pre className="overflow-x-auto whitespace-pre-wrap break-words px-3 py-0 text-inherit">
+                  <pre className={cn("overflow-x-auto whitespace-pre-wrap break-words px-3 py-0 text-inherit", ANALYTICS_MASK_CLASS)}>
                     {row.text.length > 0 ? row.text : " "}
                   </pre>
                 </div>

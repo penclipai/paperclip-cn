@@ -9,3 +9,5 @@ ui/public/locales/*/common.json text eol=lf
 packages/shared/src/cliplab/palette-tokens.ts text eol=lf
 packages/shared/src/cliplab/character.ts text eol=lf
 packages/shared/src/provider-failure.generated.ts text eol=lf
+packages/skills-catalog/catalog/** text=auto eol=lf
+packages/teams-catalog/catalog/** text=auto eol=lf

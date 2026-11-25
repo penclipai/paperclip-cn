@@ -27,6 +27,8 @@ import {
   type IssueAssigneeAdapterOverrides,
 } from "@penclipai/shared";
 import { agentsApi, type AdapterModel } from "@/api/agents";
+import { useCloudInstance } from "@/hooks/useCloudInstance";
+import { useCloudHarnessPolicy } from "@/hooks/useCloudHarnessPolicy";
 import { queryKeys } from "@/lib/queryKeys";
 import {
   ACCOUNT_BOUND_MODEL_DISCOVERY_QUERY_OPTIONS,
@@ -216,12 +218,12 @@ export function ComposerRunSettingsPicker({
     ? assigneeValue.slice(6)
     : "";
   const agent = agents.get(agentId);
-  const modelSupported = supportsComposerModel(agent);
-  const view =
-    (requestedView === "models" && !modelSupported) ||
-    (requestedView === "agents" && !allowAssigneeChange)
-      ? "settings"
-      : requestedView;
+  const cloud = Boolean(useCloudInstance());
+  const harnessPolicy = useCloudHarnessPolicy();
+  const modelSupported = supportsComposerModel(agent) && (!cloud || Boolean(agent && harnessPolicy.isCloudHarnessAllowed(agent.adapterType, agent.adapterConfig)));
+  const view = (requestedView === "models" && !modelSupported) || (requestedView === "agents" && !allowAssigneeChange)
+    ? "settings"
+    : requestedView;
   const provider = composerCatalogProvider(agent);
   const isMuseRunner =
     agent?.adapterType === "paperclip_runner" && provider === "muse";

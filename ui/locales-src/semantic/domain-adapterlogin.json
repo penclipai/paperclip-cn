@@ -4,6 +4,11 @@
     "zh-CN": "请在 Google 登录窗口中完成登录，再返回此处。",
     "reviewedEnglishHash": "9b948e44f6ae76cfa9d01c9d86145c8df89929a462753e60bb520507dd268897"
   },
+  "adapterLogin.finishingSignIn": {
+    "en": "Finishing sign-in…",
+    "zh-CN": "正在完成登录…",
+    "reviewedEnglishHash": "50c6e1d175afe4112e418c79d08c33e6fb904af800ab7bf3d4eedac3c0137936"
+  },
   "adapterLogin.retrySignIn": {
     "en": "Retry sign-in",
     "zh-CN": "重新登录",

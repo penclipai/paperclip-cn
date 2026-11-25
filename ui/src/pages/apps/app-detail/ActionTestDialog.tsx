@@ -51,6 +51,9 @@ import {
 } from "@/components/JsonSchemaForm";
 import { cn, relativeTime } from "@/lib/utils";
 import { appTabHref } from "../app-tabs";
+import { actionLabel } from "./action-permissions";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
+import { safeExternalHttpUrl } from "@/lib/safe-url";
 
 // ---------------------------------------------------------------------------
 // Small format helpers
@@ -144,11 +147,11 @@ export function ActionTestDialog({
     );
     return tool?.decision ?? "off";
   }, [entry.toolName, selectedAgent]);
-  const title = entry.title ?? entry.toolName;
+  const title = actionLabel(entry);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-(--sz-85vh) overflow-y-auto sm:max-w-2xl">
+      <DialogContent className={cn("max-h-(--sz-85vh) overflow-y-auto sm:max-w-2xl", ANALYTICS_MASK_CLASS)}>
         <DialogHeader>
           <DialogTitle>
             {translateInstant("Test")} {title}
@@ -310,7 +313,7 @@ function AgentPicker({
           <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground" />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-80 p-0" disablePortal>
+      <PopoverContent align="start" className={cn("w-80 p-0", ANALYTICS_MASK_CLASS)} disablePortal>
         <div className="border-b border-border p-2">
           <div className="relative">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -1364,7 +1367,7 @@ function AllowedResult({
   const value = outcome.result.result;
   const preview = resultPreview(value);
   return (
-    <div className="rounded-md border border-emerald-500/40 bg-emerald-500/5 p-4">
+    <div className={cn("rounded-md border border-emerald-500/40 bg-emerald-500/5 p-4", ANALYTICS_MASK_CLASS)}>
       <div className="flex items-center gap-2">
         <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
         <span className="text-sm font-medium text-foreground">
@@ -1485,7 +1488,7 @@ function PrettyPreview({ value }: { value: unknown }) {
   }
   if (typeof value === "string") {
     return (
-      <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md border border-border bg-background p-3 text-xs text-foreground">
+      <pre className={cn("max-h-64 overflow-auto whitespace-pre-wrap rounded-md border border-border bg-background p-3 text-xs text-foreground", ANALYTICS_MASK_CLASS)}>
         {value}
       </pre>
     );
@@ -1511,7 +1514,7 @@ function PrettyPreview({ value }: { value: unknown }) {
     );
   }
   return (
-    <pre className="max-h-64 overflow-auto rounded-md border border-border bg-background p-3 text-xs text-foreground">
+    <pre className={cn("max-h-64 overflow-auto rounded-md border border-border bg-background p-3 text-xs text-foreground", ANALYTICS_MASK_CLASS)}>
       {safeStringify(collapseDeep(value, 2))}
     </pre>
   );
@@ -1531,10 +1534,7 @@ function PreviewRowCard({
   const summaryKey = ["highlight", "description", "summary"].find(
     (key) => typeof row[key] === "string" && row[key] !== "",
   );
-  const url =
-    typeof row.url === "string" && /^https?:\/\//i.test(row.url)
-      ? row.url
-      : null;
+  const url = safeExternalHttpUrl(row.url);
   const details = Object.entries(row)
     .filter(
       ([key]) =>
@@ -1638,7 +1638,7 @@ function RawResponseDisclosure({
           : translateInstant("apps.detail.test.result.showRaw")}
       </button>
       {showRaw && (
-        <pre className="mt-2 max-h-64 overflow-auto rounded-md border border-border bg-background p-3 text-xs text-foreground">
+        <pre className={cn("mt-2 max-h-64 overflow-auto rounded-md border border-border bg-background p-3 text-xs text-foreground", ANALYTICS_MASK_CLASS)}>
           {safeStringify(value)}
         </pre>
       )}
@@ -1663,7 +1663,7 @@ function ErrorResult({
   const hints = errorHints(toolErrorMessage, error.reasonCode);
   const needsReconnect = isReconnectError(error.reasonCode);
   return (
-    <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-4">
+    <div className={cn("rounded-md border border-amber-500/40 bg-amber-500/5 p-4", ANALYTICS_MASK_CLASS)}>
       <div className="flex items-center gap-2">
         <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
         <span className="text-sm font-medium text-foreground">
@@ -1884,7 +1884,7 @@ function AskFirstResult({
           <dt className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {translateInstant("Action")}
           </dt>
-          <dd className="text-foreground">{entry.title ?? entry.toolName}</dd>
+          <dd className="text-foreground">{actionLabel(entry)}</dd>
         </div>
         {where && (
           <div className="flex gap-3">
@@ -1965,7 +1965,7 @@ function OffExplanation({
   onSelectAgent: (agentId: string) => void;
 }) {
   useTranslation();
-  const title = entry.title ?? entry.toolName;
+  const title = actionLabel(entry);
   const permHref = `${appTabHref(connectionId, "permissions")}?focus=${encodeURIComponent(entry.id)}`;
 
   // Other agents are intentionally not summarized up front. Selecting one

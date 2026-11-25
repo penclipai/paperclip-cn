@@ -8,7 +8,7 @@ import { parseArgs } from 'node:util';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { AcpxRuntimeHost } from '../dist/drivers/acpx/runtime-host.js';
-import { openQualifiedAcpxRuntime } from '../dist/drivers/acpx/codex-runtime-adapter.js';
+import { openQualifiedAcpxRuntime } from '../dist/drivers/acpx/acpx-runtime-adapter.js';
 import { acpxProviderSessionIdentity } from '../dist/drivers/acpx/recovery-identity.js';
 import { QUALIFIED_ACPX_PROFILES } from '../dist/drivers/acpx/qualified-profiles.js';
 

@@ -16,8 +16,9 @@ import { promises as fs } from "node:fs";
 import { mkdtemp, realpath, rm, access, readFile, writeFile, stat } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { and, eq, sql } from "drizzle-orm";
-import { createDb, type Db, companies, agents, agentTaskSessions, heartbeatRuns, companyMemberships, connectionGrants, toolApplications, connectionGrantDelegations, connectionGrantMembers, toolConnections, toolConnectionInstalls, aiConnectionDefaults, aiProviderDefaults, adapterAuthSessions, environments, plugins, issues, issueThreadInteractions, issueRecoveryActions, connectionIntentDeliveries, agentWakeupRequests, companySecrets, companySecretVersions, userSecretDefinitions, principalPermissionGrants } from "@penclipai/db";
+import { createDb, type Db, companies, agents, agentTaskSessions, heartbeatRuns, companyMemberships, connectionGrants, toolApplications, connectionGrantDelegations, connectionGrantMembers, toolConnections, toolConnectionInstalls, aiConnectionDefaults, aiProviderDefaults, adapterAuthSessions, environments, plugins, issues, issueThreadInteractions, issueRecoveryActions, connectionIntentDeliveries, agentWakeupRequests, companySecrets, companySecretVersions, secretAccessEvents, userSecretDefinitions, principalPermissionGrants } from "@penclipai/db";
 import { startEmbeddedPostgresTestDatabase } from "@penclipai/db/test-embedded-postgres";
 import { fetchCompanyQuotaWindows } from "../services/quota-windows.js";
 import { quotaCredentialRecoveryPath, quotaCredentialRecovery, quotaCredentialHash } from "../services/quota-credential-recovery.js";
@@ -49,6 +50,7 @@ import * as copilotProbe from "../services/copilot-connection-probe.js";
 import * as settingsModule from "../services/instance-settings.js";
 import { agentRoutes } from "../routes/agents.js";
 import type { PluginWorkerManager } from "../services/plugin-worker-manager.js";
+import { invalidateInstanceSettingsCache } from "../services/instance-settings-cache.js";
 vi.mock("../services/local-ai-browser-login.js", () => ({
   startLocalBrowserLogin: () => ({ authorizationUrl: "https://auth.openai.com/codex/device", code: "ABCD-EFGHJ", abort: () => {} }),
 }));
@@ -724,8 +726,10 @@ describe("managed AI connections", () => {
     try {
       const first = await fetchCompanyQuotaWindows(db, companyId, owner);
       const [after] = await db.select().from(companySecrets).where(eq(companySecrets.id, secretId));
-      expect(after.lastResolvedAt).not.toBeNull();
-      expect(after.updatedAt.getTime()).toBeGreaterThan(before.updatedAt.getTime());
+      // A read is recorded as an access event, never written to the row that
+      // admissions share-lock to fence rotation.
+      expect(after.updatedAt.getTime()).toBe(before.updatedAt.getTime());
+      expect(await db.select().from(secretAccessEvents).where(and(eq(secretAccessEvents.secretId, secretId), eq(secretAccessEvents.outcome, "success")))).not.toHaveLength(0);
       expect(first[0].ok).toBe(true);
       expect(await fetchCompanyQuotaWindows(db, companyId, owner)).toEqual(first);
       expect(fetchSpy).toHaveBeenCalledTimes(1);
@@ -892,7 +896,7 @@ describe("managed AI connections", () => {
   });
 
   it("requires sign-in after the receiver process dies with an exchanged but unsaved token", async () => {
-    const owner = "quota-receiver-process-loss";
+    const owner = `quota-receiver-process-loss-${randomUUID()}`;
     await db.insert(companyMemberships).values({ companyId, principalId: owner, principalType: "user", status: "active", membershipRole: "member" });
     const original = JSON.stringify({ tokens: { access_token: "expired-process", refresh_token: "single-use-process" } });
     await service.save(companyId, owner, { provider: "openai", method: "subscription", ownership: "personal", name: owner, loginSessionId: "fixture", agentIds: [], allAgents: true }, original);
@@ -916,11 +920,13 @@ describe("managed AI connections", () => {
     });
     provider.listen(0, "127.0.0.1"); await once(provider, "listening");
     const address = provider.address() as { port: number };
-    const child = spawn(process.execPath, ["--import", createRequire(import.meta.url).resolve("tsx"), new URL("./helpers/quota-credential-process.ts", import.meta.url).pathname], {
+    let childStderr = "";
+    const child = spawn(process.execPath, ["--import", pathToFileURL(createRequire(import.meta.url).resolve("tsx")).href, fileURLToPath(new URL("./helpers/quota-credential-process.ts", import.meta.url))], {
       env: { ...process.env, CREDENTIAL_TEST_DATABASE_URL: database.connectionString,
         CREDENTIAL_TEST_PROVIDER_URL: `http://127.0.0.1:${address.port}`, CREDENTIAL_TEST_COMPANY_ID: companyId, CREDENTIAL_TEST_OWNER: owner },
-      stdio: "ignore",
+      stdio: ["ignore", "ignore", "pipe"],
     });
+    child.stderr?.on("data", chunk => { childStderr += String(chunk); });
     const exited = once(child, "exit");
     try {
       let blocked = false;
@@ -931,7 +937,7 @@ describe("managed AI connections", () => {
         blocked = exchanges === 1 && rows.length > 0;
         if (!blocked) await new Promise(resolve => setTimeout(resolve, 25));
       }
-      expect(blocked).toBe(true);
+      expect(blocked, `exchanges=${exchanges} exitCode=${child.exitCode} stderr=${childStderr}`).toBe(true);
       child.kill("SIGKILL"); await exited;
     } finally {
       if (child.exitCode === null && child.signalCode === null) { child.kill("SIGKILL"); await exited; }
@@ -1564,11 +1570,14 @@ console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello"
     } finally { fetchSpy.mockRestore(); }
   });
 
-  it("reads provider identity only for an authorized credential and preserves connected state when profile access is denied", async () => {
-    const owner = "identity-owner";
+  it.each(["anthropic", "openai"] as const)("reads %s identity only for an authorized credential and preserves connected state when profile access is denied", async provider => {
+    const owner = `identity-owner-${provider}`;
     await db.insert(companyMemberships).values({ companyId, principalId: owner, principalType: "user", status: "active", membershipRole: "member" });
-    const account = await service.save(companyId, owner, { provider: "anthropic", method: "subscription", ownership: "personal", name: "Identity account", loginSessionId: "fixture", agentIds: [], allAgents: true }, "identity-selected-secret");
-    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ account: { email: "avery@example.test", uuid: "private-account-id" }, organization: { name: "Example team", uuid: "private-org-id" } }));
+    const credential = provider === "openai" ? JSON.stringify({ tokens: { access_token: "identity-selected-secret", account_id: "private-account-id" } }) : "identity-selected-secret";
+    const account = await service.save(companyId, owner, { provider, method: "subscription", ownership: "personal", name: "Identity account", loginSessionId: "fixture", agentIds: [], allAgents: true }, credential);
+    const profile = provider === "openai" ? { accounts: [{ id: "private-account-id", name: "Example team", structure: "workspace" }] }
+      : { account: { email: "avery@example.test", uuid: "private-account-id" }, organization: { name: "Example team", uuid: "private-org-id" } };
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json(profile));
     const app = express();
     app.use((req, _res, next) => {
       req.actor = req.header("x-test-anonymous") ? { type: "none" }
@@ -1583,8 +1592,8 @@ console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello"
       const result = await request(app).get(url);
       expect(result.status).toBe(200);
       expect(result.headers["cache-control"]).toBe("no-store");
-      expect(result.body).toMatchObject({ ...account, status: "available", accountLabel: "avery@example.test", organizationLabel: "Example team" });
-      expect(fetchSpy).toHaveBeenCalledWith("https://api.anthropic.com/api/oauth/profile", expect.objectContaining({ headers: expect.objectContaining({ Authorization: "Bearer identity-selected-secret" }) }));
+      expect(result.body).toMatchObject({ ...account, status: "available", accountLabel: provider === "openai" ? null : "avery@example.test", organizationLabel: "Example team" });
+      expect(fetchSpy).toHaveBeenCalledWith(provider === "openai" ? "https://chatgpt.com/backend-api/wham/accounts/check" : "https://api.anthropic.com/api/oauth/profile", expect.objectContaining({ headers: expect.objectContaining({ Authorization: "Bearer identity-selected-secret" }) }));
       for (const value of ["identity-selected-secret", "private-account-id", "private-org-id"]) expect(JSON.stringify(result.body)).not.toContain(value);
       fetchSpy.mockReset();
       expect((await request(app).get(url).set("x-test-user", "bob")).status).toBe(404);
@@ -1681,6 +1690,14 @@ console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello"
     }
   });
 
+  it("files Copilot accounts under the GitHub Copilot connector, not GitHub", async () => {
+    const saved = await service.save(companyId, "alice", { provider: "github", method: "api_key", ownership: "personal", name: "Copilot catalog", apiKey: "github_pat_fixture_catalog", agentIds: [], allAgents: false }, "github_pat_fixture_catalog");
+    const [stored] = await db.select().from(toolConnections).where(eq(toolConnections.id, saved.connectionId));
+    expect(stored!.config.sourceTemplateKey).toBe("github-copilot");
+    const [application] = await db.select().from(toolApplications).where(eq(toolApplications.id, stored!.applicationId));
+    expect(application).toMatchObject({ applicationKey: "app-gallery:github-copilot", name: "GitHub Copilot", metadata: { sourceTemplateKey: "github-copilot" } });
+  });
+
   it("reconnects JSONB routing without changing its identity or access", async () => {
     const routing = { kind: "gateway", protocol: "responses", auth: "bearer", baseUrl: "https://gateway.example/v1", models: [{ id: "gateway-model" }] } as const;
     const input = { provider: "openai", method: "api_key", name: "Reconnect gateway", ownership: "personal", allAgents: false, agentIds: [agentId], routing: { ...routing, models: [...routing.models] } } as const;
@@ -1713,9 +1730,10 @@ console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello"
   });
 
   it.each([
-    ["anthropic", false], ["openai", false], ["anthropic", true], ["openai", true],
-  ] as const)("turns a %s auth failure into one card and resumes after repair (switch method: %s)", async (provider, switchMethod) => {
-    const userId = `auth-recovery-${provider}-${switchMethod}`;
+    ["anthropic", false, false], ["openai", false, false], ["anthropic", true, false], ["openai", true, false],
+    ["anthropic", false, true], ["openai", false, true],
+  ] as const)("turns a %s auth failure into one card and resumes after repair (switch method: %s, typed: %s)", async (provider, switchMethod, typed) => {
+    const userId = `auth-recovery-${provider}-${switchMethod}-${typed}`;
     const id = randomUUID();
     const issueId = randomUUID();
     const runId = randomUUID();
@@ -1726,10 +1744,21 @@ console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello"
     await db.insert(issues).values({ id: issueId, companyId, title: "Fix provider login", status: "in_progress", assigneeAgentId: id });
     const account = await service.save(companyId, userId, { provider, method: "api_key", ownership: "personal", name: "Recovery account", apiKey: "fixture", agentIds: [id], allAgents: false }, "fixture-recovery-key");
     const runtime = await prepareManagedAiRuntime(db, { companyId, agentId: id, responsibleUserId: userId, adapterType, binding: selectedBinding, config: {} });
-    await db.insert(heartbeatRuns).values({ id: runId, companyId, agentId: id, status: "failed", errorCode: "acpx_auth_required", responsibleUserId: userId,
+    await db.insert(heartbeatRuns).values({ id: runId, companyId, agentId: id, status: "failed", errorCode: typed ? "native_session_interrupted" : "acpx_auth_required", responsibleUserId: userId,
+      ...(typed ? { resultJson: { providerFailure: { schema: "paperclip.provider-failure.v1", provider, phase: "turn",
+        category: "authentication", message: "Invalid API key", retryability: "requires_action" } } } : {}),
       contextSnapshot: { issueId, aiConnection: { ...runtime.attribution, identity: runtime.identity } } });
     await runtime.cleanup();
     const intents = connectionIntentService(db);
+    if (typed) {
+      const [failed] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, runId));
+      await db.update(heartbeatRuns).set({ contextSnapshot: { ...failed.contextSnapshot, aiConnection: {
+        ...runtime.attribution, identity: runtime.identity, provider: provider === "openai" ? "anthropic" : "openai",
+      } } }).where(eq(heartbeatRuns.id, runId));
+      expect(await intents.requestForRunAuthFailure(runId)).toBeNull();
+      expect((await db.select().from(connectionGrants).where(eq(connectionGrants.id, account.grantId)))[0].status).toBe("active");
+      await db.update(heartbeatRuns).set({ contextSnapshot: failed.contextSnapshot }).where(eq(heartbeatRuns.id, runId));
+    }
     const card = await intents.requestForRunAuthFailure(runId);
     expect(card).toMatchObject({ state: "needs_user_action", service: provider });
     expect((await intents.requestForRunAuthFailure(runId))?.interactionId).toBe(card!.interactionId);
@@ -1907,6 +1936,7 @@ console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello"
     await create(userId, "Another API");
     await expect(service.select({ ...input, userId })).rejects.toThrow("Reconnect");
     await service.setDefault(companyId, userId, subscription.grantId);
+    expect(await db.select().from(aiConnectionDefaults).where(eq(aiConnectionDefaults.userId, userId))).toEqual([]);
     expect((await service.select({ ...input, userId })).attribution).toMatchObject({ method: "subscription", grantId: subscription.grantId });
     expect((await service.list(companyId, userId)).filter(account => account.isDefault)).toHaveLength(1);
     await expect(service.select({ ...input, userId, binding: { ...binding, mode: "delegated", ...subscription } })).rejects.toThrow("incompatible");
@@ -1918,7 +1948,10 @@ console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello"
     const api = await create(userId, "Migration API");
     const subscription = await service.save(companyId, userId, { provider: "anthropic", method: "subscription", ownership: "personal", name: "Migration subscription", loginSessionId: "fixture", allAgents: true, agentIds: [] }, "fixture-migration-subscription");
     await db.update(connectionGrants).set({ status: "revoked" }).where(eq(connectionGrants.id, api.grantId));
-    await db.update(aiConnectionDefaults).set({ updatedAt: new Date("2030-01-01") }).where(eq(aiConnectionDefaults.grantId, api.grantId));
+    await db.insert(aiConnectionDefaults).values([
+      { companyId, userId, provider: "anthropic", method: "api_key", grantId: api.grantId, updatedAt: new Date("2030-01-01") },
+      { companyId, userId, provider: "anthropic", method: "subscription", grantId: subscription.grantId },
+    ]);
     await db.delete(aiProviderDefaults).where(and(eq(aiProviderDefaults.companyId, companyId), eq(aiProviderDefaults.userId, userId)));
     const legacyRows = await db.select().from(aiConnectionDefaults).where(eq(aiConnectionDefaults.userId, userId));
     const migration = await readFile(new URL("../../../packages/db/src/migrations/0277_uneven_lady_deathstrike.sql", import.meta.url), "utf8");
@@ -1935,6 +1968,10 @@ console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello"
     const api = await create(userId, "Rolling API");
     const subscription = await service.save(companyId, userId, { provider: "anthropic", method: "subscription", ownership: "personal", name: "Rolling subscription", loginSessionId: "fixture", allAgents: true, agentIds: [] }, "fixture-rolling-subscription");
     expect((await service.select({ ...input, userId })).grant.id).toBe(api.grantId);
+    await db.insert(aiConnectionDefaults).values([
+      { companyId, userId, provider: "anthropic", method: "api_key", grantId: api.grantId },
+      { companyId, userId, provider: "anthropic", method: "subscription", grantId: subscription.grantId },
+    ]);
     // An older server updates only the legacy per-method row on Make default.
     await db.update(aiConnectionDefaults).set({ grantId: subscription.grantId, updatedAt: new Date() })
       .where(and(eq(aiConnectionDefaults.userId, userId), eq(aiConnectionDefaults.method, "subscription")));
@@ -1994,6 +2031,23 @@ console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello"
       await expect(assertManagedAiProjectAuth({}, "openai", target)).rejects.toThrow("cannot validate");
       expect(execute).not.toHaveBeenCalled();
     } finally { execute.mockRestore(); }
+  });
+  it("defers new and retained plugin task capability checks to native launch", async () => {
+    const runnerTask = vi.fn().mockResolvedValue({ kind: "description", taskId: "task", projectAuthCheckVersion: 1,
+      runner: { version: "fixture", digest: `sha256:${"a".repeat(64)}` } });
+    const target = { kind: "remote", transport: "sandbox", providerKey: "plugin", remoteCwd: ".", runnerTask,
+      sandboxLeaseAcquisition: { outcome: "created", providerLeaseId: "task" } } as const;
+    const options = { deferRunnerTaskCapabilityCheck: true };
+
+    await expect(assertManagedAiProjectAuth({}, "openai", target, options)).resolves.toBeUndefined();
+    await expect(assertManagedAiProjectAuth({ args: ["--api-key=override"] }, "openai", target, options)).rejects.toThrow("overrides");
+    expect(runnerTask).not.toHaveBeenCalled();
+
+    const retained = { ...target, sandboxLeaseAcquisition: { ...target.sandboxLeaseAcquisition, outcome: "resumed" as const } };
+    await expect(assertManagedAiProjectAuth({}, "openai", retained, options)).resolves.toBeUndefined();
+    expect(runnerTask).not.toHaveBeenCalled();
+    await expect(assertManagedAiProjectAuth({}, "openai", retained)).resolves.toBeUndefined();
+    expect(runnerTask).toHaveBeenCalledExactlyOnceWith({ kind: "describe" });
   });
   it("keeps personal defaults separate and does not replace the first default", async () => {
     const first = await create("alice", "Alice first");
@@ -2511,6 +2565,7 @@ console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello"
       await db.insert(toolConnections).values(ids.map(id => ({ ...connection, id, uid: id, name: `Cost ${id}` })));
       await db.insert(connectionGrants).values(ids.map(connectionId => ({ ...grant, id: randomUUID(), connectionId })));
       selects.mockClear();
+      invalidateInstanceSettingsCache();
       const large = await request(app).get(url);
       largeQueries = selects.mock.calls.length;
       expect(large.status).toBe(200);

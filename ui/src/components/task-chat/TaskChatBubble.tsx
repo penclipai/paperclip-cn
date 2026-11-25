@@ -52,6 +52,7 @@ import {
 import { TaskChatBubbleActions } from "./TaskChatBubbleActions";
 import { TaskChatSystemNotice } from "./TaskChatSystemNotice";
 import type { TaskChatMessageItem } from "./task-chat-model";
+import { safeNavigableUrl } from "@/lib/safe-url";
 
 interface TaskChatBubbleProps {
   item: TaskChatMessageItem;
@@ -447,7 +448,7 @@ function TaskChatBubbleContent({
                         <button type="button" />
                       ) : (
                         <a
-                          href={ref.openPath ?? ref.url}
+                          href={safeNavigableUrl(ref.openPath ?? ref.url) ?? undefined}
                           onClick={(event) => {
                             if (
                               openText &&

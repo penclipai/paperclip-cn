@@ -1,0 +1,22 @@
+{
+  "stalledReview.addNoteToRequestChanges": {
+    "en": "Add a note to request changes",
+    "zh-CN": "添加备注以请求修改",
+    "reviewedEnglishHash": "83f340aad09053acddbcb6f78e773f96ae7dcb04d3b85dcfcd15d482a95ee00d"
+  },
+  "stalledReview.toast.approved": {
+    "en": "Review approved — issue marked done.",
+    "zh-CN": "审核已批准 — 任务已标记为完成。",
+    "reviewedEnglishHash": "8b8f0e630953b009220f57cfa453a9fcb85919bf60e4dfbd2340dfc5d099be88"
+  },
+  "stalledReview.toast.changesRequested": {
+    "en": "Changes requested — issue returned to the assignee.",
+    "zh-CN": "已请求修改 — 任务已退回给负责人。",
+    "reviewedEnglishHash": "e888d2f613300ee1f2f381136cd2d97c0a9691cd273348a71fb88292934d1cde"
+  },
+  "stalledReview.toast.sentBack": {
+    "en": "Sent back to work — issue returned to the assignee.",
+    "zh-CN": "已退回处理 — 任务已退回给负责人。",
+    "reviewedEnglishHash": "161ec5191660a00f11400b24cbb7034e079efbb07711ece7dfec52fdf20d39be"
+  }
+}

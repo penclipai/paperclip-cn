@@ -1,5 +1,7 @@
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { PERSONAL_ARCHIVE_QUERY_KEY } from "@/lib/inboxArchiveCache";
+import { companyProjectsQuery } from "@/lib/company-projects-query";
 import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { useShowAgentCreatedTasks } from "../hooks/useShowAgentCreatedTasks";
 import { useCoordinatorWorkspaceEnabled } from "../hooks/useCoordinatorWorkspaceEnabled";
@@ -12,7 +14,6 @@ import { useLocation, useNavigate, useSearchParams } from "@/lib/router";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { issuesApi } from "../api/issues";
 import { agentsApi } from "../api/agents";
-import { projectsApi } from "../api/projects";
 import { heartbeatsApi } from "../api/heartbeats";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
@@ -45,7 +46,9 @@ import {
   taskView,
   type TaskViewKey,
 } from "../lib/task-views";
+import { useTaskArchiveAction } from "../hooks/useTaskArchiveAction";
 import { useUpdateIssueMutation } from "../hooks/useUpdateIssueMutation";
+import { usePageContentReady } from "../hooks/usePageContentReady";
 
 const WORKSPACE_FILTER_ISSUE_LIMIT = 1000;
 const ISSUES_PAGE_SIZE = 100;
@@ -215,6 +218,7 @@ function StreamlinedTasks() {
     <OrganizationIssues
       toolbarContext={viewsMenu}
       initialStatuses={definition.statuses}
+      archiveView={view === "archived" ? "archived" : "include"}
     />
   );
 }
@@ -222,11 +226,16 @@ function StreamlinedTasks() {
 function OrganizationIssues({
   toolbarContext,
   initialStatuses,
-}: { toolbarContext?: ReactNode; initialStatuses?: string[] } = {}) {
+  archiveView,
+}: { toolbarContext?: ReactNode; initialStatuses?: string[]; archiveView?: "archived" | "include" } = {}) {
   useTranslation();
   const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const issuesPresentation = resolveIssuesPresentation(streamlinedUiEnabled);
   const { selectedCompanyId } = useCompany();
+  const { userId, loaded: identitySettled } = useCoordinatorWorkspaceEnabled();
+  const inboxArchive = userId ? archiveView : undefined;
+  const archiveQueryScope = JSON.stringify([selectedCompanyId, userId, inboxArchive]);
+  const getArchiveAction = useTaskArchiveAction(selectedCompanyId, userId);
   const { setBreadcrumbs } = useBreadcrumbs();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -317,11 +326,7 @@ function OrganizationIssues({
   });
 
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId!, {
-      includeArchived: true,
-    }),
-    queryFn: () =>
-      projectsApi.list(selectedCompanyId!, { includeArchived: true }),
+    ...companyProjectsQuery(selectedCompanyId!, { includeArchived: true }),
     enabled: !!selectedCompanyId,
   });
 
@@ -377,30 +382,29 @@ function OrganizationIssues({
       serverSortField,
       serverSortDir,
       includeBlockedBy,
+      PERSONAL_ARCHIVE_QUERY_KEY,
+      archiveQueryScope,
     ],
-    queryFn: ({ pageParam, signal }) =>
-      issuesApi.listCompact(
-        selectedCompanyId!,
-        {
-          projection: streamlinedUiEnabled ? "index" : undefined,
-          participantAgentId,
-          workspaceId: workspaceIdFilter,
-          includeRoutineExecutions: true,
-          includeAgentCreatedTasks,
-          originKind,
-          limit: issuePageSize,
-          offset: pageParam,
-          sortField: serverSortField,
-          sortDir: serverSortDir,
-          includeBlockedBy: includeBlockedBy || undefined,
-        },
-        { signal },
-      ),
+    queryFn: ({ pageParam, signal }) => issuesApi.listCompact(selectedCompanyId!, {
+      projection: streamlinedUiEnabled ? "index" : undefined,
+      participantAgentId,
+      inboxArchive,
+      workspaceId: workspaceIdFilter,
+      includeRoutineExecutions: true,
+      includeAgentCreatedTasks,
+      originKind,
+      limit: issuePageSize,
+      offset: pageParam,
+      sortField: serverSortField,
+      sortDir: serverSortDir,
+      includeBlockedBy: includeBlockedBy || undefined,
+    }, { signal }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, _allPages, lastPageParam) =>
       getNextIssuesPageOffset(lastPage.length, lastPageParam, issuePageSize),
-    enabled: !!selectedCompanyId,
-    placeholderData: (previousData) => previousData,
+    enabled: !!selectedCompanyId && (archiveView !== "archived" || !!userId),
+    placeholderData: (previousData, previousQuery) =>
+      previousQuery?.queryKey.at(-1) === archiveQueryScope ? previousData : undefined,
   });
 
   const {
@@ -410,6 +414,8 @@ function OrganizationIssues({
     fetchNextPage,
   } = issuesQuery;
   const issuesView = useQueryView(issuesQuery);
+  // The task list is loaded once its first page of rows has rendered.
+  usePageContentReady(!selectedCompanyId || (issuesView.kind !== "loading" && issuesView.kind !== "reconnecting"));
   const issues = useMemo(
     () => mergeIssuePagesStable(issuePages?.pages ?? []) as Issue[],
     [issuePages],
@@ -445,6 +451,23 @@ function OrganizationIssues({
     );
   }
 
+  if (archiveView === "archived" && !userId) {
+    return identitySettled ? (
+      <EmptyState
+        icon={CircleDot}
+        message={translateInstant("issuesList.signInToViewArchived", {
+          defaultValue: "Sign in to view archived tasks.",
+        })}
+      />
+    ) : (
+      <p role="status">
+        {translateInstant("issuesList.loadingArchived", {
+          defaultValue: "Loading archived tasks…",
+        })}
+      </p>
+    );
+  }
+
   if (issuesView.kind === "error")
     return (
       <QueryErrorState
@@ -458,7 +481,10 @@ function OrganizationIssues({
 
   return (
     <IssuesList
+      key={archiveView === "archived" ? "archived" : undefined}
       issues={issues ?? []}
+      getArchiveAction={getArchiveAction}
+      preloadTaskChats
       isLoading={
         issuesView.kind === "loading" || issuesView.kind === "reconnecting"
       }
@@ -494,11 +520,13 @@ function OrganizationIssues({
         participantAgentId ||
         workspaceIdFilter ||
         originKind ||
-        includeBlockedBy
+        includeBlockedBy ||
+        inboxArchive
           ? {
               participantAgentId,
               workspaceId: workspaceIdFilter,
               originKind,
+              inboxArchive,
               ...(includeBlockedBy ? { includeBlockedBy: true } : {}),
             }
           : undefined

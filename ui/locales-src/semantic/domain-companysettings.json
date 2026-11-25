@@ -409,6 +409,56 @@
     "zh-CN": "该提供方未声明支持交互式模板设置。",
     "reviewedEnglishHash": "0c67fa2f0b726b14eaffb7fcb9d15a093832f35caf34561571b71694ef3b55a3"
   },
+  "companySettings.decisions.budgetOwnerError": {
+    "en": "Couldn't save the budget owner.",
+    "zh-CN": "无法保存预算负责人。",
+    "reviewedEnglishHash": "f019ba5fd9e121630d65c0f80c82387e854872c62d173b00231f5b14eda6e4ec"
+  },
+  "companySettings.decisions.budgetOwnerHint": {
+    "en": "A budget hard stop also goes to this user's For you list, with Raise limit and Keep paused. The Company view still shows it to every operator.",
+    "zh-CN": "预算硬性上限也会进入该用户的“待你处理”列表，并提供“提高上限”和“保持暂停”操作。“公司”视图仍会向所有操作员显示。",
+    "reviewedEnglishHash": "1d0a2884d3a0cef6408c475363c6750d01201ea14fde0aa25f6ae2e49edd08b8"
+  },
+  "companySettings.decisions.budgetOwnerLabel": {
+    "en": "Budget owner",
+    "zh-CN": "预算负责人",
+    "reviewedEnglishHash": "1c62567439829bcd34cc7c62dd6dee7c5b3e399915086889cd9c134c31d0bbf2"
+  },
+  "companySettings.decisions.budgetOwnerUnset": {
+    "en": "No budget owner (Company view only)",
+    "zh-CN": "无预算负责人（仅在公司视图显示）",
+    "reviewedEnglishHash": "72a0b31603429d4c1033a767c4c24373ccb3675190a0cf208ad8decb094cc46f"
+  },
+  "companySettings.decisions.defaultOwnerError": {
+    "en": "Couldn't save the default decision owner.",
+    "zh-CN": "无法保存默认决策负责人。",
+    "reviewedEnglishHash": "960015479c83ec0ef36193f38e0f3f4c4427901b3bd0c282f12e9da43320d9b8"
+  },
+  "companySettings.decisions.defaultOwnerHint": {
+    "en": "When a card needs a person but has no explicit owner, it goes to this user's For you list. Leave as Unassigned to keep ownerless cards in the claimable pool.",
+    "zh-CN": "当卡片需要人员处理但没有明确负责人时，它会进入该用户的“待你处理”列表。保持未分配则将无主卡片留在可认领池中。",
+    "reviewedEnglishHash": "cb4ded3ca9a1786f59c441881405f96074f14c5991033009038fd0b28dee6b49"
+  },
+  "companySettings.decisions.defaultOwnerLabel": {
+    "en": "Default decision owner",
+    "zh-CN": "默认决策负责人",
+    "reviewedEnglishHash": "90b161937238e96eb10dfec3ee0aeb20b507d6f671f3aaab5942a70a164f72fb"
+  },
+  "companySettings.decisions.defaultOwnerUnset": {
+    "en": "Unassigned (no default owner)",
+    "zh-CN": "未分配（无默认负责人）",
+    "reviewedEnglishHash": "290e3b29751cdafc85298b9baa658b52136ca05a1de42b15c46fd8bd5c203013"
+  },
+  "companySettings.decisions.description": {
+    "en": "Each owner saves as soon as you choose it.",
+    "zh-CN": "选择后将立即保存对应负责人。",
+    "reviewedEnglishHash": "4fbf9b774d2fe135ab9b378a58d96259511011a972fa8a31dd5e4d59412fd36b"
+  },
+  "companySettings.decisions.title": {
+    "en": "Decisions",
+    "zh-CN": "决策",
+    "reviewedEnglishHash": "cfa6a08af3ed587100e647bd922ea291b8b542ee523cee20b10b416a2f8d7adc"
+  },
   "companySettings.defaultEnvironment": {
     "en": "Default",
     "zh-CN": "默认",

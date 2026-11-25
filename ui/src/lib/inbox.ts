@@ -116,6 +116,11 @@ export type InboxKeyboardNavEntry =
       issue: Issue;
     };
 
+/** The task an Inbox row shows, or null for a group header or a row that is not a task. */
+export function inboxNavEntryTask(entry: InboxKeyboardNavEntry) {
+  return entry.type === "child" ? entry.issue : entry.type === "top" && entry.item.kind === "issue" ? entry.item.issue : null;
+}
+
 export interface InboxProjectWorkspaceLookup {
   name: string;
   projectId?: string | null;
@@ -767,6 +772,17 @@ export function getVisibleUnreadIssueIds(
     if (fadingOutIssues.has(item.issue.id) || archivingIssueIds.has(item.issue.id)) return [];
     return [item.issue.id];
   });
+}
+
+/** Sorted distinct execution workspaces the given issue lists reference. */
+export function collectReferencedExecutionWorkspaceIds(
+  ...issueLists: ReadonlyArray<ReadonlyArray<Pick<Issue, "executionWorkspaceId">>>
+): string[] {
+  const ids = new Set<string>();
+  for (const list of issueLists) {
+    for (const issue of list) if (issue.executionWorkspaceId) ids.add(issue.executionWorkspaceId);
+  }
+  return [...ids].sort();
 }
 
 export function getApprovalsForTab(

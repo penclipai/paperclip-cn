@@ -1,6 +1,7 @@
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { useShowAgentCreatedTasks } from "../hooks/useShowAgentCreatedTasks";
+import { configurationWarningMessages } from "../lib/configuration-warnings";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { Link, useParams, useNavigate, useLocation, Navigate } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -50,6 +51,7 @@ import {
   useResourceMemberships,
 } from "../hooks/useResourceMemberships";
 import { useUpdateIssueMutation } from "../hooks/useUpdateIssueMutation";
+import { companyProjectsQuery } from "@/lib/company-projects-query";
 
 /* ── Top-level tab types ── */
 
@@ -219,8 +221,7 @@ function ProjectIssuesList({ projectId, companyId }: { projectId: string; compan
   });
   usePublishSharedQueryData(sharedLiveRuns, liveRuns, liveRunsUpdatedAt);
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(companyId),
-    queryFn: () => projectsApi.list(companyId),
+    ...companyProjectsQuery(companyId),
     enabled: !!companyId,
   });
 
@@ -273,8 +274,7 @@ function ProjectPluginOperationsList({
     enabled: !!companyId,
   });
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(companyId),
-    queryFn: () => projectsApi.list(companyId),
+    ...companyProjectsQuery(companyId),
     enabled: !!companyId,
   });
   const liveRunsQueryKey = queryKeys.liveRuns(companyId);
@@ -472,7 +472,9 @@ export function ProjectDetail() {
   const updateProject = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
       projectsApi.update(projectLookupRef, data, resolvedCompanyId ?? lookupCompanyId),
-    onSuccess: (_project, data) => {
+    onSuccess: (updated, data) => {
+      const notice = configurationWarningMessages(updated);
+      if (notice) pushToast({ title: "Project saved", body: notice, tone: "warn" });
       invalidateProject();
       if (data.visibility !== undefined) queryClient.invalidateQueries({ queryKey: ["issues"] });
     },
@@ -604,7 +606,9 @@ export function ProjectDetail() {
     fieldSaveRequestIds.current[field] = requestId;
     setFieldState(field, "saving");
     try {
-      await projectsApi.update(projectLookupRef, data, resolvedCompanyId ?? lookupCompanyId);
+      const updated = await projectsApi.update(projectLookupRef, data, resolvedCompanyId ?? lookupCompanyId);
+      const notice = configurationWarningMessages(updated);
+      if (notice) pushToast({ title: "Project saved", body: notice, tone: "warn" });
       invalidateProject();
       if (data.visibility !== undefined) queryClient.invalidateQueries({ queryKey: ["issues"] });
       if (fieldSaveRequestIds.current[field] !== requestId) return;
@@ -616,7 +620,7 @@ export function ProjectDetail() {
       scheduleFieldReset(field, 3000);
       throw error;
     }
-  }, [invalidateProject, lookupCompanyId, projectLookupRef, queryClient, resolvedCompanyId, scheduleFieldReset, setFieldState]);
+  }, [invalidateProject, lookupCompanyId, projectLookupRef, pushToast, queryClient, resolvedCompanyId, scheduleFieldReset, setFieldState]);
 
   const projectBudgetSummary = useMemo(() => {
     const matched = budgetOverview?.policies.find(

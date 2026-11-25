@@ -8,11 +8,13 @@ import { Check, Copy, MessageCircle, WrapText } from "lucide-react";
 import { useCoordinatorPresentation } from "./coordinator/CoordinatorPresentation";
 import { useCoordinatorChatReference } from "./coordinator/CoordinatorChatReferences";
 import { SidebarDocumentLink } from "./SidebarDocumentLink";
-import { parseDocumentAnnotationHash } from "@/lib/document-annotation-hash";
+import { buildDocumentAnnotationHash, parseDocumentAnnotationHash } from "@/lib/document-annotation-hash";
 import Markdown, { defaultUrlTransform, type Components, type Options } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { cn } from "../lib/utils";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 import { MarkdownUrlLink } from "./MarkdownUrlLink";
+import { recognizeLinkPreview, type LinkPreviewState } from "@penclipai/shared";
 import { Link, useCaseHref } from "@/lib/router";
 import { useTheme } from "../context/ThemeContext";
 import { useOptionalCompany } from "../context/CompanyContext";
@@ -51,6 +53,7 @@ import {
   externalObjectProviderLabel,
 } from "../lib/external-objects";
 import { normalizeExternalObjectHref } from "../lib/external-object-href";
+import { safeNavigableUrl } from "../lib/safe-url";
 import { copyTextToClipboard } from "../lib/clipboard";
 import type {
   Agent,
@@ -130,6 +133,7 @@ interface MarkdownBodyProps {
   resolveImageSrc?: (src: string) => string | null;
   /** Resolve file links to app routes; null leaves the label without a link. */
   resolveLinkHref?: (href: string) => string | null;
+  documentIssueId?: string;
   /** Called when a user clicks an inline image */
   onImageClick?: (src: string, image: HTMLImageElement) => void;
   /** Keep media inert as references, or omit images in compact text previews. */
@@ -281,6 +285,18 @@ function MarkdownExternalLink({
     `${displayKey} — ${statusLabel}${livenessSuffix}`,
   ];
   const title = titleParts.filter(Boolean).join(" · ");
+  if (recognizeLinkPreview(href)) {
+    const knownState: LinkPreviewState = reference.statusIconKey === "git-merge" || reference.statusLabel === "Merged" ? "merged"
+      : reference.statusLabel === "Merge conflicts" ? "conflicts"
+      : reference.statusLabel === "Draft" ? "draft"
+      : reference.statusCategory === "open" ? "open"
+      : reference.statusCategory === "closed" ? "closed" : "unknown";
+    return <MarkdownUrlLink href={href} title={title} knownState={knownState}
+      externalStatus={{ category: reference.statusCategory, liveness: reference.liveness,
+        ariaLabel: `${displayKey} ${statusLabel}${livenessSuffix}: ${reference.displayTitle ?? href}` }}>
+      {children}
+    </MarkdownUrlLink>;
+  }
   return (
     <a
       href={href}
@@ -422,7 +438,10 @@ function extractMermaidSource(children: ReactNode): string | null {
 
 function safeMarkdownUrlTransform(url: string): string {
   if (url.startsWith(WORKSPACE_FILE_HREF_PREFIX)) return url;
-  return parseMentionChipHref(url) ? url : defaultUrlTransform(url);
+  const mention = parseMentionChipHref(url);
+  if (!mention) return defaultUrlTransform(url);
+  if (mention.kind === "issue") return safeNavigableUrl(url) ?? "";
+  return url;
 }
 
 type MarkdownAstNode = {
@@ -764,6 +783,7 @@ function MarkdownBodyImpl({
   externalReferences,
   resolveImageSrc,
   resolveLinkHref,
+  documentIssueId,
   onImageClick,
   mediaMode = "render",
   resolveWorkspaceFileRef,
@@ -772,6 +792,11 @@ function MarkdownBodyImpl({
   const { theme } = useTheme();
   const coordinator = useCoordinatorPresentation();
   const streamWords = useContext(MarkdownWordStreaming);
+  const scopedUrlTransform = useCallback((url: string, key: string) => {
+    const safeUrl = safeMarkdownUrlTransform(url);
+    const target = key === "href" && documentIssueId ? parseDocumentAnnotationHash(safeUrl) : null;
+    return target && !target.documentIssueId ? buildDocumentAnnotationHash({ ...target, documentIssueId }) : safeUrl;
+  }, [documentIssueId]);
   // Read company prefixes non-throwingly: MarkdownBody renders in surfaces that
   // may lack a CompanyProvider. A null context (or no companies yet) leaves
   // knownPrefixes undefined, which keeps issue auto-linking permissive.
@@ -782,6 +807,10 @@ function MarkdownBodyImpl({
   const knownPrefixes = useMemo(
     () => (companies?.length ? companies.map((c) => c.issuePrefix) : undefined),
     [companies],
+  );
+  const knownPrefixSet = useMemo(
+    () => (knownPrefixes ? new Set(knownPrefixes.map((prefix) => prefix.toUpperCase())) : undefined),
+    [knownPrefixes],
   );
   const externalReferenceLookup = useMemo<MarkdownExternalReferenceMap | null>(() => {
     if (!externalReferences) return null;
@@ -891,7 +920,7 @@ function MarkdownBodyImpl({
         );
       }
 
-      const issueRef = linkIssueReferences ? parseIssueReferenceFromHref(href) : null;
+      const issueRef = linkIssueReferences ? parseIssueReferenceFromHref(href, knownPrefixSet) : null;
       const documentHash = href?.includes("#") ? href.slice(href.indexOf("#")) : null;
       const documentLink = Boolean(coordinator && documentHash && parseDocumentAnnotationHash(documentHash));
       if (documentLink && href?.startsWith("#")) {
@@ -983,38 +1012,41 @@ function MarkdownBodyImpl({
       map.img = ({ node: _node, src, alt, ...imgProps }) => {
         const resolved = resolveImageSrc && src ? resolveImageSrc(src) : null;
         const finalSrc = resolved ?? src;
+        const clickSrc = onImageClick ? safeNavigableUrl(finalSrc) : null;
         return (
           <img
             {...imgProps}
             src={finalSrc}
             alt={alt ?? ""}
-            role={onImageClick && finalSrc ? "button" : undefined}
-            tabIndex={onImageClick && finalSrc ? 0 : undefined}
-            aria-label={onImageClick && finalSrc ? `Open image: ${alt || "Untitled image"}` : undefined}
-            onClick={onImageClick && finalSrc ? (e) => {
+            role={clickSrc ? "button" : undefined}
+            tabIndex={clickSrc ? 0 : undefined}
+            aria-label={clickSrc ? `Open image: ${alt || "Untitled image"}` : undefined}
+            onClick={onImageClick && clickSrc ? (e) => {
               e.preventDefault();
               e.stopPropagation();
-              onImageClick(finalSrc, e.currentTarget);
+              onImageClick(clickSrc, e.currentTarget);
             } : undefined}
-            onKeyDown={onImageClick && finalSrc ? (e) => {
+            onKeyDown={onImageClick && clickSrc ? (e) => {
               if (e.key !== "Enter" && e.key !== " ") return;
               e.preventDefault();
               e.stopPropagation();
-              onImageClick(finalSrc, e.currentTarget);
+              onImageClick(clickSrc, e.currentTarget);
             } : undefined}
-            className={cn(imgProps.className, onImageClick && "cursor-pointer")}
+            className={cn(imgProps.className, clickSrc && "cursor-pointer")}
           />
         );
       };
     }
     return map;
-  }, [theme, coordinator, linkIssueReferences, linkCaseReferences, externalReferenceLookup, resolveImageSrc, resolveLinkHref, onImageClick, mediaMode, knownPrefixes]);
+  }, [theme, coordinator, linkIssueReferences, linkCaseReferences, externalReferenceLookup, resolveImageSrc, resolveLinkHref, onImageClick, mediaMode, knownPrefixes, knownPrefixSet]);
 
   return (
     <div
       className={cn(
         "paperclip-markdown prose prose-sm min-w-0 max-w-full break-words overflow-hidden",
         theme === "dark" && "prose-invert",
+        // Customer content: masked in session replay, skipped by autocapture.
+        ANALYTICS_MASK_CLASS,
         className,
       )}
       style={mergeWrapStyle(style)}
@@ -1023,7 +1055,7 @@ function MarkdownBodyImpl({
         remarkPlugins={remarkPlugins}
         rehypePlugins={streamWords ? [rehypeStreamingWords] : undefined}
         components={components}
-        urlTransform={safeMarkdownUrlTransform}
+        urlTransform={documentIssueId ? scopedUrlTransform : safeMarkdownUrlTransform}
       >
         {children}
       </Markdown>

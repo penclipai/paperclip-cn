@@ -75,6 +75,8 @@ import { queryKeys } from "@/lib/queryKeys";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { Link, Navigate, useLocation, useNavigate, useParams } from "@/lib/router";
 import { describeError } from "@/api/errors";
+import { ANALYTICS_MASK_CLASS, ANALYTICS_NO_CAPTURE_CLASS } from "@/lib/analytics/privacy";
+import { cn } from "@/lib/utils";
 
 const tabs = ["settings", "access", "reviews", "conversations", "activity"] as const;
 type ChatTab = (typeof tabs)[number];
@@ -343,7 +345,7 @@ export function ChatEndpointDetail() {
             {endpoint.provider === "speko" && <AppLogo name="Speko" brandKey="speko" size={36} />}
             {endpoint.provider === "github" ? (endpoint.botLabel ?? endpoint.assignedAgentName) : endpoint.assignedAgentName}{endpoint.provider === "speko" ? " in Speko" : ""}
           </h1>
-          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <p className={cn("mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground", ANALYTICS_MASK_CLASS)}>
             {endpoint.provider === "github" ? <><AppLogo name="GitHub" brandKey="github" compact className="size-4! rounded-sm bg-transparent" /><Link to={`/agents/${endpoint.assignedAgentId}`} className="hover:underline">{endpoint.assignedAgentName}</Link>{endpoint.providerAccountLabel && <span>· {endpoint.providerAccountLabel}</span>}</> : endpoint.providerAccountLabel ?? (endpoint.provider === "agentmail" ? endpoint.botExternalId ?? "Email connection" : translateInstant("Chat connection"))}
           </p>
           {endpoint.provider === "github" && <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -380,6 +382,7 @@ export function ChatEndpointDetail() {
           {endpoint.status !== "active" && <StatusBadge status={endpoint.status} className={endpoint.provider === "speko" ? "text-foreground" : undefined} />}
         </div>
       </header>
+      <div className={cn("space-y-6", ANALYTICS_MASK_CLASS)}>
       {endpoint.provider === "github" && <GitHubConnectionRecoveryNotice endpoint={endpoint} />}
       {activeTab === "settings" && endpoint.provider === "speko" && endpoint.status === "active" && <div className="space-y-6"><SpekoPhoneCallback companyId={endpoint.companyId} endpointId={endpoint.id} /><SpekoPhoneLine companyId={endpoint.companyId} endpointId={endpoint.id} /><SpekoIncomingCalls companyId={endpoint.companyId} endpointId={endpoint.id} agentId={endpoint.assignedAgentId} /></div>}
       {endpoint.provider === "slack" && <SlackTestMessageButton key={endpoint.id} endpointId={endpoint.id} />}
@@ -423,6 +426,7 @@ export function ChatEndpointDetail() {
           onCloseAutoFocus={() => heading.current?.focus()}
         />
       )}
+      </div>
     </div>
   );
 }
@@ -557,7 +561,7 @@ function Settings({
             {destinationResources.map((resource) => (
               <div key={resource.id} className="py-3 space-y-3">
               <div className="flex items-center gap-3">
-                <div className="min-w-0 flex-1">
+                <div className={cn("min-w-0 flex-1", ANALYTICS_MASK_CLASS)}>
                   <p className="truncate text-sm font-medium">
                     {resource.label}
                   </p>
@@ -619,8 +623,8 @@ function Settings({
           />
           {endpoint.provider === "slack" && (
             <SettingToggle
-              label={translateInstant("Require at-mention")}
-              detail="Only respond to messages that @mention this bot, including thread replies and direct messages. Direct messages must also be allowed above."
+              label={translateInstant("apps.chatEndpoint.requireAtMentionInChannels", { defaultValue: "Require at-mention in channels" })}
+              detail={translateInstant("apps.chatEndpoint.requireAtMentionInChannelsDetail", { defaultValue: "In channels, require an @mention to start a conversation with this bot. Replies in existing threads and direct messages do not require an @mention. Direct messages must be allowed above." })}
               checked={endpoint.requireAtMention ?? false}
               pending={updateEndpoint.isPending}
               onChange={(requireAtMention) =>
@@ -745,7 +749,7 @@ function Access({
         <h2 className="text-lg font-semibold">{translateInstant("People")}</h2>
         {endpoint.provider === "slack" && <Dialog>
           <DialogTrigger asChild><Button>{translateInstant("Invite people")}</Button></DialogTrigger>
-          <DialogContent>
+          <DialogContent className={ANALYTICS_MASK_CLASS}>
             <DialogHeader>
               <DialogTitle>{translateInstant("Invite people to talk to")}{" "}{endpoint.assignedAgentName}</DialogTitle>
               <DialogDescription>{translateInstant("Share these instructions with someone in your Slack workspace.")}</DialogDescription>
@@ -773,9 +777,9 @@ function Access({
       <p className="text-sm text-muted-foreground">{translateInstant("People with linked accounts use their own Paperclip permissions.")}{" "}<Link className="underline underline-offset-4" to="/company/settings/members">{translateInstant("Manage members")}</Link></p>
       {confirmationUrl && (
         <div className="space-y-2 border-y border-border py-3">
-          <p className="text-sm font-medium">{translateInstant("Confirm")}{" "}{confirmationFor ?? translateInstant("inviteLanding.thisAccount")}</p>
+          <p className={cn("text-sm font-medium", ANALYTICS_MASK_CLASS)}>{translateInstant("Confirm")}{" "}{confirmationFor ?? translateInstant("inviteLanding.thisAccount")}</p>
           <p className="text-xs text-muted-foreground">{translateInstant("Share only with this person. They must sign in and confirm their own account.")}</p>
-          <p className="break-all text-xs text-muted-foreground">
+          <p className={cn("break-all text-xs text-muted-foreground", ANALYTICS_NO_CAPTURE_CLASS)}>
             {confirmationUrl}
           </p>
           <Button
@@ -818,7 +822,7 @@ function Access({
                     {link.paperclipUserImage && <AvatarImage src={link.paperclipUserImage} alt="" />}
                     <AvatarFallback>{deriveInitials(link.paperclipUserLabel ?? link.externalLabel)}</AvatarFallback>
                   </Avatar>
-                  <div className="min-w-0">
+                  <div className={cn("min-w-0", ANALYTICS_MASK_CLASS)}>
                     <p className="truncate text-sm" title={link.paperclipUserLabel ?? link.externalLabel}>{link.paperclipUserLabel ?? link.externalLabel}</p>
                     {(link.status !== "linked" || link.externalLabel !== link.paperclipUserLabel) && <p className="text-xs text-muted-foreground">
                       {link.status === "revoked" ? "Disconnected" : link.status === "linked"
@@ -1298,7 +1302,7 @@ function Activity({
         open={resolutionItem !== null}
         onOpenChange={(open) => !open && setResolutionItem(null)}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className={ANALYTICS_MASK_CLASS}>
           <AlertDialogHeader>
             <AlertDialogTitle>
               {resolutionItem?.actionType === "slash_task_start"
@@ -1384,7 +1388,7 @@ function Activity({
         </AlertDialogContent>
       </AlertDialog>
       <AlertDialog open={removeOpen} onOpenChange={setRemoveOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className={ANALYTICS_MASK_CLASS}>
           <AlertDialogHeader>
             <AlertDialogTitle>{translateInstant("Remove this connection?")}</AlertDialogTitle>
             <AlertDialogDescription>

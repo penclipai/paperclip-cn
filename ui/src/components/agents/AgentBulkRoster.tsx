@@ -10,6 +10,8 @@ import { bindAccount } from "@/lib/account-scope";
 import { aiConnectionsApi } from "@/api/ai-connections";
 import { getAdapterLabel } from "@/adapters/adapter-display-registry";
 import { bulkAgentDisabledReason, bulkAgentHarness } from "@/lib/bulk-agent-settings";
+import { useCloudHarnessPolicy } from "@/hooks/useCloudHarnessPolicy";
+import { useCloudInstance } from "@/hooks/useCloudInstance";
 import { buildAgentRosterIndex } from "@/lib/agent-roster-filters";
 import { AgentStatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +27,8 @@ export function AgentBulkRoster({ companyId, agents, visibleAgents, renderAgent,
 }) {
   const { t, i18n } = useTranslation();
   const client = useQueryClient();
+  const cloud = Boolean(useCloudInstance());
+  const harnessPolicy = useCloudHarnessPolicy();
   const openingRef = useRef(false);
   const [opening, setOpening] = useState(false);
   const [openError, setOpenError] = useState("");
@@ -42,8 +46,11 @@ export function AgentBulkRoster({ companyId, agents, visibleAgents, renderAgent,
     () => buildAgentRosterIndex(agents, accounts.data, t),
     [agents, accounts.data, i18n.language, t],
   );
-  const selectable = visible.filter(a => !bulkAgentDisabledReason(a));
-  const selectedAgents = useMemo(() => agents.filter(a => selected.includes(a.id) && !bulkAgentDisabledReason(a)), [agents, selected]);
+  const selectable = visible.filter(a => !bulkAgentDisabledReason(a, cloud, harnessPolicy));
+  const selectedAgents = useMemo(
+    () => agents.filter(a => selected.includes(a.id) && !bulkAgentDisabledReason(a, cloud, harnessPolicy)),
+    [agents, selected, cloud, harnessPolicy],
+  );
   const [lastSelection, setLastSelection] = useState<Agent[]>([]);
   useEffect(() => { if (selectedAgents.length) setLastSelection(selectedAgents); }, [selectedAgents]);
   // Retain the card contents while it drops out, so its width does not collapse mid-animation.
@@ -67,7 +74,7 @@ export function AgentBulkRoster({ companyId, agents, visibleAgents, renderAgent,
       if (!account.isCurrentAccount() || revision !== selectionRevision.current) return;
       // The display cache excludes private runtime fields. Only complete,
       // freshly authorized agents can become the editor's optimistic base.
-      if (complete.some(a => a.companyId !== companyId || bulkAgentHarness(a) !== harness || bulkAgentDisabledReason(a))) {
+      if (complete.some(a => a.companyId !== companyId || bulkAgentHarness(a) !== harness || bulkAgentDisabledReason(a, cloud, harnessPolicy))) {
         setOpenError("The selected agents changed. Refresh the roster and select them again.");
         return;
       }
@@ -93,18 +100,18 @@ export function AgentBulkRoster({ companyId, agents, visibleAgents, renderAgent,
     <div className="overflow-x-auto"><table aria-label="Agent roster" className="agent-roster w-full text-left text-sm">
       <thead className="text-xs text-muted-foreground [&_th]:px-3 [&_th]:py-3 [&_th]:font-normal"><tr>
         <th className="w-10"><Checkbox aria-label="Select all visible editable agents" checked={all ? true : some ? "indeterminate" : false} disabled={!selectable.length} onCheckedChange={toggleAll} /></th>
-        <th scope="col">Agent</th>{renderChat && <th scope="col"><span className="sr-only">Chat</span></th>}<th scope="col">Status</th><th scope="col">Harness</th><th scope="col">Connection</th><th scope="col">Default model</th>
+        <th scope="col">{t("agents.count", { count: visible.length })}</th>{renderChat && <th scope="col"><span className="sr-only">Chat</span></th>}<th scope="col">Status</th><th scope="col">Harness</th><th scope="col">Default model</th><th scope="col">Connection</th>
       </tr></thead>
       <tbody>{visible.map(agent => {
         const metadata = rosterIndex.byAgentId.get(agent.id)!;
         return <tr key={agent.id} data-state={selected.includes(agent.id) ? "selected" : undefined} className="group/agent-row border-t border-border data-[state=selected]:bg-accent/30 hover:bg-accent/50 focus-within:bg-accent/50 [&_td]:px-3 [&_td]:align-middle">
-        <td title={bulkAgentDisabledReason(agent)}><Checkbox aria-label={`Select ${agent.name}`} checked={selectedAgents.some(a => a.id === agent.id)} disabled={!!bulkAgentDisabledReason(agent)} onCheckedChange={value => changeSelection(value ? [...new Set([...selected, agent.id])] : selected.filter(id => id !== agent.id))} /></td>
+        <td title={bulkAgentDisabledReason(agent, cloud, harnessPolicy)}><Checkbox aria-label={`Select ${agent.name}`} checked={selectedAgents.some(a => a.id === agent.id)} disabled={!!bulkAgentDisabledReason(agent, cloud, harnessPolicy)} onCheckedChange={value => changeSelection(value ? [...new Set([...selected, agent.id])] : selected.filter(id => id !== agent.id))} /></td>
         <td className="min-w-64 p-0">{renderAgent(agent)}</td>
         {renderChat && <td>{renderChat(agent)}</td>}
         <td>{renderStatus ? renderStatus(agent) : <AgentStatusBadge status={agent.status} />}</td>
         <td className="whitespace-nowrap text-xs">{metadata.harness.label}</td>
+        <td className="text-xs">{metadata.model.label}</td>
         <td className="text-xs">{metadata.connection.label}</td>
-        <td className="font-mono text-xs">{metadata.model.label}</td>
       </tr>;
       })}</tbody>
     </table></div>

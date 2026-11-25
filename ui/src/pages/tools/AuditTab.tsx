@@ -27,6 +27,8 @@ import {
 import { agentsApi } from "@/api/agents";
 import { AgentSelect } from "@/components/AgentMultiSelect";
 import { ToolsPageHeader, LoadingState, RelativeTime } from "./shared";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
+import { googleAccessRetrySummary } from "../../features/connections/googleAccessRemoval";
 
 const PAGE_SIZE = 50;
 const ALL = "__all";
@@ -114,6 +116,9 @@ function lifecycleSummary(event: ToolGatewayActivityEvent): string | null {
       return `${who} updated the allowlist for ${app}`;
     case "actions_quarantined":
       return `${count} new ${count === 1 ? "action needs" : "actions need"} review in ${app}`;
+    case "google_access_ended":
+    case "google_access_not_ended":
+      return `${googleAccessRetrySummary(event.lifecycleType, event.details ?? null)} (${app})`;
     default:
       return `${who} updated ${app}`;
   }
@@ -298,7 +303,7 @@ function ActivityRow({
                       return connectionId ? (
                         <div key={connectionId} className="flex gap-2">
                           <span className="shrink-0 text-muted-foreground">{translateInstant("tools.audit.notInstalled")}</span>
-                          <Link to={`/apps/${connectionId}/permissions`} className="font-medium text-primary hover:underline">
+                          <Link to={`/apps/${connectionId}/permissions`} className={cn("font-medium text-primary hover:underline", ANALYTICS_MASK_CLASS)}>
                             {connectionName}
                           </Link>
                         </div>
@@ -309,7 +314,7 @@ function ActivityRow({
                 {argumentsText ? (
                   <div className="space-y-1">
                     <span className="text-muted-foreground">{translateInstant("tools.audit.details.parametersRedacted")}</span>
-                    <pre className="whitespace-pre-wrap break-words rounded-md border border-border bg-background p-3 font-mono text-xs text-foreground">
+                    <pre className={cn("whitespace-pre-wrap break-words rounded-md border border-border bg-background p-3 font-mono text-xs text-foreground", ANALYTICS_MASK_CLASS)}>
                       {argumentsText}
                     </pre>
                   </div>

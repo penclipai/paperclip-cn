@@ -1,4 +1,9 @@
 {
+  "commandPalette.myWork": {
+    "en": "My work",
+    "zh-CN": "我的工作",
+    "reviewedEnglishHash": "b4b9c68509b915b9ecf9f6f0b2f8f93c891baac2511186a99ee01b1fb8dd0144"
+  },
   "commandPalette.noQuickMatchesContinue": {
     "en": "or keep typing to refine.",
     "zh-CN": "或继续输入以细化结果。",

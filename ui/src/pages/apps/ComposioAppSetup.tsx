@@ -13,6 +13,9 @@ import { queryKeys } from "@/lib/queryKeys";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/context/ToastContext";
+import { describeError } from "@/api/errors";
+import { cn } from "@/lib/utils";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 /** Provider authorization is performed by the backend; no task or agent run. */
 export function ComposioAppSetup({
@@ -38,8 +41,8 @@ export function ComposioAppSetup({
   const connectionId = selectedConnectionId ?? connections[0]?.id ?? "__new__";
   const [result, setResult] = useState<ComposioAppSetupResult | null>(null);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [setupFailed, setSetupFailed] = useState(false);
+  const [errorCause, setErrorCause] = useState<unknown>(null);
+  const [hasError, setHasError] = useState(false);
   const connection = connections.find(
     (candidate) => candidate.id === connectionId,
   );
@@ -48,8 +51,8 @@ export function ComposioAppSetup({
     if (busy || !connection || !settled) return;
     setConnectionId(connection.id);
     setBusy(true);
-    setError(null);
-    setSetupFailed(false);
+    setErrorCause(null);
+    setHasError(false);
     try {
       const next = await toolsApi.setupComposioApp(
         connection.id,
@@ -75,10 +78,10 @@ export function ComposioAppSetup({
         onClose();
       }
     } catch (cause) {
-      // Keep provider text intact, but resolve the app-owned fallback while
-      // rendering so a locale change never preserves a pretranslated string.
-      setError(cause instanceof Error ? cause : null);
-      setSetupFailed(!(cause instanceof Error));
+      // Keep provider text intact via describeError, resolving at render time
+      // so a locale change never preserves a pretranslated string.
+      setErrorCause(cause instanceof Error ? cause : null);
+      setHasError(true);
     } finally {
       setBusy(false);
     }
@@ -97,10 +100,10 @@ export function ComposioAppSetup({
           onChange={(event) => {
             setConnectionId(event.target.value);
             setResult(null);
-            setError(null);
-            setSetupFailed(false);
+            setErrorCause(null);
+            setHasError(false);
           }}
-          className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className={cn("h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", ANALYTICS_MASK_CLASS)}
         >
           {connections.map((candidate) => (
             <option key={candidate.id} value={candidate.id}>
@@ -112,9 +115,9 @@ export function ComposioAppSetup({
           </option>
         </select>
       </div>
-      {error || setupFailed ? (
+      {hasError ? (
         <p role="alert" className="text-sm text-destructive">
-          {error?.message ?? t("aggregatorConnect.composio.setupFailed")}
+          {errorCause != null ? describeError(errorCause).body : t("aggregatorConnect.composio.setupFailed")}
         </p>
       ) : null}
       {result ? (

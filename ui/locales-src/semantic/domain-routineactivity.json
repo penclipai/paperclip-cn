@@ -9,6 +9,11 @@
     "zh-CN": "任务已创建",
     "reviewedEnglishHash": "a3e3e968c40e595189674d8774224cc6fe6611d31d6fa8f5d7084fb5241f84ae"
   },
+  "routineActivity.triggerTestStarted": {
+    "en": "Started testing a webhook",
+    "zh-CN": "已开始测试 Webhook",
+    "reviewedEnglishHash": "faf52f22d6e514d6065e8cbc9706e3c8f7d051535ad659011ae32e389203b7d3"
+  },
   "routineActivity.webhookReceivedSummary": {
     "en": "Authentication passed",
     "zh-CN": "身份验证已通过",

@@ -4,6 +4,8 @@ import type { ProviderQuotaResult } from "@penclipai/shared";
 import { formatDateTime } from "../lib/utils";
 import { QuotaBar } from "./QuotaBar";
 import { quotaUnavailableMessage } from "../lib/quota-refresh";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
+import { cn } from "@/lib/utils";
 
 export function AccountQuotaPanels({
   accounts,
@@ -20,7 +22,7 @@ export function AccountQuotaPanels({
           className="space-y-2"
           key={account.accountKey ?? account.provider}
         >
-          <p className="text-sm font-medium">
+          <p className={cn("text-sm font-medium", ANALYTICS_MASK_CLASS)}>
             {account.accountLabel ?? translateInstant("accountQuota.subscriptionAccount")}
           </p>
           {(failed || !account.ok) && (

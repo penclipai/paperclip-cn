@@ -134,16 +134,79 @@ describe.skipIf(!support.supported)("online ordinary physical source fence", () 
     expect(await fs.lstat(path.join(targetDir, "host-only.txt")).catch(() => null)).toBeNull();
     expect(await git(home, "rev-parse", "HEAD")).toBe(head);
   });
+  it.each(["trailing", "symlink"] as const)("imports a managed directory whose alias record spells the same folder differently (%s)", async spelling => {
+    const f = await fixture(), alias = f.aliases[1].workspace, link = path.join(home, "managed-alias");
+    if (spelling === "symlink") await fs.symlink(f.cwd, link);
+    const cwd = spelling === "trailing" ? `${f.cwd}/` : link;
+    await db.update(executionWorkspaces).set({ cwd, providerRef: cwd }).where(eq(executionWorkspaces.id, alias.id));
+    expect(await inventoryRemoteWorkspaceMigration(db, f)).toMatchObject({ eligible: true, reasons: [] });
+    expect((await inspectOnlineWorkspaceSource(db, await stored(f.workspaceId)))?.workspaceIds).toContain(alias.id);
+    await expect(migrateRemoteWorkspace({ db, storage, ...f, apply: true })).resolves.toMatchObject({ applied: true });
+    expect(readRemoteWorkspaceAuthority((await stored(alias.id)).metadata)).toBeNull();
+    expect(await fs.readFile(path.join(f.cwd, "saved.txt"), "utf8")).toBe("saved legacy edits\n");
+  });
+  it.each([["enclosing", "ordinary_member_encloses_root"], ["elsewhere", "ordinary_member_locator_mismatch"]] as const)(
+    "keeps a managed directory with an %s alias locator blocked and names it", async (shape, code) => {
+      const f = await fixture(), alias = f.aliases[1].workspace, other = path.join(home, "elsewhere");
+      await fs.mkdir(other);
+      await db.update(executionWorkspaces).set(shape === "enclosing" ? { cwd: path.dirname(f.cwd), providerRef: path.dirname(f.cwd) }
+        : { cwd: f.cwd, providerRef: other }).where(eq(executionWorkspaces.id, alias.id));
+      expect(await inventoryRemoteWorkspaceMigration(db, f)).toMatchObject({ eligible: false,
+        reasons: expect.arrayContaining(["online_workspace_source_scope_unproven"]), sourceScopeUnproven: code });
+      await expect(migrateRemoteWorkspace({ db, storage, ...f, apply: true })).rejects.toThrow("online_workspace_source_scope_unproven");
+      expect(await db.select().from(workspaceOperations)).toEqual([]);
+    });
+  it("imports a managed folder whose records name a repository that was never checked out", async () => {
+    const f = await fixture(), repoUrl = "https://example.invalid/never-cloned.git";
+    for (const alias of f.aliases) await db.update(executionWorkspaces).set({ repoUrl, branchName: "main", baseRef: "main" })
+      .where(eq(executionWorkspaces.id, alias.workspace.id));
+    expect(await inventoryRemoteWorkspaceMigration(db, f)).toMatchObject({ eligible: true, reasons: [] });
+    expect(await inspectOnlineWorkspaceSource(db, await stored(f.workspaceId))).toMatchObject({ kind: "ordinary",
+      workspaceIds: f.aliases.map(alias => alias.workspace.id).sort() });
+    await expect(migrateRemoteWorkspace({ db, storage, ...f, apply: true })).resolves.toMatchObject({ applied: true });
+    const authority = readRemoteWorkspaceAuthority((await stored(f.workspaceId)).metadata)!;
+    expect(authority.source).toMatchObject({ kind: "git", repoUrl, ref: "main" });
+    const reference = await getWorkspaceSnapshot(db, { ...f, snapshotId: authority.snapshotId! });
+    const archivePath = path.join(home, "never-cloned.pcws"), targetDir = path.join(home, "never-cloned-restored");
+    await loadWorkspaceSnapshotArchive({ storage, reference: reference!, targetPath: archivePath });
+    await restoreRemoteWorkspaceArchive({ archivePath, targetDir, expectedManifestDigest: reference!.manifestDigest });
+    expect(await fs.readFile(path.join(targetDir, "saved.txt"), "utf8")).toBe("saved legacy edits\n");
+    expect(await fs.readFile(path.join(f.cwd, "saved.txt"), "utf8")).toBe("saved legacy edits\n");
+  });
+  it("keeps a managed folder without a repository blocked while a member's Git cache expiration is unfinished", async () => {
+    const f = await fixture(), alias = f.aliases[1].workspace;
+    for (const { workspace } of f.aliases) await db.update(executionWorkspaces).set({ repoUrl: "https://example.invalid/expiring.git", branchName: "main" })
+      .where(eq(executionWorkspaces.id, workspace.id));
+    await db.update(executionWorkspaces).set({ metadata: { gitCacheExpiration: { schema: "paperclip.git-cache-expiration.v1", completed: false } } })
+      .where(eq(executionWorkspaces.id, alias.id));
+    expect(await inventoryRemoteWorkspaceMigration(db, f)).toMatchObject({ eligible: false,
+      reasons: expect.arrayContaining(["online_workspace_source_scope_unproven"]), sourceScopeUnproven: "member_git_expiration_pending" });
+    await expect(migrateRemoteWorkspace({ db, storage, ...f, apply: true })).rejects.toThrow("online_workspace_source_scope_unproven");
+    expect(await db.select().from(workspaceOperations)).toEqual([]);
+  });
   it.each([false, true])("does not admit a Git fragment as an ordinary migration source (objects: %s)", async objects => {
     const f = await fixture(), info = path.join(f.cwd, ".git", "info");
     await fs.mkdir(info, { recursive: true });
     await fs.writeFile(path.join(info, "exclude"), "/.paperclip-repositories/\n");
     if (objects) await fs.mkdir(path.join(f.cwd, ".git", "objects"));
     expect(await inventoryRemoteWorkspaceMigration(db, f)).toMatchObject({ eligible: false,
-      reasons: expect.arrayContaining(["online_workspace_source_scope_unproven"]) });
+      reasons: expect.arrayContaining(["online_workspace_source_scope_unproven"]), sourceScopeUnproven: objects ? "git_head_missing" : "git_marker_not_repository" });
     await expect(migrateRemoteWorkspace({ db, storage, ...f, apply: true })).rejects.toThrow("online_workspace_source_scope_unproven");
     expect(await db.select().from(workspaceOperations)).toEqual([]);
     expect(await fs.readFile(path.join(info, "exclude"), "utf8")).toBe("/.paperclip-repositories/\n");
+  });
+  it.each([["local_fs", "ordinary_root_unmanaged"], ["git_worktree", "git_checkout_missing"]] as const)(
+    "names a %s Git record whose unmanaged directory holds no repository", async (providerType, code) => {
+    const f = await fixture(), cwd = path.join(home, "declared-git-without-checkout");
+    await fs.mkdir(cwd); await fs.writeFile(path.join(cwd, "saved.txt"), "kept\n");
+    for (const alias of f.aliases.slice(1)) await db.update(executionWorkspaces).set({ providerType: "plugin" })
+      .where(eq(executionWorkspaces.id, alias.workspace.id));
+    await db.update(executionWorkspaces).set({ cwd, providerRef: cwd, providerType, repoUrl: "https://example.invalid/declared.git", branchName: "main" })
+      .where(eq(executionWorkspaces.id, f.workspaceId));
+    expect(await inventoryRemoteWorkspaceMigration(db, f)).toMatchObject({ eligible: false,
+      reasons: ["online_workspace_source_scope_unproven"], sourceScopeUnproven: code });
+    await expect(migrateRemoteWorkspace({ db, storage, ...f, apply: true })).rejects.toThrow("online_workspace_source_scope_unproven");
+    expect(await fs.readFile(path.join(cwd, "saved.txt"), "utf8")).toBe("kept\n");
   });
   it("preserves unmanaged Git import in genuine offline mode while retaining online and drain guards", async () => {
     const f = await fixture(), cwd = path.join(home, "self-hosted-repository"), repoUrl = "https://example.invalid/self-hosted.git";
@@ -278,7 +341,7 @@ describe.skipIf(!support.supported)("online ordinary physical source fence", () 
     expect(await inventoryRemoteWorkspaceMigration(db, f)).toMatchObject({ eligible: true });
     const get = vi.spyOn(storage, "getObject");
     await expect(migrateRemoteWorkspace({ db, storage, ...f, apply: true })).resolves.toMatchObject({ applied: true });
-    expect(get).toHaveBeenCalledTimes(1);
+    expect(get).not.toHaveBeenCalled();
     expect((await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, run.id)))[0]).toEqual(run);
     expect(await fs.readFile(path.join(f.cwd, "saved.txt"), "utf8")).toBe("saved legacy edits\n");
     expect(await stored(f.aliases[1].workspace.id)).toEqual(f.aliases[1].workspace);
@@ -420,9 +483,25 @@ describe.skipIf(!support.supported)("online ordinary physical source fence", () 
     } finally { release(); await owner; }
   });
   it("bounds source-lock closures before reserving a connection", async () => {
-    await expect(withWorkspaceSourceLocks(db, { companyId: randomUUID(), issueIds: Array.from({ length: 129 }, () => randomUUID()) },
+    await expect(withWorkspaceSourceLocks(db, { companyId: randomUUID(), issueIds: Array.from({ length: 513 }, () => randomUUID()) },
       async () => { throw new Error("scope must not be admitted"); })).rejects.toThrow("workspace_source_scope_limit");
+    await expect(withWorkspaceSourceLocks(db, { companyId: randomUUID(), issueIds: Array.from({ length: 511 }, () => randomUUID()),
+      projectIds: [randomUUID()] }, async lock => (await lock.execute(sql`select count(*)::int as held from pg_locks
+        where locktype='advisory' and pid=pg_backend_pid()`))[0]?.held)).resolves.toBe(512);
   });
+  it("moves a Git folder online when its alias closure needs more than 128 source locks", async () => {
+    const f = await fixture(), repoUrl = "https://example.invalid/wide-closure.git";
+    await git(f.cwd, "init", "-q", "-b", "main"); await git(f.cwd, "add", "."); await git(f.cwd, "commit", "-qm", "Saved legacy work");
+    const extra = Array.from({ length: 130 }, () => randomUUID());
+    await db.insert(issues).values(extra.map((id, n) => ({ id, companyId: f.companyId, projectId: f.projectId, title: `Wide alias ${n}` })));
+    await db.insert(executionWorkspaces).values(extra.map((id, n) => ({ companyId: f.companyId, projectId: f.projectId, sourceIssueId: id,
+      name: `Wide alias ${n}`, mode: "shared_workspace" as const, strategyType: "project_primary", providerType: "local_fs", cwd: f.cwd, providerRef: f.cwd })));
+    await db.update(executionWorkspaces).set({ repoUrl, branchName: "main" }).where(eq(executionWorkspaces.companyId, f.companyId));
+    expect(await inventoryRemoteWorkspaceMigration(db, f)).toMatchObject({ eligible: true, reasons: [] });
+    expect((await inspectOnlineWorkspaceSource(db, await stored(f.workspaceId)))?.issueIds).toHaveLength(133);
+    await expect(migrateRemoteWorkspace({ db, storage, ...f, apply: true })).resolves.toMatchObject({ applied: true });
+    expect(await fs.readFile(path.join(f.cwd, "saved.txt"), "utf8")).toBe("saved legacy edits\n");
+  }, 120_000);
   it.each(["task", "operation", "foreign", "descendant"] as const)("retains the %s guard across the complete alias closure", async kind => {
     const f = await fixture(), alias = f.aliases[2];
     if (kind === "task") {
@@ -546,13 +625,16 @@ describe.skipIf(!support.supported)("online ordinary physical source fence", () 
     const apply = () => cohort ? migrateRemoteWorkspaceCohort({ db, storage, companyId: f.companyId,
       workspaceIds: [f.workspaceId], apply: true, signal: AbortSignal.timeout(30_000) })
       : migrateRemoteWorkspace({ db, storage, companyId: f.companyId, workspaceId: f.workspaceId, apply: true });
-    const restore = workspaceArchive.restoreRemoteWorkspaceArchive;
-    const interrupt = vi.spyOn(workspaceArchive, "restoreRemoteWorkspaceArchive").mockImplementationOnce(async input => {
-      await restore(input);
-      expect(await db.select().from(executionWorkspaceSnapshots)).toEqual([expect.objectContaining({ status: "uploaded" })]);
-      throw new Error("interrupted after verified upload");
+    const transaction = db.transaction.bind(db);
+    const interrupt = vi.spyOn(db, "transaction").mockImplementation(async (action, config) => {
+      const result = await transaction(action, config);
+      if (result && typeof result === "object" && "status" in result && result.status === "uploaded") {
+        expect(await db.select().from(executionWorkspaceSnapshots)).toEqual([expect.objectContaining({ status: "uploaded" })]);
+        throw new Error("interrupted after uploaded snapshot");
+      }
+      return result;
     });
-    try { await expect(apply()).rejects.toThrow("interrupted after verified upload"); }
+    try { await expect(apply()).rejects.toThrow("interrupted after uploaded snapshot"); }
     finally { interrupt.mockRestore(); }
     const [operation] = await db.select().from(workspaceOperations), [snapshot] = await db.select().from(executionWorkspaceSnapshots);
     const sources = operation.metadata!.legacyRecoverySources as Array<{ runId: string; issueId: string;
@@ -1051,24 +1133,25 @@ describe.skipIf(!support.supported)("online ordinary physical source fence", () 
     expect(await db.select().from(workspaceOperations).where(eq(workspaceOperations.executionWorkspaceId, f.workspaceId))).toEqual([]);
     expect(await fs.readFile(path.join(f.child.cwd!, "saved.txt"), "utf8")).toBe("saved legacy edits\n");
   });
-  it.each([false, true])("requires exact imported-child coverage for an online shared Git parent (%s)", async changed => {
+  it.each([false, true])("retains committed child references for an online shared Git parent (local bytes changed=%s)", async changed => {
     const f = await gitFixture();
     expect(await inventoryRemoteWorkspaceMigration(db, f)).toMatchObject({ eligible: false,
       reasons: expect.arrayContaining(["nested_workspace_import_required"]) });
     await migrateRemoteWorkspace({ db, storage, companyId: f.companyId, workspaceId: f.child.id, apply: true });
+    const child = await stored(f.child.id), childAuthority = readRemoteWorkspaceAuthority(child.metadata)!;
+    const [childSnapshot] = await db.select().from(executionWorkspaceSnapshots).where(eq(executionWorkspaceSnapshots.id, childAuthority.snapshotId!));
     if (changed) await fs.writeFile(path.join(f.child.cwd!, "new-work.txt"), "changed after child import\n");
     expect(await inventoryRemoteWorkspaceMigration(db, f)).toMatchObject({ eligible: true });
-    const migration = migrateRemoteWorkspace({ db, storage, ...f, apply: true });
-    if (changed) {
-      await expect(migration).rejects.toThrow("nested_workspace_source_changed");
-      expect(readRemoteWorkspaceAuthority((await stored(f.workspaceId)).metadata)).toBeNull();
-      expect(await fs.readFile(path.join(f.child.cwd!, "new-work.txt"), "utf8")).toBe("changed after child import\n");
-    } else {
-      await expect(migration).resolves.toMatchObject({ applied: true });
-      const authority = readRemoteWorkspaceAuthority((await stored(f.workspaceId)).metadata)!;
-      const [snapshot] = await db.select().from(executionWorkspaceSnapshots).where(eq(executionWorkspaceSnapshots.id, authority.snapshotId!));
-      expect(snapshot.metadata?.importedWorkspaceChildren).toEqual([expect.objectContaining({ workspaceId: f.child.id })]);
-    }
+    const get = vi.spyOn(storage, "getObject"), capture = vi.spyOn(workspaceArchive, "captureRemoteWorkspaceDirectory");
+    await expect(migrateRemoteWorkspace({ db, storage, ...f, apply: true })).resolves.toMatchObject({ applied: true });
+    const authority = readRemoteWorkspaceAuthority((await stored(f.workspaceId)).metadata)!;
+    const [snapshot] = await db.select().from(executionWorkspaceSnapshots).where(eq(executionWorkspaceSnapshots.id, authority.snapshotId!));
+    expect(snapshot.metadata?.importedWorkspaceChildren).toEqual([expect.objectContaining({ workspaceId: f.child.id,
+      snapshotId: childSnapshot.id, manifestDigest: childSnapshot.manifestDigest })]);
+    expect(await stored(f.child.id)).toEqual(child);
+    expect((await db.select().from(executionWorkspaceSnapshots).where(eq(executionWorkspaceSnapshots.id, childSnapshot.id)))[0]).toEqual(childSnapshot);
+    expect(get).not.toHaveBeenCalled(); expect(capture).toHaveBeenCalledTimes(1);
+    if (changed) expect(await fs.readFile(path.join(f.child.cwd!, "new-work.txt"), "utf8")).toBe("changed after child import\n");
   });
   it("imports a terminal prepared source while retaining its original provider and finalization obligations", async () => {
     const f = await recoveryFixture(), put = storage.putFile.bind(storage);
