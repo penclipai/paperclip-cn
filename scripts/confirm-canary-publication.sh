@@ -59,8 +59,8 @@ else
   release_fail "npm dist-tags or registry metadata are wrong or never converged for ${version}"
 fi
 
-release_info "==> Installing paperclipai@${version} into a clean prefix..."
-wait_for_npm_installable "paperclipai@${version}" "$version" "${NPM_INSTALL_VERIFY_TIMEOUT_SECONDS:-1200}" "${NPM_INSTALL_VERIFY_DELAY_SECONDS:-30}" \
-  || release_fail "paperclipai@${version} did not install cleanly"
+release_info "==> Installing penclip@${version} into a clean prefix..."
+wait_for_npm_installable "penclip@${version}" "$version" "${NPM_INSTALL_VERIFY_TIMEOUT_SECONDS:-1200}" "${NPM_INSTALL_VERIFY_DELAY_SECONDS:-30}" \
+  || release_fail "penclip@${version} did not install cleanly"
 
 push_release_tag_at "$PUBLISH_REMOTE" "$tag_name" "$source_sha"
