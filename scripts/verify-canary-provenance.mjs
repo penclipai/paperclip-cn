@@ -2,7 +2,7 @@
 import { pathToFileURL } from "node:url";
 
 export const RELEASE_WORKFLOW = Object.freeze({
-  repository: "https://github.com/paperclipai/paperclip",
+  repository: "https://github.com/penclipai/paperclip-cn",
   path: ".github/workflows/release.yml",
   ref: "refs/heads/master",
 });

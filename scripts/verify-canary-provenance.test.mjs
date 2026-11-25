@@ -5,8 +5,8 @@ import { packageProvenance, verifyCanaryProvenance } from "./verify-canary-prove
 const sha = "b".repeat(40);
 const version = "2026.1116.0-canary.2180000";
 
-function attestation({ name = "%40paperclipai/shared", commit = sha, path = ".github/workflows/release.yml", ref = "refs/heads/master",
-  repository = "https://github.com/paperclipai/paperclip", predicateType = "https://slsa.dev/provenance/v1" } = {}) {
+function attestation({ name = "%40penclipai/shared", commit = sha, path = ".github/workflows/release.yml", ref = "refs/heads/master",
+  repository = "https://github.com/penclipai/paperclip-cn", predicateType = "https://slsa.dev/provenance/v1" } = {}) {
   const statement = { subject: [{ name: `pkg:npm/${name}@${version}` }],
     predicate: { buildDefinition: { externalParameters: { workflow: { repository, path, ref } }, resolvedDependencies: [{ digest: { gitCommit: commit } }] } } };
   return { attestations: [{ predicateType, bundle: { dsseEnvelope: { payload: Buffer.from(JSON.stringify(statement)).toString("base64") } } }] };
@@ -23,12 +23,12 @@ const registry = (byPackage) => async (url) => {
 
 test("provenance from master's release workflow at the source commit matches, scoped or not", () => {
   assert.equal(check(attestation()), "match");
-  assert.equal(check(attestation({ name: "paperclipai" }), "paperclipai"), "match");
+  assert.equal(check(attestation({ name: "penclip" }), "penclip"), "match");
 });
 
 test("provenance from another commit, workflow, branch, repository or package is a mismatch", () => {
   for (const overrides of [{ commit: "c".repeat(40) }, { path: ".github/workflows/pr.yml" }, { ref: "refs/heads/feature" },
-    { repository: "https://github.com/someone/paperclip" }, { name: "%40paperclipai/server" }]) {
+    { repository: "https://github.com/someone/paperclip" }, { name: "%40penclipai/server" }]) {
     assert.equal(check(attestation(overrides)), "mismatch", JSON.stringify(overrides));
   }
 });
@@ -36,18 +36,18 @@ test("provenance from another commit, workflow, branch, repository or package is
 test("a package published through the transparency-log retry has no provenance, which is allowed beside a match", async () => {
   assert.equal(check({ attestations: [] }), "none");
   assert.equal(check(attestation({ predicateType: "https://github.com/npm/attestation/tree/main/specs/publish/v0.1" })), "none");
-  const result = await verifyCanaryProvenance({ packages: ["@penclipai/shared", "paperclipai"], version, sourceSha: sha, sleep: noSleep,
-    fetcher: registry({ paperclipai: respond(attestation({ name: "paperclipai" })) }) });
+  const result = await verifyCanaryProvenance({ packages: ["@penclipai/shared", "penclip"], version, sourceSha: sha, sleep: noSleep,
+    fetcher: registry({ penclip: respond(attestation({ name: "penclip" })) }) });
   assert.deepEqual(result, { problems: [], matched: 1, withoutProvenance: ["@penclipai/shared"] });
 });
 
 test("packages that all took the retry report no match and no problem, and any mismatch is a problem", async () => {
-  const none = await verifyCanaryProvenance({ packages: ["@penclipai/shared", "paperclipai"], version, sourceSha: sha, sleep: noSleep, fetcher: registry({}) });
-  assert.deepEqual(none, { problems: [], matched: 0, withoutProvenance: ["@penclipai/shared", "paperclipai"] });
-  const mixed = await verifyCanaryProvenance({ packages: ["@penclipai/shared", "paperclipai"], version, sourceSha: sha, sleep: noSleep,
-    fetcher: registry({ "@penclipai/shared": respond(attestation()), paperclipai: respond(attestation({ name: "paperclipai", commit: "c".repeat(40) })) }) });
+  const none = await verifyCanaryProvenance({ packages: ["@penclipai/shared", "penclip"], version, sourceSha: sha, sleep: noSleep, fetcher: registry({}) });
+  assert.deepEqual(none, { problems: [], matched: 0, withoutProvenance: ["@penclipai/shared", "penclip"] });
+  const mixed = await verifyCanaryProvenance({ packages: ["@penclipai/shared", "penclip"], version, sourceSha: sha, sleep: noSleep,
+    fetcher: registry({ "@penclipai/shared": respond(attestation()), penclip: respond(attestation({ name: "penclip", commit: "c".repeat(40) })) }) });
   assert.equal(mixed.problems.length, 1);
-  assert.match(mixed.problems[0], /^paperclipai@.*provenance does not name/);
+  assert.match(mixed.problems[0], /^penclip@.*provenance does not name/);
 });
 
 test("a brief npm failure is retried, and a lasting or permanent one is a problem", async () => {
@@ -68,6 +68,6 @@ test("a brief npm failure is retried, and a lasting or permanent one is a proble
 
 test("inputs are validated before any request", async () => {
   const fetcher = async () => { throw new Error("must not fetch"); };
-  await assert.rejects(verifyCanaryProvenance({ packages: ["paperclipai"], version: "2026.1116.0-nightly.1", sourceSha: sha, fetcher }), /not a canary version/);
-  await assert.rejects(verifyCanaryProvenance({ packages: ["paperclipai"], version, sourceSha: "abc", fetcher }), /not a full commit SHA/);
+  await assert.rejects(verifyCanaryProvenance({ packages: ["penclip"], version: "2026.1116.0-nightly.1", sourceSha: sha, fetcher }), /not a canary version/);
+  await assert.rejects(verifyCanaryProvenance({ packages: ["penclip"], version, sourceSha: "abc", fetcher }), /not a full commit SHA/);
 });
