@@ -629,7 +629,7 @@ test("release verification builds native test binaries in a required Rust-cached
   const runnerJob = workflow.match(/  verify_paperclip_runner:\n[\s\S]*?(?=\n  [A-Za-z0-9_-]+:|$)/)?.[0] ?? "";
   assert.equal((runnerJob.match(/- lane: server-integration/g) ?? []).length, 1);
   assert.doesNotMatch(runnerJob, /continue-on-error/);
-  assert.match(runnerJob, /timeout-minutes: 20/);
+  assert.match(runnerJob, /timeout-minutes: 35/);
   assert.match(runnerJob, /shared-key: release-runner-v2/);
   assert.match(runnerJob, /cache-workspace-crates: false/);
   assert.match(runnerJob, /cache-bin: false/);
