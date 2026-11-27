@@ -7,27 +7,27 @@ import { fileURLToPath } from "node:url";
 const MIB = 1024 * 1024;
 const BUDGET_HEADROOM = 0.05;
 
-// v2026.1021.0 published installer sizes. Keep a small reviewed margin for
+// v2026.1124.0 published installer sizes. Keep a small reviewed margin for
 // dependency patch releases; lower these only after a measured release build.
 export const DESKTOP_SIZE_BASELINES = Object.freeze({
   "mac/arm64": {
-    installerBytes: 713_626_425,
-    appRuntimeBytes: 2004.90 * MIB,
+    installerBytes: 812_035_772,
+    appRuntimeBytes: 2254.85 * MIB,
     installerSuffix: ".dmg",
   },
   "mac/x64": {
-    installerBytes: 794_749_228,
-    appRuntimeBytes: 2212.66 * MIB,
+    installerBytes: 903_650_037,
+    appRuntimeBytes: 2491.17 * MIB,
     installerSuffix: ".dmg",
   },
   "linux/x64": {
-    installerBytes: 721_382_967,
-    appRuntimeBytes: 2835.69 * MIB,
+    installerBytes: 842_068_117,
+    appRuntimeBytes: 2587.15 * MIB,
     installerSuffix: ".AppImage",
   },
   "win/x64": {
-    installerBytes: 585_055_249,
-    appRuntimeBytes: 2008.67 * MIB,
+    installerBytes: 699_765_454,
+    appRuntimeBytes: 2284.35 * MIB,
     installerSuffix: ".exe",
   },
 });
