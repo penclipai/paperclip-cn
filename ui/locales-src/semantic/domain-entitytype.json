@@ -9,6 +9,16 @@
     "zh-CN": "审批",
     "reviewedEnglishHash": "147fb813a2515718ef6121c61c9636d6ffbcb055bcdb45dbb483af667aa94c8b"
   },
+  "entityType.budgetPolicy": {
+    "en": "Budget Policy",
+    "zh-CN": "预算策略",
+    "reviewedEnglishHash": "5ab4b767287c4eb3bba7df38e3236fc51e9b00d9ede93c55b0b183434a429b62"
+  },
+  "entityType.case": {
+    "en": "Case",
+    "zh-CN": "案例",
+    "reviewedEnglishHash": "15f86e24ed25aed154934fb1f3275d9b33e1ebaa64350694ed8661a7d6fc0f21"
+  },
   "entityType.company": {
     "en": "Company",
     "zh-CN": "公司",
@@ -18,6 +28,26 @@
     "en": "Cost",
     "zh-CN": "成本",
     "reviewedEnglishHash": "204a5eb2cd28bcfdf3be9f8c765948e9e831609e3c57048cdbd6b8a94cf49126"
+  },
+  "entityType.costEvent": {
+    "en": "Cost Event",
+    "zh-CN": "成本事件",
+    "reviewedEnglishHash": "a0bc4c2d84b466b88dba508b91ff7c8981ce7f0c6e12ba5f0c82f322ce40b565"
+  },
+  "entityType.document": {
+    "en": "Document",
+    "zh-CN": "文档",
+    "reviewedEnglishHash": "d6bd8c0aeee80fedb2dbf05c973100c3db04be90c072a88572533f2684131a36"
+  },
+  "entityType.environmentLease": {
+    "en": "Environment Lease",
+    "zh-CN": "环境租约",
+    "reviewedEnglishHash": "7eaea4c15413d1fdcb05958f6d3e34e1975b38d41ff0d6b5e175342a06e85e88"
+  },
+  "entityType.executionWorkspace": {
+    "en": "Execution Workspace",
+    "zh-CN": "执行工作区",
+    "reviewedEnglishHash": "c98d9c3fa1bce6fa0ca6ed2566e4a8716cf4e6e9a654201c951860ba0431762f"
   },
   "entityType.goal": {
     "en": "Goal",
@@ -49,6 +79,11 @@
     "zh-CN": "项目",
     "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
   },
+  "entityType.providerTrace": {
+    "en": "Provider Trace",
+    "zh-CN": "提供方追踪",
+    "reviewedEnglishHash": "aff62612fe89c4ebe381448e23e73e1a83d5135089ed56e7117ae36665d3d23d"
+  },
   "entityType.routine": {
     "en": "Routine",
     "zh-CN": "例行任务",
@@ -63,6 +98,21 @@
     "en": "Routine Trigger",
     "zh-CN": "例行任务触发器",
     "reviewedEnglishHash": "b05fdf1fce806c6918088e17d526581cd5115e51b4329e93a7971db5cd7b21f1"
+  },
+  "entityType.secret": {
+    "en": "Secret",
+    "zh-CN": "密钥",
+    "reviewedEnglishHash": "7e32a729b1226ed1270f282a8c63054d09b26bc9ec53ea69771ce38158dfade8"
+  },
+  "entityType.toolApplication": {
+    "en": "App",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "0d04bfeb7d64b71c74fc925cca93d683154e8cc7e6e5838faced498e34c9984d"
+  },
+  "entityType.toolConnection": {
+    "en": "Connection",
+    "zh-CN": "连接",
+    "reviewedEnglishHash": "639a40e82b9a96f0cbeed5f006cf5634c8d1b990b3c83753c00a910fc268d2a6"
   },
   "entityType.userPreference": {
     "en": "User preference",

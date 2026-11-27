@@ -1,0 +1,137 @@
+{
+  "routineForm.addSecret": {
+    "en": "Add secret",
+    "zh-CN": "添加密钥",
+    "reviewedEnglishHash": "f57a23c69b34b6c16e55dd305355e9cf46b390c3bf81fed1fd61138459cbc16b"
+  },
+  "routineForm.addWebhook": {
+    "en": "Add webhook",
+    "zh-CN": "添加 Webhook",
+    "reviewedEnglishHash": "7c8b25ef65cb308d6ba3caeef2796b6f6cc9a108382a72936288b79e443f7516"
+  },
+  "routineForm.alreadyUnderThroughProject": {
+    "en": "Already under {{responsibility}} through {{project}}.",
+    "zh-CN": "已通过 {{project}} 归属于 {{responsibility}}。",
+    "reviewedEnglishHash": "d9b459b156dfa6c359b29f7bb8447e0135e3da13103c3cd42fbabce66f9f51b4"
+  },
+  "routineForm.choosePerson": {
+    "en": "Choose a person",
+    "zh-CN": "选择人员",
+    "reviewedEnglishHash": "333d798fbf0943464c76e0ac18b0e798ee3643fed3f1dee35e19b11e9fe94888"
+  },
+  "routineForm.configureWebhookAria": {
+    "en": "Configure {{title}}",
+    "zh-CN": "配置 {{title}}",
+    "reviewedEnglishHash": "5eba03a9adbb13d6e5bbd5ee6029254829c8e11d99f3a19d02a0e3d7d14ac2b3"
+  },
+  "routineForm.createDescription": {
+    "en": "Describe the work, then choose who does it and when.",
+    "zh-CN": "描述要执行的工作，然后选择执行者与触发时机。",
+    "reviewedEnglishHash": "08e532b377e3b1b77452c6c61c774ae74862483bb4e98b25ddf0d3a1ec24e91a"
+  },
+  "routineForm.discardConfirm": {
+    "en": "Discard your changes?",
+    "zh-CN": "放弃所作更改？",
+    "reviewedEnglishHash": "3b13192b9d88d1c69240b56faeb2adf21d373d92a281bcdf3803c79f6a066d2a"
+  },
+  "routineForm.editDescription": {
+    "en": "Change what this routine does, who does it, and when.",
+    "zh-CN": "更改此例行任务的内容、执行者与触发时机。",
+    "reviewedEnglishHash": "24ca943c8ea9fe19e23bc314baac8e260614ef0074242bb79447c1ceb4b873ca"
+  },
+  "routineForm.findPerson": {
+    "en": "Find a person…",
+    "zh-CN": "查找人员…",
+    "reviewedEnglishHash": "3be0b47a4ba847e63a75f62cd61fcd00bc7b036c0f878d6adbf9e5e8d9cd22e9"
+  },
+  "routineForm.instructionsPlaceholder": {
+    "en": "What should the agent do each time? Type / for skills and routines, @ to mention, {{name}} to ask for a value.",
+    "zh-CN": "智能体每次应执行什么操作？输入 / 选择技能和例行任务，输入 @ 提及成员或项目，输入 {{name}} 请求输入变量值。",
+    "reviewedEnglishHash": "302cab0f573da56d1c6ca797aa2eef677691af69ab03c865e1ff013fc5d46c84"
+  },
+  "routineForm.itsProject": {
+    "en": "its project",
+    "zh-CN": "其所属项目",
+    "reviewedEnglishHash": "c6d780ead03de604c34b8e5272afd962c27163ea0765745bcbf287e41cb236cd"
+  },
+  "routineForm.keepEditing": {
+    "en": "Keep editing",
+    "zh-CN": "继续编辑",
+    "reviewedEnglishHash": "e76fd2add01005ae11754d75ec97923c1a20a5f42e37d469c80f06a14e433511"
+  },
+  "routineForm.noAgentsFound": {
+    "en": "No agents found.",
+    "zh-CN": "未找到智能体。",
+    "reviewedEnglishHash": "61666542b1caa1e26dcc1b3594c7520ea98cc285effe5884ed74684563662205"
+  },
+  "routineForm.noOne": {
+    "en": "No one",
+    "zh-CN": "无",
+    "reviewedEnglishHash": "1e18d6adb39bbe3619f42045f48e1a99be0142ff9f83dc975a415ed89a9e760c"
+  },
+  "routineForm.noPeopleFound": {
+    "en": "No people found.",
+    "zh-CN": "未找到人员。",
+    "reviewedEnglishHash": "7dae8efd7ee605b8327f7d630229cf4f4f2dd32f9dfc487614dbf746c8209350"
+  },
+  "routineForm.noProjectsFound": {
+    "en": "No projects found.",
+    "zh-CN": "未找到项目。",
+    "reviewedEnglishHash": "26e92309ba5b0ca92bb929346ac5a07d11befa945074be4a19dd34fda69020a0"
+  },
+  "routineForm.noResponsibilitiesFound": {
+    "en": "No responsibilities found.",
+    "zh-CN": "未找到职责。",
+    "reviewedEnglishHash": "6d1c527cc5291cfe5753fb669cb21dd1eb18c0c334bc3eefbfac5d73e2d76da9"
+  },
+  "routineForm.noResponsibility": {
+    "en": "No responsibility",
+    "zh-CN": "无职责",
+    "reviewedEnglishHash": "a83eb6d7e6614d2ac651617354286617afd64f1b8ed0487b85c0df5cd7f303f3"
+  },
+  "routineForm.reloadLatest": {
+    "en": "Reload latest",
+    "zh-CN": "重新加载最新版本",
+    "reviewedEnglishHash": "cb5bbbf3fd17d086f63cb5f58d8b68a6e6121b7385046a585863cc0460fadf82"
+  },
+  "routineForm.removeWebhookAria": {
+    "en": "Remove {{title}}",
+    "zh-CN": "移除 {{title}}",
+    "reviewedEnglishHash": "5b448066f04ee72bc183ec1c2d51de1c8a92ddb990929f683596edc491f1bbdc"
+  },
+  "routineForm.saveConflict": {
+    "en": "This routine changed while you were editing. Reload to see the latest version.",
+    "zh-CN": "在你编辑期间此例行任务已被他人修改。请重新加载以查看最新版本。",
+    "reviewedEnglishHash": "289a4ca8afa60227b6c8cba0cc3771351ef083c32a4909d0a22cfeb7b8035dd8"
+  },
+  "routineForm.searchAgents": {
+    "en": "Search agents…",
+    "zh-CN": "搜索智能体…",
+    "reviewedEnglishHash": "e05cb78e973da37232be8465b57995620a02d3cfa153ffe0c62cfdb6eb253494"
+  },
+  "routineForm.searchProjects": {
+    "en": "Search projects…",
+    "zh-CN": "搜索项目…",
+    "reviewedEnglishHash": "b0c5facf52179471c893e28468a0ea2512c511442e71c2e97a4662e0b1d3483b"
+  },
+  "routineForm.searchResponsibilities": {
+    "en": "Search responsibilities…",
+    "zh-CN": "搜索职责…",
+    "reviewedEnglishHash": "8d17431157067d797274ff0e6eddce77ab80f70f475c0e7bb37f3143a19c9a1d"
+  },
+  "routineForm.timezoneAria": {
+    "en": "Time zone",
+    "zh-CN": "时区",
+    "reviewedEnglishHash": "b9fe1464783e1c0d3a12dbde2686e883482a4fa03f33351af3e576d7a9d32fe0"
+  },
+  "routineForm.titlePlaceholder": {
+    "en": "Send the weekly digest",
+    "zh-CN": "发送每周摘要",
+    "reviewedEnglishHash": "86414899306964d32c723ee6596961fbb5b9f2a94958354396516419c3e3c08c"
+  },
+  "routineForm.webhooks": {
+    "en": "Webhooks",
+    "zh-CN": "Webhooks",
+    "reviewedEnglishHash": "45808d75bf8911fa21637f9dd3f0dace1877748211976b5d61fcc5c15db594d0"
+  }
+}

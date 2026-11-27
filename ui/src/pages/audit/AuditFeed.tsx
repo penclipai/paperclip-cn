@@ -4,7 +4,7 @@ import { AgentAvatar } from "@/components/AgentAvatar";
 import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Download, ScrollText, ShieldAlert } from "lucide-react";
-import type { Agent, CaseWorkflowTransition, ManagedGoogleAccessRemoval } from "@penclipai/shared";
+import type { Agent, AiSignInRemoval, CaseWorkflowTransition, ManagedGoogleAccessRemoval } from "@penclipai/shared";
 import { Link, useCaseHref } from "@/lib/router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,7 +31,7 @@ import { describeError } from "@/api/errors";
 import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { useToastActions } from "@/context/ToastContext";
 import { instanceSettingsApi } from "@/api/instanceSettings";
-import { googleAccessRemovalNotice } from "@/features/connections/googleAccessRemoval";
+import { aiSignInRemovalNotice, googleAccessRemovalNotice } from "@/features/connections/googleAccessRemoval";
 
 const PAGE_SIZE = 50;
 const ALL = "__all";
@@ -46,22 +46,22 @@ const ACTION_DOMAINS: { value: string; label: string }[] = [
   { value: "approval.", get label() { return translateInstant("Approvals"); } },
   { value: "project.", get label() { return translateInstant("Projects"); } },
   { value: "goal.", get label() { return translateInstant("Goals"); } },
-  { value: "tool_", get label() { return "Apps & tools"; } },
+  { value: "tool_", get label() { return translateInstant("auditFeed.appsAndTools", { defaultValue: "Apps & tools" }); } },
   { value: "cost.", get label() { return translateInstant("Costs"); } },
-  { value: "company.", get label() { return "Organization"; } },
+  { value: "company.", get label() { return translateInstant("Organization"); } },
 ];
 
 /** Entity types offered in the filter (server does an exact match). */
 const ENTITY_TYPES: { value: string; label: string }[] = [
   { value: ALL, get label() { return translateInstant("auditFeed.allEntities"); } },
   { value: "issue", get label() { return translateInstant("Task"); } },
-  { value: "case", get label() { return "Case"; } },
-  { value: "agent", get label() { return "Agent"; } },
+  { value: "case", get label() { return translateInstant("entityType.case", { defaultValue: "Case" }); } },
+  { value: "agent", get label() { return translateInstant("Agent"); } },
   { value: "heartbeat_run", get label() { return translateInstant("Run"); } },
   { value: "routine", get label() { return translateInstant("Routine"); } },
   { value: "project", get label() { return translateInstant("Project"); } },
   { value: "goal", get label() { return translateInstant("Goal"); } },
-  { value: "company", get label() { return "Organization"; } },
+  { value: "company", get label() { return translateInstant("Organization"); } },
   { value: "tool_connection", get label() { return translateInstant("Connection"); } },
 ];
 
@@ -215,10 +215,10 @@ function AuditEntityNode({ record }: { record: AuditActionRecord }) {
 
 function auditOutcome(record: AuditActionRecord): string | null {
   if (record.action === "tool_connection.archived" || record.action === "tool_connection.grant_revoked") {
-    return googleAccessRemovalNotice(
+    return (googleAccessRemovalNotice(
       record.details?.providerAccess as ManagedGoogleAccessRemoval | undefined,
       record.action === "tool_connection.grant_revoked" ? "credentials" : "connection",
-    )?.body ?? null;
+    ) ?? aiSignInRemovalNotice(record.details?.signInRemoval as AiSignInRemoval | undefined))?.body ?? null;
   }
   return formatActivityOutcome(record.action, record.details);
 }
@@ -613,12 +613,12 @@ export function AuditFeed({
       {hasLockedScope ? (
         <div className="border-y border-border px-1 py-2 text-xs text-muted-foreground">
           {lockedRunId
-            ? `Scoped to run ${lockedRunId.slice(0, 8)}`
+            ? translateInstant("auditFeed.scopedToRun", { runId: lockedRunId.slice(0, 8), defaultValue: "Scoped to run {{runId}}" })
             : lockedAgentId
-              ? "Scoped to one agent"
+              ? translateInstant("auditFeed.scopedToAgent", { defaultValue: "Scoped to one agent" })
               : scopedCase
-                ? <>Case <Link to={caseHref(scopedCase.identifier)} className="font-medium text-primary hover:underline">{scopedCase.identifier} · {scopedCase.title}</Link></>
-                : `Scoped to ${lockedEntity?.label ?? lockedEntity?.type ?? "entity"}`}
+                ? <>{translateInstant("auditFeed.scopedToCase", { defaultValue: "Case" })} <Link to={caseHref(scopedCase.identifier)} className="font-medium text-primary hover:underline">{scopedCase.identifier} · {scopedCase.title}</Link></>
+                : translateInstant("auditFeed.scopedToEntity", { entity: lockedEntity?.label ?? lockedEntity?.type ?? translateInstant("auditFeed.entityFallback", { defaultValue: "entity" }), defaultValue: "Scoped to {{entity}}" })}
         </div>
       ) : null}
 
@@ -694,10 +694,10 @@ export function AuditFeed({
         ) : null}
         {!lockedEntity && entityType === "case" ? (
           <label className="grid gap-1 text-(length:--text-micro) font-medium text-muted-foreground">
-            <span>Case</span>
+            <span>{translateInstant("entityType.case", { defaultValue: "Case" })}</span>
             <Input
               type="search"
-              aria-label="Case ID or identifier"
+              aria-label={translateInstant("auditFeed.caseIdAria", { defaultValue: "Case ID or identifier" })}
               placeholder="CAS-C1"
               value={entityIdDraft}
               onChange={event => {
@@ -784,7 +784,7 @@ export function AuditFeed({
                   ? translateInstant("auditFeed.tryDifferentFilters")
                   : resolvedMode === "agents"
                     ? translateInstant("auditFeed.emptyAgentDescription")
-                    : "As soon as anyone in your organization does something, it shows up here."}
+                    : translateInstant("auditFeed.emptyAllDescription", { defaultValue: "As soon as anyone in your organization does something, it shows up here." })}
               </p>
             </div>
             {hasActiveFilters ? (

@@ -1,0 +1,77 @@
+{
+  "agentCosts.byModel": {
+    "en": "By model",
+    "zh-CN": "按模型",
+    "reviewedEnglishHash": "2fbd410f0979fdc3f0bbd8f3b3472d2cee7b77b8a07228109d283f647e3eaff5"
+  },
+  "agentCosts.emptyPeriod": {
+    "en": "No cost events for {{name}} in this period.",
+    "zh-CN": "{{name}} 在此时间段内没有成本事件。",
+    "reviewedEnglishHash": "5942c7c039b023f1207f56bbc3c445ad250bae5941936903034cc162a87c22ad"
+  },
+  "agentCosts.from": {
+    "en": "From",
+    "zh-CN": "从",
+    "reviewedEnglishHash": "218197693424e0154cefc0af31aed96c084b987e08136e91d5528ddbb5461e24"
+  },
+  "agentCosts.ledgerEvents": {
+    "en": "{{count}} ledger events",
+    "zh-CN": "{{count}} 条账本事件",
+    "reviewedEnglishHash": "97417b5f81d8d7b9863dc986ff272c5e7e5ad15ff8ad0b48f995fdc24290bddb"
+  },
+  "agentCosts.loadFailed": {
+    "en": "{{name}}'s costs could not be loaded. Please try again shortly.",
+    "zh-CN": "无法加载 {{name}} 的成本数据，请稍后重试。",
+    "reviewedEnglishHash": "201618be5b5fc5dff5fa97b0ca18e8c61f533dd458c7149424784a647c1a4dd7"
+  },
+  "agentCosts.noModelBreakdown": {
+    "en": "No model breakdown for this period.",
+    "zh-CN": "此时间段内无模型明细。",
+    "reviewedEnglishHash": "b136e20bcc6d4bb69b6822ae00ee39e40f23d00d3480aa1828d546ea2969c46b"
+  },
+  "agentCosts.periodAria": {
+    "en": "Cost period",
+    "zh-CN": "成本统计周期",
+    "reviewedEnglishHash": "8e4e3bd50f12e4f3343c243c4ecd8826bdf5f7ae19f6cdeadcc0b2f53b5b1948"
+  },
+  "agentCosts.runsBreakdown": {
+    "en": "{{api}} api · {{subscription}} subscription",
+    "zh-CN": "{{api}} API · {{subscription}} 订阅",
+    "reviewedEnglishHash": "f3d5ab0616511d606bc99955f9c696bc303de56de962657b0ca9c6cad8d6424d"
+  },
+  "agentCosts.selectCustomDates": {
+    "en": "Select a start and end date to load data.",
+    "zh-CN": "请选择开始和结束日期以加载数据。",
+    "reviewedEnglishHash": "1288f512731a783ca62c8a3e8afa2b60f988166e950562c41d7c0590f90ad27a"
+  },
+  "agentCosts.spend": {
+    "en": "Spend",
+    "zh-CN": "花费",
+    "reviewedEnglishHash": "85f3d558db120199accde070c0ff02514efb69af24c043f1f4f4d9d378cf81e9"
+  },
+  "agentCosts.to": {
+    "en": "To",
+    "zh-CN": "至",
+    "reviewedEnglishHash": "f4b06ef6d3c81436f60a318c81c42f8f7e2d774d45a22f3b9b5f3b6980d28146"
+  },
+  "agentCosts.toSeparator": {
+    "en": "to",
+    "zh-CN": "至",
+    "reviewedEnglishHash": "663ea1bfffe5038f3f0cf667f14c4257eff52d77ce7f2a218f72e9286616ea39"
+  },
+  "agentCosts.tokens": {
+    "en": "Tokens",
+    "zh-CN": "词元",
+    "reviewedEnglishHash": "a039dfb9628b53ddaebcfe8ef0793e3fdf19867601295f00d192acef59050869"
+  },
+  "agentCosts.tokensBreakdown": {
+    "en": "in {{input}} ({{cached}} cached) · out {{output}}",
+    "zh-CN": "输入 {{input}}（缓存 {{cached}}）· 输出 {{output}}",
+    "reviewedEnglishHash": "d5bfc23ccdd4b5b197130425e486e3102354159e254e31292ec8ad4d1ad6672e"
+  },
+  "agentCosts.tokensShortCount": {
+    "en": "{{count}} tok",
+    "zh-CN": "{{count}} 词元",
+    "reviewedEnglishHash": "394f1ec471fc5a12d9220fd69c73d250be81649da1dba175016925324b71974e"
+  }
+}

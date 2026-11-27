@@ -324,6 +324,11 @@
     "zh-CN": "父任务编号与标题。",
     "reviewedEnglishHash": "cf0f7d7ee8ef9e0bc49027901901a0ba2baed64af79da934bb079b3fb417598d"
   },
+  "Parent task": {
+    "en": "Parent task",
+    "zh-CN": "父任务",
+    "reviewedEnglishHash": "fb8d859156cd03a007e209638ed58987ba36bd1dd63f09d1c0dedb5052099bbf"
+  },
   "Parsed frames are redacted on the server. Exact reveals and downloads are administrator-only, warned, audited, and automatically expire.": {
     "en": "Parsed frames are redacted on the server. Exact reveals and downloads are administrator-only, warned, audited, and automatically expire.",
     "zh-CN": "解析后的帧会在服务器端脱敏。只有管理员能查看或下载未脱敏的完整内容；操作会显示警告并留下审计记录，临时访问到期后自动失效。",
@@ -649,6 +654,11 @@
     "zh-CN": "持久模式会在运行之间保留 ACP 会话状态；单次模式每次运行都重新开始。",
     "reviewedEnglishHash": "2f4fdb5f420f3e8a6555c087aaf5d48728e63ba3e52be3a5143a392cb030bd4c"
   },
+  "Person": {
+    "en": "Person",
+    "zh-CN": "人员",
+    "reviewedEnglishHash": "6007db63e18e532c7399975ed77d2e3900810aa75cad165b8d2e5d8b08085c3d"
+  },
   "Personal": {
     "en": "Personal",
     "zh-CN": "个人",
@@ -869,6 +879,11 @@
     "zh-CN": "发布中...",
     "reviewedEnglishHash": "e24da73ee9535f119e776d47e2983fba65a0a9b5a1a4d8cf51f2d896286ed134"
   },
+  "Posting…": {
+    "en": "Posting…",
+    "zh-CN": "正在发布…",
+    "reviewedEnglishHash": "648a2ef491ba918c6439d1f697e9cb42c646aab5db9cf27a94cc14105d5fddec"
+  },
   "Preparing approval…": {
     "en": "Preparing approval…",
     "zh-CN": "正在准备审批…",
@@ -1008,6 +1023,11 @@
     "en": "PriorityIcon (interactive)",
     "zh-CN": "优先级图标（可交互）",
     "reviewedEnglishHash": "7effddf508b2aa4a24c754bf8c320f6b3f3ec0fb8171b5d300062b1b98cc4299"
+  },
+  "Private": {
+    "en": "Private",
+    "zh-CN": "私密",
+    "reviewedEnglishHash": "c63eb6720c6e88493897548d3620d45e539d18574465f7b26fdddcbade044ee2"
   },
   "Private key (PEM)": {
     "en": "Private key (PEM)",
@@ -1173,6 +1193,11 @@
     "en": "Project paused by budget",
     "zh-CN": "项目已因预算暂停",
     "reviewedEnglishHash": "1aa2562895efb503d6b35591f34c4f16b35a5e3626588a966c412ac0e5e29418"
+  },
+  "Project saved": {
+    "en": "Project saved",
+    "zh-CN": "项目已保存",
+    "reviewedEnglishHash": "6f12e99a66d5b8070f9f989a291144cdfce1bd1bc66a420e48a73092ecc91989"
   },
   "Project secret": {
     "en": "Project secret",

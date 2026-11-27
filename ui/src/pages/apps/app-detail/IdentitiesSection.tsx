@@ -34,7 +34,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Link } from "@/lib/router";
-import { brandBanner, brandChipBadge } from "@/lib/status-colors";
+import { brandChipBadge } from "@/lib/status-colors";
 import { agentUrl, cn } from "@/lib/utils";
 import {
   audienceUserIds,
@@ -47,6 +47,9 @@ import {
   type GrantStatusTone,
 } from "../connection-identity";
 import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
+
+/** Section labels on the connection page match the plugin page: a quiet line over one grouped surface. */
+const GROUP_LABEL = "px-4 text-sm text-muted-foreground";
 
 const STATUS_CHIP: Record<GrantStatusTone, string> = {
   connected: brandChipBadge.green,
@@ -158,16 +161,16 @@ export function IdentitiesSection({
 
   if (loading) {
     return (
-      <section className="space-y-5" aria-busy="true">
+      <section className="flex flex-col gap-3" aria-busy="true">
         <IdentitiesHeading />
-        <Skeleton className="h-14 w-full" />
+        <Skeleton className="h-14 w-full rounded-2xl" />
       </section>
     );
   }
 
   if (error) {
     return (
-      <section className="space-y-5">
+      <section className="flex flex-col gap-3">
         <IdentitiesHeading />
         <InlineBanner tone="warning" compact>
           {translateInstant("We couldn't load who this connection acts as. Reload the page to try again.")}</InlineBanner>
@@ -178,11 +181,11 @@ export function IdentitiesSection({
   if (credentialPolicy === "per_agent") {
     const github = agentGrant?.providerTenant?.github;
     return (
-      <section className="space-y-5">
-        <h2 className="text-sm font-semibold text-foreground">{translateInstant("GitHub identity")}</h2>
-        <p className="text-sm text-muted-foreground">{translateInstant("This agent uses this GitHub account for everyone’s work, instead of the person giving instructions.")}</p>
+      <section className="flex flex-col gap-3">
+        <h2 className={GROUP_LABEL}>{translateInstant("GitHub identity")}</h2>
+        <p className="px-4 text-sm text-muted-foreground">{translateInstant("This agent uses this GitHub account for everyone’s work, instead of the person giving instructions.")}</p>
         <IdentityRow
-          title={github ? <span className={ANALYTICS_MASK_CLASS}>@{github.login}</span> : "Dedicated GitHub account"}
+          title={github ? <span className={ANALYTICS_MASK_CLASS}>@{github.login}</span> : translateInstant("apps.detail.identities.dedicatedGithubAccount", { defaultValue: "Dedicated GitHub account" })}
           status={agentGrant?.status ?? null}
           detail={dedicatedAgent ? (
             <Link
@@ -191,7 +194,7 @@ export function IdentitiesSection({
             >
               {translateInstant("Used only by")}{" "}{dedicatedAgent.name}
             </Link>
-          ) : "Dedicated to one agent"}
+          ) : translateInstant("apps.detail.identities.dedicatedToOneAgent", { defaultValue: "Dedicated to one agent" })}
           actions={!agentGrant && dedicatedAgent && capabilities?.canConfigure ? (
             <Button size="sm" disabled={connectPending} onClick={() => onConnectAgent(dedicatedAgent.id)}>
               {connectPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
@@ -204,7 +207,7 @@ export function IdentitiesSection({
   }
 
   return (
-    <section className="space-y-5">
+    <section className="flex flex-col gap-3">
       <IdentitiesHeading />
 
       <HumanAccessCards
@@ -237,7 +240,7 @@ export function IdentitiesSection({
               id="personal-identity"
               title={translateInstant("Personal account")}
               status={null}
-              detail="Personal identity"
+              detail={translateInstant("apps.detail.identities.personalIdentity", { defaultValue: "Personal identity" })}
               actions={capabilities?.canConnectAsCurrentUser ? (
                   <Button size="sm" disabled={connectPending} onClick={onConnectAsMe}>
                     {connectPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
@@ -248,7 +251,7 @@ export function IdentitiesSection({
         ) : (
           orgGrant ? (
             orgGrant.capabilities?.canEditAudience ? (
-              <div className="flex justify-end">
+              <div className="flex justify-end px-4">
                   <Button size="sm" variant="outline" onClick={() => onOpenAudience(orgGrant.id)}>
                     {translateInstant("Manage access")}</Button>
               </div>
@@ -257,7 +260,7 @@ export function IdentitiesSection({
             <IdentityRow
               title={translateInstant("Organization account")}
               status={null}
-              detail="Organization identity"
+              detail={translateInstant("apps.detail.identities.organizationIdentity", { defaultValue: "Organization identity" })}
               actions={capabilities?.canCreateOrganizationGrant ? (
                   <Button size="sm" disabled={connectPending} onClick={onConnectOrganization}>
                     {translateInstant("Connect organization identity")}</Button>
@@ -301,32 +304,32 @@ function GitHubConnectionSummary({
       ? github.installationUrl
       : null;
   const repositoryWarning = github.repositorySelection === "all"
-    ? "All current and future repositories"
+    ? translateInstant("apps.detail.identities.allRepos", { defaultValue: "All current and future repositories" })
     : github.repositorySelection === "mixed"
-      ? "Mixed access; scope varies by installation"
+      ? translateInstant("apps.detail.identities.mixedRepos", { defaultValue: "Mixed access; scope varies by installation" })
       : null;
   const repositorySummary = github.repositorySelection === "none"
-    ? "No repositories selected"
-    : `${github.repositoryCount} selected ${github.repositoryCount === 1 ? "repository" : "repositories"}`;
+    ? translateInstant("apps.detail.identities.noReposSelected", { defaultValue: "No repositories selected" })
+    : translateInstant("apps.detail.identities.selectedReposCount", {
+        count: github.repositoryCount,
+        defaultValue: `${github.repositoryCount} selected ${github.repositoryCount === 1 ? "repository" : "repositories"}`,
+      });
   return (
-    <div className="divide-y divide-border border-y border-border">
-      <div className="py-3">
-        <div className="text-sm font-medium text-foreground">{translateInstant("GitHub account")}</div>
-        <a className={cn("text-sm text-muted-foreground hover:underline", ANALYTICS_MASK_CLASS)} href={`https://github.com/${encodeURIComponent(github.login)}`} target="_blank" rel="noreferrer">
+    <div className="divide-y divide-border overflow-hidden rounded-2xl bg-muted/50">
+      <div className="flex min-h-11 items-center justify-between gap-4 px-4 py-2">
+        <div className="text-sm text-muted-foreground">{translateInstant("GitHub account")}</div>
+        <a className={cn("truncate text-sm text-foreground hover:underline", ANALYTICS_MASK_CLASS)} href={`https://github.com/${encodeURIComponent(github.login)}`} target="_blank" rel="noreferrer">
           @{github.login}
         </a>
       </div>
-      <div className="space-y-3 py-3">
+      <div className="space-y-3 px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="text-sm font-medium text-foreground">{translateInstant("Repositories")}</div>
             {repositoryWarning ? (
               <div
                 role="note"
-                className={cn(
-                  "mt-1 inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs",
-                  brandBanner.warning,
-                )}
+                className="mt-1 inline-flex h-6 items-center gap-1.5 rounded-md bg-(--status-task-todo)/15 px-2 text-xs text-(--status-task-icon-todo)"
               >
                 <TriangleAlert className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 {repositoryWarning}
@@ -337,7 +340,7 @@ function GitHubConnectionSummary({
           </div>
           <div className="flex items-center gap-2">
             {onRefreshAccess && configurationUrl ? (
-              <Button size="icon-sm" variant="outline" aria-label={translateInstant("Refresh access")} title={translateInstant("Refresh access")} disabled={refreshPending} onClick={onRefreshAccess}>
+              <Button size="icon-sm" variant="ghost" aria-label={translateInstant("Refresh access")} title={translateInstant("Refresh access")} disabled={refreshPending} onClick={onRefreshAccess}>
                 {refreshPending ? <Loader2 className="animate-spin" aria-hidden="true" /> : <RefreshCw aria-hidden="true" />}
               </Button>
             ) : null}
@@ -377,7 +380,7 @@ function GitHubConnectionSummary({
 
 function IdentitiesHeading() {
   useTranslation();
-  return <h2 className="text-sm font-semibold text-foreground">{translateInstant("Which humans can use this credential?")}</h2>;
+  return <h2 className={GROUP_LABEL}>{translateInstant("Which humans can use this credential?")}</h2>;
 }
 
 function HumanAccessCards({
@@ -405,7 +408,7 @@ function HumanAccessCards({
       <RadioCardGroup
         ariaLabel="Which humans can use this credential"
         value={personal ? "personal" : restricted ? "selected" : "company"}
-        className="sm:grid-cols-2"
+        className="*:rounded-2xl sm:grid-cols-2"
         onValueChange={(next) => {
           if (!canEditAudience || personal) return;
           if (next === "company") onChooseAll();
@@ -436,7 +439,7 @@ function HumanAccessCards({
         ]}
       />
       {connectedName && status !== null ? (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 px-4">
           <Identity name={connectedName} avatarUrl={connectedImage} className={ANALYTICS_MASK_CLASS} />
           {status === "active" ? null : <StatusText status={status} />}
         </div>
@@ -459,7 +462,7 @@ function IdentityRow({
   actions: ReactNode;
 }) {
   return (
-    <div id={id} className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+    <div id={id} className="flex flex-col gap-4 rounded-2xl bg-muted/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-semibold text-foreground">{title}</span>

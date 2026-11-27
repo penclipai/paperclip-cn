@@ -37,9 +37,11 @@ export function TaskChatBubbleActions({
   fastResponse?: boolean;
   feedback?: TaskChatBubbleFeedback | null;
 }) {
-  useTranslation();
+  const { t } = useTranslation();
   const { copied, failed, copy } = useCopyAction(2000);
-  const label = failed ? "Couldn’t copy message" : "Copy message";
+  const label = failed
+    ? t("taskChat.copyFailed", { defaultValue: "Couldn’t copy message" })
+    : t("Copy message", { defaultValue: "Copy message" });
 
   return (
     <div className="flex items-center gap-0.5" data-testid="task-chat-bubble-actions">

@@ -49,6 +49,11 @@
     "zh-CN": "返回",
     "reviewedEnglishHash": "76900f1bfd16c8d4dd3d25e6f46638d7165aee23883ccea6bfe071c514421769"
   },
+  "common.beta": {
+    "en": "beta",
+    "zh-CN": "测试版",
+    "reviewedEnglishHash": "f44e64e75f3948e9f73f8dfa94721c4ce8cbb4f265c4790c702b2d41cfbf2753"
+  },
   "common.cancel": {
     "en": "Cancel",
     "zh-CN": "取消",

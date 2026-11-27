@@ -21,7 +21,6 @@ import { getAdapterDisplay } from "@/adapters/adapter-display-registry";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { SelectPopover } from "../ui/select";
 import {
   Dialog,
   DialogContent,
@@ -83,7 +82,6 @@ export function AgentBasicsDialog({
   });
   const [name, setName] = useState(initialName);
   const [adapterType, setAdapterType] = useState(initialAdapter);
-  const [runnerProvider, setRunnerProvider] = useState("codex");
   const [step, setStep] = useState<"name" | "adapter">(setupAgentId ? "adapter" : "name");
   const adaptersQuery = useQuery({
     queryKey: queryKeys.adapters.availability(companyId ?? "none", null),
@@ -116,15 +114,7 @@ export function AgentBasicsDialog({
   ), ...(copilotAvailable ? [{ ...nativeRunner!, type: "copilot_runtime" }] : []),
     ...(antigravityAvailable ? [{ ...nativeRunner!, type: "antigravity_runtime" }] : []),
     ...(kimiAvailable ? [{ ...nativeRunner!, type: "kimi_runtime" }] : [])];
-  const experimentalRunnerAvailable = experimental.data?.enableNativeRunner === true
-    && adapters?.some(adapter => adapter.type === "paperclip_runner" && adapter.loaded && !adapter.disabled && adapter.supportedRunners?.length !== 0);
-  const advancedRunnerOptions = [
-    { value: "grok", label: "Grok Build (Paperclip Runner)" },
-    { value: "opencode", label: "OpenCode (Paperclip Runner)" },
-  ].filter(option => !cloud || harnessPolicy.isCloudRunnerProviderAllowed(option.value));
-  const validAdapter = choices.some((adapter) => adapter.type === adapterType)
-    || (experimentalRunnerAvailable && adapterType === "paperclip_runner" && (runnerProvider !== "antigravity" || antigravityQualified)
-      && isNewAgentAdapterAllowed(adapterType, { cloud, harnessPolicy, nativeRunnerEnabled: true, runnerProvider }));
+  const validAdapter = choices.some((adapter) => adapter.type === adapterType);
   async function submit() {
     if (busy.current || !name.trim() || (step === "adapter" && !validAdapter)) return;
     busy.current = true;
@@ -156,7 +146,7 @@ export function AgentBasicsDialog({
       saved.current = agent;
       const hostedCursor = cloud && adapterType === "cursor_cloud";
       const nextAdapter = hostedCursor || ["openai_dot", "copilot_runtime", "antigravity_runtime", "kimi_runtime"].includes(adapterType) ? "paperclip_runner" : adapterType;
-      const nextProvider = hostedCursor ? "cursor_cloud" : adapterType === "kimi_runtime" ? "kimi" : adapterType === "antigravity_runtime" ? "antigravity" : adapterType === "copilot_runtime" ? "copilot" : adapterType === "openai_dot" ? "openai_dot" : adapterType === "paperclip_runner" ? runnerProvider : "codex";
+      const nextProvider = hostedCursor ? "cursor_cloud" : adapterType === "kimi_runtime" ? "kimi" : adapterType === "antigravity_runtime" ? "antigravity" : adapterType === "copilot_runtime" ? "copilot" : adapterType === "openai_dot" ? "openai_dot" : "codex";
       const nextRunner = hostedCursor ? "paperclip" as const : "auto" as const;
       // Pending providers can show setup while the saved name-only draft stays held.
       const pendingAntigravity = nextProvider === "antigravity" && !antigravityQualified;
@@ -171,9 +161,8 @@ export function AgentBasicsDialog({
           ...(step === "adapter" && !pendingAntigravity ? {
             adapterType: nextAdapter, runner: nextRunner,
             adapterConfig: nextAdapter === "paperclip_runner" ? {
-              provider: ["claude", "grok", "copilot", "antigravity", "kimi"].includes(nextProvider) ? "acpx" : nextProvider,
-              ...(["claude", "grok", "copilot", "antigravity", "kimi"].includes(nextProvider) ? { acpxAgent: nextProvider } : {}),
-              ...(nextProvider === "grok" ? { model: "grok-4.7" } : {}),
+              provider: ["copilot", "antigravity", "kimi"].includes(nextProvider) ? "acpx" : nextProvider,
+              ...(["copilot", "antigravity", "kimi"].includes(nextProvider) ? { acpxAgent: nextProvider } : {}),
             } : {},
             metadata: { ...metadata, setupAdapterPending: false },
           } : {}),
@@ -187,7 +176,7 @@ export function AgentBasicsDialog({
       else onContinue({ name: agent.name, adapterType: nextAdapter, runnerProvider: nextProvider,
         runner: nextRunner, setupAgentId: agent.id });
     } catch (cause) {
-      if (active.current) setSaveError(cause instanceof Error ? cause.message : "Could not save agent setup.");
+      if (active.current) setSaveError(cause instanceof Error ? cause.message : translateInstant("newAgent.basics.saveError", { defaultValue: "Could not save agent setup." }));
     } finally {
       busy.current = false;
       if (active.current) setSaving(false);
@@ -233,13 +222,13 @@ export function AgentBasicsDialog({
               <div className="space-y-2">
                 <DialogTitle className="text-3xl font-semibold tracking-tight">
                   {step === "name"
-                    ? "Meet your next agent"
-                    : "Choose an adapter"}
+                    ? translateInstant("newAgent.basics.meetTitle", { defaultValue: "Meet your next agent" })
+                    : translateInstant("newAgent.basics.chooseAdapterTitle", { defaultValue: "Choose an adapter" })}
                 </DialogTitle>
                 <DialogDescription className="text-base">
                   {step === "name"
-                    ? "Start with a name. Make them your own."
-                    : `How should ${name.trim()} work?`}
+                    ? translateInstant("newAgent.basics.meetDescription", { defaultValue: "Start with a name. Make them your own." })
+                    : translateInstant("newAgent.basics.howShouldWork", { name: name.trim(), defaultValue: "How should {{name}} work?" })}
                 </DialogDescription>
               </div>
             </div>
@@ -252,7 +241,7 @@ export function AgentBasicsDialog({
                   autoFocus
                   disabled={saving}
                   maxLength={100}
-                  placeholder="e.g. Darnold"
+                  placeholder={translateInstant("newAgent.basics.namePlaceholder", { defaultValue: "e.g. Darnold" })}
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   className="h-12 text-base"
@@ -314,7 +303,11 @@ export function AgentBasicsDialog({
                             {display.label}
                           </span>
                           {adapter.type === "antigravity_runtime" && !antigravityQualified && (
-                            <span className="text-xs text-muted-foreground">{antigravityCandidate ? "Candidate" : "Not available yet"}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {antigravityCandidate
+                                ? translateInstant("newAgent.basics.candidate", { defaultValue: "Candidate" })
+                                : translateInstant("newAgent.basics.notAvailableYet", { defaultValue: "Not available yet" })}
+                            </span>
                           )}
                           {adapterType === adapter.type && (
                             <Check className="absolute right-2 top-2 size-3.5" />
@@ -324,17 +317,6 @@ export function AgentBasicsDialog({
                     );
                   })}
                 </div>
-                {experimentalRunnerAvailable && advancedRunnerOptions.length > 0 && <details className="space-y-3">
-                  <summary className="cursor-pointer text-sm text-muted-foreground">Advanced</summary>
-                  <div className="space-y-2">
-                    <label className="text-sm text-muted-foreground">Experimental harness</label>
-                    <SelectPopover aria-label="Experimental harness"
-                      value={adapterType === "paperclip_runner" ? runnerProvider : ""}
-                      placeholder="Choose a native harness…"
-                      onValueChange={provider => { setRunnerProvider(provider); setAdapterType("paperclip_runner"); }}
-                      options={advancedRunnerOptions} />
-                  </div>
-                </details>}
               </fieldset>
             )}
           </div>
@@ -347,7 +329,7 @@ export function AgentBasicsDialog({
               onClick={() => (step === "name" ? onClose() : setStep("name"))}
             >
               {step === "name" ? (
-                "Cancel"
+                translateInstant("Cancel", { defaultValue: "Cancel" })
               ) : (
                 <>
                   <ArrowLeft className="size-4" />
@@ -358,7 +340,11 @@ export function AgentBasicsDialog({
               type="submit"
               disabled={saving || !name.trim() || (step === "adapter" && !validAdapter)}
             >
-              {saving ? "Saving…" : step === "name" ? "Choose adapter" : "Configure agent"}
+              {saving
+                ? translateInstant("Saving…", { defaultValue: "Saving…" })
+                : step === "name"
+                  ? translateInstant("newAgent.basics.chooseAdapterAction", { defaultValue: "Choose adapter" })
+                  : translateInstant("newAgent.basics.configureAgentAction", { defaultValue: "Configure agent" })}
               <ArrowRight className="size-4" />
             </Button>
           </div>

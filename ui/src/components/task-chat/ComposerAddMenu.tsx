@@ -51,10 +51,10 @@ export function ComposerAddMenu({
   const actions: Array<{ id: string; label: string; detail?: string; Icon: LucideIcon; select: () => void; disabled?: boolean; selected?: boolean }> = [
     ...(onAttachFile ? [{ id: "composer-add-file", label: translateInstant("Files and images"), Icon: Paperclip, select: onAttachFile, disabled: attachDisabled }] : []),
     ...(privacy ? [{ id: "composer-add-private", label: translateInstant("Private task"), detail: privacy.inherited, Icon: Lock, select: () => privacy.onChange(!privacy.private), selected: privacy.private, disabled: Boolean(privacy.inherited) }] : []),
-    ...(onGoal ? [{ id: "composer-add-goal", label: translateInstant("Goal"), detail: "Keep pursuing", Icon: Target, select: onGoal }] : []),
+    ...(onGoal ? [{ id: "composer-add-goal", label: translateInstant("Goal"), detail: translateInstant("taskChatComposer.addMenu.goalDetail", { defaultValue: "Keep pursuing" }), Icon: Target, select: onGoal }] : []),
     ...(onModeChange ? [
-      { id: "composer-add-plan", label: translateInstant("newIssue.workMode.conferenceRoom.planning"), detail: "Plan before acting", Icon: ClipboardList, select: () => onModeChange(mode === "planning" ? "standard" : "planning"), selected: mode === "planning" },
-      { id: "composer-add-ask", label: translateInstant("newIssue.workMode.conferenceRoom.ask"), detail: "Answer without changes", Icon: MessageCircleQuestion, select: () => onModeChange(mode === "ask" ? "standard" : "ask"), selected: mode === "ask" },
+      { id: "composer-add-plan", label: translateInstant("newIssue.workMode.conferenceRoom.planning"), detail: translateInstant("taskChatComposer.addMenu.planDetail", { defaultValue: "Plan before acting" }), Icon: ClipboardList, select: () => onModeChange(mode === "planning" ? "standard" : "planning"), selected: mode === "planning" },
+      { id: "composer-add-ask", label: translateInstant("newIssue.workMode.conferenceRoom.ask"), detail: translateInstant("taskChatComposer.addMenu.askDetail", { defaultValue: "Answer without changes" }), Icon: MessageCircleQuestion, select: () => onModeChange(mode === "ask" ? "standard" : "ask"), selected: mode === "ask" },
     ] : []),
   ];
   const trigger = <button type="button" aria-label={translateInstant("Add to composer")} aria-keyshortcuts={onModeChange ? "Meta+Period Control+Period Shift+Tab" : undefined}
@@ -108,7 +108,7 @@ export function ComposerModeChip({ mode, onRemove, disabled, testId, mobile = fa
   const meta = workModeMetaFor(mode);
   const Icon = meta.icon;
   return <button type="button" onClick={onRemove} disabled={disabled || !onRemove}
-    aria-label={`Remove ${meta.label}`} data-pending-work-mode={mode} data-testid={testId}
+    aria-label={translateInstant("taskChatComposer.removeMode", { label: meta.label, defaultValue: "Remove {{label}}" })} data-pending-work-mode={mode} data-testid={testId}
     className={cn("inline-flex h-8 shrink-0 items-center rounded-full border text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50", mobile ? "gap-1 px-2" : "gap-1 px-2 sm:gap-1.5 sm:px-2.5", meta.classes.chip)}>
     <Icon className="size-3.5" aria-hidden />
     <span className={mobile ? "sr-only" : "max-sm:sr-only"}>{meta.label}</span>
@@ -119,7 +119,7 @@ export function ComposerModeChip({ mode, onRemove, disabled, testId, mobile = fa
 export function ComposerPrivacyChip({ inherited, onRemove, disabled }: { inherited?: string; onRemove: () => void; disabled?: boolean }) {
   useTranslation();
   const [hintOpen, setHintOpen] = useState(false);
-  const explanation = inherited ?? "Only you and people you share with can read this task";
+  const explanation = inherited ?? translateInstant("taskChatComposer.privateExplanation", { defaultValue: "Only you and people you share with can read this task" });
   return <TooltipProvider><Tooltip open={hintOpen} onOpenChange={setHintOpen}>
     <TooltipTrigger asChild>
       <span className="inline-flex shrink-0" role={inherited ? "button" : undefined}
@@ -128,7 +128,7 @@ export function ComposerPrivacyChip({ inherited, onRemove, disabled }: { inherit
         onKeyDown={inherited ? (event) => {
           if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setHintOpen(true); }
         } : undefined}>
-        <button type="button" onClick={onRemove} aria-label={inherited ? "Private task" : "Remove private task"}
+        <button type="button" onClick={onRemove} aria-label={inherited ? translateInstant("Private task") : translateInstant("taskChatComposer.removePrivateTask", { defaultValue: "Remove private task" })}
           title={explanation}
           disabled={disabled || Boolean(inherited)} data-testid="composer-private-chip"
           className="inline-flex h-8 shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 text-xs font-medium text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">

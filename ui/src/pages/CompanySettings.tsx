@@ -134,11 +134,18 @@ export function CompanySettings() {
   const membersView = useQueryView(membersQuery);
   const memberOptions = (membersQuery.data?.members ?? [])
     .filter((member) => member.user?.id)
-    .map((member) => (
-      <option key={member.user!.id} value={member.user!.id}>
-        {member.user!.name || member.user!.email || member.user!.id}
-      </option>
-    ));
+    .map((member) => {
+      const u = member.user!;
+      const label =
+        u.id === "local-board" && (!u.name || u.name === "Board")
+          ? translateInstant("Board")
+          : (u.name || u.email || u.id);
+      return (
+        <option key={u.id} value={u.id}>
+          {label}
+        </option>
+      );
+    });
 
   const governanceMutation = useMutation({
     mutationFn: (next: InteractionResolverGovernance) =>
@@ -277,7 +284,7 @@ export function CompanySettings() {
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           {translateInstant("General")}</div>
         <div className="space-y-3">
-          <Field label={translateInstant("Organization name")} hint="The display name for your organization.">
+          <Field label={translateInstant("Organization name")} hint={translateInstant("companySettings.general.nameHint", { defaultValue: "The display name for your organization." })}>
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
               type="text"
@@ -291,7 +298,7 @@ export function CompanySettings() {
           </Field>
           <Field
             label={translateInstant("Description")}
-            hint="Optional description shown in the organization profile."
+            hint={translateInstant("companySettings.general.descriptionHint", { defaultValue: "Optional description shown in the organization profile." })}
           >
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
@@ -320,7 +327,7 @@ export function CompanySettings() {
             <div className="flex-1 space-y-3">
               <Field
                 label={translateInstant("Logo")}
-                hint="Upload a PNG, JPEG, WEBP, GIF, or SVG logo image."
+                hint={translateInstant("companySettings.appearance.logoHint", { defaultValue: "Upload a PNG, JPEG, WEBP, GIF, or SVG logo image." })}
               >
                 <div className="space-y-2">
                   <input
@@ -394,7 +401,7 @@ export function CompanySettings() {
         <div>
           <ToggleField
             label={translateInstant("Require board approval for new hires")}
-            hint="New agent hires stay pending until approved by board."
+            hint={translateInstant("companySettings.hiring.approvalHint", { defaultValue: "New agent hires stay pending until approved by board." })}
             checked={!!selectedCompany.requireBoardApprovalForNewAgents}
             onChange={(v) => settingsMutation.mutate(v)}
             toggleTestId="company-settings-team-approval-toggle"

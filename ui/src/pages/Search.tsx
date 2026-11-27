@@ -62,7 +62,7 @@ const IDENTIFIER_PATTERN = /^[A-Z]+-\d+$/;
 
 const SCOPE_LABELS: Record<CompanySearchScope, string> = {
   get all() { return translateInstant("All"); },
-  issues: "Tasks",
+  get issues() { return translateInstant("sidebar.issues"); },
   get comments() { return translateInstant("Comments"); },
   get documents() { return translateInstant("searchPage.scope.documents"); },
   get artifacts() { return translateInstant("Artifacts"); },
@@ -75,7 +75,7 @@ function isCompanySearchScope(value: string | null): value is CompanySearchScope
 }
 
 function describeScope(scope: CompanySearchScope) {
-  if (scope === "all") return "All scopes";
+  if (scope === "all") return translateInstant("searchPage.scope.allScopes");
   return SCOPE_LABELS[scope];
 }
 
@@ -572,15 +572,15 @@ export function Search() {
                 }
               }
             }}
-            placeholder={translateInstant("Search tasks, comments, documents, artifacts, agents, projects…")}
-            aria-label={translateInstant("Search query")}
+            placeholder={translateInstant("searchPage.searchOrgPlaceholder", { defaultValue: "Search tasks, comments, documents, artifacts, agents, projects…" })}
+            aria-label={translateInstant("searchPage.searchQueryAria", { defaultValue: "Search query" })}
             className="h-10 pl-9 pr-20 text-sm"
           />
           {draftQuery.length > 0 ? (
             <button
               type="button"
               onClick={handleClear}
-              aria-label={translateInstant("Clear search")}
+              aria-label={translateInstant("searchPage.clearSearch")}
               className="absolute right-12 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground hover:bg-accent/50"
             >
               <X className="h-3.5 w-3.5" />
@@ -770,9 +770,9 @@ function SearchTabContent({
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-10 sm:px-6">
         <div>
-          <h2 className="text-lg font-semibold">{translateInstant("Type to search organization memory.")}</h2>
+          <h2 className="text-lg font-semibold">{t("searchPage.initialOrgTitle", { defaultValue: "Type to search organization memory." })}</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            {translateInstant("Tasks, comments, plan documents, artifacts, agents, projects — same surface, ranked by relevance.")}</p>
+            {t("searchPage.initialSubtitle", { defaultValue: "Tasks, comments, plan documents, artifacts, agents, projects — same surface, ranked by relevance." })}</p>
         </div>
         {recentSearches.length > 0 ? (
           <div>
@@ -796,8 +796,8 @@ function SearchTabContent({
         ) : null}
         <ul className="space-y-1 text-xs text-muted-foreground">
           <li>
-            <span className="font-medium text-foreground">{translateInstant("searchPage.tip.identifierLabel")}</span> {translateInstant("searchPage.tip.identifierBodyPrefix")}{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">PAP-123</code> {translateInstant("to jump straight to a task.")}</li>
+            <span className="font-medium text-foreground">{t("searchPage.tip.identifierLabel")}</span> {t("searchPage.tip.identifierBodyPrefix")}{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">PAP-123</code> {t("searchPage.tip.identifierSuffix", { defaultValue: "to jump straight to a task." })}</li>
           <li>
             <span className="font-medium text-foreground">{translateInstant("searchPage.tip.quotedLabel")}</span> {translateInstant("searchPage.tip.quotedBody")}</li>
           <li>
@@ -812,14 +812,14 @@ function SearchTabContent({
     return (
       <div className="mx-auto flex w-full max-w-xl flex-col items-center justify-center gap-3 px-4 py-12 text-center">
         <AlertTriangle className="h-10 w-10 text-destructive" aria-hidden />
-        <div className="text-base font-semibold">{translateInstant("Couldn’t run that search")}</div>
+        <div className="text-base font-semibold">{t("searchPage.errorTitle")}</div>
         <p className="text-sm text-muted-foreground">
-          {status ? translateInstant("searchPage.errorServerStatus", { status }) : translateInstant("searchPage.errorRequestFailed")} {translateInstant("Your input and filters are still here, so you can retry or fall back to the Tasks filter.")}</p>
+          {status ? t("searchPage.errorServerStatus", { status }) : t("searchPage.errorRequestFailed")} {t("searchPage.errorRecoveryTasks", { defaultValue: "Your input and filters are still here, so you can retry or fall back to the Tasks filter." })}</p>
         <div className="flex flex-wrap items-center justify-center gap-2">
           <Button onClick={refetch} variant="default" size="sm">
-            {translateInstant("common.retry")}</Button>
+            {t("common.retry")}</Button>
           <Button onClick={navigateIssuesFallback} variant="outline" size="sm">
-            {translateInstant("Open Tasks filter view")}</Button>
+            {t("searchPage.openTasksFilter", { defaultValue: "Open Tasks filter view" })}</Button>
         </div>
       </div>
     );
@@ -829,7 +829,7 @@ function SearchTabContent({
     return (
       <div className="flex flex-col gap-2 px-2 py-3 sm:px-4">
         <div className="px-3 text-xs text-muted-foreground" data-testid="search-loading">
-          {translateInstant("Searching for &ldquo;")}{trimmedQuery}&rdquo;…
+          {t("searchPage.loading", { query: trimmedQuery })}
         </div>
         <div className="flex flex-col">
           <div className="px-3 py-2">
@@ -856,19 +856,19 @@ function SearchTabContent({
     return (
       <div className="mx-auto flex w-full max-w-xl flex-col items-center justify-center gap-3 px-4 py-12 text-center">
         <FileQuestion className="h-10 w-10 text-muted-foreground" aria-hidden />
-        <div className="text-base font-semibold">{translateInstant("No results for &ldquo;")}{trimmedQuery}&rdquo;</div>
+        <div className="text-base font-semibold">{t("searchPage.noResultsTitle", { query: trimmedQuery })}</div>
         <p className="text-sm text-muted-foreground">
-          {translateInstant("We couldn’t find a match in")}{" "}{describeScope(scope).toLowerCase()}{translateInstant(". Try widening the scope or rephrasing your query.")}</p>
+          {t("searchPage.noResultsDescription", { scope: describeScope(scope).toLowerCase() })}</p>
         <div className="flex flex-wrap items-center justify-center gap-2">
           {scope !== "all" ? (
             <Button onClick={showAllScope} size="sm" variant="outline">
-              {translateInstant("searchPage.searchAllScopes")}</Button>
+              {t("searchPage.searchAllScopes")}</Button>
           ) : null}
           <Button onClick={openNewIssue} size="sm" variant="default">
             <Plus className="mr-1.5 h-4 w-4" />
-            {translateInstant("Create task from this query")}</Button>
+            {t("searchPage.createTaskFromQuery", { defaultValue: "Create task from this query" })}</Button>
           <Button onClick={navigateIssuesFallback} size="sm" variant="ghost">
-            {translateInstant("Open Tasks filter view")}</Button>
+            {t("searchPage.openTasksFilter", { defaultValue: "Open Tasks filter view" })}</Button>
         </div>
         <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">
           <li>{translateInstant("searchPage.emptyTip.fewerTokens")}</li>

@@ -2312,6 +2312,83 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
     );
   });
 
+  it("schedules bounded retries for hermes_gateway 429 transient failures instead of parking in reconciliation hold", async () => {
+    const adapterResult = {
+      exitCode: 1,
+      signal: null,
+      timedOut: false,
+      provider: "hermes_gateway",
+      model: null,
+      errorCode: "hermes_gateway_run_failed",
+      errorFamily: "transient_upstream" as const,
+      retryNotBefore: "2026-04-22T16:00:00.000Z",
+      errorMessage: "HTTP 429: This request would exceed your account's rate limit. Please try again later.",
+      sessionId: "session-429",
+      sessionParams: {
+        hermesRunId: "hermes-429-run",
+        hermesSessionId: "session-429",
+        strategy: "issue",
+      },
+      sessionDisplayId: "session-429",
+      resultJson: {
+        run_id: "hermes-429-run",
+        status: "failed",
+        session_id: "session-429",
+        last_event: null,
+        output: "",
+        usage: null,
+        cost_usd: null,
+      },
+    };
+
+    expect(adapterResult.errorCode).toBe("hermes_gateway_run_failed");
+    expect(adapterResult.errorFamily).toBe("transient_upstream");
+
+    const companyId = randomUUID();
+    const agentId = randomUUID();
+    const issueId = randomUUID();
+    const runId = randomUUID();
+    const now = new Date("2026-04-22T10:00:00.000Z");
+
+    await seedRetryFixture({
+      runId,
+      companyId,
+      agentId,
+      now,
+      errorCode: adapterResult.errorCode!,
+      adapterType: "hermes_gateway",
+      agentName: "HermesGateway",
+      resultJson: {
+        ...(adapterResult.resultJson ?? {}),
+        errorFamily: adapterResult.errorFamily,
+        retryNotBefore: adapterResult.retryNotBefore,
+        transientRetryNotBefore: adapterResult.retryNotBefore,
+        conversationContinuation: "continue_conversation_v1",
+      },
+    });
+    await db.insert(issues).values({
+      id: issueId,
+      companyId,
+      title: "Hermes 429 retry issue",
+      status: "in_progress",
+      assigneeAgentId: agentId,
+    });
+    await db.update(heartbeatRuns).set({
+      issueId,
+      contextSnapshot: { issueId, wakeReason: "issue_assigned" },
+      runnerProfileJson: { adapterDispatch: { adapterType: "hermes_gateway" } },
+    }).where(eq(heartbeatRuns.id, runId));
+
+    const scheduled = await heartbeat.scheduleBoundedRetry(runId, {
+      now,
+      random: () => 0.5,
+    });
+
+    expect(scheduled).toMatchObject({ outcome: "scheduled" });
+    if (scheduled.outcome !== "scheduled") return;
+    expect(scheduled.dueAt.toISOString()).toBe("2026-04-22T16:00:00.000Z");
+  });
+
   describe("run-dispatch module transactions", () => {
     it("promotes a due scheduled retry exactly once under concurrent promotion attempts", async () => {
       const companyId = randomUUID();

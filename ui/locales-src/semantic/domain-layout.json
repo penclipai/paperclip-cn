@@ -4,6 +4,16 @@
     "zh-CN": "关闭侧边栏",
     "reviewedEnglishHash": "17e28e2302175d33308a4706042528db0f8605f7ec27b2dff8cc51bc65fa2096"
   },
+  "layout.companyArchivedBody": {
+    "en": "Switched to {{name}}.",
+    "zh-CN": "已切换到 {{name}}。",
+    "reviewedEnglishHash": "d5152e978de5c58c77e8002abfe4e18da90133cf175105b312c35af1f0f97e54"
+  },
+  "layout.companyArchivedTitle": {
+    "en": "{{name}} is archived",
+    "zh-CN": "{{name}} 已归档",
+    "reviewedEnglishHash": "4eb7aba900256f67f4cccf318024cd4f6bcecae2f50715022b76b2ea24c479c8"
+  },
   "layout.languageSwitcherLabel": {
     "en": "Switch language",
     "zh-CN": "切换语言",

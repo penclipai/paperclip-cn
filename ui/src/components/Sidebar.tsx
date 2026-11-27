@@ -137,7 +137,7 @@ function ClassicSidebar({ children }: { children?: ReactNode }) {
       label={translateInstant("sidebar.issues")}
       icon={CircleCheck}
       badge={inboxBadge.inbox}
-      badgeLabel="unread"
+      badgeLabel={translateInstant("unread")}
       badgeTone={inboxBadge.failedRuns > 0 ? "danger" : "default"}
       alert={inboxBadge.failedRuns > 0}
     />
@@ -150,7 +150,7 @@ function ClassicSidebar({ children }: { children?: ReactNode }) {
       label={translateInstant("sidebar.inbox")}
       icon={Inbox}
       badge={inboxBadge.inbox}
-      badgeLabel="unread"
+      badgeLabel={translateInstant("unread")}
       badgeTone={inboxBadge.failedRuns > 0 ? "danger" : "default"}
       alert={inboxBadge.failedRuns > 0}
     />
@@ -181,7 +181,7 @@ function ClassicSidebar({ children }: { children?: ReactNode }) {
         <SidebarCompanyMenu />
       </div>
 
-      <nav className={primarySidebarStyles.nav}>
+      <nav className={primarySidebarStyles.nav} aria-label={translateInstant("sidebar.workspaceNavigation", { defaultValue: "Workspace navigation" })}>
         <div className={primarySidebarStyles.group}>
           {/* New Task button aligned with nav items */}
           <button
@@ -213,11 +213,11 @@ function ClassicSidebar({ children }: { children?: ReactNode }) {
               label={translateInstant("whatNeedsMe.title")}
               icon={ListChecks}
               badge={attentionCount}
-              badgeLabel="decisions"
+              badgeLabel={translateInstant("sidebar.decisions", { defaultValue: "decisions" })}
             />
           ) : null}
           {showStatusCards ? (
-            <SidebarNavItem to="/status" label={translateInstant("Status")} icon={LayoutGrid} textBadge="beta" />
+            <SidebarNavItem to="/status" label={translateInstant("Status")} icon={LayoutGrid} textBadge={translateInstant("common.beta", { defaultValue: "beta" })} />
           ) : null}
           {conferenceRoomChatEnabled ? (
             <SidebarNavItem to="/board-chat" label={translateInstant("Conference Room")} icon={MessagesSquare} />
@@ -243,7 +243,7 @@ function ClassicSidebar({ children }: { children?: ReactNode }) {
           <SidebarNavItem to="/routines" label={translateInstant("sidebar.routines")} icon={Repeat} />
           <SidebarNavItem to="/artifacts" label={translateInstant("sidebar.artifacts")} icon={Package} />
           {showCases ? (
-            <SidebarNavItem to="/cases" label={translateInstant("Cases")} icon={Layers} textBadge="beta" />
+            <SidebarNavItem to="/cases" label={translateInstant("Cases")} icon={Layers} textBadge={translateInstant("common.beta", { defaultValue: "beta" })} />
           ) : null}
           {showGoalsLink ? (
             <SidebarNavItem to="/goals" label={translateInstant("sidebar.goals")} icon={Target} />
@@ -279,7 +279,7 @@ function ClassicSidebar({ children }: { children?: ReactNode }) {
           >
             <SidebarNavItem to="/agents" label={translateInstant("Agents")} icon={Users} />
             <SidebarNavItem to="/skills" label={translateInstant("sidebar.skills")} icon={Boxes} />
-            <SidebarNavItem to="/apps" label={translateInstant("Connectors")} icon={Unplug} />
+            <SidebarNavItem to="/apps" label={translateInstant("Plugins")} icon={Unplug} />
             <SidebarNavItem to="/activity" label={translateInstant("auditFeed.title")} icon={History} />
           </SidebarSection>
         ) : null}
@@ -297,12 +297,12 @@ function ClassicSidebar({ children }: { children?: ReactNode }) {
               collapsible={{ open: organizationOpen, onOpenChange: setOrganizationOpen }}
             >
               <SidebarNavItem to="/org" label={translateInstant("sidebar.org", { defaultValue: "Org" })} icon={Network} />
-              <SidebarNavItem to="/apps" label={translateInstant("Connectors", { defaultValue: "Connectors" })} icon={Unplug} />
-              <SidebarNavItem to="/timeline" label="Timeline" icon={GanttChartSquare} />
-              <SidebarNavItem to="/costs" label="Costs" icon={DollarSign} />
-              <SidebarNavItem to="/activity" label="Activity" icon={History} />
-              <SidebarNavItem to="/activity/commentary" label="Commentary" icon={History} />
-              <SidebarNavItem to="/company/settings" label="Settings" icon={Settings} />
+              <SidebarNavItem to="/apps" label={translateInstant("Plugins")} icon={Unplug} />
+              <SidebarNavItem to="/timeline" label={translateInstant("sidebar.timeline")} icon={GanttChartSquare} />
+              <SidebarNavItem to="/costs" label={translateInstant("Costs")} icon={DollarSign} />
+              <SidebarNavItem to="/activity" label={translateInstant("Activity")} icon={History} />
+              <SidebarNavItem to="/activity/commentary" label={translateInstant("sidebar.commentary")} icon={History} />
+              <SidebarNavItem to="/company/settings" label={translateInstant("Settings")} icon={Settings} />
             </SidebarSection>
           </>
         )}

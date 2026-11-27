@@ -59,10 +59,30 @@
     "zh-CN": "附件",
     "reviewedEnglishHash": "634de114775082f002bb5cfdba0a28e768be807c798159c549e7bc930525b476"
   },
+  "newIssue.cancelSavedRequest": {
+    "en": "Cancel saved request",
+    "zh-CN": "取消已保存的请求",
+    "reviewedEnglishHash": "7833472206cff92da66580a2839c46be8b00b894719ccb5e88dcb09e441618d6"
+  },
+  "newIssue.checkingParentAccess": {
+    "en": "Checking parent access…",
+    "zh-CN": "正在检查父任务访问权限…",
+    "reviewedEnglishHash": "f08c79f896608fb4fbb005b0740876b00c23882be131ce5a8418c1121a5786cb"
+  },
   "newIssue.chooseExistingWorkspace": {
     "en": "Choose an existing workspace",
     "zh-CN": "选择现有工作区",
     "reviewedEnglishHash": "f8f73210599b2f45b60a6cfdf3d5884c8e8c4d37ca4f042ed9b6b972dabfc859"
+  },
+  "newIssue.couldNotCheckParentAccess": {
+    "en": "Couldn't check parent access.",
+    "zh-CN": "无法检查父任务访问权限。",
+    "reviewedEnglishHash": "86e99488f15eca799308394b0e9e5a026d875246518cfc0f3a940e60f82225db"
+  },
+  "newIssue.couldNotCheckWorktree": {
+    "en": "Couldn't check the selected worktree. Retry in Worktrees or choose New worktree.",
+    "zh-CN": "无法检查所选工作树。请在工作树中重试，或选择新建工作树。",
+    "reviewedEnglishHash": "90e7ee24d8a4630ac0c5480a3c0e5748408c32281e50f4be339b38b4fb2de0a2"
   },
   "newIssue.createFailed": {
     "en": "Failed to create issue. Try again.",
@@ -79,10 +99,25 @@
     "zh-CN": "创建子任务",
     "reviewedEnglishHash": "71cc5bc3af553ee6086fabf7841caeff732931d123c2082b6f0cbc04154100ee"
   },
+  "newIssue.createSubTaskLabel": {
+    "en": "Create sub-task",
+    "zh-CN": "创建子任务",
+    "reviewedEnglishHash": "224c514238b6ba70af4997241745c803949686cc696351c59b1f85873e5a0a6f"
+  },
   "newIssue.createTask": {
     "en": "Create Task",
     "zh-CN": "创建任务",
     "reviewedEnglishHash": "5a9133cebfab753158e869331c7b1bac58020ede2b8499ada93711bd4954e8d6"
+  },
+  "newIssue.createTaskLabel": {
+    "en": "Create task",
+    "zh-CN": "创建任务",
+    "reviewedEnglishHash": "6f541e1b25319db5da9027638208436a5b2ce086c33377b9e08a8ff90bba24d0"
+  },
+  "newIssue.createdTitle": {
+    "en": "Created {{issueRef}}",
+    "zh-CN": "已创建 {{issueRef}}",
+    "reviewedEnglishHash": "6f12b18336461ce2235b7335c4f704476b3e8f65b0acc06fe7a98ec9df3f1791"
   },
   "newIssue.creating": {
     "en": "Creating...",
@@ -299,6 +334,16 @@
     "zh-CN": "可选",
     "reviewedEnglishHash": "ec91fdd9256cb75ae611249b50cb7eb16533f0fa91b86239ec1d439a1ea033b8"
   },
+  "newIssue.pausedAssigneeNote": {
+    "en": "is paused and will not start work on this task until it is resumed. You can resume it from the task page after creating the task.",
+    "zh-CN": "已暂停，在恢复前不会开始处理此任务。创建任务后，你可以在任务页面中恢复它。",
+    "reviewedEnglishHash": "b945505e4926b59ea078d47857cd58bea48b84520e0c01e4be5a0e94e74d5145"
+  },
+  "newIssue.pausedAssigneeNoteImport": {
+    "en": "is paused and will not start work on this task until it is resumed — it arrived paused from an organization import. You can resume it from the task page after creating the task.",
+    "zh-CN": "已暂停（来自组织导入时即处于暂停状态），在恢复前不会开始处理此任务。创建任务后，你可以在任务页面中恢复它。",
+    "reviewedEnglishHash": "3f8868ab87933f434b5393e3a626726f9ba25052a379c75abbecf861098bdde4"
+  },
   "newIssue.priority": {
     "en": "Priority",
     "zh-CN": "优先级",
@@ -319,6 +364,11 @@
     "zh-CN": "移除文档",
     "reviewedEnglishHash": "e17eb479943674a95bc9d5ed3a91559dff28cfd0255340f5a144eb301a35fccd"
   },
+  "newIssue.retrySavedTask": {
+    "en": "Retry saved task: {{title}}",
+    "zh-CN": "重试已保存的任务：{{title}}",
+    "reviewedEnglishHash": "48bac6f00d1b85132ddc804023b77bfc46d40c5fc0587075bc4ef92398a78742"
+  },
   "newIssue.reusingExecutionWorkspace": {
     "en": "Reusing {{name}} from {{source}}.",
     "zh-CN": "将复用 {{name}}，来源：{{source}}。",
@@ -328,6 +378,21 @@
     "en": "Reviewer",
     "zh-CN": "复查人",
     "reviewedEnglishHash": "d29f46772c4aaacbbc35c3da380dcc9dfa2df19fa3992bdf6e725a2e09abd53b"
+  },
+  "newIssue.saveFailedBody": {
+    "en": "Open New task to recover the saved request.",
+    "zh-CN": "打开“新建任务”以恢复已保存的请求。",
+    "reviewedEnglishHash": "2550320a5999ab6cb669f40aa6ab35499fb35b6207cfddd998cc0b7a8dd5927b"
+  },
+  "newIssue.saveFailedTitle": {
+    "en": "A task could not be saved",
+    "zh-CN": "任务未能保存",
+    "reviewedEnglishHash": "a40c336e734692f08b3b5285f4436090647e2fbdd81e585c0cd0aed03a0d7f21"
+  },
+  "newIssue.savedRequestNeedsAttention": {
+    "en": "Saved request needs attention",
+    "zh-CN": "已保存的请求需要处理",
+    "reviewedEnglishHash": "53438bb5ca301ec3b2c6f5b34fd8b49e75cbfd050b5535b4cab91b745878e3f6"
   },
   "newIssue.searchAgents": {
     "en": "Search agents...",
@@ -358,6 +423,11 @@
     "en": "Search reviewers...",
     "zh-CN": "搜索复查人...",
     "reviewedEnglishHash": "1cd864330ccf4fae2e655d9fceb679cc337c2ab9529d03b23200c13727286e21"
+  },
+  "newIssue.selectProject": {
+    "en": "Select project",
+    "zh-CN": "选择项目",
+    "reviewedEnglishHash": "dafa79fdef56bd3f6311a8875ae9d0baf542594a81ac77ac46757ce00a4db47e"
   },
   "newIssue.startDate": {
     "en": "Start date",
@@ -459,6 +529,11 @@
     "zh-CN": "已创建 {{issueRef}}，但上传时有警告",
     "reviewedEnglishHash": "7a52c8f339737b2e9370843bf328c28340d8a8d7f4e27c09c6edcd3f7ec6482b"
   },
+  "newIssue.waitingToBeSaved": {
+    "en": "This task is waiting to be saved.",
+    "zh-CN": "此任务正等待保存。",
+    "reviewedEnglishHash": "ff567fa373eab4f8a337a4d613cb5933d43ff8148c4a47adf002a04a12748440"
+  },
   "newIssue.workMode.conferenceRoom.ask": {
     "en": "Ask mode",
     "zh-CN": "提问模式",
@@ -498,5 +573,85 @@
     "en": "Standard",
     "zh-CN": "标准",
     "reviewedEnglishHash": "ef6691545d2c5523efed00424407cb261aeb0037d165ca5792f7f8bac3381362"
+  },
+  "newIssue.worktree.agentDefault": {
+    "en": "Agent default",
+    "zh-CN": "智能体默认",
+    "reviewedEnglishHash": "90340504c623ec22c4e31f08fa0003726c20337b889dd44cf4fe622553273acb"
+  },
+  "newIssue.worktree.agentDefaultDesc": {
+    "en": "Let the agent choose its workspace.",
+    "zh-CN": "由智能体自行选择工作区。",
+    "reviewedEnglishHash": "b267013841354ce28906b8d5a34415efe36bf1df5fca59eec79f96a9a64a7e4c"
+  },
+  "newIssue.worktree.empty": {
+    "en": "No existing worktrees yet. Choose New worktree to start one.",
+    "zh-CN": "暂无现有工作树。请选择“新建工作树”以创建一个。",
+    "reviewedEnglishHash": "3024c664e2d3e2d10ad50ff016f4fb7cb6f9bd9567c4f3919c49d64ffb96b8ef"
+  },
+  "newIssue.worktree.existingWorkspace": {
+    "en": "Existing workspace",
+    "zh-CN": "现有工作区",
+    "reviewedEnglishHash": "aafc074520c6f3ae475428529bde762e5544247f84eac7512708c1bc173fcacf"
+  },
+  "newIssue.worktree.loading": {
+    "en": "Loading existing worktrees…",
+    "zh-CN": "正在加载现有工作树…",
+    "reviewedEnglishHash": "d52f3d5ac872c194a36616afb56d85dc3c6dcf9d5f2e3ce0e4765d1f445bd0d3"
+  },
+  "newIssue.worktree.newBranch": {
+    "en": "New branch",
+    "zh-CN": "新建分支",
+    "reviewedEnglishHash": "7f445154d6347386cf3a74d25c26ff1e1c0130da88693a185a3a1d91ee8ab9b9"
+  },
+  "newIssue.worktree.newBranchDesc": {
+    "en": "Create a branch in the project workspace.",
+    "zh-CN": "在项目工作区中创建分支。",
+    "reviewedEnglishHash": "a18ecefdcca50f7517a4343af582e8edb86ae8c119b713c9ffdf38b208815efc"
+  },
+  "newIssue.worktree.newWorktree": {
+    "en": "New worktree",
+    "zh-CN": "新建工作树",
+    "reviewedEnglishHash": "4f210afedcabde192cf04e3c8c1ff21f79149bc696d1b8abaece56e8e3faa4dd"
+  },
+  "newIssue.worktree.newWorktreeDesc": {
+    "en": "Start in an isolated checkout.",
+    "zh-CN": "在隔离检出目录中开始。",
+    "reviewedEnglishHash": "3bbfcd455bde4031da37fe3825e4b4b2f71482a7cd13aff1e0208b7b161004e6"
+  },
+  "newIssue.worktree.projectDefault": {
+    "en": "Project default",
+    "zh-CN": "项目默认",
+    "reviewedEnglishHash": "e8cb80e5c5cb7d7ab993752ca5a5df422767c827ca28cf19b92111fe136df828"
+  },
+  "newIssue.worktree.projectDefaultDesc": {
+    "en": "Use the project's worktree settings.",
+    "zh-CN": "使用项目的工作树设置。",
+    "reviewedEnglishHash": "6ae5d813ac8947893c58ee066edc4b8a62776ca2172f33333214964121b08120"
+  },
+  "newIssue.worktree.projectWorkspace": {
+    "en": "Project workspace",
+    "zh-CN": "项目工作区",
+    "reviewedEnglishHash": "ce016e7f0a41c4f32109216e1e253653946e643adf1114a7e6d08e4323de1a7a"
+  },
+  "newIssue.worktree.projectWorkspaceDesc": {
+    "en": "Use the project's shared checkout.",
+    "zh-CN": "使用项目的共享检出目录。",
+    "reviewedEnglishHash": "87c10cff37063c6fbb300a275578a4f76c69a7a23c3d7803d72797421758090c"
+  },
+  "newIssue.worktree.searchPlaceholder": {
+    "en": "Search worktrees...",
+    "zh-CN": "搜索工作树...",
+    "reviewedEnglishHash": "30081ada1ec381ee33ab51fcba221e5821e96f6a5b63c4d840c2a6081342ebec"
+  },
+  "newIssue.worktree.selectWorktree": {
+    "en": "Select worktree",
+    "zh-CN": "选择工作树",
+    "reviewedEnglishHash": "0b86e7de2cb93b3581034cbffe3ad4648a67e5b0be9f651685969dd00415a150"
+  },
+  "newIssue.worktreeUnavailable": {
+    "en": "The selected worktree is no longer available. Choose another worktree or start a new one.",
+    "zh-CN": "所选工作树已不可用。请选择其他工作树或新建一个。",
+    "reviewedEnglishHash": "950aafd4fa1b07b2046461c2edba13a35f7ea2987f208b5c56d52b2f70caa61d"
   }
 }

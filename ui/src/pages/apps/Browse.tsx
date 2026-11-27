@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { translateInstant } from "@/i18n";
-import { connectionRemovalToast } from "@/features/connections/googleAccessRemoval";
+import { connectionRemovalToast, GOOGLE_CONTENT_DELETION_NOTICE } from "@/features/connections/googleAccessRemoval";
 import {
   AGGREGATOR_NAMES,
   aggregatorManagementUrl,
@@ -8,10 +8,7 @@ import {
   type AggregatorAppSnapshot,
   type AggregatorAppsResponse,
 } from "@penclipai/shared/aggregator-apps";
-import {
-  CatalogSourceFilters,
-  type CatalogSource,
-} from "./CatalogSourceFilters";
+import type { CatalogSource } from "./CatalogSourceFilters";
 import { ConnectorsToolbar } from "./ConnectorsToolbar";
 import { ExecutorManagementSetup } from "./ExecutorManagementSetup";
 import { ArcadeDiscoverySetup } from "./ArcadeDiscoverySetup";
@@ -20,11 +17,12 @@ import {
   aiConnectionRouterPluginKey,
   connectionSetupVerbForApp,
   getConnectableAppDefinition,
+  isGoogleWorkspaceConnectionConfig,
   isRetiredComposioConnection,
   RETIRED_COMPOSIO_MESSAGE,
 } from "@penclipai/shared";
 import {
-  AssistantConnectionCard,
+  AssistantConnectionTile,
   useAssistantConnections,
 } from "./AssistantConnection";
 import { TailscaleConnectorCard } from "./TailscaleConnector";
@@ -47,17 +45,16 @@ import {
 } from "@tanstack/react-query";
 import {
   AlertTriangle,
+  ArrowLeft,
   Check,
   ChevronRight,
-  ClipboardPaste,
   Clock3,
   ExternalLink,
   Link2,
   Loader2,
   MoreHorizontal,
   PauseCircle,
-  Search,
-  ServerCog,
+  Plus,
   Trash2,
 } from "lucide-react";
 import type {
@@ -65,6 +62,7 @@ import type {
   ToolApplication,
   ToolConnection,
 } from "@penclipai/shared";
+import { isConnectionAvailableToAgents } from "./connection-identity";
 import {
   getAppDefinitionForUrl,
   getAppDefinitionForApplicationKey,
@@ -77,11 +75,15 @@ import {
   normalizeConnectionQuery,
   nativeConnectorRequiresCustomerOAuthApp,
 } from "@penclipai/shared";
-import { useNavigate } from "@/lib/router";
-import {
-  useChatConnectorsEnabled,
-  chatProviderVisible,
-} from "@/hooks/useChatConnectorsEnabled";
+import { useNavigate, useParams } from "@/lib/router";
+import { PLUGIN_CATEGORIES, PLUGIN_CATEGORY_ORDER, PLUGIN_GRID, PluginCategories, PluginShelf, PluginTile, isPluginCategoryId, pluginCategoryId, pluginCategorySectionId, type PluginCategoryId, type PluginTileState } from "./PluginMarketplace";
+import { aggregatorPluginCategory, groupPluginsByCategory } from "./plugin-categories";
+import { PluginSkills } from "./PluginSkills";
+import { ONE_CLICK_PARAM, isOneClickOAuthApp, reserveOneClickPopup } from "@/features/connections/one-click-oauth";
+import { PluginPermissions } from "./PluginPermissions";
+import { PluginsHeader, type PluginsAddOption } from "./PluginsHeader";
+import { PluginConnector, PluginInformation, PluginPageHeader, pluginHost, pluginSignIn } from "./PluginPageSections";
+import { useChatConnectorsEnabled, chatProviderVisible } from "@/hooks/useChatConnectorsEnabled";
 import { useMemoryConnectorsEnabled } from "@/hooks/useMemoryConnectorsEnabled";
 import { useConnectorAvailability } from "@/hooks/useConnectorAvailability";
 import { useCloudInstance } from "@/hooks/useCloudInstance";
@@ -177,7 +179,7 @@ import {
 import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 import { cn } from "@/lib/utils";
 
-type ConnectorRowModel = {
+export type ConnectorRowModel = {
   key: string;
   slug: string;
   name: string;
@@ -203,6 +205,38 @@ type ConnectorRowModel = {
 
 export const CATALOG_PAGE_SIZE = 50;
 
+/** Hand-picked for the "New and noteworthy" shelf; the catalog has no added-on date to sort by. */
+const PLUGIN_ADD_OPTIONS: PluginsAddOption[] = [
+  {
+    id: "mcp",
+    get title() { return translateInstant("apps.plugins.addOptions.mcp.title", { defaultValue: "MCP server URL" }); },
+    get description() { return translateInstant("apps.plugins.addOptions.mcp.description", { defaultValue: "A custom or self-hosted MCP server." }); },
+    href: "/apps/byo",
+  },
+  {
+    id: "config",
+    get title() { return translateInstant("apps.plugins.addOptions.config.title", { defaultValue: "Paste a config" }); },
+    get description() { return translateInstant("apps.plugins.addOptions.config.description", { defaultValue: "Connect from an existing setup snippet." }); },
+    href: "/apps/advanced/paste-config",
+  },
+  {
+    id: "assistant",
+    get title() { return translateInstant("apps.plugins.addOptions.assistant.title", { defaultValue: "Assistant connection" }); },
+    get description() { return translateInstant("apps.plugins.addOptions.assistant.description", { defaultValue: "Use Paperclip from Codex, Claude or OpenCode." }); },
+    href: "/apps/assistant-connection",
+  },
+];
+
+/** How many plugins a category block shows on the browse page before "See all". */
+const CATEGORY_BLOCK_SIZE = 9;
+
+function rowCategory(row: ConnectorRowModel): PluginCategoryId {
+  if (row.entry) return pluginCategoryId(row.entry.categories);
+  return row.aggregatorApp ? aggregatorPluginCategory(row.aggregatorApp) : "other";
+}
+
+const NOTEWORTHY_PLUGIN_SLUGS = ["cloudflare", "mixpanel", "clickup", "pagerduty", "calendly", "telegram"];
+
 type ConnectionState = {
   kind: "connected" | "attention" | "paused" | "draft";
   label: string;
@@ -216,6 +250,7 @@ type ConnectionRemovalTarget = {
   remainingConnectionCount: number;
   pool?: boolean;
   poolRevision?: number;
+  googleWorkspace?: boolean;
 } & ({ kind: "chat"; provider: ChatProvider } | { kind?: undefined });
 
 // Offer the unified connector for new Google accounts. Existing per-service
@@ -299,26 +334,48 @@ function additionalConnectionHref(
   return `${path}?${params.toString()}`;
 }
 
+function localizeConnectionError(message: string | null | undefined): string | null {
+  if (!message) return null;
+  switch (message) {
+    case "Remote MCP connection requires config.url":
+      return translateInstant("apps.connectionError.mcpRemoteUrlMissing", { defaultValue: message });
+    case "Remote MCP connection URL is invalid":
+      return translateInstant("apps.connectionError.mcpRemoteUrlInvalid", { defaultValue: message });
+    case "Remote MCP connection URL must use http or https":
+      return translateInstant("apps.connectionError.mcpRemoteUrlScheme", { defaultValue: message });
+    case "Remote MCP connection URL cannot target private or reserved network addresses":
+    case "Remote MCP connection URL cannot resolve to private or reserved network addresses":
+      return translateInstant("apps.connectionError.mcpRemotePrivateEndpoint", { defaultValue: message });
+    case "Remote MCP connection hostname could not be resolved":
+    case "Remote MCP connection hostname did not resolve":
+      return translateInstant("apps.connectionError.mcpRemoteDnsFailed", { defaultValue: message });
+    case "Remote MCP connection resolved to an address that was not approved":
+      return translateInstant("apps.connectionError.mcpRemoteUnapprovedIp", { defaultValue: message });
+    default:
+      return message;
+  }
+}
+
 function connectionState(connection: ToolConnection): ConnectionState {
   if (isRetiredComposioConnection(connection)) {
     return {
       kind: "attention",
-      label: "Retired",
+      label: translateInstant("apps.connectionState.retired", { defaultValue: "Retired" }),
       message: RETIRED_COMPOSIO_MESSAGE,
     };
   }
   if (connection.status === "draft") {
     return {
       kind: "draft",
-      label: "Setup incomplete",
-      message: "Finish setup before agents can use this account.",
+      label: translateInstant("apps.connectionState.setupIncomplete", { defaultValue: "Setup incomplete" }),
+      message: translateInstant("apps.connectionState.finishSetupMessage", { defaultValue: "Finish setup before agents can use this account." }),
     };
   }
   if (connection.enabled === false || connection.status === "disabled") {
     return {
       kind: "paused",
       label: translateInstant("Paused"),
-      message: "Agents can’t use this account right now.",
+      message: translateInstant("apps.connectionState.pausedMessage", { defaultValue: "Agents can’t use this account right now." }),
     };
   }
   if (
@@ -331,11 +388,11 @@ function connectionState(connection: ToolConnection): ConnectionState {
       kind: "attention",
       label: translateInstant("Needs attention"),
       message:
-        connection.healthMessage ??
-        connection.lastError ??
+        localizeConnectionError(connection.healthMessage) ??
+        localizeConnectionError(connection.lastError) ??
         (connection.authKind === "oauth"
-          ? "Sign in again to restore access."
-          : "Replace the credential to restore access."),
+          ? translateInstant("Sign in again to restore access.")
+          : translateInstant("apps.connectionState.replaceCredentialMessage", { defaultValue: "Replace the credential to restore access." })),
     };
   }
   return {
@@ -438,6 +495,30 @@ function isInstalled(row: ConnectorRowModel) {
   );
 }
 
+export function pluginTileState(row: ConnectorRowModel, connectionById?: ReadonlyMap<string, ToolConnection>): PluginTileState {
+  if (!isInstalled(row)) return "available";
+  const needsAction = (state: ConnectionState) => state.kind === "attention" || state.kind === "draft";
+  // Accounts an aggregator holds for this app count too: one that needs sign-in, has gone stale
+  // or sits behind an unhealthy gateway must not read as connected.
+  const upstreamNeedsAttention = row.upstreamCatalogApp ? (row.upstreamApps ?? []).some((snapshot) => {
+    const gateway = connectionById?.get(snapshot.connectionId);
+    return gateway ? snapshot.accounts.some((account) => needsAction(upstreamAccountState(gateway, snapshot, account))) : false;
+  }) : false;
+  const needsAttention = upstreamNeedsAttention
+    || row.connections.some((connection) => needsAction(connectionState(connection)))
+    || row.chatEndpoints.some((endpoint) => ["attention", "revoked"].includes(endpoint.status) || chatEndpointNeedsSetup(endpoint));
+  return needsAttention ? "attention" : "connected";
+}
+
+/** Why a chat connection is asking for the user, or null when it is fine. */
+export function chatEndpointAttention(endpoint: Pick<ChatEndpoint, "status" | "setup">): string | null {
+  if (endpoint.status === "revoked") return translateInstant("apps.chatEndpoint.accessRevoked", { defaultValue: "Access revoked" });
+  if (endpoint.status === "attention") return translateInstant("Needs attention");
+  return chatEndpointNeedsSetup(endpoint as ChatEndpoint)
+    ? translateInstant("apps.chatEndpoint.setupNotFinished", { defaultValue: "Setup not finished" })
+    : null;
+}
+
 function connectorAction(
   row: ConnectorRowModel,
   chatConnectorsEnabled: boolean,
@@ -488,7 +569,7 @@ function connectorAction(
       href: null,
       title:
         row.entry.availability.reason ??
-        "This connector is unavailable on this instance.",
+        translateInstant("apps.connector.unavailableOnInstance", { defaultValue: "This connector is unavailable on this instance." }),
     };
   }
   if (chatHref) return { label: translateInstant("Connect"), href: chatHref };
@@ -547,6 +628,8 @@ export function Browse({
   const { i18n } = useTranslation();
   const language = i18n.resolvedLanguage ?? i18n.language;
   const navigate = useNavigate();
+  const { pluginKey, categoryId: categoryParam } = useParams<{ pluginKey?: string; categoryId?: string }>();
+  const categoryId = isPluginCategoryId(categoryParam) ? categoryParam : null;
   const preselectedChatAgentId =
     typeof window === "undefined"
       ? null
@@ -558,8 +641,7 @@ export function Browse({
   const tailscaleConnections = useTailscaleConnections(selectedCompanyId);
   const { userId: viewingUserId, settled: identitySettled } =
     useAccountIdentity();
-  const { enabled: chatConnectorsEnabled, githubEnabled } =
-    useChatConnectorsEnabled();
+  const { enabled: chatConnectorsEnabled } = useChatConnectorsEnabled();
   const { enabled: memoryConnectorsEnabled } = useMemoryConnectorsEnabled();
   const connectorAvailability = useConnectorAvailability();
   const googleWorkspaceConnectorEnabled = connectorAvailability.enabled(
@@ -570,8 +652,7 @@ export function Browse({
   const { status: connectivityStatus } = useConnectivity();
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
-  const [source, setSource] = useState<CatalogSource>("paperclip");
-  const [expandedSearch, setExpandedSearch] = useState(false);
+  const [source, setSource] = useState<CatalogSource>("all");
   const [executorToConfigure, setExecutorToConfigure] =
     useState<ToolConnection | null>(null);
   const [arcadeToConfigure, setArcadeToConfigure] =
@@ -590,15 +671,9 @@ export function Browse({
     useState<ConnectionRemovalTarget | null>(null);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: translateInstant("Connectors") }]);
-    return () => setBreadcrumbs([]);
-  }, [setBreadcrumbs]);
-
-  useEffect(() => {
     setQuery("");
     setPage(1);
-    setSource("paperclip");
-    setExpandedSearch(false);
+    setSource("all");
     setArcadeToConfigure(null);
     setAggregatorToConnect(null);
     setAggregatorToManage(null);
@@ -847,7 +922,7 @@ export function Browse({
       pushToast(
         connectionRemovalToast({
           title:
-            deleteStoredContent && !target.pool && target.kind !== "chat"
+            (deleteStoredContent || target.googleWorkspace) && !target.pool && target.kind !== "chat"
               ? translateInstant("apps.browse.connectionRemovedDeletingData", {
                   defaultValue: "Connection removed. Deleting its saved data.",
                 })
@@ -910,7 +985,6 @@ export function Browse({
             chatProviderVisible(
               appDefinitionSlug(entry),
               chatConnectorsEnabled,
-              githubEnabled,
             ) ||
             !definition?.methods.some(
               (method) => method.purpose === "channel",
@@ -924,7 +998,6 @@ export function Browse({
       memoryConnectorsEnabled,
       connectorEnabled,
       chatConnectorsEnabled,
-      githubEnabled,
     ],
   );
   const userProfileById = useMemo(
@@ -999,7 +1072,10 @@ export function Browse({
         key: `gallery:${slug}`,
         slug,
         name: appDefinitionName(entry),
-        description: appCopyFor(slug, appDefinitionDescription(entry)).tagline,
+        description:
+          !chatProviderVisible(slug, chatConnectorsEnabled) && chatProviderForSlug(slug)
+            ? appCopyFor(slug).tagline
+            : appCopyFor(slug, appDefinitionDescription(entry)).tagline,
         brandKey: slug,
         logoUrl: appDefinitionLogoUrl(entry),
         darkLogoUrl: appDefinitionDarkLogoUrl(entry),
@@ -1069,7 +1145,7 @@ export function Browse({
       },
     ] as const;
     for (const item of nativeChatApps.filter((item) =>
-      chatProviderVisible(item.slug, chatConnectorsEnabled, githubEnabled),
+      chatProviderVisible(item.slug, chatConnectorsEnabled),
     )) {
       if (rowsBySlug.has(item.slug)) continue;
       rowsBySlug.set(item.slug, {
@@ -1164,11 +1240,7 @@ export function Browse({
     }
 
     for (const endpoint of (chatEndpointsQuery.data ?? []).filter((endpoint) =>
-      chatProviderVisible(
-        endpoint.provider,
-        chatConnectorsEnabled,
-        githubEnabled,
-      ),
+      chatProviderVisible(endpoint.provider, chatConnectorsEnabled),
     )) {
       if (endpoint.status === "archived") continue;
       let target = [...rowsBySlug.values()].find(
@@ -1240,7 +1312,6 @@ export function Browse({
             { ...row!.entry!, methods: declaredMethods ?? [] },
             {
               enableChatConnectors: chatConnectorsEnabled,
-              enableGitHubReviewBots: githubEnabled,
             },
           );
       }
@@ -1360,7 +1431,6 @@ export function Browse({
     applicationsQuery.data,
     chatEndpointsQuery.data,
     chatConnectorsEnabled,
-    githubEnabled,
     connectionsQuery.data,
     tailscaleConnections.data,
     tailscaleConnections.canManage,
@@ -1373,44 +1443,41 @@ export function Browse({
     upstreamAppsBySlug,
   ]);
 
+  const openRow = pluginKey ? rows.find((row) => row.key === pluginKey || row.slug === pluginKey) ?? null : null;
+  const openRowName = openRow?.name ?? null;
+  useEffect(() => {
+    setBreadcrumbs(pluginKey ? [{ label: translateInstant("Plugins"), href: "/apps" }, { label: openRowName ?? translateInstant("Plugin") }]
+      : categoryId ? [{ label: translateInstant("Plugins"), href: "/apps" }, { label: PLUGIN_CATEGORIES[categoryId].label }]
+      : [{ label: translateInstant("Plugins") }]);
+    return () => setBreadcrumbs([]);
+  }, [setBreadcrumbs, pluginKey, openRowName, categoryId]);
+  useEffect(() => { setQuery(""); setPage(1); }, [categoryId]);
+
   const trimmed = query.trim().toLocaleLowerCase();
   const visibleRows = useMemo(() => {
     const scoped = rows.filter((row) => {
+      if (categoryId) return rowCategory(row) === categoryId;
       if (source === "all") return true;
       if (source === "installed") return isInstalled(row);
-      if (source === "paperclip") return !row.aggregatorApp || isInstalled(row);
-      return (
-        isAppAggregator(source) &&
-        ((row.slug === source && isInstalled(row)) ||
-          row.upstreamApps?.some(
-            (snapshot) =>
-              snapshot.provider === source && snapshot.accounts.length > 0,
-          ) ||
-          row.aggregatorApp?.routes.some((route) => route.provider === source))
+      return isAppAggregator(source) && (
+        row.slug === source && isInstalled(row)
+        || row.upstreamApps?.some(snapshot => snapshot.provider === source && snapshot.accounts.length > 0)
+        || row.aggregatorApp?.routes.some(route => route.provider === source)
       );
     });
     if (!trimmed) return scoped;
     const terms = normalizeConnectionQuery(trimmed).split(" ").filter(Boolean);
     return scoped.filter((row) => {
-      const text = normalizeConnectionQuery(
-        [
-          row.name,
-          row.slug,
-          row.description,
-          ...(row.aggregatorApp?.aliases ?? []),
-          ...row.connections.map((connection) => connection.name),
-          ...(row.networkConnections ?? []).map(
-            (connection) => connection.name,
-          ),
-          ...(row.upstreamApps ?? []).flatMap((app) =>
-            app.accounts.map((account) => account.alias),
-          ),
-          ...row.chatEndpoints.map((endpoint) => endpoint.assignedAgentName),
-        ].join(" "),
-      );
+      // Search reads titles only: the name, its slug and other names the same app goes by.
+      // The Installed list also shows account names, so those match there.
+      const text = normalizeConnectionQuery([row.name, row.slug, ...(row.aggregatorApp?.aliases ?? []),
+        ...(source === "installed" && !categoryId ? [...row.connections.map((connection) => connection.name),
+          ...(row.networkConnections ?? []).map(connection => connection.name),
+          ...(row.upstreamApps ?? []).flatMap(app => app.accounts.map(account => account.alias)),
+          ...row.chatEndpoints.map((endpoint) => endpoint.assignedAgentName)] : [])].join(" "));
       return terms.every((term) => text.includes(term));
     });
-  }, [rows, trimmed, source]);
+  }, [rows, trimmed, source, categoryId]);
   const installedRows = visibleRows.filter(isInstalled);
   const catalogRows = visibleRows.filter((row) => !isInstalled(row));
   const pageCount = Math.max(
@@ -1482,14 +1549,6 @@ export function Browse({
     [aggregatorGateways],
   );
   function changeQuery(value: string) {
-    if (source === "paperclip" && !query.trim() && value.trim()) {
-      setSource("all");
-      setExpandedSearch(true);
-    }
-    if (expandedSearch && !value.trim()) {
-      setSource("paperclip");
-      setExpandedSearch(false);
-    }
     setQuery(value);
     setPage(1);
   }
@@ -1517,19 +1576,85 @@ export function Browse({
     }
     setAggregatorToConnect(app);
   }
-  const showAssistantConnection =
-    (source === "paperclip" ||
-      source === "all" ||
-      (source === "installed" &&
-        (!assistantConnections.loaded ||
-          assistantConnections.rows.some((row) => !row.revokedAt)))) &&
-    (!trimmed ||
-      "assistant connection (mcp) paperclip codex claude opencode".includes(
-        trimmed,
-      ));
-  const showCustomConnector =
-    (source === "paperclip" || source === "all") &&
-    (!trimmed || "connect your own tool custom mcp server".includes(trimmed));
+  const showAssistantConnection = (
+    (source === "installed" && (!assistantConnections.loaded || assistantConnections.rows.some(row => !row.revokedAt)))) &&
+    (!trimmed || "assistant connection (mcp) paperclip codex claude opencode".includes(trimmed));
+
+  const marketplace = source === "all" && !trimmed && !categoryId;
+  const fullRows = <T,>(items: T[], max: number) => items.slice(0, Math.min(max, items.length - (items.length % 3 === 0 || items.length < 3 ? 0 : items.length % 3)));
+  const featuredRows = marketplace ? fullRows(visibleRows.filter((row) => row.entry?.featured), 9) : [];
+  const noteworthyRows = marketplace ? fullRows(NOTEWORTHY_PLUGIN_SLUGS.flatMap((slug) => visibleRows.filter((row) => row.slug === slug && !row.entry?.featured)), 6) : [];
+  const shelvedKeys = new Set([...featuredRows, ...noteworthyRows].map((row) => row.key));
+  const categoryGroups = marketplace
+    ? groupPluginsByCategory(visibleRows, PLUGIN_CATEGORY_ORDER, rowCategory, (row) => shelvedKeys.has(row.key), CATEGORY_BLOCK_SIZE)
+    : [];
+  const openCategory = (id: PluginCategoryId) => { navigate(`/apps/category/${id}`); catalogTop.current?.scrollIntoView?.({ block: "start" }); };
+  const setupEnabledFor = (row: ConnectorRowModel) => connectorAvailability.enabled(row.entry ?? getConnectableAppDefinition(row.slug))
+    && row.applications.every(application => connectorAvailability.enabled(getAppDefinitionForApplicationKey(application.applicationKey)));
+  const renderConnectorCard = (row: ConnectorRowModel, variant: "list" | "page" = "list") => (
+    <ConnectorCard
+      renderAccountDetails={renderAccountDetails}
+      aiDefaults={aiDefaults}
+      row={row}
+      userProfileById={userProfileById}
+      chatAgentById={chatAgentById}
+      connectionById={connectionById}
+      onNavigate={navigate}
+      onRequestRemove={target => void requestConnectionRemoval(target)}
+      preselectedAgentId={preselectedChatAgentId}
+      chatConnectorsEnabled={chatConnectorsEnabled}
+      setupEnabled={setupEnabledFor(row)}
+      onConnectAggregator={connectAggregator}
+      onManageAggregator={(app, connectionId) => setAggregatorToManage({ app, connectionId })}
+      onRefreshAggregator={connectionId => refreshAggregator.mutate(connectionId)}
+      aggregatorRefreshState={aggregatorRefreshState}
+      discoveryByConnection={discoveryByConnection}
+      onConfigureArcade={connection => setArcadeToConfigure(connection)}
+      onConfigureExecutor={connection => setExecutorToConfigure(connection)}
+      defaultExpanded={variant === "page" || Boolean(trimmed)}
+      variant={variant}
+      searchQuery={trimmed}
+    />
+  );
+  const connectActionFor = (row: ConnectorRowModel) => {
+    if (row.networkConnections || !setupEnabledFor(row)) return null;
+    const action = connectorAction(row, chatProviderVisible(row.slug, chatConnectorsEnabled), preselectedChatAgentId);
+    return {
+      label: action.label,
+      title: action.title,
+      disabled: !action.href && !row.aggregatorApp,
+      oneClickHref: !isInstalled(row) && !row.aggregatorApp && action.href?.startsWith("/apps/connect?source=") && isOneClickOAuthApp(row.entry) ? action.href : null,
+      onSelect: () => {
+        if (row.aggregatorApp && isInstalled(row)) setAggregatorToManage({ app: row.aggregatorApp, connectionId: row.upstreamApps?.find(app => app.accounts.length > 0)?.connectionId });
+        else if (row.aggregatorApp) connectAggregator(row.aggregatorApp);
+        else if (action.href) navigate(row.slug === "agentmail" ? `${action.href}&setupId=${crypto.randomUUID()}` : action.href);
+      },
+    };
+  };
+  // A one-click connector starts sign-in straight from its card: the window opens with this click and the connect flow takes it over.
+  const tileAction = (action: ReturnType<typeof connectActionFor>) => {
+    const href = action?.oneClickHref;
+    if (!action || !href) return action;
+    return { ...action, onSelect: () => navigate(reserveOneClickPopup() ? `${href}&${ONE_CLICK_PARAM}=1` : href) };
+  };
+  const renderTile = (row: ConnectorRowModel) => {
+    const state = pluginTileState(row, connectionById);
+    return (
+      <PluginTile
+        key={row.key}
+        slug={row.slug}
+        name={row.name}
+        description={row.description}
+        brandKey={row.brandKey}
+        logoUrl={row.logoUrl}
+        darkLogoUrl={row.darkLogoUrl}
+        state={state}
+        statusLabel={state === "attention" ? translateInstant("Needs attention") : translateInstant("companySettings.customImage.terminalStatus.connected", { defaultValue: "Connected" })}
+        onOpen={() => navigate(row.networkConnections ? "/apps/tailscale" : `/apps/plugin/${encodeURIComponent(row.key)}`)}
+        action={tileAction(connectActionFor(row))}
+      />
+    );
+  };
 
   if (!selectedCompanyId) {
     return (
@@ -1554,34 +1679,24 @@ export function Browse({
   // Only a real failure shows the notice; loaded connectors stay through a transient refetch failure.
   const loadFailure = catalogViews.find((view) => view.kind === "error");
   const loadFailed = loadFailure !== undefined;
-  const nothingMatches =
-    visibleRows.length === 0 &&
-    !showCustomConnector &&
-    !showAssistantConnection;
+  const nothingMatches = visibleRows.length === 0 && !showAssistantConnection;
 
   return (
-    <div ref={catalogTop} className="max-w-5xl space-y-5 pb-12">
-      <header className="flex flex-col items-start gap-3">
-        <div className="relative w-full max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="search"
-            value={query}
-            onChange={(event) => changeQuery(event.target.value)}
-            placeholder={translateInstant("Search connectors…")}
-            aria-label={translateInstant("Search connectors")}
-            className="pl-9"
-          />
+    <div ref={catalogTop} className="mx-auto w-full max-w-6xl space-y-8 pb-12">
+      {pluginKey ? null : categoryId ? (
+        <div className="flex flex-col gap-2">
+          <Button type="button" variant="ghost" size="sm" className="-ml-3 h-8 self-start text-muted-foreground" onClick={() => navigate("/apps")}>
+            <ArrowLeft aria-hidden />
+            {translateInstant("Plugins")}
+          </Button>
+          <p className="text-2xl leading-8 font-semibold tracking-tight text-foreground">
+            {PLUGIN_CATEGORIES[categoryId].label}
+            {loading ? null : <span className="font-normal text-muted-foreground tabular-nums"> ({visibleRows.length.toLocaleString()})</span>}
+          </p>
         </div>
-        <CatalogSourceFilters
-          source={source}
-          onChange={(value) => {
-            setSource(value);
-            setExpandedSearch(false);
-            setPage(1);
-          }}
-        />
-      </header>
+      ) : <PluginsHeader options={PLUGIN_ADD_OPTIONS} onNavigate={navigate} />}
+      {pluginKey ? null : <ConnectorsToolbar query={query} onQueryChange={changeQuery} source={source} hideSources={Boolean(categoryId)}
+        onSourceChange={value => { setSource(value); setPage(1); }} />}
 
       {loadFailure ? (
         <QueryErrorState
@@ -1629,7 +1744,7 @@ export function Browse({
             <Skeleton key={index} className="h-24 w-full rounded-xl" />
           ))}
         </div>
-      ) : nothingMatches ? (
+      ) : nothingMatches && !pluginKey ? (
         <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-border bg-card px-4 py-6 text-sm text-muted-foreground">
           <p className="flex items-center gap-2">
             <Link2 className="h-4 w-4" />
@@ -1641,65 +1756,73 @@ export function Browse({
           </Button>
         </div>
       ) : (
-        <div
-          className={cn("space-y-3", ANALYTICS_MASK_CLASS)}
-          role="list"
-          aria-label={translateInstant("Connector list")}
-        >
-          {showAssistantConnection && (
-            <AssistantConnectionCard onNavigate={navigate} />
-          )}
-          {paginatedRows.map((row) => (
-            row.networkConnections ? <TailscaleConnectorCard key={row.key} onNavigate={navigate} /> : <ConnectorCard
-              renderAccountDetails={renderAccountDetails}
-              aiDefaults={aiDefaults}
-              key={row.key}
-              row={row}
-              userProfileById={userProfileById}
-              chatAgentById={chatAgentById}
-              connectionById={connectionById}
+        openRow ? (
+          <div className={cn("mx-auto flex w-full max-w-3xl flex-col gap-8", ANALYTICS_MASK_CLASS)}>
+            <div className="flex flex-col gap-4">
+              <Button type="button" variant="ghost" size="sm" className="-ml-3 h-8 self-start text-muted-foreground" onClick={() => navigate("/apps")}>
+                <ArrowLeft aria-hidden />
+                {translateInstant("Plugins")}
+              </Button>
+              <PluginPageHeader
+                name={openRow.name}
+                kind={translateInstant("apps.plugins.connectorKind", { category: PLUGIN_CATEGORIES[rowCategory(openRow)].label, defaultValue: `Connector · ${PLUGIN_CATEGORIES[rowCategory(openRow)].label}` })}
+                description={openRow.description}
+                brandKey={openRow.brandKey}
+                logoUrl={openRow.logoUrl}
+                darkLogoUrl={openRow.darkLogoUrl}
+                state={pluginTileState(openRow, connectionById)}
+                docsUrl={openRow.entry?.docsUrl}
+                connect={connectActionFor(openRow)}
+              />
+            </div>
+            {openRow.networkConnections ? (
+              <div role="list" aria-label={translateInstant("Connector list")}><TailscaleConnectorCard onNavigate={navigate} /></div>
+            ) : isInstalled(openRow) ? (
+              <section aria-labelledby="plugin-accounts-title" className="flex flex-col gap-2">
+                <h2 id="plugin-accounts-title" className="flex items-baseline gap-2 px-4 text-sm text-muted-foreground">
+                  {translateInstant("Accounts")} <span className="tabular-nums">{openRow.connections.length + openRow.chatEndpoints.length || null}</span>
+                </h2>
+                <div role="list" aria-label={translateInstant("Connector list")}>{renderConnectorCard(openRow, "page")}</div>
+              </section>
+            ) : null}
+            {openRow.networkConnections ? null : <PluginConnector name={openRow.name} host={pluginHost(openRow.entry?.methods)} signIn={pluginSignIn(openRow.entry?.methods)} />}
+            <PluginSkills companyId={selectedCompanyId} slug={openRow.slug} name={openRow.name} connectionIds={openRow.connections.map((connection) => connection.id)} onNavigate={navigate} />
+            <PluginPermissions
+              companyId={selectedCompanyId}
+              connections={openRow.connections}
+              accountName={(connection) => connectionDisplayNameForOwner(connection, openRow.name, connectionOwnerProfile(connection, userProfileById))}
               onNavigate={navigate}
-              onRequestRemove={(target) =>
-                void requestConnectionRemoval(target)
-              }
-              preselectedAgentId={preselectedChatAgentId}
-              chatConnectorsEnabled={chatConnectorsEnabled}
-              setupEnabled={
-                connectorAvailability.enabled(
-                  row.entry ?? getConnectableAppDefinition(row.slug),
-                ) &&
-                row.applications.every((application) =>
-                  connectorAvailability.enabled(
-                    getAppDefinitionForApplicationKey(
-                      application.applicationKey,
-                    ),
-                  ),
-                )
-              }
-              githubReviewBotsEnabled={githubEnabled}
-              onConnectAggregator={connectAggregator}
-              onManageAggregator={(app, connectionId) =>
-                setAggregatorToManage({ app, connectionId })
-              }
-              onRefreshAggregator={(connectionId) =>
-                refreshAggregator.mutate(connectionId)
-              }
-              aggregatorRefreshState={aggregatorRefreshState}
-              discoveryByConnection={discoveryByConnection}
-              onConfigureArcade={(connection) =>
-                setArcadeToConfigure(connection)
-              }
-              onConfigureExecutor={(connection) =>
-                setExecutorToConfigure(connection)
-              }
-              defaultExpanded={Boolean(trimmed)}
-              searchQuery={trimmed}
             />
-          ))}
-          {showCustomConnector ? (
-            <CustomConnectorCard onNavigate={navigate} />
-          ) : null}
-        </div>
+            <PluginInformation
+              category={PLUGIN_CATEGORIES[rowCategory(openRow)].label}
+              signIn={pluginSignIn(openRow.entry?.methods)}
+              host={pluginHost(openRow.entry?.methods)}
+              docsUrl={openRow.entry?.docsUrl}
+            />
+          </div>
+        ) : pluginKey ? (
+          <div className="flex flex-col items-start gap-3 rounded-2xl bg-muted/50 px-4 py-6 text-sm text-muted-foreground">
+            <p>{translateInstant("apps.plugins.notInCatalog", { defaultValue: "This plugin isn’t in the catalog anymore." })}</p>
+            <Button variant="outline" size="sm" onClick={() => navigate("/apps")}>{translateInstant("apps.plugins.backToPlugins", { defaultValue: "Back to Plugins" })}</Button>
+          </div>
+        ) : marketplace ? (
+          <div className={cn("flex flex-col gap-10", ANALYTICS_MASK_CLASS)} role="list" aria-label={translateInstant("Connector list")}>
+            {featuredRows.length > 0 ? <PluginShelf id="plugins-most-used" title={translateInstant("apps.plugins.mostUsed", { defaultValue: "Most used" })}>{featuredRows.map(renderTile)}</PluginShelf> : null}
+            {noteworthyRows.length > 0 ? <PluginShelf id="plugins-noteworthy" title={translateInstant("apps.plugins.newAndNoteworthy", { defaultValue: "New and noteworthy" })}>{noteworthyRows.map(renderTile)}</PluginShelf> : null}
+            {categoryGroups.map((group) => (
+              group.rows.length > 0 ? <PluginShelf key={group.id} id={pluginCategorySectionId(group.id)} title={PLUGIN_CATEGORIES[group.id].label} count={group.total}
+                onSeeAll={group.total > group.rows.length ? () => openCategory(group.id) : undefined}>{group.rows.map(renderTile)}</PluginShelf> : null
+            ))}
+            <PluginCategories categories={categoryGroups.map((group) => group.id)} onOpen={openCategory} />
+          </div>
+        ) : (
+          <div className={cn("flex flex-col gap-3", ANALYTICS_MASK_CLASS)} role="list" aria-label={translateInstant("Connector list")}>
+            <div className={PLUGIN_GRID}>
+              {showAssistantConnection && !categoryId ? <AssistantConnectionTile onNavigate={navigate} /> : null}
+              {paginatedRows.map(renderTile)}
+            </div>
+          </div>
+        )
       )}
 
       {accountLoadErrors.length ? (
@@ -1712,7 +1835,7 @@ export function Browse({
         </p>
       ) : null}
 
-      {!loading && catalogRows.length > 0 ? (
+      {!loading && !pluginKey && !marketplace && catalogRows.length > 0 ? (
         <nav
           aria-label={translateInstant("Connector catalog pages")}
           className="flex flex-wrap items-center justify-between gap-3 text-sm"
@@ -1735,7 +1858,7 @@ export function Browse({
                 catalogTop.current?.scrollIntoView?.({ block: "start" });
               }}
             >
-              {translateInstant("Previous")}
+              {translateInstant("connectionUi.catalog.pagination.previous", { defaultValue: "Previous" })}
             </Button>
             <span className="text-xs text-muted-foreground">
               {translateInstant("connectionUi.catalog.pagination.page", {
@@ -1753,7 +1876,7 @@ export function Browse({
                 catalogTop.current?.scrollIntoView?.({ block: "start" });
               }}
             >
-              {translateInstant("Next")}
+              {translateInstant("connectionUi.catalog.pagination.next", { defaultValue: "Next" })}
             </Button>
           </div>
         </nav>
@@ -1828,9 +1951,9 @@ export function Browse({
                       : "The saved credentials are deleted and agents lose access immediately. Connecting it again later requires a new sign-in or key."}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          {connectionToRemove &&
-          !connectionToRemove.pool &&
-          connectionToRemove.kind !== "chat" ? (
+          {connectionToRemove?.googleWorkspace ? (
+            <p className="text-sm text-muted-foreground">{GOOGLE_CONTENT_DELETION_NOTICE}</p>
+          ) : connectionToRemove && !connectionToRemove.pool && connectionToRemove.kind !== "chat" ? (
             <label className="flex items-start gap-2 text-sm text-foreground">
               <Checkbox
                 className="mt-0.5"
@@ -1899,7 +2022,6 @@ export function ConnectorCard({
   preselectedAgentId,
   chatConnectorsEnabled,
   setupEnabled = true,
-  githubReviewBotsEnabled = false,
   onConnectAggregator,
   onManageAggregator,
   onRefreshComposio,
@@ -1911,6 +2033,7 @@ export function ConnectorCard({
   onConfigureExecutor,
   defaultExpanded = false,
   searchQuery = "",
+  variant = "list",
 }: {
   renderAccountDetails?: (connection: ToolConnection) => ReactNode;
   aiDefaults?: ReturnType<typeof useAiConnectionDefaults>;
@@ -1923,7 +2046,6 @@ export function ConnectorCard({
   preselectedAgentId?: string | null;
   chatConnectorsEnabled: boolean;
   setupEnabled?: boolean;
-  githubReviewBotsEnabled?: boolean;
   onConnectAggregator?: (app: AggregatorAppCatalogEntry) => void;
   onManageAggregator?: (
     app: AggregatorAppCatalogEntry,
@@ -1942,6 +2064,8 @@ export function ConnectorCard({
   /** Start with the connection list open, e.g. while a search is narrowing the catalog. */
   defaultExpanded?: boolean;
   searchQuery?: string;
+  /** "page" drops the logo and name, which the plugin page header already shows, and keeps every account open. */
+  variant?: "list" | "page";
 }) {
   // The user's toggle only applies while the default it overrode still holds, so a new search reopens the list.
   const [expandedOverride, setExpandedOverride] = useState<{
@@ -1953,11 +2077,7 @@ export function ConnectorCard({
   }, [defaultExpanded, searchQuery]);
   const action = connectorAction(
     row,
-    chatProviderVisible(
-      row.slug,
-      chatConnectorsEnabled,
-      githubReviewBotsEnabled,
-    ),
+    chatProviderVisible(row.slug, chatConnectorsEnabled),
     preselectedAgentId,
   );
   const upstreamAccounts = (row.upstreamApps ?? []).flatMap((snapshot) => {
@@ -1996,20 +2116,26 @@ export function ConnectorCard({
     ).length;
   // A single connection stays inline; longer lists fold behind a "N connections" toggle,
   // but start open when an account needs action so setup and reconnect stay visible.
-  const collapsible = connectionCount > 1;
-  const expanded =
-    !collapsible ||
-    (expandedOverride?.defaultExpanded === defaultExpanded
-      ? expandedOverride.open
-      : defaultExpanded || attentionCount > 0);
+  const collapsible = variant !== "page" && connectionCount > 1;
+  const expanded = !collapsible || (expandedOverride?.defaultExpanded === defaultExpanded
+    ? expandedOverride.open : defaultExpanded || attentionCount > 0);
+  const onPrimaryAction = () => {
+    if (row.aggregatorApp && isInstalled(row)) onManageAggregator?.(row.aggregatorApp, row.upstreamApps?.find(app => app.accounts.length > 0)?.connectionId);
+    else if (row.aggregatorApp) onConnectAggregator?.(row.aggregatorApp);
+    else if (action.href) onNavigate(row.slug === "agentmail" ? `${action.href}&setupId=${crypto.randomUUID()}` : action.href);
+  };
   return (
     <div
       role="listitem"
       data-app-slug={row.slug}
-      data-connected={isInstalled(row) ? "true" : "false"}
-      className="overflow-hidden rounded-xl border border-border"
+      data-connected={
+        isInstalled(row)
+          ? "true"
+          : "false"
+      }
+      className={variant === "page" ? "overflow-hidden rounded-2xl bg-muted/50" : "overflow-hidden rounded-xl border border-border"}
     >
-      <div className="flex flex-wrap items-center gap-3 px-4 py-4">
+      {variant === "page" ? null : <div className="flex flex-wrap items-center gap-3 px-4 py-4">
         <AppLogo
           name={row.name}
           brandKey={row.brandKey}
@@ -2092,35 +2218,18 @@ export function ConnectorCard({
               : row.description}
           </p>
         </div>
-        {setupEnabled && (
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={!action.href && !row.aggregatorApp}
-            title={action.title}
-            onClick={() => {
-              if (row.aggregatorApp && isInstalled(row))
-                onManageAggregator?.(
-                  row.aggregatorApp,
-                  row.upstreamApps?.find((app) => app.accounts.length > 0)
-                    ?.connectionId,
-                );
-              else if (row.aggregatorApp)
-                onConnectAggregator?.(row.aggregatorApp);
-              else if (action.href)
-                onNavigate(
-                  row.slug === "agentmail"
-                    ? `${action.href}&setupId=${crypto.randomUUID()}`
-                    : action.href,
-                );
-            }}
-            aria-label={`${action.label} ${row.name}`}
-          >
-            {action.label}
-          </Button>
-        )}
-      </div>
+        {setupEnabled && <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={!action.href && !row.aggregatorApp}
+          title={action.title}
+          onClick={onPrimaryAction}
+          aria-label={`${action.label} ${row.name}`}
+        >
+          {action.label}
+        </Button>}
+      </div>}
 
       <Collapsible
         open={expanded}
@@ -2143,9 +2252,9 @@ export function ConnectorCard({
             ) : null}
           </CollapsibleTrigger>
         ) : null}
-        <CollapsibleContent>
+        <CollapsibleContent className={variant === "page" ? "divide-y divide-border" : undefined}>
           {row.connections.length > 0 ? (
-            <div className="divide-y divide-border border-t border-border">
+            <div className={cn("divide-y divide-border", variant !== "page" && "border-t border-border")}>
               {row.connections.map((connection) => (
                 <ConnectionAccountRow
                   details={renderAccountDetails?.(connection)}
@@ -2190,13 +2299,14 @@ export function ConnectorCard({
                     onRequestRemove({
                       id: connection.id,
                       pool: Boolean(aiConnectionRouterPluginKey(connection)),
+                      googleWorkspace: isGoogleWorkspaceConnectionConfig(connection.config, connection.transportConfig,
+                        row.applications.find((application) => application.id === connection.applicationId)?.metadata),
                       accountName,
                       providerName: row.name,
                       remainingConnectionCount: row.connections.filter(
                         (candidate) =>
                           candidate.id !== connection.id &&
-                          candidate.status === "active" &&
-                          candidate.enabled,
+                          isConnectionAvailableToAgents(candidate),
                       ).length,
                     });
                   }}
@@ -2204,109 +2314,27 @@ export function ConnectorCard({
               ))}
             </div>
           ) : null}
-          {listedUpstreamAccounts.length > 0 ? (
-            <div className="divide-y divide-border border-t border-border">
-              {listedUpstreamAccounts.map(
-                ({ connection, account, name, snapshot }) => {
-                  const state = upstreamAccountState(
-                    connection,
-                    snapshot,
-                    account,
-                  );
-                  const provider =
-                    snapshot.provider ??
-                    (isAppAggregator(connection.config?.sourceTemplateKey)
-                      ? connection.config?.sourceTemplateKey
-                      : "composio");
-                  const providerName = AGGREGATOR_NAMES[provider];
-                  const managementUrl = aggregatorManagementUrl(
-                    provider,
-                    account.managementUrl ??
-                      (typeof connection.config?.managementUrl === "string"
-                        ? connection.config?.managementUrl
-                        : null),
-                  );
-                  const manage = () =>
-                    onManageAggregator?.(
-                      row.upstreamCatalogApp!,
-                      connection.id,
-                    );
-                  return (
-                    <ConnectionAccountRowLayout
-                      key={`${connection.id}:${snapshot.toolkit}:${account.id}`}
-                      state={state}
-                      accountName={name}
-                      source={
-                        <>
-                          <AppLogo
-                            name={providerName}
-                            brandKey={provider}
-                            size={16}
-                            compact
-                          />
-                          <span>Managed by {providerName} ·</span>
-                          <button
-                            type="button"
-                            className={cn(
-                              "max-w-full truncate hover:underline",
-                              ANALYTICS_MASK_CLASS,
-                            )}
-                            onClick={() =>
-                              onNavigate(`/apps/${connection.id}/permissions`)
-                            }
-                          >
-                            “{connection.name}”
-                          </button>
-                        </>
-                      }
-                      onOpen={manage}
-                      openLabel={`Manage ${name}`}
-                    >
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            aria-label={`Manage ${name} connection`}
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          className={ANALYTICS_MASK_CLASS}
-                          align="end"
-                        >
-                          {managementUrl ? (
-                            <DropdownMenuItem asChild>
-                              <a
-                                href={managementUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                Open in {providerName}
-                                <ExternalLink className="size-4" />
-                              </a>
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem
-                              disabled
-                              title="Set the management URL on this gateway to open its console"
-                            >
-                              Open in {providerName}
-                              <ExternalLink className="size-4" />
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </ConnectionAccountRowLayout>
-                  );
-                },
-              )}
-            </div>
-          ) : null}
+          {listedUpstreamAccounts.length > 0 ? <div className={cn("divide-y divide-border", variant !== "page" && "border-t border-border")}>
+            {listedUpstreamAccounts.map(({ connection, account, name, snapshot }) => {
+              const state = upstreamAccountState(connection, snapshot, account);
+              const provider = snapshot.provider ?? (isAppAggregator(connection.config?.sourceTemplateKey) ? connection.config?.sourceTemplateKey : "composio");
+              const providerName = AGGREGATOR_NAMES[provider];
+              const managementUrl = aggregatorManagementUrl(provider, account.managementUrl ?? (typeof connection.config?.managementUrl === "string" ? connection.config?.managementUrl : null));
+              const manage = () => onManageAggregator?.(row.upstreamCatalogApp!, connection.id);
+              return <ConnectionAccountRowLayout key={`${connection.id}:${snapshot.toolkit}:${account.id}`} state={state} accountName={name}
+                source={<><AppLogo name={providerName} brandKey={provider} size={16} compact /><span>Managed by {providerName} ·</span><button type="button" className={cn("max-w-full truncate hover:underline", ANALYTICS_MASK_CLASS)} onClick={() => onNavigate(`/apps/${connection.id}/permissions`)}>“{connection.name}”</button></>}
+                onOpen={manage} openLabel={`Manage ${name}`}>
+                <DropdownMenu><DropdownMenuTrigger asChild><Button type="button" variant="ghost" size="icon-sm" aria-label={`Manage ${name} connection`}><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                  <DropdownMenuContent className={ANALYTICS_MASK_CLASS} align="end">
+                    {managementUrl ? <DropdownMenuItem asChild><a href={managementUrl} target="_blank" rel="noopener noreferrer">Open in {providerName}<ExternalLink className="size-4" /></a></DropdownMenuItem>
+                      : <DropdownMenuItem disabled title="Set the management URL on this gateway to open its console">Open in {providerName}<ExternalLink className="size-4" /></DropdownMenuItem>}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </ConnectionAccountRowLayout>;
+            })}
+          </div> : null}
           {row.chatEndpoints.length > 0 ? (
-            <div className="divide-y divide-border border-t border-border">
+            <div className={cn("divide-y divide-border", variant !== "page" && "border-t border-border")}>
               {row.chatEndpoints.map((endpoint) => (
                 <div
                   key={endpoint.id}
@@ -2324,20 +2352,23 @@ export function ConnectorCard({
                       label={`${endpoint.assignedAgentName} avatar`}
                     />
                     <div className="min-w-0">
-                      <button
-                        type="button"
-                        className="block max-w-full truncate text-left text-sm font-medium hover:underline"
-                        onClick={() =>
-                          onNavigate(`/apps/chat/${endpoint.id}/settings`)
-                        }
-                      >
-                        {endpoint.assignedAgentName} ·{" "}
-                        {endpoint.provider === "agentmail"
-                          ? "Email"
-                          : endpoint.provider === "github"
-                            ? "Code review bot"
-                            : "Chat"}
-                      </button>
+                      <div className="flex min-w-0 items-center gap-1.5">
+                        <button
+                          type="button"
+                          className="block min-w-0 truncate text-left text-sm font-medium hover:underline"
+                          onClick={() =>
+                            onNavigate(`/apps/chat/${endpoint.id}/settings`)
+                          }
+                        >
+                          {endpoint.assignedAgentName} · {endpoint.provider === "agentmail" ? "Email" : endpoint.provider === "github" ? "Code review bot" : "Chat"}
+                        </button>
+                        {chatEndpointAttention(endpoint) ? (
+                          <span className="shrink-0 text-(--status-task-icon-todo)" title={chatEndpointAttention(endpoint) ?? undefined} data-testid="account-attention">
+                            <AlertTriangle className="size-3.5" aria-hidden="true" />
+                            <span className="sr-only">{chatEndpointAttention(endpoint)}</span>
+                          </span>
+                        ) : null}
+                      </div>
                       <p className="truncate text-xs text-muted-foreground">
                         {endpoint.providerAccountLabel ??
                           endpoint.botLabel ??
@@ -2432,6 +2463,14 @@ export function ConnectorCard({
               ))}
             </div>
           ) : null}
+          {variant === "page" && setupEnabled ? (
+            <div className="flex h-12 items-center px-2">
+              <Button type="button" variant="ghost" size="sm" disabled={!action.href && !row.aggregatorApp} title={action.title} aria-label={`${action.label} ${row.name}`} onClick={onPrimaryAction}>
+                <Plus aria-hidden />
+                {action.label}
+              </Button>
+            </div>
+          ) : null}
         </CollapsibleContent>
       </Collapsible>
     </div>
@@ -2489,7 +2528,7 @@ function ConnectionAccountRow({
         <>
           {details}
           {account?.isDefault && account.status !== "connected" && (
-            <p className="text-xs text-destructive">Default unavailable</p>
+            <p className="text-xs text-destructive">{translateInstant("apps.aiAccount.defaultUnavailable", { defaultValue: "Default unavailable" })}</p>
           )}
           {discovery?.discovery.message ||
           discovery?.sync.status === "error" ? (
@@ -2499,7 +2538,7 @@ function ConnectionAccountRow({
           ) : null}
         </>
       }
-      openLabel={`Open ${accountName} permissions`}
+      openLabel={translateInstant("apps.account.openPermissions", { name: accountName, defaultValue: `Open ${accountName} permissions` })}
       onOpen={() => onNavigate(`/apps/${connection.id}/permissions`)}
     >
       {setupEnabled &&
@@ -2518,7 +2557,12 @@ function ConnectionAccountRow({
                 )
             : translateInstant("apps.connect.install.finish")}
         </Button>
-      ) : null}
+      ) : state.kind === "draft" ? null : (
+        <Button type="button" size="sm" variant="ghost" className="text-muted-foreground" aria-label={translateInstant("apps.account.settingsAria", { name: accountName, defaultValue: `${accountName} settings` })} onClick={() => onNavigate(`/apps/${connection.id}/permissions`)}>
+          {translateInstant("Settings")}
+          <ChevronRight aria-hidden />
+        </Button>
+      )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -2542,11 +2586,6 @@ function ConnectionAccountRow({
                 onSelect={() => aiDefaults.choose(account)}
               />
             )}
-          <DropdownMenuItem
-            onSelect={() => onNavigate(`/apps/${connection.id}/permissions`)}
-          >
-            {translateInstant("Permissions")}
-          </DropdownMenuItem>
           {onRefreshComposio ? (
             <DropdownMenuItem
               disabled={refreshingComposio}
@@ -2562,8 +2601,8 @@ function ConnectionAccountRow({
           {row.slug === "arcade" && onConfigureArcade ? (
             <DropdownMenuItem onSelect={onConfigureArcade}>
               {discovery?.discovery.availability === "setup_required"
-                ? "Set up account sync"
-                : "Account sync settings"}
+                ? translateInstant("apps.arcade.setupAccountSync", { defaultValue: "Set up account sync" })
+                : translateInstant("apps.arcade.accountSyncSettings", { defaultValue: "Account sync settings" })}
             </DropdownMenuItem>
           ) : null}
           {row.slug === "executor" && onConfigureExecutor ? (
@@ -2684,105 +2723,5 @@ function ConnectionStatusIcon({ state }: { state: ConnectionState }) {
       <PauseCircle className="h-4 w-4" aria-hidden="true" />
       <span className="sr-only">{state.label}</span>
     </span>
-  );
-}
-
-function CustomConnectorCard({
-  onNavigate,
-}: {
-  onNavigate: (href: string) => void;
-}) {
-  useTranslation();
-  const [expanded, setExpanded] = useState(false);
-
-  return (
-    <div
-      role="listitem"
-      data-app-slug="custom-mcp"
-      className="overflow-hidden rounded-xl border border-border"
-    >
-      <div className="flex flex-wrap items-center gap-3 px-4 py-4">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-          <Link2 className="h-4 w-4" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <h2 className="text-sm font-semibold text-foreground">
-            {translateInstant("apps.browse.connectOwnTool")}
-          </h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {translateInstant(
-              "Add a custom MCP server or paste an existing configuration.",
-            )}
-          </p>
-        </div>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          aria-expanded={expanded}
-          aria-controls="custom-connector-options"
-          onClick={() => setExpanded((open) => !open)}
-        >
-          {expanded ? translateInstant("Close") : translateInstant("Connect")}
-        </Button>
-      </div>
-
-      {expanded ? (
-        <div
-          id="custom-connector-options"
-          className="grid gap-2 border-t border-border px-4 py-3 sm:grid-cols-2"
-        >
-          <CustomConnectorOption
-            icon={ServerCog}
-            title={translateInstant("apps.connect.link.connectOwnServer")}
-            description={translateInstant(
-              "Enter the URL for a custom or self-hosted MCP server.",
-            )}
-            onClick={() => onNavigate("/apps/byo")}
-          />
-          <CustomConnectorOption
-            icon={ClipboardPaste}
-            title={translateInstant("Paste a config")}
-            description={translateInstant(
-              "Paste an existing setup snippet and connect it.",
-            )}
-            onClick={() => onNavigate("/apps/advanced/paste-config")}
-          />
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function CustomConnectorOption({
-  icon: Icon,
-  title,
-  description,
-  onClick,
-}: {
-  icon: typeof ServerCog;
-  title: string;
-  description: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      className="flex items-center gap-3 rounded-lg border border-border px-3 py-3 text-left transition-colors hover:border-foreground/30 hover:bg-accent/40"
-      onClick={onClick}
-    >
-      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground">
-        <Icon className="h-4 w-4" />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-sm font-semibold text-foreground">
-          {title}
-        </span>
-        <span className="block text-xs text-muted-foreground">
-          {description}
-        </span>
-      </span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-    </button>
   );
 }

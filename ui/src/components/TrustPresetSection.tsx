@@ -24,10 +24,13 @@ import { cn } from "../lib/utils";
 const inputClass =
   "w-full rounded-md border border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40";
 
-function formatCount(value: readonly unknown[] | undefined, singular: string, plural: string) {
+function formatCount(value: readonly unknown[] | undefined, unit: "project" | "issue" | "agent" | "binding") {
   const count = value?.length ?? 0;
   if (count === 0) return "-";
-  return `${count} ${count === 1 ? singular : plural}`;
+  return translateInstant(`trustPreset.count.${unit}`, {
+    count,
+    defaultValue: count === 1 ? `${count} ${unit}` : `${count} ${unit}s`,
+  });
 }
 
 function PolicyRow({ label, value }: { label: string; value: string }) {
@@ -47,9 +50,9 @@ export interface LowTrustBoundaryCandidate {
 type LowTrustBoundaryTargetType = LowTrustBoundaryTarget["type"];
 
 const BOUNDARY_TARGET_LABELS: Record<LowTrustBoundaryTargetType, string> = {
-  project: "Project",
-  root_issue: "Root issue",
-  issue: "Issue",
+  get project() { return translateInstant("trustPreset.boundary.project"); },
+  get root_issue() { return translateInstant("trustPreset.boundary.rootIssue"); },
+  get issue() { return translateInstant("trustPreset.boundary.issue"); },
 };
 
 export function TrustPresetSection({
@@ -133,12 +136,12 @@ export function TrustPresetSection({
             <div className="min-w-0 flex-1 space-y-2">
               <div>
                 <p className="font-medium">
-                  {hasScope ? "Containment active" : "Containment not configured"}
+                  {hasScope ? translateInstant("trustPreset.containmentActive", { defaultValue: "Containment active" }) : translateInstant("trustPreset.containmentNotConfigured", { defaultValue: "Containment not configured" })}
                 </p>
                 <p className="mt-1 text-xs leading-5">
                   {hasScope
-                    ? "This agent can only read and mutate work inside its assigned review boundary. Raw output is quarantined from higher-trust agents until a trusted reviewer promotes it."
-                    : "This agent is set to low-trust review, but no project, root issue, or issue scope is set in the core policy. Add a scope before this agent can run without denial."}
+                    ? translateInstant("trustPreset.containmentActiveDescription", { defaultValue: "This agent can only read and mutate work inside its assigned review boundary. Raw output is quarantined from higher-trust agents until a trusted reviewer promotes it." })
+                    : translateInstant("trustPreset.containmentNotConfiguredDescription", { defaultValue: "This agent is set to low-trust review, but no project, root issue, or issue scope is set in the core policy. Add a scope before this agent can run without denial." })}
                 </p>
               </div>
               {projectAccessEditor && (boundary?.projectIds?.length ?? 0) > 1 ? null : boundaryEditable ? (
@@ -165,10 +168,10 @@ export function TrustPresetSection({
                       >
                         <option value="">
                           {candidatesLoading
-                            ? "Loading…"
+                            ? translateInstant("Loading…", { defaultValue: "Loading…" })
                             : targetCandidates.length === 0
-                              ? `No ${targetType === "project" ? "projects" : "issues"} available`
-                              : "Select boundary"}
+                              ? (targetType === "project" ? translateInstant("trustPreset.noProjectsAvailable", { defaultValue: "No projects available" }) : translateInstant("trustPreset.noIssuesAvailable", { defaultValue: "No issues available" }))
+                              : translateInstant("trustPreset.selectBoundary", { defaultValue: "Select boundary" })}
                         </option>
                         {targetCandidates.map((candidate) => (
                           <option key={candidate.id} value={candidate.id}>
@@ -221,19 +224,19 @@ export function TrustPresetSection({
                 onToggle={() => setPolicyOpen((open) => !open)}
               >
                 <div className="divide-y divide-border/60 text-foreground">
-                  <PolicyRow label={translateInstant("trustPreset.policy.preset")} value="Low-trust review v1" />
-                  <PolicyRow label={translateInstant("trustPreset.policy.rawOutput")} value="Quarantined from higher-trust agents" />
-                  <PolicyRow label={translateInstant("trustPreset.policy.projects")} value={formatCount(boundary?.projectIds, "project", "projects")} />
+                  <PolicyRow label={translateInstant("trustPreset.policy.preset")} value={translateInstant("trustPreset.policy.presetValue", { defaultValue: "Low-trust review v1" })} />
+                  <PolicyRow label={translateInstant("trustPreset.policy.rawOutput")} value={translateInstant("trustPreset.policy.rawOutputQuarantined", { defaultValue: "Quarantined from higher-trust agents" })} />
+                  <PolicyRow label={translateInstant("trustPreset.policy.projects")} value={formatCount(boundary?.projectIds, "project")} />
                   <PolicyRow label={translateInstant("trustPreset.boundary.rootIssue")} value={boundary?.rootIssueId ? boundary.rootIssueId.slice(0, 8) : "-"} />
-                  <PolicyRow label={translateInstant("trustPreset.policy.explicitIssues")} value={formatCount(boundary?.issueIds, "issue", "issues")} />
-                  <PolicyRow label={translateInstant("trustPreset.policy.allowedAgents")} value={formatCount(boundary?.allowedAgentIds, "agent", "agents")} />
+                  <PolicyRow label={translateInstant("trustPreset.policy.explicitIssues")} value={formatCount(boundary?.issueIds, "issue")} />
+                  <PolicyRow label={translateInstant("trustPreset.policy.allowedAgents")} value={formatCount(boundary?.allowedAgentIds, "agent")} />
                   <PolicyRow label={translateInstant("trustPreset.policy.allowedTools")} value={boundary?.allowedToolClasses?.join(" · ") || "-"} />
-                  <PolicyRow label={translateInstant("trustPreset.policy.allowedSecrets")} value={formatCount(boundary?.allowedSecretBindingIds, "binding", "bindings")} />
+                  <PolicyRow label={translateInstant("trustPreset.policy.allowedSecrets")} value={formatCount(boundary?.allowedSecretBindingIds, "binding")} />
                   <PolicyRow label={translateInstant("trustPreset.policy.promotionTarget")} value={boundary?.outputPromotionTarget?.issueId?.slice(0, 8) ?? "-"} />
                   <PolicyRow
                     label={translateInstant("trustPreset.policy.eeFields")}
                     value={Object.keys(policy ?? {}).some((key) => !["trustPreset", "reviewPreset", "trustBoundary"].includes(key))
-                      ? "Custom advanced policy fields preserved"
+                      ? translateInstant("trustPreset.policy.customEePreserved", { defaultValue: "Custom advanced policy fields preserved" })
                       : "-"}
                   />
                 </div>
@@ -289,7 +292,7 @@ export function TrustPresetSection({
     <div>
       <h3 className="mb-3 text-sm font-medium">{translateInstant("trustPreset.title")}</h3>
       <div className="rounded-lg border border-border p-4 space-y-3">
-        <Field label={translateInstant("trustPreset.presetLabel")} hint="Choose how broadly this agent can read and act on Paperclip work objects.">
+        <Field label={translateInstant("trustPreset.presetLabel")} hint={translateInstant("trustPreset.presetHint", { defaultValue: "Choose how broadly this agent can read and act on Paperclip work objects." })}>
           <select
             className={inputClass}
             value={preset}

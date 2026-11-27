@@ -81,7 +81,7 @@
   },
   "instanceExperimentalSettings.betaSkillsDescription": {
     "en": "Allow agents to pin beta releases of the Paperclip core skill. Disabling this returns every agent to the default live skill without removing saved pins.",
-    "zh-CN": "允许智能体固定 Paperclip 核心技能的 beta 版本。禁用后，所有智能体会恢复默认 live 技能，但不会删除已保存的固定版本。",
+    "zh-CN": "允许智能体固定 Paperclip 核心技能的测试版本（beta）。禁用后，所有智能体会恢复默认正式版技能，但不会删除已保存的固定版本。",
     "reviewedEnglishHash": "a19f96229d5811092bc5a1f627b107679a5b3e3f2c05280504d64403021a80a6"
   },
   "instanceExperimentalSettings.betaSkillsTitle": {

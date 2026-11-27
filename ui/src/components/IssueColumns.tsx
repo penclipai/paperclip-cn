@@ -23,6 +23,7 @@ import { formatAssigneeUserLabel } from "../lib/assignees";
 import type { InboxIssueColumn } from "../lib/inbox";
 import { cn } from "../lib/utils";
 import { timeAgo } from "../lib/timeAgo";
+import { issueUpdatedTime } from "../lib/issue-filters";
 import { Identity } from "./Identity";
 import { StatusIcon } from "./StatusIcon";
 import { Badge } from "@/components/ui/badge";
@@ -31,27 +32,27 @@ import { taskStatusIconProps } from "@/lib/task-status-presentation";
 export const issueTrailingColumns: InboxIssueColumn[] = ["assignee", "kickedOffBy", "project", "workspace", "parent", "labels", "updated"];
 
 const issueColumnLabels: Record<InboxIssueColumn, string> = {
-  status: "Status",
-  id: "ID",
-  assignee: "Responsible",
-  kickedOffBy: "Kicked off by",
-  project: "Project",
-  workspace: "Workspace",
-  parent: "Parent task",
-  labels: "Tags",
-  updated: "Last updated",
+  get status() { return translateInstant("Status"); },
+  get id() { return translateInstant("ID"); },
+  get assignee() { return translateInstant("Responsible"); },
+  get kickedOffBy() { return translateInstant("Kicked off by"); },
+  get project() { return translateInstant("Project"); },
+  get workspace() { return translateInstant("Workspace"); },
+  get parent() { return translateInstant("Parent task"); },
+  get labels() { return translateInstant("Tags"); },
+  get updated() { return translateInstant("Last updated"); },
 };
 
 const issueColumnDescriptions: Record<InboxIssueColumn, string> = {
-  status: "Task state chip on the left edge.",
-  id: "Ticket identifier like PAP-1009.",
-  assignee: "Responsible agent or board user.",
-  kickedOffBy: "Board user or agent who created the task.",
-  project: "Linked project pill with its color.",
-  workspace: "Execution or project workspace used for the task.",
-  parent: "Parent task identifier and title.",
-  labels: "Task labels and tags.",
-  updated: "Latest visible activity time.",
+  get status() { return translateInstant("issueColumns.description.status", { defaultValue: "Task state chip on the left edge." }); },
+  get id() { return translateInstant("issueColumns.description.id", { defaultValue: "Ticket identifier like PAP-1009." }); },
+  get assignee() { return translateInstant("issueColumns.description.assignee", { defaultValue: "Responsible agent or board user." }); },
+  get kickedOffBy() { return translateInstant("issueColumns.description.kickedOffBy", { defaultValue: "Board user or agent who created the task." }); },
+  get project() { return translateInstant("issueColumns.description.project", { defaultValue: "Linked project pill with its color." }); },
+  get workspace() { return translateInstant("issueColumns.description.workspace", { defaultValue: "Execution or project workspace used for the task." }); },
+  get parent() { return translateInstant("issueColumns.description.parent", { defaultValue: "Parent task identifier and title." }); },
+  get labels() { return translateInstant("issueColumns.description.labels", { defaultValue: "Task labels and tags." }); },
+  get updated() { return translateInstant("issueColumns.description.updated", { defaultValue: "Latest visible activity time." }); },
 };
 
 export function issueColumnDescription(
@@ -59,20 +60,20 @@ export function issueColumnDescription(
   presentation: "legacy" | "task" = "legacy",
 ): string {
   if (column === "id" && presentation === "task") {
-    return "Task identifier like PAP-1009 on the trailing edge.";
+    return translateInstant("issueColumns.description.idTask", { defaultValue: "Task identifier like PAP-1009 on the trailing edge." });
   }
   if (column === "status" && presentation === "task") {
-    return "Task state icon on the leading edge.";
+    return translateInstant("issueColumns.description.statusTask", { defaultValue: "Task state icon on the leading edge." });
   }
   return issueColumnDescriptions[column];
 }
 
 export function issueActivityTimestamp(issue: Issue): string {
-  return timeAgo(issue.lastActivityAt ?? issue.lastExternalCommentAt ?? issue.updatedAt);
+  return timeAgo(issueUpdatedTime(issue));
 }
 
 export function issueActivityText(issue: Issue): string {
-  return `Updated ${issueActivityTimestamp(issue)}`;
+  return translateInstant("issueColumns.updatedAgo", { time: issueActivityTimestamp(issue), defaultValue: `Updated ${issueActivityTimestamp(issue)}` });
 }
 
 function issueTrailingGridTemplate(columns: InboxIssueColumn[]): string {
@@ -122,7 +123,7 @@ export function IssueColumnPicker({
           title={translateInstant("issuesList.columns")}
         >
           <Columns3 className={iconOnly ? "h-3.5 w-3.5" : "mr-1 h-3.5 w-3.5"} />
-          {!iconOnly && "Columns"}
+          {!iconOnly && translateInstant("issuesList.columns")}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-(--sz-300px) rounded-xl border-border/70 p-1.5 shadow-xl shadow-black/10">
@@ -253,7 +254,7 @@ export function InboxIssueMetaLeading({
             "px-1.5 sm:gap-1.5 sm:px-2",
             "border-border bg-transparent",
           )}
-          title={`${subtreeLiveCount} sub-task${subtreeLiveCount === 1 ? "" : "s"} running below`}
+          title={translateInstant("issueColumns.subtasksRunningBelow", { count: subtreeLiveCount, defaultValue: `${subtreeLiveCount} sub-task${subtreeLiveCount === 1 ? "" : "s"} running below` })}
         >
           <span
             className={cn(
@@ -315,10 +316,10 @@ export function InboxIssueTrailingColumns({
 }) {
   useTranslation();
   const activityText = issueActivityTimestamp(issue);
-  const userLabel = assigneeUserName ?? formatAssigneeUserLabel(issue.assigneeUserId, currentUserId) ?? "User";
+  const userLabel = assigneeUserName ?? formatAssigneeUserLabel(issue.assigneeUserId, currentUserId) ?? translateInstant("User");
   const originatingActor = deriveOriginatingActor(issue);
   const originatingUserId = originatingActor?.kind === "user" ? originatingActor.id : null;
-  const creatorUserLabel = creatorUserName ?? formatAssigneeUserLabel(originatingUserId, currentUserId) ?? "User";
+  const creatorUserLabel = creatorUserName ?? formatAssigneeUserLabel(originatingUserId, currentUserId) ?? translateInstant("User");
 
   return (
     <span
@@ -382,7 +383,7 @@ export function InboxIssueTrailingColumns({
           }
 
           if (originatingActor?.kind === "user") {
-            const tooltipText = viaAgentName ? `${creatorUserLabel} · via ${viaAgentName}` : creatorUserLabel;
+            const tooltipText = viaAgentName ? translateInstant("issueColumns.viaAgent", { user: creatorUserLabel, agent: viaAgentName, defaultValue: `${creatorUserLabel} · via ${viaAgentName}` }) : creatorUserLabel;
             return (
               <Tooltip key={column}>
                 <TooltipTrigger asChild>

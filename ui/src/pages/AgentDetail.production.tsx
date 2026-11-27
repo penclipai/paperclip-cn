@@ -99,7 +99,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { AgentToolsTab } from "./AgentToolsTab";
 import { AgentChannelsPanel } from "../components/chat/AgentChannelsPanel";
-import { useChatConnectorsEnabled } from "@/hooks/useChatConnectorsEnabled";
 import {
   isUuidLike,
   type Agent,
@@ -300,10 +299,7 @@ export function AgentDetail() {
   const location = useLocation();
   const [actionError, setActionError] = useState<string | null>(null);
   const [dismissedLeftAgentIds, setDismissedLeftAgentIds] = useState<Set<string>>(() => new Set());
-  const { enabled: chatEnabled, githubEnabled, loaded: chatConnectorsLoaded } = useChatConnectorsEnabled();
-  const chatConnectorsEnabled = chatEnabled || githubEnabled;
-  const activeView = urlRunId ? "runs" as AgentDetailView
-    : urlTab === "channels" && !chatConnectorsEnabled ? "dashboard" : parseAgentDetailView(urlTab ?? null);
+  const activeView = urlRunId ? "runs" as AgentDetailView : parseAgentDetailView(urlTab ?? null);
   const needsDashboardData = activeView === "dashboard";
   const needsRunData = activeView === "runs" || Boolean(urlRunId);
   const shouldLoadHeartbeats = needsDashboardData || needsRunData;
@@ -493,7 +489,6 @@ export function AgentDetail() {
 
   useEffect(() => {
     if (!agent) return;
-    if (!urlRunId && urlTab === "channels" && !chatConnectorsLoaded) return;
     if (urlRunId) {
       if (routeAgentRef !== canonicalAgentRef) {
         navigate(`/agents/${canonicalAgentRef}/runs/${urlRunId}`, { replace: true });
@@ -522,7 +517,7 @@ export function AgentDetail() {
       navigate(`/agents/${canonicalAgentRef}/${canonicalTab}${location.search}`, { replace: true });
       return;
     }
-  }, [agent, routeAgentRef, canonicalAgentRef, urlRunId, urlTab, activeView, navigate, chatConnectorsLoaded, location.search]);
+  }, [agent, routeAgentRef, canonicalAgentRef, urlRunId, urlTab, activeView, navigate, location.search]);
 
   useEffect(() => {
     if (!agent?.companyId || agent.companyId === selectedCompanyId) return;
@@ -938,7 +933,7 @@ export function AgentDetail() {
           onValueChange={handleAgentTabChange}
         >
           <PageTabBar
-            items={AGENT_DETAIL_TABS.filter((item) => item.value !== "channels" || chatConnectorsEnabled)}
+            items={AGENT_DETAIL_TABS}
             value={activeView}
             onValueChange={handleAgentTabChange}
           />
@@ -2694,13 +2689,13 @@ export function RunsTab({
   const selection = useSelectedHeartbeatRun(sorted, effectiveRunId, companyId, agentId);
   const selectedRun = selection.run;
   if (selectedRunId && !selectedRun) {
-    if (selection.loading) return <p className="text-sm text-muted-foreground">Loading run…</p>;
+    if (selection.loading) return <p className="text-sm text-muted-foreground">{translateInstant("Loading run…", { defaultValue: "Loading run…" })}</p>;
     return <div role="alert">
-      <p className="text-sm text-destructive">{selection.error instanceof Error ? selection.error.message : "This run is unavailable for this agent."}</p>
-      {selection.error && <Button variant="outline" onClick={() => { void selection.retry(); }}>Try again</Button>}
+      <p className="text-sm text-destructive">{selection.error instanceof Error ? selection.error.message : translateInstant("agentDetail.runUnavailable", { defaultValue: "This run is unavailable for this agent." })}</p>
+      {selection.error && <Button variant="outline" onClick={() => { void selection.retry(); }}>{translateInstant("Try again", { defaultValue: "Try again" })}</Button>}
     </div>;
   }
-  if (runs.length === 0 && !selectedRun) return <p className="text-sm text-muted-foreground">No runs yet.</p>;
+  if (runs.length === 0 && !selectedRun) return <p className="text-sm text-muted-foreground">{translateInstant("No runs yet.", { defaultValue: "No runs yet." })}</p>;
 
   // Mobile: show either run list OR run detail with back button
   if (isMobile) {
@@ -2777,7 +2772,11 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
     const entry = userDirectory?.users.find(
       (candidate) => candidate.principalId === run.responsibleUserId,
     );
-    return entry?.user?.name ?? entry?.user?.email ?? null;
+    const rawName = entry?.user?.name ?? entry?.user?.email ?? null;
+    if (rawName === "Board" || (!rawName && run.responsibleUserId === "local-board")) {
+      return translateInstant("Board");
+    }
+    return rawName;
   }, [run.responsibleUserId, userDirectory]);
   const responsibleDenialCode = isResponsibleUserDenialCode(run.errorCode) ? run.errorCode : null;
   const [sessionOpen, setSessionOpen] = useState(false);

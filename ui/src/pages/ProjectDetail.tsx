@@ -31,6 +31,7 @@ import { PageTabBar } from "../components/PageTabBar";
 import { ProjectWorkspacesContent } from "../components/ProjectWorkspacesContent";
 import { SummarySlotCard } from "../components/SummarySlotCard";
 import { MembershipAction } from "../components/MembershipAction";
+import { useCoordinatorWorkspaceEnabled } from "../hooks/useCoordinatorWorkspaceEnabled";
 import { StarToggle } from "../components/StarToggle";
 import { buildProjectWorkspaceSummaries } from "../lib/project-workspaces-tab";
 import { collectLiveIssueIds } from "../lib/liveIssueIds";
@@ -181,7 +182,7 @@ function ProjectTilePicker({
                     : "hover:ring-2 hover:ring-foreground/30"
                 }`}
                 style={{ backgroundColor: swatch }}
-                aria-label={`Select color ${swatch}`}
+                aria-label={translateInstant("projectDetail.selectColorAria", { color: swatch, defaultValue: "Select color {{color}}" })}
               />
             ))}
           </div>
@@ -338,6 +339,8 @@ export function ProjectDetail() {
     filter?: string;
   }>();
   const { companies, selectedCompanyId, setSelectedCompanyId } = useCompany();
+  const workspace = useCoordinatorWorkspaceEnabled();
+  const classicWorkspace = workspace.loaded && !workspace.enabled;
   const { closePanel } = usePanel();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
@@ -474,7 +477,7 @@ export function ProjectDetail() {
       projectsApi.update(projectLookupRef, data, resolvedCompanyId ?? lookupCompanyId),
     onSuccess: (updated, data) => {
       const notice = configurationWarningMessages(updated);
-      if (notice) pushToast({ title: "Project saved", body: notice, tone: "warn" });
+      if (notice) pushToast({ title: translateInstant("Project saved"), body: notice, tone: "warn" });
       invalidateProject();
       if (data.visibility !== undefined) queryClient.invalidateQueries({ queryKey: ["issues"] });
     },
@@ -489,12 +492,12 @@ export function ProjectDetail() {
       ),
     onSuccess: (updatedProject, archived) => {
       invalidateProject();
-      const name = updatedProject?.name ?? project?.name ?? "Project";
+      const name = updatedProject?.name ?? project?.name ?? translateInstant("Project");
       if (archived) {
-        pushToast({ title: `"${name}" has been archived`, tone: "success" });
+        pushToast({ title: translateInstant("projectDetail.archivedToast", { name, defaultValue: '"{{name}}" has been archived' }), tone: "success" });
         navigate("/dashboard");
       } else {
-        pushToast({ title: `"${name}" has been unarchived`, tone: "success" });
+        pushToast({ title: translateInstant("projectDetail.unarchivedToast", { name, defaultValue: '"{{name}}" has been unarchived' }), tone: "success" });
       }
     },
     onError: (_, archived) => {
@@ -608,7 +611,7 @@ export function ProjectDetail() {
     try {
       const updated = await projectsApi.update(projectLookupRef, data, resolvedCompanyId ?? lookupCompanyId);
       const notice = configurationWarningMessages(updated);
-      if (notice) pushToast({ title: "Project saved", body: notice, tone: "warn" });
+      if (notice) pushToast({ title: translateInstant("Project saved"), body: notice, tone: "warn" });
       invalidateProject();
       if (data.visibility !== undefined) queryClient.invalidateQueries({ queryKey: ["issues"] });
       if (fieldSaveRequestIds.current[field] !== requestId) return;
@@ -718,7 +721,7 @@ export function ProjectDetail() {
   }
   if (!project) return null;
   const showLeftProjectNotice =
-    projectMembershipState === "left" && !dismissedLeftProjectIds.has(project.id);
+    classicWorkspace && projectMembershipState === "left" && !dismissedLeftProjectIds.has(project.id);
   const projectMembershipPending =
     membershipMutation.isPending &&
     membershipMutation.variables?.resourceType === "project" &&
@@ -812,20 +815,22 @@ export function ProjectDetail() {
             </div>
           ) : null}
         </div>
-        <div className="ml-auto flex items-center gap-2">
-          <StarToggle
-            size="button"
-            starred={projectStarred}
-            pending={projectStarPending}
-            resourceName={project.name}
-            onToggle={(next) => membershipMutation.mutate({
-              resourceType: "project",
-              resourceId: project.id,
-              resourceName: project.name,
-              starred: next,
-            })}
-          />
-        </div>
+        {classicWorkspace && (
+          <div className="ml-auto flex items-center gap-2">
+            <StarToggle
+              size="button"
+              starred={projectStarred}
+              pending={projectStarPending}
+              resourceName={project.name}
+              onToggle={(next) => membershipMutation.mutate({
+                resourceType: "project",
+                resourceId: project.id,
+                resourceName: project.name,
+                starred: next,
+              })}
+            />
+          </div>
+        )}
       </div>
 
       <SummarySlotCard

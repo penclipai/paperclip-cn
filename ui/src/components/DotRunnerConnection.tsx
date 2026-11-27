@@ -12,7 +12,7 @@ import { QueryErrorState, useQueryView } from "./QueryView";
 interface Connection {
   enabled: boolean;
   resourceUrl: string | null;
-  binding: { id: string; status: string; connected: boolean; subscriptionVerified: boolean; hasPendingChallenge: boolean;
+  binding: { id: string; status: string; connected: boolean; subscriptionVerified: boolean; subscriptionExpired?: boolean; hasPendingChallenge: boolean;
     assignment?: { status: string; attentionRequired: boolean } | null } | null;
 }
 
@@ -64,8 +64,34 @@ export function DotRunnerConnection({ companyId, agentId, bindingId, onBinding }
     <p className="text-sm text-muted-foreground">{translateInstant("Dot manages its model and external tools. Paperclip supplies task coordination, people, assigned skills, and connected app tools. Dot can start a task directly from its conversation. Enable Read task attachments below to send assigned task file contents to OpenAI. Enable workspace files and commands for work in the assigned workspace. Provider usage and cost are unavailable; stopping a Paperclip run revokes access without confirming an external stop.")}</p>
     {state.data && !state.data.enabled && <p className="text-sm text-muted-foreground">{translateInstant("adapterConfig.dotRunner.enableExperimentalSettings", { defaultValue: "Enable OpenAI Dot in experimental settings." })}</p>}
     {state.data?.resourceUrl && <p className="text-sm break-all">{translateInstant("Private plugin MCP URL:")}{" "}<code>{state.data.resourceUrl}</code></p>}
-    {b && <p className="text-sm">{translateInstant("Connection:")}{" "}{b.status}. Event subscription: {b.subscriptionVerified ? "verified" : "required"}{translateInstant(".")}</p>}
-    {b?.assignment && <p className="text-sm">{translateInstant("Assignment:")}{" "}{b.assignment.status === "offered" ? "waiting for Dot to accept" : "accepted by Dot"}{translateInstant(".")}</p>}
+    {b && (
+      <p className="text-sm">
+        {translateInstant("Connection:")}{" "}{b.status}.{" "}
+        {translateInstant("adapterConfig.dotRunner.eventSubscriptionLabel", { defaultValue: "Event subscription:" })}{" "}
+        {b.subscriptionVerified
+          ? translateInstant("adapterConfig.dotRunner.subscriptionVerified", { defaultValue: "verified" })
+          : b.subscriptionExpired
+            ? translateInstant("adapterConfig.dotRunner.subscriptionExpired", { defaultValue: "expired" })
+            : translateInstant("adapterConfig.dotRunner.subscriptionRequired", { defaultValue: "required" })}
+        {translateInstant(".")}
+      </p>
+    )}
+    {b?.subscriptionExpired && (
+      <p className="text-sm text-muted-foreground">
+        {translateInstant("adapterConfig.dotRunner.subscriptionExpiredNotice", {
+          defaultValue: "Event subscriptions last up to 24 hours. Ask the Dot to subscribe again to paperclip.dot.mailbox_updated. You do not need to pair it again.",
+        })}
+      </p>
+    )}
+    {b?.assignment && (
+      <p className="text-sm">
+        {translateInstant("Assignment:")}{" "}
+        {b.assignment.status === "offered"
+          ? translateInstant("adapterConfig.dotRunner.assignmentOffered", { defaultValue: "waiting for Dot to accept" })
+          : translateInstant("adapterConfig.dotRunner.assignmentAccepted", { defaultValue: "accepted by Dot" })}
+        {translateInstant(".")}
+      </p>
+    )}
     {b?.assignment?.attentionRequired && <p className="text-sm text-destructive" role="alert">{translateInstant("Dot has not reported useful activity for 15 minutes. Inspect the Dot before assigning replacement work; Paperclip cannot confirm its external stop.")}</p>}
     {pairing && setupPrompt && b?.status === "pairing" && <div className="space-y-2">
       <AgentSetupPrompt

@@ -19,6 +19,11 @@
     "zh-CN": "用该搜索创建任务",
     "reviewedEnglishHash": "23fdabf422f105aa17f645fa3d90ec2542cdb6b7dcb93724b119f2412b533483"
   },
+  "searchPage.createTaskFromQuery": {
+    "en": "Create task from this query",
+    "zh-CN": "根据此搜索创建任务",
+    "reviewedEnglishHash": "ab10ebff65e7a82601deb2dadba1b7f55f202891e623b8fadee31cc08d360f8c"
+  },
   "searchPage.emptyTip.fewerTokens": {
     "en": "Try fewer tokens or a single distinctive term.",
     "zh-CN": "尝试减少关键词，或使用一个更有辨识度的词。",
@@ -38,6 +43,11 @@
     "en": "Your input and filters are still here, so you can retry or fall back to the Issues filter.",
     "zh-CN": "你的输入和筛选条件仍在，可以重试，或回到任务筛选视图。",
     "reviewedEnglishHash": "7aab169ce125b59185f7dfd4503d19cb5fac87e00844fb5d8c60392619c9a66a"
+  },
+  "searchPage.errorRecoveryTasks": {
+    "en": "Your input and filters are still here, so you can retry or fall back to the Tasks filter.",
+    "zh-CN": "你的输入和筛选条件均已保留，可重试搜索或切换至任务筛选视图。",
+    "reviewedEnglishHash": "84cd3a3b067f0e73a6c4ac17913508155b23937daf84eaf476ffc006e752deca"
   },
   "searchPage.errorRequestFailed": {
     "en": "The request failed.",
@@ -63,6 +73,16 @@
     "en": "Issues, comments, plan documents, agents, projects - same surface, ranked by relevance.",
     "zh-CN": "任务、评论、计划文档、智能体、项目集中在同一个入口，并按相关性排序。",
     "reviewedEnglishHash": "3ecc2b1280b9120a43954ab621315a5138cd67f047d93d33b62243c64a78d25d"
+  },
+  "searchPage.initialOrgTitle": {
+    "en": "Type to search organization memory.",
+    "zh-CN": "输入内容以搜索组织记忆。",
+    "reviewedEnglishHash": "cb201d7ceaf215f827ffc6fe160fbe5286d41d926a8b9598f21d0e079a0cde64"
+  },
+  "searchPage.initialSubtitle": {
+    "en": "Tasks, comments, plan documents, artifacts, agents, projects — same surface, ranked by relevance.",
+    "zh-CN": "任务、评论、方案文档、产物、智能体、项目 —— 统一界面，按相关性排序。",
+    "reviewedEnglishHash": "ea90c709ce3aa2280954daf60469a1c850a5ac5a69d35c8198a56e2b27de6a06"
   },
   "searchPage.initialTitle": {
     "en": "Type to search company memory.",
@@ -98,6 +118,11 @@
     "en": "Open Issues filter view",
     "zh-CN": "打开任务筛选视图",
     "reviewedEnglishHash": "a9d8c9796e8eecd97ca6037fc8b28f8a264b0a6b86800f4af25e0f103a1fd662"
+  },
+  "searchPage.openTasksFilter": {
+    "en": "Open Tasks filter view",
+    "zh-CN": "打开任务筛选视图",
+    "reviewedEnglishHash": "841ffda7cc0be0e35069852feb27aeffd8421d927cb5bf3da1e82ddcd33f5e7c"
   },
   "searchPage.placeholder": {
     "en": "Search issues, comments, documents, agents, projects...",
@@ -184,6 +209,16 @@
     "zh-CN": "搜索查询",
     "reviewedEnglishHash": "9eef05233ecfc1fbcfe756aa79bd497fa20e58144012561b562b8856040f5100"
   },
+  "searchPage.searchOrgPlaceholder": {
+    "en": "Search tasks, comments, documents, artifacts, agents, projects…",
+    "zh-CN": "搜索任务、评论、文档、产物、智能体、项目…",
+    "reviewedEnglishHash": "e395aedd49f7c05195a11035a2e6c8607b291a64abba70d8b5665b143cfeaa05"
+  },
+  "searchPage.searchQueryAria": {
+    "en": "Search query",
+    "zh-CN": "搜索内容",
+    "reviewedEnglishHash": "9eef05233ecfc1fbcfe756aa79bd497fa20e58144012561b562b8856040f5100"
+  },
   "searchPage.sortedBy": {
     "en": " · sorted by {{sort}}",
     "zh-CN": " · 按 {{sort}} 排序",
@@ -238,6 +273,11 @@
     "en": "Identifier lookup:",
     "zh-CN": "编号查找：",
     "reviewedEnglishHash": "492ca8934fe835bf169051e022e7b1cd96f07b64a337699f5a7ae4c14b1db7a5"
+  },
+  "searchPage.tip.identifierSuffix": {
+    "en": "to jump straight to a task.",
+    "zh-CN": "即可直接跳转到对应任务。",
+    "reviewedEnglishHash": "0c973a2d0db38d11d0758bded1337785766b2790076908ade721a97eeaeabaed"
   },
   "searchPage.tip.quotedBody": {
     "en": "wrap a phrase in quotes to match the exact sequence.",

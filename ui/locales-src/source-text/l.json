@@ -304,6 +304,11 @@
     "zh-CN": "我们先来讨论一下",
     "reviewedEnglishHash": "0334a9f2007a1812c9b6059bc849b61a37fd0d71fad9c33499e60d41cfe1d470"
   },
+  "Lets new Cloud workspaces start their first agent right away (OpenCode / GPT-6 Luna via server proxy) before asking the user to connect a model provider.": {
+    "en": "Lets new Cloud workspaces start their first agent right away (OpenCode / GPT-6 Luna via server proxy) before asking the user to connect a model provider.",
+    "zh-CN": "允许新建的 Cloud 工作区在要求用户连接模型提供方之前，立即通过服务端代理启动首个智能体（OpenCode / GPT-6 Luna）。",
+    "reviewedEnglishHash": "1d94d120cf15b5d67af1d826a175a51dcdf49afd24750f434c642529733c965b"
+  },
   "Lets this agent create or hire agents and implicitly assign tasks.": {
     "en": "Lets this agent create or hire agents and implicitly assign tasks.",
     "zh-CN": "允许该智能体创建或雇佣智能体，并隐式分配任务。",
@@ -508,6 +513,11 @@
     "en": "Load earlier comments",
     "zh-CN": "加载更早的评论",
     "reviewedEnglishHash": "a41f98dd82a1500e2e2f177702b32023de442e4af541e92fc6cff0cf7e994575"
+  },
+  "Load more": {
+    "en": "Load more",
+    "zh-CN": "加载更多",
+    "reviewedEnglishHash": "ac8991ef01019cf55a2426194a05959e0cb886333f1a332ff4f442320d165400"
   },
   "Load more log": {
     "en": "Load more log",
@@ -909,6 +919,11 @@
     "zh-CN": "正在加载运行管道...",
     "reviewedEnglishHash": "b2b94be97ab475f26773ad656b92dc6449a1d696dbb30cac49fe1e8eb78cfb53"
   },
+  "Loading run…": {
+    "en": "Loading run…",
+    "zh-CN": "正在加载运行…",
+    "reviewedEnglishHash": "ad8b3027693b8553675a92c106a51e969f12420409a136d054bb5714d8e9c0a3"
+  },
   "Loading saved connection setup": {
     "en": "Loading saved connection setup",
     "zh-CN": "正在加载已保存的连接设置",
@@ -969,6 +984,11 @@
     "zh-CN": "加载中...",
     "reviewedEnglishHash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
   },
+  "Loading…": {
+    "en": "Loading…",
+    "zh-CN": "加载中…",
+    "reviewedEnglishHash": "ba3bbbe10d8bef66441c88536ce7b8e724e2829b59a3da658654f4961cd61ae5"
+  },
   "Local": {
     "en": "Local",
     "zh-CN": "本地",
@@ -1018,6 +1038,11 @@
     "en": "Local company is too large to preview as a single request. Click Push to continue (the Push step uploads in chunks), or see the docs for chunked-preview options.",
     "zh-CN": "本地公司太大，无法作为单个请求预览。点击“推送”继续（推送步骤会分块上传），或查看文档了解分块预览选项。",
     "reviewedEnglishHash": "c3262d0a22a41f9810e032fe424f2ddebf3052ca960865bab0ae6eea9aa62972"
+  },
+  "Local computers with a Google sign-in only. Helper actions are approved automatically. Paperclip does not sandbox the helpers: their shell commands can write outside the task folder, for example in temp directories.": {
+    "en": "Local computers with a Google sign-in only. Helper actions are approved automatically. Paperclip does not sandbox the helpers: their shell commands can write outside the task folder, for example in temp directories.",
+    "zh-CN": "仅限已登录 Google 的本地计算机。助手操作会自动批准。Paperclip 不会对助手进行沙盒隔离：其 Shell 命令可以写入任务文件夹之外的位置（例如临时目录）。",
+    "reviewedEnglishHash": "300a18d56ee8795157ae4adfa5c7ae3f39dc6552007d56cba8b06329de69eaff"
   },
   "Local folder must be a full absolute path.": {
     "en": "Local folder must be a full absolute path.",

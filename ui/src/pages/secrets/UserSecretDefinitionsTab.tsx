@@ -163,7 +163,9 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
     },
     onError: (err) =>
       pushToast({
-        title: "Could not remove definition",
+        title: t("secrets.toast.couldNotRemoveDefinition", {
+          defaultValue: "Could not remove definition",
+        }),
         body: describeError(err).body,
         tone: "error",
       }),
@@ -203,7 +205,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
         ) : definitions.length === 0 &&
           !definitionsQuery.isPending &&
           definitionsView.kind !== "reconnecting" ? (
-          <EmptyState
+          <EmptyState placement="upper"
             icon={UserRound}
             message={t("secrets.noDefinitions", {
               defaultValue:

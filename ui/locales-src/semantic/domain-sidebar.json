@@ -19,6 +19,11 @@
     "zh-CN": "产物",
     "reviewedEnglishHash": "314ae71b8c8dc9c952f0ffc58e35e6d9a41b5cf4756471c7cab0c9476cd5d20b"
   },
+  "sidebar.backFrom": {
+    "en": "Back from {{title}}",
+    "zh-CN": "从{{title}}返回",
+    "reviewedEnglishHash": "eeb121565794f8a2912bef462727c6a83bef1cdf2285c640de9e758e557a4b6a"
+  },
   "sidebar.chat.agentCount_one": {
     "en": "{{count}} agent",
     "zh-CN": "{{count}} 个智能体",
@@ -69,6 +74,11 @@
     "zh-CN": "来自 {{agentName}} 的未读消息",
     "reviewedEnglishHash": "1dd1e67543983cf74400ec7c29f2ea444044e07a2e527bbceaa837577c6f87a2"
   },
+  "sidebar.collapseProject": {
+    "en": "Collapse {{name}}",
+    "zh-CN": "折叠 {{name}}",
+    "reviewedEnglishHash": "4bcd39f9e08ecef361001b7fc8c04f0ba24510b0b9f932e9d0b8dda18fa9bcde"
+  },
   "sidebar.commentary": {
     "en": "Commentary",
     "zh-CN": "智能体评论",
@@ -89,10 +99,20 @@
     "zh-CN": "成本",
     "reviewedEnglishHash": "b88fc5fc4765148eb545962cddf4f19e4ca0380a533c047005f567a77695dcfd"
   },
+  "sidebar.couldNotLoadCompanies": {
+    "en": "Couldn't load companies",
+    "zh-CN": "无法加载公司",
+    "reviewedEnglishHash": "dee9b8633bafd3486f9c3cba41ec7b712ebecb84c7db12629bcc45f436ef2e37"
+  },
   "sidebar.couldNotLoadOrganizations": {
     "en": "Could not load organizations",
     "zh-CN": "无法加载组织",
     "reviewedEnglishHash": "555dddc29013d3ff7f8e9965844fb98f0772ddd9c2badb95e02f4c854b810965"
+  },
+  "sidebar.couldNotLoadTasks": {
+    "en": "Couldn’t load tasks.",
+    "zh-CN": "无法加载任务。",
+    "reviewedEnglishHash": "f2e11c7b9e281d6c015759e11c1517efa46a9454dd32ff9b28c02f022cdd39c1"
   },
   "sidebar.createNewCompany": {
     "en": "Create new company...",
@@ -114,6 +134,11 @@
     "zh-CN": "仪表盘",
     "reviewedEnglishHash": "67b696468610b879ed7f224dbf6b0861f27e39d20454cb9d7af1ec52d3e5eeaa"
   },
+  "sidebar.decisions": {
+    "en": "decisions",
+    "zh-CN": "项待决策",
+    "reviewedEnglishHash": "3183d37be5060278b0f0b2ea1095fea98e027d276f661719821018f5511f4927"
+  },
   "sidebar.done": {
     "en": "Done",
     "zh-CN": "完成",
@@ -123,6 +148,16 @@
     "en": "Edit",
     "zh-CN": "编辑",
     "reviewedEnglishHash": "464c4ffd019e1e9691dcf0537c797353ef2b1c1d4833d3d463e5b74ae4547344"
+  },
+  "sidebar.expandProject": {
+    "en": "Expand {{name}}",
+    "zh-CN": "展开 {{name}}",
+    "reviewedEnglishHash": "8546b077bdb38df51eca6f0ea65d96cd29f6c1d5cc94fb04849b6e77a523c55a"
+  },
+  "sidebar.globalSearch": {
+    "en": "Global search",
+    "zh-CN": "全局搜索",
+    "reviewedEnglishHash": "f72cf4a27b8ce0c7d8b10c769d1bed052835d1d6c387ed55bc6da2b2c759f8f8"
   },
   "sidebar.goals": {
     "en": "Goals",
@@ -154,6 +189,11 @@
     "zh-CN": "正在加载组织…",
     "reviewedEnglishHash": "a47e333dbd2e36a2610c8763270bdc7be17456261e7f2b24aaad028f541a7ef3"
   },
+  "sidebar.moreWorkspacePages": {
+    "en": "More workspace pages",
+    "zh-CN": "更多工作区页面",
+    "reviewedEnglishHash": "0a1a85553b8cc8f77c3d62ba4e7a48019570d7e8ad22bbd1fd46ff99d17ef4e0"
+  },
   "sidebar.newIssue": {
     "en": "New Issue",
     "zh-CN": "新建任务",
@@ -173,6 +213,11 @@
     "en": "No organizations",
     "zh-CN": "没有组织",
     "reviewedEnglishHash": "c256efdc5810ef6b5878397b5d04928eb888dd122fae10ed5a1e3f4034a47a5d"
+  },
+  "sidebar.noTasksYet": {
+    "en": "No tasks yet.",
+    "zh-CN": "暂无任务。",
+    "reviewedEnglishHash": "5a889457d27958e345b5aa4791823c763698b1560c0ec3603952196e7ae75b7d"
   },
   "sidebar.noWorkspaces": {
     "en": "No workspaces",
@@ -214,6 +259,11 @@
     "zh-CN": "管道",
     "reviewedEnglishHash": "d1a8fffeb935847ec893742b24793f3c6c6e04bf3738d778506861427cc8b5b5"
   },
+  "sidebar.recents": {
+    "en": "Recents",
+    "zh-CN": "最近访问",
+    "reviewedEnglishHash": "41a86988751ad5cbcd9f1a336274976be421b311b8fe80b5a70dc2c08c8eecb3"
+  },
   "sidebar.removeFromStarred": {
     "en": "Remove from starred",
     "zh-CN": "从收藏中移除",
@@ -228,6 +278,11 @@
     "en": "Routines",
     "zh-CN": "例行任务",
     "reviewedEnglishHash": "61b7bb44e2b47b7c0ccaccff4872fdcf3e298345d0f003ea4bf54e8c84e2a889"
+  },
+  "sidebar.searchTooltip": {
+    "en": "Search tasks, agents, projects",
+    "zh-CN": "搜索任务、智能体、项目",
+    "reviewedEnglishHash": "597135568071b8ef30af02f3d8d1456312e25c226aefcb35482c35fe4c8df3e0"
   },
   "sidebar.selectCompany": {
     "en": "Select company",
@@ -284,10 +339,20 @@
     "zh-CN": "未读对话",
     "reviewedEnglishHash": "81025be613f09710fde2043ed724a5987bd1754424e13f0fd9769e0aa89e29df"
   },
+  "sidebar.viewCommitOnGitHub": {
+    "en": "View commit {{sha}} on GitHub",
+    "zh-CN": "在 GitHub 上查看提交 {{sha}}",
+    "reviewedEnglishHash": "a0a3c66ee6e6b1dcd21b181ef3a0326693f8ef5564a3c94532e315e2146ff100"
+  },
   "sidebar.work": {
     "en": "Work",
     "zh-CN": "工作",
     "reviewedEnglishHash": "104ab9213e28e4ff5ba0b4086457503e8a4656815cfec7bcf2799d76a3db081d"
+  },
+  "sidebar.workspaceNavigation": {
+    "en": "Workspace navigation",
+    "zh-CN": "工作区导航",
+    "reviewedEnglishHash": "30242d8d80a919e33f312b604d243610a8a3ff58686c8bff238cf2a310959248"
   },
   "sidebar.workspaces": {
     "en": "Workspaces",

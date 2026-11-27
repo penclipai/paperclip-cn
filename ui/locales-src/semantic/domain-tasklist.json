@@ -1,0 +1,142 @@
+{
+  "taskList.collapseAllTasks": {
+    "en": "Collapse all tasks",
+    "zh-CN": "折叠全部任务",
+    "reviewedEnglishHash": "87bb61db4dcc4d1f3eeda1522d1ab7f6bcb118933584217c35234356fdcc3d8b"
+  },
+  "taskList.columns.lastUpdated": {
+    "en": "Last updated",
+    "zh-CN": "最近更新",
+    "reviewedEnglishHash": "382ac5f308f76c24b2c981e2041943bc2be2229cbd285ad362b9af1cfc386ef8"
+  },
+  "taskList.columns.parentTask": {
+    "en": "Parent Task",
+    "zh-CN": "父任务",
+    "reviewedEnglishHash": "64d8f3c2e538007de476968cd68fd8ff9c49d6035ae61719b2698a12166012b2"
+  },
+  "taskList.columns.task": {
+    "en": "Task",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "4bc74b21357c6cf5cca8f66b4d4ee948be64d0396feb434c9645e168ad61ceaf"
+  },
+  "taskList.columns.taskId": {
+    "en": "Task ID",
+    "zh-CN": "任务编号",
+    "reviewedEnglishHash": "3e0cce3aac8965cde8e12b9e11ce70029a0b992074d11140d7c2a9b034a24034"
+  },
+  "taskList.columns.worktree": {
+    "en": "Worktree",
+    "zh-CN": "工作树",
+    "reviewedEnglishHash": "c893ba3003855aabfee294479c03266349e97e1675ade569b480e56ce4c2bde3"
+  },
+  "taskList.columnsRegionAria": {
+    "en": "Task list columns",
+    "zh-CN": "任务列表列",
+    "reviewedEnglishHash": "a6c1f82a91021023b24146beb9c19cd16c37e47f96425e04b59601c958448d24"
+  },
+  "taskList.controlsAria": {
+    "en": "Task list controls",
+    "zh-CN": "任务列表控制栏",
+    "reviewedEnglishHash": "515af17592e284bba1d77c0a0c92375a4aca7d7e7ef3d9db4fd573638740d381"
+  },
+  "taskList.density.comfortable": {
+    "en": "comfortable",
+    "zh-CN": "标准密度",
+    "reviewedEnglishHash": "46fd05f35b5591e22afacd79c3060afe18120b359df5d42c98e9d0273d100cd5"
+  },
+  "taskList.density.compact": {
+    "en": "compact",
+    "zh-CN": "紧凑密度",
+    "reviewedEnglishHash": "b6b54201f23d00f5b719f532c30bc3362af2da4651d9a33cc0e94714d01c205c"
+  },
+  "taskList.density.spacious": {
+    "en": "spacious",
+    "zh-CN": "宽松密度",
+    "reviewedEnglishHash": "d63f00430230ade7298ff6de666e02bc93ba61eb571db905c7fdfef08fe9b070"
+  },
+  "taskList.densityListAria": {
+    "en": "{{density}} task list",
+    "zh-CN": "{{density}}任务列表",
+    "reviewedEnglishHash": "f7879edb991edd05006714328559bdff5b1b240512aa988de036abd60fc3c06d"
+  },
+  "taskList.dragInstructions": {
+    "en": "Click to sort. Drag horizontally to reorder, or use Alt plus Left or Right Arrow.",
+    "zh-CN": "点击排序。水平拖拽可重新排列列顺序，或使用 Alt 加左/右方向键。",
+    "reviewedEnglishHash": "77230d6d110c023e4af5b7a52eb6da718fb3b9cf969a96206a8d8b6c9b6c8466"
+  },
+  "taskList.expandAllTasks": {
+    "en": "Expand all tasks",
+    "zh-CN": "展开全部任务",
+    "reviewedEnglishHash": "91d6292731893eb70cc1ea29540ca84f08e4fabb7ded0ffa958284ff466c8e9b"
+  },
+  "taskList.layoutAria": {
+    "en": "Task layout",
+    "zh-CN": "任务布局",
+    "reviewedEnglishHash": "9d37eff2b1bc92a18a69fcfdf6e5b522960a3f587384c919a545797dcfab1598"
+  },
+  "taskList.reorderHelp": {
+    "en": "Drag to reorder columns, or use Alt plus Left or Right Arrow. Click to sort.",
+    "zh-CN": "拖拽以重新排序列，或使用 Alt 加左/右方向键。点击可排序。",
+    "reviewedEnglishHash": "6402ef2688d21a357ff25b9e64751123aa249c0a8bc8cb6aeef05ce368cf45a6"
+  },
+  "taskList.searchPlaceholder": {
+    "en": "Search tasks…",
+    "zh-CN": "搜索任务…",
+    "reviewedEnglishHash": "945d1c210c42783b3bf35d306971e2e3c163647eaa6e8de547507df1bd289aa3"
+  },
+  "taskList.showMoreTasks": {
+    "en": "Show more tasks",
+    "zh-CN": "显示更多任务",
+    "reviewedEnglishHash": "45219cf285e5b970c3fc5045d01ccc2e0891da49ed424279b4b9f177620f659a"
+  },
+  "taskList.sortColumnAria": {
+    "en": "{{label}}: sort {{direction}}",
+    "zh-CN": "{{label}}：{{direction}}排序",
+    "reviewedEnglishHash": "3ad57e8e422039941e0084ddf256ba85c2b7e4e86251f1440df2a756c102baa7"
+  },
+  "taskList.sortDirection.ascending": {
+    "en": "ascending",
+    "zh-CN": "升序",
+    "reviewedEnglishHash": "f8ad0148b8ecce4b2baaeea0cdafa33711ce29a90f0e4cf74f0c0e92772b3328"
+  },
+  "taskList.sortDirection.descending": {
+    "en": "descending",
+    "zh-CN": "降序",
+    "reviewedEnglishHash": "21c1f31f240521a3638f337e59c974742d9e946c2aeef9c60ddc66c7b6f5575d"
+  },
+  "taskList.sortDirection.none": {
+    "en": "none",
+    "zh-CN": "默认",
+    "reviewedEnglishHash": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe"
+  },
+  "taskList.tableAria": {
+    "en": "Task list",
+    "zh-CN": "任务列表",
+    "reviewedEnglishHash": "5d32533d2c6c942a97f92f6b57d6c957c41507b4c8478e789a22354cf267129b"
+  },
+  "taskList.taskGroupAria": {
+    "en": "{{title}} task group",
+    "zh-CN": "{{title}} 任务组",
+    "reviewedEnglishHash": "633e504cf8b2cc12b455f2dda3ce4a8640d93a313ac71d8edc95b5d7ba6aab42"
+  },
+  "taskList.taskHierarchyAria": {
+    "en": "Task hierarchy",
+    "zh-CN": "任务层级",
+    "reviewedEnglishHash": "ee1ca7a53ee84ecb6382e5b8d5846bc4ed03b5bbf9f33f8572af78d74805cdb3"
+  },
+  "taskList.taskViewAria": {
+    "en": "Task view: {{label}}",
+    "zh-CN": "任务视图：{{label}}",
+    "reviewedEnglishHash": "2223e07bba4aef3f16d8ba618fa3796a6e72f2ff69b72c83938fd7b76bcc3d3f"
+  },
+  "taskList.views": {
+    "en": "Views",
+    "zh-CN": "视图",
+    "reviewedEnglishHash": "69c404591e99d86fd11f5ae1b15ebd246d4836aaa88a29f75f3f3d61c028357a"
+  },
+  "taskList.viewsAria": {
+    "en": "Task views",
+    "zh-CN": "任务视图列表",
+    "reviewedEnglishHash": "eb704b639c466c9b57ac083c9368531120db01a82af610bc1c9ee3cc1c68d262"
+  }
+}

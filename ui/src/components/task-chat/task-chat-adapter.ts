@@ -8,6 +8,7 @@
  * echo, which is the core legibility win.
  */
 import type { Agent } from "@penclipai/shared";
+import { getCurrentLocale, translateInstant } from "@/i18n";
 import type { IssueChatComment } from "@/lib/issue-chat-messages";
 import { resolveCommentAttribution } from "@/lib/comment-attribution";
 import { resolveIssueChatHumanAuthor } from "@/lib/issue-chat-human-author";
@@ -54,7 +55,7 @@ export function formatTaskChatTimestamp(value: unknown): string | undefined {
   if (!value) return undefined;
   const d = value instanceof Date ? value : new Date(value as string);
   if (Number.isNaN(d.getTime())) return undefined;
-  return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  return d.toLocaleTimeString(getCurrentLocale(), { hour: "numeric", minute: "2-digit" });
 }
 
 /** Keep every comment footer on the same compact, user-visible timestamp. */
@@ -73,8 +74,8 @@ export function commentsToTaskChatItems(
   for (const comment of comments) {
     if (comment.deletedAt) continue;
     if (comment.conversationSessionGeneration != null) {
-      items.push({ id: comment.id, kind: "marker", variant: "session_start", label: "New session",
-        detail: "Earlier messages and files are still available.", createdAtIso: new Date(comment.createdAt).toISOString() });
+      items.push({ id: comment.id, kind: "marker", variant: "session_start", label: translateInstant("taskChat.sessionStart.label", { defaultValue: "New session" }),
+        detail: translateInstant("taskChat.sessionStart.detail", { defaultValue: "Earlier messages and files are still available." }), createdAtIso: new Date(comment.createdAt).toISOString() });
       continue;
     }
     const kind = authorKind(comment);
@@ -89,7 +90,7 @@ export function commentsToTaskChatItems(
     }) : undefined;
     if (kind === "agent") {
       const agentId = effectiveAgentId(comment);
-      authorName = (agentId && ctx.agentMap?.get(agentId)?.name) || "Agent";
+      authorName = (agentId && ctx.agentMap?.get(agentId)?.name) || translateInstant("Agent");
       agentIcon = agentId ? ctx.agentMap?.get(agentId)?.icon : undefined;
       onBehalfOfUserName = resolveCommentAttribution({
         authorAgentId: agentId,
@@ -138,6 +139,7 @@ export function commentsToTaskChatItems(
       origin: comment.origin ?? "comment",
       chatMessage: comment.metadata?.chatMessage,
       sourceChannel: kind === "human" ? comment.metadata?.sourceChannel : undefined,
+      ...(kind === "human" && comment.nativeCommand === "swarm" ? { nativeCommand: "swarm" as const } : {}),
       timestamp: formatTaskChatCommentTimestamp(comment, kind),
       optimistic,
       queueTargetRunId: queued ? comment.queueTargetRunId ?? null : null,

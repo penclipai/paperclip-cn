@@ -80,7 +80,7 @@ function isFilesystemLikeLabel(value: string) {
 
 function displayLocalSourceLabel(label: string | null | undefined) {
   const trimmed = label?.trim();
-  if (!trimmed || isFilesystemLikeLabel(trimmed)) return "Local folder";
+  if (!trimmed || isFilesystemLikeLabel(trimmed)) return translateInstant("agentSkills.source.localFolder", { defaultValue: "Local folder" });
   return trimmed;
 }
 
@@ -106,7 +106,12 @@ export function buildAgentSkillSourceMeta(skill: SourceSkill): AgentSkillSourceM
   }
 
   if (skill.sourceBadge === "paperclip") {
-    return { icon: Paperclip, label: skill.sourceLabel?.trim() || "Paperclip managed" };
+    const trimmed = skill.sourceLabel?.trim();
+    const label =
+      trimmed === "Paperclip bundled"
+        ? translateInstant("companySkills.paperclipBundled")
+        : trimmed || translateInstant("agentSkills.source.paperclipManaged", { defaultValue: "Paperclip managed" });
+    return { icon: Paperclip, label };
   }
 
   if (skill.sourceBadge === "catalog" || skill.sourceType === "catalog") {

@@ -100,11 +100,14 @@ function CommandInput({
 
 function CommandList({
   className,
+  label,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.List>) {
+  const { t } = useTranslation()
   return (
     <CommandPrimitive.List
       data-slot="command-list"
+      label={label ?? t("Suggestions", { defaultValue: "Suggestions" })}
       className={cn(
         "max-h-(--sz-300px) scroll-py-1 overflow-x-hidden overflow-y-auto",
         className

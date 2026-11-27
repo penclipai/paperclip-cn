@@ -128,7 +128,7 @@ export function Sidebar() {
         <SidebarCompanyMenu />
       </div>
 
-      <nav className="flex-1 min-h-0 overflow-y-auto scrollbar-auto-hide flex flex-col gap-4 pointer-coarse:gap-3 px-3 py-2">
+      <nav aria-label={translateInstant("sidebar.workspaceNavigation", { defaultValue: "Workspace navigation" })} className="flex-1 min-h-0 overflow-y-auto scrollbar-auto-hide flex flex-col gap-4 pointer-coarse:gap-3 px-3 py-2">
         <div className="flex flex-col gap-0.5">
           {/* New Task button aligned with nav items */}
           <button
@@ -151,7 +151,7 @@ export function Sidebar() {
             label={translateInstant("Inbox")}
             icon={Inbox}
             badge={inboxBadge.inbox}
-            badgeLabel="unread"
+            badgeLabel={translateInstant("unread")}
             badgeTone={inboxBadge.failedRuns > 0 ? "danger" : "default"}
             alert={inboxBadge.failedRuns > 0}
           />
@@ -161,11 +161,11 @@ export function Sidebar() {
               label={translateInstant("instanceExperimentalSettings.decisionsTitle")}
               icon={ListChecks}
               badge={attentionCount}
-              badgeLabel="decisions"
+              badgeLabel={translateInstant("sidebar.decisions", { defaultValue: "decisions" })}
             />
           ) : null}
           {showStatusCards ? (
-            <SidebarNavItem to="/status" label={translateInstant("Status")} icon={LayoutGrid} textBadge="beta" />
+            <SidebarNavItem to="/status" label={translateInstant("Status")} icon={LayoutGrid} textBadge={translateInstant("common.beta", { defaultValue: "beta" })} />
           ) : null}
           {conferenceRoomChatEnabled ? (
             <SidebarNavItem to="/board-chat" label={translateInstant("Conference Room")} icon={MessagesSquare} />
@@ -175,7 +175,7 @@ export function Sidebar() {
         <SidebarSection label={translateInstant("Work")} collapsible={{ open: workOpen, onOpenChange: setWorkOpen }}>
           {responsibilitiesHome ? null : tasksItem}
           {showCases ? (
-            <SidebarNavItem to="/cases" label={translateInstant("Cases")} icon={Layers} textBadge="beta" />
+            <SidebarNavItem to="/cases" label={translateInstant("Cases")} icon={Layers} textBadge={translateInstant("common.beta", { defaultValue: "beta" })} />
           ) : null}
           <SidebarNavItem to="/routines" label={translateInstant("Routines")} icon={Repeat} />
           {showGoalsLink ? (
@@ -220,7 +220,7 @@ export function Sidebar() {
 
         <SidebarSection label={translateInstant("Company")} collapsible={{ open: companyOpen, onOpenChange: setCompanyOpen }}>
           <SidebarNavItem to="/org" label={translateInstant("Org")} icon={Network} />
-          {showApps ? <SidebarNavItem to="/apps" label={translateInstant("Connectors")} icon={Unplug} /> : null}
+          {showApps ? <SidebarNavItem to="/apps" label={translateInstant("Plugins")} icon={Unplug} /> : null}
           <SidebarNavItem to="/timeline" label={translateInstant("sidebar.timeline")} icon={GanttChartSquare} />
           <SidebarNavItem to="/costs" label={translateInstant("Costs")} icon={DollarSign} />
           {/* One entry — /audit merged into the rich Activity feed (PAP-16302). */}

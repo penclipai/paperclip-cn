@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import type { To } from "react-router-dom";
 import { Link } from "@/lib/router";
 import { ArtifactFront } from "./ArtifactFront";
@@ -82,8 +83,11 @@ export interface StackTileProps {
 
 /** A task with several artifacts: its newest one on top of a stack, the task's title underneath. */
 export function ArtifactStackTile({ identifier, title, count, updatedAt, front, to, onClick, now }: StackTileProps) {
+  const { t } = useTranslation();
+  const countText = countLabel(count);
+  const updatedText = t("artifacts.group.updated", { date: updatedLabel(updatedAt, now), defaultValue: "Updated {{date}}" });
   return (
-    <ArtifactTile label={`Open ${identifier} ${title}, ${countLabel(count)}`} to={to} onClick={onClick} testId="artifact-v1-stack-tile" caption={<ArtifactCaption title={title} identifier={identifier} facts={[countLabel(count), `Updated ${updatedLabel(updatedAt, now)}`]} />}>
+    <ArtifactTile label={t("artifacts.tile.openStack", { identifier, title, countLabel: countText, defaultValue: "Open {{identifier}} {{title}}, {{countLabel}}" })} to={to} onClick={onClick} testId="artifact-v1-stack-tile" caption={<ArtifactCaption title={title} identifier={identifier} facts={[countText, updatedText]} />}>
       <ArtifactStack front={front} />
     </ArtifactTile>
   );
@@ -91,9 +95,11 @@ export function ArtifactStackTile({ identifier, title, count, updatedAt, front, 
 
 /** One artifact on its own: its file name (or title) underneath. */
 export function ArtifactSingleTile({ subject, to, onClick, now }: { subject: ArtifactSubject; to?: To; onClick?: () => void; now?: Date }) {
+  const { t } = useTranslation();
   const name = subject.filename ?? subject.title;
+  const updatedText = subject.updatedAt ? [t("artifacts.group.updated", { date: updatedLabel(subject.updatedAt, now), defaultValue: "Updated {{date}}" })] : [];
   return (
-    <ArtifactTile label={`Open ${name}`} to={to} onClick={onClick} testId="artifact-v1-single-tile" caption={<ArtifactCaption title={name} identifier={subject.taskIdentifier} facts={subject.updatedAt ? [`Updated ${updatedLabel(subject.updatedAt, now)}`] : []} />}>
+    <ArtifactTile label={t("artifacts.tile.openSingle", { name, defaultValue: "Open {{name}}" })} to={to} onClick={onClick} testId="artifact-v1-single-tile" caption={<ArtifactCaption title={name} identifier={subject.taskIdentifier} facts={updatedText} />}>
       <ArtifactFront subject={subject} />
     </ArtifactTile>
   );

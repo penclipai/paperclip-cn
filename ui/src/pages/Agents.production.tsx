@@ -399,7 +399,7 @@ export function Agents() {
             {showEnvironmentColumn && <span className="text-xs text-muted-foreground" title={resolveRenderedEnvironment(agent.id).title}>
               {resolveRenderedEnvironment(agent.id).label} · {resolveRenderedEnvironment(agent.id).detail}
             </span>}
-            {agent.lastHeartbeatAt && <span className="text-xs text-muted-foreground" title="Last heartbeat">{relativeTime(agent.lastHeartbeatAt)}</span>}
+            {agent.lastHeartbeatAt && <span className="text-xs text-muted-foreground" title={translateInstant("agents.lastHeartbeat", { defaultValue: "Last heartbeat" })}>{relativeTime(agent.lastHeartbeatAt)}</span>}
           </div>
         )}
       />

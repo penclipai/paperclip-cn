@@ -32,7 +32,7 @@ export function Goals() {
   const goalsView = useQueryView(goalsQuery);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Target} message={t("Select an organization to view goals.")} />;
+    return <EmptyState placement="upper" icon={Target} message={t("Select an organization to view goals.")} />;
   }
 
   // Keep a loaded list on screen through a failed refetch; only a real
@@ -55,7 +55,7 @@ export function Goals() {
   return (
     <div className="space-y-4">
       {goals && goals.length === 0 && (
-        <EmptyState
+        <EmptyState placement="upper"
           icon={Target}
           message={t("No goals yet.")}
           action={t("Add Goal")}

@@ -933,7 +933,10 @@ export function CompanyExport() {
       pushToast({
         tone: "success",
         title: translateInstant("companyExport.exportDownloadedTitle"),
-        body: `${resultCheckedFiles.size} file${resultCheckedFiles.size === 1 ? "" : "s"} exported as ${result.rootPath}.zip`,
+        body: translateInstant("companyExport.exportDownloadedBody", {
+          count: resultCheckedFiles.size,
+          rootPath: result.rootPath,
+        }),
       });
     },
     onError: (err) => {
@@ -1210,13 +1213,35 @@ export function CompanyExport() {
     );
   }
 
+  function localizeExportWarning(message: string): string {
+    const skippedMatch = message.match(/^Skipped (\d+) built-in managed (agent|skill|routine)s? from export\.$/);
+    if (skippedMatch) {
+      const count = Number(skippedMatch[1]);
+      const kind = skippedMatch[2] as "agent" | "skill" | "routine";
+      return translateInstant(`companyExport.warning.skippedBuiltIn.${kind}`, {
+        count,
+        defaultValue: message,
+      });
+    }
+    return message;
+  }
+
+  function localizeFidelityWarning(warning: { code: string; message: string }): string {
+    const countMatch = warning.message.match(/^(\d+)\s+/);
+    const count = countMatch ? Number(countMatch[1]) : undefined;
+    return translateInstant(`companyExport.fidelity.${warning.code}`, {
+      ...(count !== undefined ? { count } : {}),
+      defaultValue: warning.message,
+    });
+  }
+
   if (!exportData) {
     return (
       <EmptyState
         icon={Package}
         title={translateInstant("Export preview unavailable")}
         message={translateInstant("No export preview is loaded.")}
-        action="Load preview"
+        action={translateInstant("companyExport.loadPreview", { defaultValue: "Load preview" })}
         onAction={startPreviewRequest}
         hideActionIcon
       />
@@ -1276,7 +1301,7 @@ export function CompanyExport() {
             <Download className="mr-1.5 h-3.5 w-3.5" />
             {downloadMutation.isPending
               ? translateInstant("companyExport.building")
-              : `Export ${selectedCount.toLocaleString()} file${selectedCount === 1 ? "" : "s"}`}
+              : translateInstant("companyExport.exportButton", { count: selectedCount })}
           </Button>
         </div>
       </div>
@@ -1286,7 +1311,7 @@ export function CompanyExport() {
         <div className="mx-5 mt-3 rounded-md border border-amber-500/30 bg-amber-500/5 px-4 py-3">
           {warnings.map((w) => (
             <div key={w} className="text-xs text-amber-500">
-              {w}
+              {localizeExportWarning(w)}
             </div>
           ))}
         </div>
@@ -1308,7 +1333,7 @@ export function CompanyExport() {
                   : "text-amber-500",
               )}
             >
-              {warning.message}
+              {localizeFidelityWarning(warning)}
             </div>
           ))}
         </div>

@@ -2,6 +2,7 @@ import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Agent } from "@penclipai/shared";
+import { displayAgentRole } from "@/lib/agent-role";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -188,7 +189,7 @@ function AgentChatPickerResults({
                 <CommandItem
                   key={agent.id}
                   value={agent.id}
-                  keywords={[agent.name, agent.title ?? "", agent.role]}
+                  keywords={[agent.name, agent.title ?? "", agent.role, displayAgentRole(agent.role)]}
                   onSelect={() => {
                     void selectAgent(agent);
                   }}
@@ -203,7 +204,7 @@ function AgentChatPickerResults({
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="truncate font-medium">{agent.name}</span>
                     <span className="truncate text-xs text-muted-foreground">
-                      {agent.title ?? agent.role}
+                      {agent.title ?? displayAgentRole(agent.role)}
                     </span>
                   </span>
                   {unreadCount > 0 && (

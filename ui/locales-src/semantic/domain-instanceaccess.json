@@ -1,0 +1,12 @@
+{
+  "instanceAccess.adminRequired": {
+    "en": "Instance admin access is required to manage users.",
+    "zh-CN": "需要实例管理员权限才能管理用户。",
+    "reviewedEnglishHash": "1dccd82928242527d8134c93dc3a02cbdf89d6b5689b4c8ef02b1189a8839d62"
+  },
+  "instanceAccess.saveOrganizationAccess": {
+    "en": "Save organization access",
+    "zh-CN": "保存组织访问权限",
+    "reviewedEnglishHash": "8806566c25c4ce309f0958a9b6007977eead0e50586e6a87659bfa8072e0ca80"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "issueColumns.description.assignee": {
+    "en": "Responsible agent or board user.",
+    "zh-CN": "负责该任务的智能体或董事会用户。",
+    "reviewedEnglishHash": "c67ac96152be3f34bbb65cc801470c30b2153739d0727aaa8a045df583af25bb"
+  },
+  "issueColumns.description.id": {
+    "en": "Ticket identifier like PAP-1009.",
+    "zh-CN": "任务编号，例如 PAP-1009。",
+    "reviewedEnglishHash": "4710c06ff2d05a12fdfc9f06909d9783524e2411efdf35055d5fedba86a5482c"
+  },
+  "issueColumns.description.idTask": {
+    "en": "Task identifier like PAP-1009 on the trailing edge.",
+    "zh-CN": "位于行尾的任务编号，例如 PAP-1009。",
+    "reviewedEnglishHash": "8a525f1ebf7392aecdb0a77feb98e4538eca70015c99d5feecaf41a714807d54"
+  },
+  "issueColumns.description.kickedOffBy": {
+    "en": "Board user or agent who created the task.",
+    "zh-CN": "创建该任务的董事会用户或智能体。",
+    "reviewedEnglishHash": "4e377625dfd4668467598e8f9a30976a0c244ea332f913b5f6ed035a9bb70df6"
+  },
+  "issueColumns.description.labels": {
+    "en": "Task labels and tags.",
+    "zh-CN": "任务标签。",
+    "reviewedEnglishHash": "d1cda43e3fa6e1fc824a10ec138defc51495c0603c66b35e031011ccaf1ab10e"
+  },
+  "issueColumns.description.parent": {
+    "en": "Parent task identifier and title.",
+    "zh-CN": "父任务的编号与标题。",
+    "reviewedEnglishHash": "84f248857c893eab1d00b503325d45aa66d96ce64323cdc7c2410fc7030b818e"
+  },
+  "issueColumns.description.project": {
+    "en": "Linked project pill with its color.",
+    "zh-CN": "带颜色标记的关联项目徽章。",
+    "reviewedEnglishHash": "d615593ae5e3a12b53df4e9deaa08f73489ab69a00c9ed1faee9884273f16e0c"
+  },
+  "issueColumns.description.status": {
+    "en": "Task state chip on the left edge.",
+    "zh-CN": "位于左侧的任务状态标签。",
+    "reviewedEnglishHash": "2a80b434d83c763ad10807307f1a7eaeab5424a8308dd83fdee9322124164d92"
+  },
+  "issueColumns.description.statusTask": {
+    "en": "Task state icon on the leading edge.",
+    "zh-CN": "位于行首的任务状态图标。",
+    "reviewedEnglishHash": "460d683bdc0b63fb9a6a77525a199428679a57133f35cff48a288ed70ddd0b11"
+  },
+  "issueColumns.description.updated": {
+    "en": "Latest visible activity time.",
+    "zh-CN": "最近一次可见活动时间。",
+    "reviewedEnglishHash": "6d595ff1a36c55bef3e5202bf7fcd45793ea157b82b2db0d3860446e5d43bfe5"
+  },
+  "issueColumns.description.workspace": {
+    "en": "Execution or project workspace used for the task.",
+    "zh-CN": "任务使用的执行或项目工作区。",
+    "reviewedEnglishHash": "a25704170973033367b0c4f526125f005314e978b274209c049fcca75ff5411c"
+  },
+  "issueColumns.subtasksRunningBelow_one": {
+    "en": "{{count}} sub-task running below",
+    "zh-CN": "下方有 {{count}} 个子任务正在运行",
+    "reviewedEnglishHash": "d0a5885759204bdffd2de5074dd51e01cc77fed18e20273dae775e0f7503ed76"
+  },
+  "issueColumns.subtasksRunningBelow_other": {
+    "en": "{{count}} sub-tasks running below",
+    "zh-CN": "下方有 {{count}} 个子任务正在运行",
+    "reviewedEnglishHash": "e7e8045818ae03bc8f8e9099b50794d349de6ef59a09583aa1f079762885cf42"
+  },
+  "issueColumns.updatedAgo": {
+    "en": "Updated {{time}}",
+    "zh-CN": "更新于 {{time}}",
+    "reviewedEnglishHash": "6379f4b4efb9b0a5342283ad3b0d99edf9df796e29d5791b24e14999ac127e78"
+  },
+  "issueColumns.viaAgent": {
+    "en": "{{user}} · via {{agent}}",
+    "zh-CN": "{{user}} · 经由 {{agent}}",
+    "reviewedEnglishHash": "24752efb1385c71bdeb3aeb16a87664c556d2dca086caa61ad4d3582f78e447d"
+  }
+}

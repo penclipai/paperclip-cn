@@ -180,7 +180,7 @@ function TruncatedCopyable({ value, icon: Icon }: { value: string; icon: Compone
         )}
         onClick={handleCopy}
         title={value}
-        aria-label={`Copy ${value} to clipboard`}
+        aria-label={translateInstant("issueProperties.copyToClipboardAria", { value, defaultValue: `Copy ${value} to clipboard` })}
       >
         {!streamlinedUiEnabled ? value : middle ? (
           <span className="flex min-w-0" data-middle-truncate="true">
@@ -1616,7 +1616,7 @@ export function IssueProperties({
         <input
           type="text"
           className="min-w-0 flex-1 rounded-md border border-border bg-transparent px-2 py-1 text-xs"
-          placeholder="What should the agent re-check?"
+          placeholder={t("issueProperties.recheckPlaceholder", { defaultValue: "What should the agent re-check?" })}
           value={monitorNotesInput}
           onChange={(e) => setMonitorNotesInput(e.target.value)}
         />
@@ -1899,7 +1899,7 @@ export function IssueProperties({
         ) : null}
         {visibleUserOptions.length > 0 ? (
           <>
-            {sectionHeader("Board users")}
+            {sectionHeader(t("issueProperties.boardUsers", { defaultValue: "Board users" }))}
             {visibleUserOptions.map((option) => renderAssigneeOption(option))}
           </>
         ) : null}
@@ -1920,7 +1920,9 @@ export function IssueProperties({
     <>
       <input
         className="w-full px-2 py-1.5 text-xs bg-transparent outline-none border-b border-border mb-1 placeholder:text-muted-foreground/50"
-        placeholder={`Search ${stageType === "review" ? "reviewers" : "approvers"}...`}
+        placeholder={stageType === "review"
+          ? t("issueProperties.searchReviewers", { defaultValue: "Search reviewers..." })
+          : t("issueProperties.searchApprovers", { defaultValue: "Search approvers..." })}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         autoFocus={!inline}
@@ -2429,9 +2431,9 @@ export function IssueProperties({
         ) : null}
 
         {assigneeRuntimeStateLoading || (assigneeRateLimits && summarizeProviderRateLimits(assigneeRateLimits, Date.now())) ? (
-          <PropertyRow label="Usage limit">
+          <PropertyRow label={t("issueProperties.usageLimit", { defaultValue: "Usage limit" })}>
             {assigneeRuntimeStateLoading ? (
-              <Skeleton className="h-4 w-32" role="status" aria-label="Loading usage limit" />
+              <Skeleton className="h-4 w-32" role="status" aria-label={t("issueProperties.loadingUsageLimit", { defaultValue: "Loading usage limit" })} />
             ) : (
               <AgentRateLimitPropertyValue
                 snapshot={assigneeRateLimits}
@@ -3235,7 +3237,7 @@ export function IssueProperties({
               <button
                 type="button"
                 className="absolute right-2.5 top-1/2 z-20 inline-flex size-5 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring group-hover/pane-tab:opacity-100 group-focus-within/pane-tab:opacity-100"
-                aria-label={`Close ${tab.label} tab`}
+                aria-label={t("issueProperties.closeTabAria", { label: tab.label, defaultValue: `Close ${tab.label} tab` })}
                 onPointerDown={(event) => {
                   event.preventDefault();
                   event.stopPropagation();

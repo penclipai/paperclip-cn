@@ -246,7 +246,7 @@ export function GitHubChatSetup() {
   }, [connected, bot, selectedAgent, state, queryClient, navigate]);
   useEffect(() => {
     setBreadcrumbs([
-      { label: translateInstant("Connectors"), href: "/apps" },
+      { label: translateInstant("Plugins"), href: "/apps" },
       { label: translateInstant("GitHub Code Review Bot") },
     ]);
     return () => setBreadcrumbs([]);
@@ -371,8 +371,10 @@ export function GitHubChatSetup() {
         {!bot
           ? translateInstant("tools.policies.chooseAgent")
           : identityOnly || state?.state === "identity"
-            ? "Connect your account"
-            : translateInstant("Connect GitHub")}
+            ? translateInstant("Connect your account")
+            : reconnect && existing
+              ? translateInstant("Reconnect GitHub")
+              : translateInstant("Connect GitHub")}
       </h1>
       <div className={cn("space-y-6", ANALYTICS_MASK_CLASS)}>
       {error ? (

@@ -1,0 +1,27 @@
+{
+  "routineCreate.couldNotSaveMissing": {
+    "en": "Couldn’t save {{missing}}. Open Edit to try again.",
+    "zh-CN": "未能保存{{missing}}。请打开编辑重试。",
+    "reviewedEnglishHash": "4ddcdd01f554d11574277a0797aaf2d12c7a7a7ca2210fab8b8506183042ccf2"
+  },
+  "routineCreate.missingResponsibility": {
+    "en": "the responsibility",
+    "zh-CN": "职责",
+    "reviewedEnglishHash": "474b0c509b1f032077185b15a08df2501a68ea5f3c462c1acc51469632ad0126"
+  },
+  "routineCreate.missingResponsibleUser": {
+    "en": "the responsible user",
+    "zh-CN": "责任人",
+    "reviewedEnglishHash": "bed14da920fc0bc61181d9ffe694b503aebbc71d62b94a89d49b8ec917a6fcf9"
+  },
+  "routineCreate.missingSchedule": {
+    "en": "the schedule",
+    "zh-CN": "计划",
+    "reviewedEnglishHash": "aba3ad7978502c4d82c25b55aa6d209060102173f4e7c0a182f49e6df8e0a096"
+  },
+  "routineCreate.missingSeparator": {
+    "en": " and ",
+    "zh-CN": "和",
+    "reviewedEnglishHash": "e3ee915a8e8c7aa02d2fced443314522b20824abd2535d5959c41dc8ab8a09e4"
+  }
+}

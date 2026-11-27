@@ -1,7 +1,127 @@
 {
+  "experimental.classicWorkspace.ariaLabel": {
+    "en": "Enable classic workspace",
+    "zh-CN": "启用经典工作区",
+    "reviewedEnglishHash": "825aa3f31d01323411a0ed2cf396d0fde8ca1d12c6239180a6e472ce1cad4a35"
+  },
+  "experimental.classicWorkspace.description": {
+    "en": "Use the previous workspace instead of the standard Coordinator workspace. This changes your interface across companies on this instance.",
+    "zh-CN": "使用旧版工作区替代标准的 Coordinator 工作区。此设置将更改你在此实例所有公司中的界面。",
+    "reviewedEnglishHash": "f6ae6d04b23164c995fc08870178e1f7805429a58bcbaedc56fb09b74779c36d"
+  },
+  "experimental.classicWorkspace.footnote": {
+    "en": "Off by default. Turn it off to return to Coordinator. Your work and your teammates’ settings stay the same.",
+    "zh-CN": "默认关闭。将其关闭即可返回 Coordinator。你的工作内容和团队成员的设置保持不变。",
+    "reviewedEnglishHash": "9ada3c16dd2e4409692185a1e4fa82b065679249e2a560a9e336102ca6457b93"
+  },
+  "experimental.classicWorkspace.loading": {
+    "en": "Loading your preference…",
+    "zh-CN": "正在加载你的偏好设置…",
+    "reviewedEnglishHash": "c765a3fba77a2051df0bbb5d03d7add88d852b6ee847e330b926ab58196ecd4d"
+  },
+  "experimental.classicWorkspace.localBoardIdentity": {
+    "en": "This local instance uses the shared Local Board identity.",
+    "zh-CN": "此本地实例使用共享的“本地董事会”身份。",
+    "reviewedEnglishHash": "ac7f7a0c099db64d4d2991dc6394ac29f63d2223ad81e556277c1980b3b78cee"
+  },
+  "experimental.classicWorkspace.saving": {
+    "en": "Saving your workspace…",
+    "zh-CN": "正在保存工作区设置…",
+    "reviewedEnglishHash": "3ea91c6940fc820d52ef176a37724efed5b8a3addaf24e141e8f71aa4f090e82"
+  },
+  "experimental.classicWorkspace.title": {
+    "en": "Classic workspace",
+    "zh-CN": "经典工作区",
+    "reviewedEnglishHash": "9a6ee1922a63515c787d5178bb29592ae3d47505b636624a6a60d01cc6319953"
+  },
+  "experimental.combinedInboxTasks.description": {
+    "en": "In the Classic workspace, fold Inbox into Tasks. One Tasks row carries the unread badge, and a Views menu reaches every personal and organization task view.",
+    "zh-CN": "在经典工作区中将收件箱折叠进任务列表。“任务”入口统一显示未读角标，并通过“视图”菜单访问所有个人和组织任务视图。",
+    "reviewedEnglishHash": "d227cfcbe2e9375377ff7b6bfc6dd5c2831e98a4c0c219ffcd05f42e4557b036"
+  },
+  "experimental.combinedInboxTasks.footnote": {
+    "en": "Coordinator always includes personal views in Tasks. For Classic, turning this off restores its separate Inbox. No data changes.",
+    "zh-CN": "Coordinator 始终在“任务”中包含个人视图。对于经典工作区，关闭此项将恢复独立的收件箱。不会更改任何数据。",
+    "reviewedEnglishHash": "8bd59a84c0a44985d7afbb7d26dfce0504edc97b783e424841584d2646db634d"
+  },
+  "experimental.googleWorkspaceConnector.ariaLabel": {
+    "en": "Toggle Paperclip Google Workspace connector experimental setting",
+    "zh-CN": "切换 Paperclip Google Workspace 连接器实验功能设置",
+    "reviewedEnglishHash": "a57e3cf854fc511a9174f8a710d07fc5c7deffd443ae98970ec6e3006e90f977"
+  },
+  "experimental.googleWorkspaceConnector.description": {
+    "en": "Show the built-in Google Workspace connector for Gmail, Drive, and Calendar while Google verification is pending.",
+    "zh-CN": "在等待 Google 审核期间，显示用于 Gmail、Drive 和 Calendar 的内置 Google Workspace 连接器。",
+    "reviewedEnglishHash": "218755eab3605d896a9ccfbccf2f25aa76e193e45f91ac940615355c9827b724"
+  },
+  "experimental.googleWorkspaceConnector.footnote": {
+    "en": "Off by default. While off, Google apps are offered through Composio and Arcade instead, and the built-in connector cannot be set up or run.",
+    "zh-CN": "默认关闭。关闭期间，Google 应用改为通过 Composio 和 Arcade 提供，内置连接器无法配置或运行。",
+    "reviewedEnglishHash": "186af75ea602b83e97f7acc7b0998003f4e803817c6bd6f2bb869392d54e4b3d"
+  },
+  "experimental.googleWorkspaceConnector.title": {
+    "en": "Google Workspace connector (Paperclip)",
+    "zh-CN": "Google Workspace 连接器（Paperclip）",
+    "reviewedEnglishHash": "2feebf474514297af1dcea5b73d677d61cdb7b5ae87bb9444ef68e4ebc6df37c"
+  },
+  "experimental.grokBot.ariaLabel": {
+    "en": "Toggle Grok Bot experimental setting",
+    "zh-CN": "切换 Grok Bot 实验功能设置",
+    "reviewedEnglishHash": "58776b7aace121f0fdf6fa42a770ee7de7b3589c883a7dd0df776e0d01f7e79a"
+  },
+  "experimental.grokBot.description": {
+    "en": "Connect an existing Grok Bot as an agent. Verify routine delivery and an authenticated reply before assigning work.",
+    "zh-CN": "将现有的 Grok Bot 连接为智能体。在分配任务前，请验证例行送达和已认证回复。",
+    "reviewedEnglishHash": "af78c95ff4186aae9f021495a80cff6f088e7424c6c7038f8eed234e7d4477f1"
+  },
+  "experimental.grokBot.title": {
+    "en": "Grok Bot",
+    "zh-CN": "Grok Bot",
+    "reviewedEnglishHash": "edb1068f03be7b5b8c5ee5e812b349c7de908b024814757a1c508b0b757811f7"
+  },
   "experimental.grokBotRequirements": {
     "en": "Requires Paperclip Runner and authenticated public HTTPS. Usage is not reported. Turning this off blocks Grok calls and new dispatch.",
     "zh-CN": "需要 Paperclip Runner 和已认证的公共 HTTPS。不会报告用量。关闭后会阻止 Grok 调用和新的调度。",
     "reviewedEnglishHash": "92fe67496c473cd29d918714cf763ad46b77f3fa16961cee0f06242f950ac4d7"
+  },
+  "experimental.legacyComposerSubmit.ariaLabel": {
+    "en": "Toggle Command/Ctrl+Enter to submit",
+    "zh-CN": "切换 Command/Ctrl+Enter 提交快捷键",
+    "reviewedEnglishHash": "50899140d45a9ce37d27a684f69b43b5490b52e7e2c36a0f6b23cc9d28c8a5c1"
+  },
+  "experimental.legacyComposerSubmit.description": {
+    "en": "Restore the previous keyboard shortcut for task replies and new tasks: Command/Ctrl+Enter submits, and Enter adds a new line.",
+    "zh-CN": "恢复任务回复和新建任务的旧版快捷键：Command/Ctrl+Enter 提交，Enter 换行。",
+    "reviewedEnglishHash": "053069c145696cb5d037e584ff6f38bd77f34c2cf43d88efe1cf94b393496bb1"
+  },
+  "experimental.legacyComposerSubmit.footnote": {
+    "en": "Off by default: Enter submits, and Shift+Enter adds a new line.",
+    "zh-CN": "默认关闭：Enter 提交，Shift+Enter 换行。",
+    "reviewedEnglishHash": "dd71dbffd43949d8d51aaa9394f02ef69f2713e3b1c46ea313d9afdbdba9f40b"
+  },
+  "experimental.legacyComposerSubmit.title": {
+    "en": "Command/Ctrl+Enter to Submit",
+    "zh-CN": "Command/Ctrl+Enter 提交",
+    "reviewedEnglishHash": "d5894ecbe23bbe51ba5d709ed198d54c9c738800e95d3e4e5fc9e205bd7cd558"
+  },
+  "experimental.muse.ariaLabel": {
+    "en": "Toggle Muse experimental setting",
+    "zh-CN": "切换 Muse 实验功能设置",
+    "reviewedEnglishHash": "ef7e5e713e758d14a6b206890910ff41b692f21a5aac5a574fce80e7cf15a1e1"
+  },
+  "experimental.muse.description": {
+    "en": "Connect your personal Meta Muse. Pair it, detect its receiver, and verify an independent background reply before assigning tasks.",
+    "zh-CN": "连接你的个人 Meta Muse。在分配任务前，请完成配对、检测接收器并验证独立后台回复。",
+    "reviewedEnglishHash": "08efb8ef96cab0c79749fb134bb7c220a3e29ac784f3ea8c7d738338b466fbd6"
+  },
+  "experimental.muse.footnote": {
+    "en": "Requires Paperclip Runner and an authenticated instance with a public HTTPS URL. Turning this off blocks new work; cleanup and stop evidence remain available. Provider usage and cost are unavailable.",
+    "zh-CN": "需要 Paperclip Runner 以及带有公网 HTTPS URL 的已认证实例。关闭后将阻止新任务派发；清理与停止凭据仍可使用。提供方用量与费用不可用。",
+    "reviewedEnglishHash": "97327c96aaffb19cbd99e4e2e1af0f51238b68c71d067b1e7c655a05d60a6778"
+  },
+  "experimental.muse.title": {
+    "en": "Muse — Personal agent",
+    "zh-CN": "Muse — 个人智能体",
+    "reviewedEnglishHash": "36b7c21c77b5e861efebedcb379549dfe938bf43334677fbbd29c8d59934e8bc"
   }
 }

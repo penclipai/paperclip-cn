@@ -588,20 +588,9 @@ for (const journey of [
       });
       const connections: Record<string, { id: string; name: string }> = {};
       for (const service of ["notion", "gmail"]) {
-        // Vite may finish its first dependency optimization by reloading the
-        // page here. Wait for the navigation response only; the role locators
-        // below still prove that the Apps UI has loaded before interaction.
-        await page.goto(base + prefix + "/apps", { waitUntil: "commit" });
-        const custom = page
-          .getByRole("list", { name: "Connector list" })
-          .getByRole("listitem")
-          .filter({ hasText: "Connect your own tool" });
-        await custom
-          .getByRole("button", { name: "Connect", exact: true })
-          .click();
-        await custom
-          .getByRole("button", { name: "Connect your own MCP server" })
-          .click();
+        await page.goto(base + prefix + "/apps");
+        await page.getByRole("button", { name: "Add", exact: true }).click();
+        await page.getByRole("menuitem", { name: /MCP server URL/ }).click();
         await page
           .getByPlaceholder("https://example.com/actions")
           .fill(`http://127.0.0.1:${port}/${service}`);

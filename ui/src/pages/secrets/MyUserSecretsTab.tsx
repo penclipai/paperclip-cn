@@ -63,7 +63,7 @@ export function MyUserSecretsTab({ companyId }: { companyId: string }) {
   );
 
   return (
-    <section aria-label={t("secrets.mySecrets", { defaultValue: "My secrets" })} className="flex flex-col gap-4">
+    <section aria-label={t("secrets.mySecrets", { defaultValue: "My secrets" })} className="flex flex-1 flex-col gap-4">
       <p className="max-w-xl text-sm text-muted-foreground">
         {t("secrets.mySecretsIntro", { defaultValue: "Values only you provide. Agents use them when they work for you." })}
         {missingCount > 0 ? (
@@ -85,7 +85,7 @@ export function MyUserSecretsTab({ companyId }: { companyId: string }) {
           retrying={mySecretsView.isFetching}
         />
       ) : entries.length === 0 && !mySecretsQuery.isPending && mySecretsView.kind !== "reconnecting" ? (
-        <EmptyState
+        <EmptyState placement="upper"
           icon={KeyRound}
           message={t("secrets.mySecretsEmpty", { defaultValue: "Nothing is asked of you yet. An admin decides which secrets each member provides." })}
         />

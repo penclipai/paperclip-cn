@@ -164,6 +164,11 @@
     "zh-CN": "默认值为 0：每次运行后关闭 ACP 进程，同时保留持久会话状态。",
     "reviewedEnglishHash": "01653b2fd423ba51d6e086ec6a8c1f638560ea417b109fbb5f126b7882825725"
   },
+  "Deferred": {
+    "en": "Deferred",
+    "zh-CN": "已推迟",
+    "reviewedEnglishHash": "1fc4d2e60ca80e29e9ac8f51f41bcb7380978e98d7fc035d4bdfe4ff44a4ed02"
+  },
   "Deferred wake": {
     "en": "Deferred wake",
     "zh-CN": "延后唤醒",
@@ -348,6 +353,11 @@
     "en": "Desc",
     "zh-CN": "降序",
     "reviewedEnglishHash": "5c4419a6999d2a7a29e0e1d00876b4c5992d56d1dbc9a03ecc515eaa554b7f04"
+  },
+  "Descending": {
+    "en": "Descending",
+    "zh-CN": "降序",
+    "reviewedEnglishHash": "79479a6c76d8416ab7839952a2f8222e350862464f4d02db13d8d8f9551dbf8e"
   },
   "Describe a task…": {
     "en": "Describe a task…",
@@ -658,6 +668,11 @@
     "en": "Doc",
     "zh-CN": "文档",
     "reviewedEnglishHash": "49f4e57c2625d4aeb4c5fd15cdc68fce543ea1790ceef4dcecf9e610b1609106"
+  },
+  "Document": {
+    "en": "Document",
+    "zh-CN": "文档",
+    "reviewedEnglishHash": "d6bd8c0aeee80fedb2dbf05c973100c3db04be90c072a88572533f2684131a36"
   },
   "Document actions": {
     "en": "Document actions",

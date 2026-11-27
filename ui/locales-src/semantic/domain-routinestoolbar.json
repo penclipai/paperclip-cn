@@ -1,0 +1,62 @@
+{
+  "routinesToolbar.ariaLabel": {
+    "en": "Routines controls",
+    "zh-CN": "例行任务控件",
+    "reviewedEnglishHash": "67bdfdc982395e4d206b41f2056351a5185fee80ec5a2255b6666cf484f090f0"
+  },
+  "routinesToolbar.columnsAria": {
+    "en": "Routine columns",
+    "zh-CN": "例行任务列",
+    "reviewedEnglishHash": "94b241cdacb23994f5ea240b03259df223d3f92dd3ddafc896c79fd3525a4d92"
+  },
+  "routinesToolbar.filterAria": {
+    "en": "Filter routines",
+    "zh-CN": "筛选例行任务",
+    "reviewedEnglishHash": "dd178a47a61d93c562ca52791f40d026b73ccc17c5f64a0992b56cd801a87fb0"
+  },
+  "routinesToolbar.filterCountAria": {
+    "en": "Filter routines ({{count}})",
+    "zh-CN": "筛选例行任务（{{count}}）",
+    "reviewedEnglishHash": "43448e431940503524b5dc149d3669bac9c1c06de4d23900be2674ef383b2acd"
+  },
+  "routinesToolbar.groupAria": {
+    "en": "Group routines",
+    "zh-CN": "分组例行任务",
+    "reviewedEnglishHash": "d1c86679e200a4196c44b8ca0ae1684b8ddc3d4273c899ec1f747f00f9f60845"
+  },
+  "routinesToolbar.noOptions": {
+    "en": "No options",
+    "zh-CN": "无可用选项",
+    "reviewedEnglishHash": "d7a8974566f771f1efc7f6c6d902e9bb31fb1363f8a9315731300ddc5c95aba4"
+  },
+  "routinesToolbar.resetColumns": {
+    "en": "Reset columns",
+    "zh-CN": "重置列",
+    "reviewedEnglishHash": "9c42c073aa81ac8a92be0cb7fd9b6a0d98bbdbc511e0f180af7c1521b0dd4fb3"
+  },
+  "routinesToolbar.searchLabel": {
+    "en": "Search routines",
+    "zh-CN": "搜索例行任务",
+    "reviewedEnglishHash": "57d0f61ea7511c852ce856051ff9d31c9ad82d3b2ba82cc69165f53e132e10eb"
+  },
+  "routinesToolbar.searchPlaceholder": {
+    "en": "Search routines…",
+    "zh-CN": "搜索例行任务…",
+    "reviewedEnglishHash": "8058299293611562c1d6ae2c1ed199ecc81e9fa2a3d7a97109ec440525eb45f9"
+  },
+  "routinesToolbar.sortAria": {
+    "en": "Sort routines",
+    "zh-CN": "排序例行任务",
+    "reviewedEnglishHash": "049d44717cc4c0c770c570bdbdbe478b8abda4183a6003dbf19086aedfb1e3e0"
+  },
+  "routinesToolbar.source": {
+    "en": "Source",
+    "zh-CN": "来源",
+    "reviewedEnglishHash": "0e570ca6fabe24f94e52c1833f3ffd25567022beb826fa16891f3322051bc221"
+  },
+  "routinesToolbar.viewAllTasks": {
+    "en": "View all tasks",
+    "zh-CN": "查看全部任务",
+    "reviewedEnglishHash": "44b54ba5cef38627022aaab29d80dca0d4318dd478b670af691aec96951cc552"
+  }
+}

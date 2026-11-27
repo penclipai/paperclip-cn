@@ -1,0 +1,37 @@
+{
+  "fileTree.collapseDir": {
+    "en": "Collapse {{name}}",
+    "zh-CN": "折叠 {{name}}",
+    "reviewedEnglishHash": "4bcd39f9e08ecef361001b7fc8c04f0ba24510b0b9f932e9d0b8dda18fa9bcde"
+  },
+  "fileTree.emptyDescription": {
+    "en": "Files will appear here when they are available.",
+    "zh-CN": "有可用文件时会在此处显示。",
+    "reviewedEnglishHash": "d72f04c8dc87550e0fb074ae4ccb59288eecae13558b17d5a8b2f7e6772af996"
+  },
+  "fileTree.expandDir": {
+    "en": "Expand {{name}}",
+    "zh-CN": "展开 {{name}}",
+    "reviewedEnglishHash": "8546b077bdb38df51eca6f0ea65d96cd29f6c1d5cc94fb04849b6e77a523c55a"
+  },
+  "fileTree.field.kind": {
+    "en": "Kind",
+    "zh-CN": "类型",
+    "reviewedEnglishHash": "f5387f9bb6ed70315a77fdcb9335facc27a9bf241f35955bd2755c55e0c016c7"
+  },
+  "fileTree.field.recurring": {
+    "en": "Recurring",
+    "zh-CN": "周期性",
+    "reviewedEnglishHash": "c0c06e547b1b55e1e39bfd96ea5f70d0a0c35709a637c21a80b329c985d14eef"
+  },
+  "fileTree.noFiles": {
+    "en": "No files",
+    "zh-CN": "暂无文件",
+    "reviewedEnglishHash": "c219d96549ebd65478356e66274d5a5e879244a49ddd07d0793793f54fee6824"
+  },
+  "fileTree.selectPath": {
+    "en": "Select {{path}}",
+    "zh-CN": "选择 {{path}}",
+    "reviewedEnglishHash": "1eec06f9368210065bc314fc69f51123c16d4d0b4c2c5ee9eb7b2f12ccba107b"
+  }
+}

@@ -29,6 +29,7 @@ import { useCompany } from "@/context/CompanyContext";
 import { useToast } from "@/context/ToastContext";
 import { Link, Navigate, useSearchParams } from "@/lib/router";
 import { queryKeys } from "@/lib/queryKeys";
+import { formatDateTime } from "@/lib/utils";
 import { cloudStackInviteUrl } from "@/lib/cloudLinks";
 import { usePluginSlots } from "@/plugins/slots";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -330,7 +331,9 @@ export function CompanyAccess() {
     if (membersView.errorKind === "forbidden") {
       return (
         <div className="text-sm text-destructive">
-          You do not have permission to manage organization members.
+          {translateInstant("companyAccess.noPermissionManageMembers", {
+            defaultValue: "You do not have permission to manage organization members.",
+          })}
         </div>
       );
     }
@@ -446,10 +449,29 @@ export function CompanyAccess() {
                       }
                       context={
                         request.invite
-                          ? `${request.invite.allowedJoinTypes} join invite${request.invite.humanRole ? ` • default role ${request.invite.humanRole}` : ""}`
+                          ? request.invite.humanRole
+                            ? translateInstant("companyAccess.joinInviteContextWithRole", {
+                                types: translateInstant(`companyAccess.joinType.${request.invite.allowedJoinTypes}`, {
+                                  defaultValue: request.invite.allowedJoinTypes,
+                                }),
+                                role: translateInstant(
+                                  HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS[request.invite.humanRole] ??
+                                    request.invite.humanRole,
+                                ),
+                                defaultValue: `${request.invite.allowedJoinTypes} join invite • default role ${request.invite.humanRole}`,
+                              })
+                            : translateInstant("companyAccess.joinInviteContext", {
+                                types: translateInstant(`companyAccess.joinType.${request.invite.allowedJoinTypes}`, {
+                                  defaultValue: request.invite.allowedJoinTypes,
+                                }),
+                                defaultValue: `${request.invite.allowedJoinTypes} join invite`,
+                              })
                           : translateInstant("Invite metadata unavailable")
                       }
-                      detail={`Submitted ${new Date(request.createdAt).toLocaleString()}`}
+                      detail={translateInstant("companyAccess.submittedAt", {
+                        time: formatDateTime(request.createdAt),
+                        defaultValue: `Submitted ${formatDateTime(request.createdAt)}`,
+                      })}
                       approveLabel={translateInstant("Approve human")}
                       rejectLabel={translateInstant("Reject human")}
                       disabled={joinRequestActionPending}
@@ -565,8 +587,8 @@ export function CompanyAccess() {
                               <span
                                 className="inline-flex"
                                 title={
-                                  !canArchive
-                                    ? (removalReason ?? undefined)
+                                  !canArchive && removalReason
+                                    ? translateInstant(removalReason, { defaultValue: removalReason })
                                     : undefined
                                 }
                               >
@@ -576,8 +598,8 @@ export function CompanyAccess() {
                                   onClick={() => setRemovingMemberId(member.id)}
                                   disabled={!canArchive}
                                   title={
-                                    !canArchive
-                                      ? (removalReason ?? undefined)
+                                    !canArchive && removalReason
+                                      ? translateInstant(removalReason, { defaultValue: removalReason })
                                       : undefined
                                   }
                                 >
@@ -719,8 +741,13 @@ export function CompanyAccess() {
                     </div>
                     <div className="mt-2 text-sm text-muted-foreground">
                       {assignedIssuesQuery.isLoading
-                        ? "Checking assigned tasks..."
-                        : `${assignedIssues.length} open assigned task${assignedIssues.length === 1 ? "" : "s"}`}
+                        ? translateInstant("companyAccess.checkingAssignedTasks", {
+                            defaultValue: "Checking assigned tasks...",
+                          })
+                        : translateInstant("companyAccess.openAssignedTasksCount", {
+                            count: assignedIssues.length,
+                            defaultValue: `${assignedIssues.length} open assigned task${assignedIssues.length === 1 ? "" : "s"}`,
+                          })}
                     </div>
                   </div>
 

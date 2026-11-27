@@ -431,7 +431,7 @@ export function AgentActionButtons({
         {children}
         <Popover open={moreOpen} onOpenChange={setMoreOpen}>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label={`Open actions for ${agent.name}`}>
+            <Button variant="ghost" size="icon" aria-label={t("agentAction.openActionsFor", { name: agent.name, defaultValue: "Open actions for {{name}}" })}>
               <MoreHorizontal className="size-4" />
             </Button>
           </PopoverTrigger>
@@ -498,23 +498,23 @@ export function AgentActionButtons({
             ))}
             <button type="button" className={item} disabled={duplicateAgent.isPending} onClick={handleDuplicateAgent}>
               {duplicateAgent.isPending ? <Loader2 className={cn(icon, "animate-spin")} /> : <Copy className={icon} />}
-              Duplicate agent
+              {t("Duplicate Agent", { defaultValue: "Duplicate agent" })}
             </button>
             <button
               type="button"
               className={item}
               onClick={select(() => {
                 void copyTextToClipboard(agent.id).catch(() => {
-                  pushToast({ title: translateInstant("Copy failed", { defaultValue: "Copy failed" }), body: "Clipboard access is unavailable.", tone: "error" });
+                  pushToast({ title: translateInstant("Copy failed", { defaultValue: "Copy failed" }), body: t("agentAction.clipboardUnavailable", { defaultValue: "Clipboard access is unavailable." }), tone: "error" });
                 });
               })}
             >
               <Copy className={icon} />
-              Copy agent ID
+              {t("Copy Agent ID", { defaultValue: "Copy agent ID" })}
             </button>
             <button type="button" className={item} onClick={select(() => resetTaskSession.mutate())}>
               <RotateCcw className={icon} />
-              Reset sessions
+              {t("Reset Sessions", { defaultValue: "Reset sessions" })}
             </button>
             {hideTerminate ? null : (
               <>
@@ -534,15 +534,15 @@ export function AgentActionButtons({
             )}
           </PopoverContent>
         </Popover>
-        {showChat && <Button variant="outline" size={size} aria-label={`Chat with ${agent.name}`} title="Chat with this agent"
+        {showChat && <Button variant="outline" size={size} aria-label={t("agents.chatWithAgent", { name: agent.name, defaultValue: "Chat with {{name}}" })} title={t("agentAction.chatWithThisAgent", { defaultValue: "Chat with this agent" })}
           disabled={disabled} onClick={() => { if (!onBeforeNavigate || onBeforeNavigate()) navigate(`/chats/${canonicalAgentRef}`); }}>
           <MessagesSquare className="size-4" />
-          Chat
+          {t("Chat", { defaultValue: "Chat" })}
         </Button>}
         {needsSetup ? (
           <Button size={size} disabled={disabled} onClick={finishSetup}>
             <Play className="size-4" />
-            Finish setup
+            {t("Finish setup", { defaultValue: "Finish setup" })}
           </Button>
         ) : (
           <Button
@@ -589,7 +589,9 @@ export function AgentActionButtons({
             ...(agent.adapterType === "paperclip_runner" ? { runner: "paperclip" } : ["codex_local", "claude_local", "opencode_local", "pi_local"].includes(agent.adapterType) ? { runner: "legacy" } : {}),
             ...pendingAgentSetupChoice(agent),
           })}`);
-        }}>Finish setup</Button>
+        }}>
+          {t("Finish setup", { defaultValue: "Finish setup" })}
+        </Button>
       ) : showRun && <RunButton
         onClick={() => {
           if (navigateToRunOnInvoke && !confirmNavigationStart(agentActionStartedDirtyRef)) return;
@@ -639,7 +641,7 @@ export function AgentActionButtons({
       {children}
       <Popover open={moreOpen} onOpenChange={setMoreOpen}>
         <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon-xs" aria-label={`Open actions for ${agent.name}`}>
+          <Button variant="ghost" size="icon-xs" aria-label={t("agentAction.openActionsFor", { name: agent.name, defaultValue: "Open actions for {{name}}" })}>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </PopoverTrigger>
@@ -659,7 +661,7 @@ export function AgentActionButtons({
             className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50"
             onClick={() => {
               void copyTextToClipboard(agent.id).catch(() => {
-                pushToast({ title: translateInstant("Copy failed"), body: "Clipboard access is unavailable.", tone: "error" });
+                pushToast({ title: translateInstant("Copy failed"), body: translateInstant("agentAction.clipboardUnavailable", { defaultValue: "Clipboard access is unavailable." }), tone: "error" });
               });
               setMoreOpen(false);
             }}

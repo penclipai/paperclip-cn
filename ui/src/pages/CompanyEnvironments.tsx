@@ -1719,6 +1719,14 @@ export function CompanyEnvironments({
       });
     },
   });
+  const rotateSecret = useMutation({
+    mutationFn: (input: { secretId: string; value: string }) =>
+      secretsApi.rotate(input.secretId, { value: input.value }),
+    onSuccess: async () => {
+      if (!selectedCompanyId) return;
+      await queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedCompanyId) });
+    },
+  });
 
   // Managed (platform-provisioned) environments accept exactly one tenant
   // edit: the env var map. The server's write floor rejects everything
@@ -2122,11 +2130,11 @@ export function CompanyEnvironments({
     navigate(ENVIRONMENTS_PATH);
   }
 
-  function flushEnvironmentForm(): EnvironmentFormState {
-    const flushedEnvVars =
-      environmentVariablesEditorRef.current?.flushPendingDraft();
-    return flushedEnvVars
-      ? { ...environmentForm, envVars: flushedEnvVars }
+  function flushEnvironmentForm(): EnvironmentFormState | null {
+    const flushedEnvVars = environmentVariablesEditorRef.current?.flushPendingDraft();
+    if (flushedEnvVars?.status === "blocked") return null;
+    return flushedEnvVars?.status === "flushed"
+      ? { ...environmentForm, envVars: flushedEnvVars.value }
       : environmentForm;
   }
 
@@ -2655,6 +2663,9 @@ export function CompanyEnvironments({
                   onCreateSecret={async (name, value) =>
                     await createSecret.mutateAsync({ name, value })
                   }
+                  onRotateSecret={async (secretId, value) =>
+                    await rotateSecret.mutateAsync({ secretId, value })
+                  }
                   onChange={(env) =>
                     setEnvironmentForm((current) => ({
                       ...current,
@@ -2679,11 +2690,10 @@ export function CompanyEnvironments({
                 {translateInstant("Cancel")}
               </Button>
               <Button
-                onClick={() =>
-                  managedEnvironmentEnvVarsMutation.mutate(
-                    flushEnvironmentForm().envVars,
-                  )
-                }
+                onClick={() => {
+                  const flushed = flushEnvironmentForm();
+                  if (flushed) managedEnvironmentEnvVarsMutation.mutate(flushed.envVars);
+                }}
                 disabled={managedEnvironmentEnvVarsMutation.isPending}
               >
                 {managedEnvironmentEnvVarsMutation.isPending
@@ -3177,6 +3187,9 @@ export function CompanyEnvironments({
                     onCreateSecret={async (name, value) =>
                       await createSecret.mutateAsync({ name, value })
                     }
+                    onRotateSecret={async (secretId, value) =>
+                      await rotateSecret.mutateAsync({ secretId, value })
+                    }
                     onChange={(env) =>
                       setEnvironmentForm((current) => ({
                         ...current,
@@ -3217,9 +3230,10 @@ export function CompanyEnvironments({
               {environmentForm.driver !== "local" ? (
                 <Button
                   variant="outline"
-                  onClick={() =>
-                    draftEnvironmentProbeMutation.mutate(flushEnvironmentForm())
-                  }
+                  onClick={() => {
+                    const flushed = flushEnvironmentForm();
+                    if (flushed) draftEnvironmentProbeMutation.mutate(flushed);
+                  }}
                   disabled={
                     draftEnvironmentProbeMutation.isPending ||
                     !environmentFormValid ||
@@ -3237,9 +3251,10 @@ export function CompanyEnvironments({
                 </Button>
               ) : null}
               <Button
-                onClick={() =>
-                  environmentMutation.mutate(flushEnvironmentForm())
-                }
+                onClick={() => {
+                  const flushed = flushEnvironmentForm();
+                  if (flushed) environmentMutation.mutate(flushed);
+                }}
                 disabled={
                   environmentMutation.isPending || !environmentFormValid
                 }

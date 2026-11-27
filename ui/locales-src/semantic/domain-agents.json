@@ -1,4 +1,279 @@
 {
+  "agents.bulk.actionsAria": {
+    "en": "Bulk actions",
+    "zh-CN": "批量操作",
+    "reviewedEnglishHash": "19f0dd9ac4068a49d3614f21c2c2cc9512f89aa4ba7df5bdea78e0d469f9aaf2"
+  },
+  "agents.bulk.chooseHarness": {
+    "en": "Choose a harness to edit",
+    "zh-CN": "选择要编辑的运行环境",
+    "reviewedEnglishHash": "ae54863f70cdea73a36a9aff685e2d647206fa24499224716059d9077c12da99"
+  },
+  "agents.bulk.clearSelection": {
+    "en": "Clear selection",
+    "zh-CN": "清除选择",
+    "reviewedEnglishHash": "cea4d2e010b8fd52bc28a66eca24ff0d616b2c7d982545757780c196c5cc04c7"
+  },
+  "agents.bulk.defaultModel": {
+    "en": "Default model",
+    "zh-CN": "默认模型",
+    "reviewedEnglishHash": "3840d9d29421c46ceb5d40081c30a489a8e8d8d3f65108bd923251fc5b9ed731"
+  },
+  "agents.bulk.editConnectionAndModel": {
+    "en": "Edit connection & model",
+    "zh-CN": "编辑连接与模型",
+    "reviewedEnglishHash": "57c1cec5663fd6fd226b5f305d426625d5652af18146a5d74167a2a3c168c7f9"
+  },
+  "agents.bulk.editHarnessGroup": {
+    "en": "Edit {{count}} {{harness}}",
+    "zh-CN": "编辑 {{count}} 个 {{harness}}",
+    "reviewedEnglishHash": "cf024a960dee5bfc1e593f3391773db8e3469ec8f89afd06315160b801aaa1d2"
+  },
+  "agents.bulk.hiddenByFilters": {
+    "en": "{{count}} hidden by filters",
+    "zh-CN": "已由筛选条件隐藏 {{count}} 个",
+    "reviewedEnglishHash": "3b0d7a2663df8eff0421566316783acab0f83e9977eb0c063082aba20766eb55"
+  },
+  "agents.bulk.loadingCurrentSettings": {
+    "en": "Loading current agent settings…",
+    "zh-CN": "正在加载当前智能体设置…",
+    "reviewedEnglishHash": "04d4f29579506bc0cf070e9cf30c2137b01ed573dbda0e0fa9cbc324f08f068f"
+  },
+  "agents.bulk.loadingEditor": {
+    "en": "Loading editor…",
+    "zh-CN": "正在加载编辑器…",
+    "reviewedEnglishHash": "fafb50ef95a206809285e5bd2c1edf2ee5e2401250253b8f910c750cc6a79928"
+  },
+  "agents.bulk.noMatches": {
+    "en": "No agents match these filters.",
+    "zh-CN": "没有符合当前筛选条件的智能体。",
+    "reviewedEnglishHash": "d077c9ec6c6a1bcf04df990a5956552ad2ec1761e5734331031d729317c898aa"
+  },
+  "agents.bulk.rosterAria": {
+    "en": "Agent roster",
+    "zh-CN": "智能体名录",
+    "reviewedEnglishHash": "77a757014ef3ead5abbb1ea8b95c3ff86dd0d03e7f7a5ba66d55945a37023085"
+  },
+  "agents.bulk.selectAgent": {
+    "en": "Select {{name}}",
+    "zh-CN": "选择 {{name}}",
+    "reviewedEnglishHash": "04d3c4b2571894ecd22cd7101bf513f57c7342f47a991fcac689fb94bc61393f"
+  },
+  "agents.bulk.selectAllVisible": {
+    "en": "Select all visible editable agents",
+    "zh-CN": "全选当前可见的可编辑智能体",
+    "reviewedEnglishHash": "9a0a5fdde41320c5dbb83fb1a3fda638430ba3bb71e5acdff93e0c6c5c04d228"
+  },
+  "agents.bulk.selectedCount": {
+    "en": "{{count}} selected",
+    "zh-CN": "已选 {{count}} 项",
+    "reviewedEnglishHash": "c7f761b38b197daa6b822be7397d8e2701c3dbb12b79b4a90eb1c37969bed5a6"
+  },
+  "agents.bulk.selectionChanged": {
+    "en": "The selected agents changed. Refresh the roster and select them again.",
+    "zh-CN": "所选智能体已发生变化，请刷新列表后重新选择。",
+    "reviewedEnglishHash": "d16a96596fc2f865201e7a7b68b9cc503ddb1797eda0b5e0a43eeb974143dc67"
+  },
+  "agents.bulk.updatedNotice_one": {
+    "en": "Updated {{count}} {{harness}} agent.",
+    "zh-CN": "已更新 {{count}} 个 {{harness}} 智能体。",
+    "reviewedEnglishHash": "6bd26d6d02e2f8c738681f707b995a33d8373e80cdff6f6966412bdf0deac112"
+  },
+  "agents.bulk.updatedNotice_other": {
+    "en": "Updated {{count}} {{harness}} agents.",
+    "zh-CN": "已更新 {{count}} 个 {{harness}} 智能体。",
+    "reviewedEnglishHash": "edec968d933ef1eb34ec95c92e3fe51dd7a48ea15fc1db350892404373cf4e00"
+  },
+  "agents.bulkSheet.agentCountLabel": {
+    "en": "{{count}} agents",
+    "zh-CN": "{{count}} 个智能体",
+    "reviewedEnglishHash": "977a7422900b40a5ade4526c98653a1b04619b8ff81240ead3699dea1b7df70e"
+  },
+  "agents.bulkSheet.agentsAria": {
+    "en": "Agents to update",
+    "zh-CN": "要更新的智能体",
+    "reviewedEnglishHash": "6e0804b32f6acc863ce533e07e16926be93521edbc210ac6212ce823335f124b"
+  },
+  "agents.bulkSheet.allAlreadyHaveSettings": {
+    "en": "All selected agents already have these settings.",
+    "zh-CN": "所有选中的智能体都已应用这些设置。",
+    "reviewedEnglishHash": "17faa60b49b630cf3793b17ec26f890a402a1aa31625cf7c06aa265400747b18"
+  },
+  "agents.bulkSheet.alreadyHaveSettingsCount": {
+    "en": "{{count}} already have these settings.",
+    "zh-CN": "已有 {{count}} 个使用这些设置。",
+    "reviewedEnglishHash": "c09d2b5c52b8c3003c072490c91709e1cde4b3170a312a9067697b3f8fc9061e"
+  },
+  "agents.bulkSheet.availableOnCurrentConnection": {
+    "en": "Available on every selected agent’s current connection.",
+    "zh-CN": "适用于所有选中智能体当前的连接。",
+    "reviewedEnglishHash": "fe369278d2c6f5b253fad57ef208e43cc3e6fabe7e4c320baa4d011075851291"
+  },
+  "agents.bulkSheet.availableOnNewConnection": {
+    "en": "Available on every selected agent’s new connection.",
+    "zh-CN": "适用于所有选中智能体新的连接。",
+    "reviewedEnglishHash": "02b53b1c6744d8e185545e8d01f30134bcac68cbe2ae19e92f2f1c41f638a13e"
+  },
+  "agents.bulkSheet.changeConnection": {
+    "en": "Change connection",
+    "zh-CN": "更改连接",
+    "reviewedEnglishHash": "286b1c9dc3f5b4aa3a095cd4bf7e2e94d5f93f2475c268f375ec09364c726ce2"
+  },
+  "agents.bulkSheet.changeModel": {
+    "en": "Change default model",
+    "zh-CN": "更改默认模型",
+    "reviewedEnglishHash": "8f5c1a6c401894628209097696b91f4dff06ad23ec3b86d61985dba6c7d74c17"
+  },
+  "agents.bulkSheet.changesToApply": {
+    "en": "Changes to apply",
+    "zh-CN": "将应用的更改",
+    "reviewedEnglishHash": "7a3c87a74c0579229b9b9acfe60b81c5a0a812a19d84ffd3468f0861c5c161b6"
+  },
+  "agents.bulkSheet.changesToApplyCaps": {
+    "en": "CHANGES TO APPLY",
+    "zh-CN": "将应用的更改",
+    "reviewedEnglishHash": "72e26f0c51456ca81043945ec5593cda97ad7f6d6c6e3efb788c9c77a7dda712"
+  },
+  "agents.bulkSheet.checkingOptions": {
+    "en": "Checking connections and models…",
+    "zh-CN": "正在检查连接与模型…",
+    "reviewedEnglishHash": "7eda642fe67ecb1c71c8a77eb79fdf7aa6fe5a3755d817ce4f4cdce5781853d5"
+  },
+  "agents.bulkSheet.description": {
+    "en": "Change their connection, default model, or both.",
+    "zh-CN": "更改它们的连接、默认模型或同时更改两者。",
+    "reviewedEnglishHash": "a8646b80e8b65a7a63bcf1a68bd330f1e37ee6a44dd84af5264875cae69551fb"
+  },
+  "agents.bulkSheet.differentConnections": {
+    "en": "{{count}} different connections",
+    "zh-CN": "{{count}} 个不同连接",
+    "reviewedEnglishHash": "69c7229576538bde2f91a60122c1bd9d761b8b1a481d516cda3894c4b52a3693"
+  },
+  "agents.bulkSheet.differentModels": {
+    "en": "{{count}} different models",
+    "zh-CN": "{{count}} 个不同模型",
+    "reviewedEnglishHash": "d2d12caab9311191b01031f8bc8ad0799508062f7bfa80a42b702619deaa734a"
+  },
+  "agents.bulkSheet.futureRunsNote": {
+    "en": "Applies to future runs. Running work keeps its current settings. Task-specific model overrides stay in place. A model change may start a fresh session; existing sessions may retain their connection until reset.",
+    "zh-CN": "适用于后续运行。正在运行的工作将保持当前设置，任务级模型覆盖保持不变。更改模型可能会开启新会话；现有会话在重置前可能仍沿用原连接。",
+    "reviewedEnglishHash": "4c4989e48c49faccf9b76ef10593adae23a43ac10e4feed3ea2271a1c6add98f"
+  },
+  "agents.bulkSheet.harnessDefault": {
+    "en": "Harness default",
+    "zh-CN": "运行环境默认",
+    "reviewedEnglishHash": "7760912abe8a12d7ad14c5344032d3365e80a8192b7e035bf5a54e12b5dd3596"
+  },
+  "agents.bulkSheet.incompatibleModel": {
+    "en": "Choose a model compatible with this connection.",
+    "zh-CN": "请选择与此连接兼容的模型。",
+    "reviewedEnglishHash": "d112bdf47adc37077fc4fb328e036fa749eb2595900b1f26895de3407b978425"
+  },
+  "agents.bulkSheet.keepCurrent": {
+    "en": "Keep current",
+    "zh-CN": "保持当前设置",
+    "reviewedEnglishHash": "1c215e3e8c7c07a3c9f0c810e2f1ac8f9cb57df80a6fdf5ab15c7bd5b5927dfb"
+  },
+  "agents.bulkSheet.loadError": {
+    "en": "Couldn’t load connections or models",
+    "zh-CN": "无法加载连接或模型",
+    "reviewedEnglishHash": "c6626e83d35ed5bfc0c06dfffe983b4c31e4e6656604b8da29a9a480e3b9f150"
+  },
+  "agents.bulkSheet.manualModelHint": {
+    "en": "Choose a suggested model or enter a model ID supported by your harness.",
+    "zh-CN": "选择推荐模型，或输入你的运行环境支持的模型 ID。",
+    "reviewedEnglishHash": "9703248c8ef5c3d0f0c114b0efd7756ae6a0a3ceccb7c525d9048e3ce60fb6ab"
+  },
+  "agents.bulkSheet.otherSelected_one": {
+    "en": "{{count}} other selected agent won’t change.",
+    "zh-CN": "另外 {{count}} 个选中的智能体将保持不变。",
+    "reviewedEnglishHash": "a9242bdd6f390d5886b7aa1f5a18c3821e8b48e9fcb086a97e671cd8d37dd724"
+  },
+  "agents.bulkSheet.otherSelected_other": {
+    "en": "{{count}} other selected agents won’t change.",
+    "zh-CN": "另外 {{count}} 个选中的智能体将保持不变。",
+    "reviewedEnglishHash": "55c694b2bc79e1b00e23a829ed343d74b1bf4a701eab6deb7bdeed4f2b62482f"
+  },
+  "agents.bulkSheet.partialSummary": {
+    "en": "{{updated}} updated · {{failed}} couldn’t be saved",
+    "zh-CN": "已更新 {{updated}} 个 · {{failed}} 个未能保存",
+    "reviewedEnglishHash": "8ed004807331a17ee0c49c0fa35454a32f4a056889b3435386c8f1d2b0ac8185"
+  },
+  "agents.bulkSheet.retryCount_one": {
+    "en": "Retry {{count}} agent",
+    "zh-CN": "重试 {{count}} 个智能体",
+    "reviewedEnglishHash": "3d93c57f5c2592eace5be7b5271714c011ac5d00234987641aa27707311602e7"
+  },
+  "agents.bulkSheet.retryCount_other": {
+    "en": "Retry {{count}} agents",
+    "zh-CN": "重试 {{count}} 个智能体",
+    "reviewedEnglishHash": "89a761c4371ebe881dcd8a001723bc9a1441356fbae3d2fe0147b3055624324f"
+  },
+  "agents.bulkSheet.retryHint": {
+    "en": "Retry updates only the remaining agents. Close and reopen to review changed settings.",
+    "zh-CN": "重试只会更新剩余智能体。关闭并重新打开可查看已更改的设置。",
+    "reviewedEnglishHash": "fa4df758eebd13c0094ab1498d626c98e70e70f0260ca37747231f41ed1eff05"
+  },
+  "agents.bulkSheet.retryLoadingOptions": {
+    "en": "Retry loading options",
+    "zh-CN": "重新加载选项",
+    "reviewedEnglishHash": "c5a231e3fd3918df88aba413c11585c527733dd2937c00199b1c18ca970b03ae"
+  },
+  "agents.bulkSheet.routerError": {
+    "en": "Configure connection pools on each agent’s configuration page.",
+    "zh-CN": "请在各智能体的配置页面单独配置连接池。",
+    "reviewedEnglishHash": "ddd52af66b61d49f4ce729bfb3fd79a7086e6f532e10fe4d6c83df82e96a390e"
+  },
+  "agents.bulkSheet.saveAgentError": {
+    "en": "Couldn’t save this agent. Try again.",
+    "zh-CN": "无法保存此智能体，请重试。",
+    "reviewedEnglishHash": "6e1bf634e1ad2e10ebc5085bdf28006f3c670fca280b52f800da7fd445639972"
+  },
+  "agents.bulkSheet.title_one": {
+    "en": "Update {{count}} {{harness}} agent",
+    "zh-CN": "更新 {{count}} 个 {{harness}} 智能体",
+    "reviewedEnglishHash": "5e1e040016f8c51751c11f104677392e8d4c44d11827ef6ec2485ec71471b470"
+  },
+  "agents.bulkSheet.title_other": {
+    "en": "Update {{count}} {{harness}} agents",
+    "zh-CN": "更新 {{count}} 个 {{harness}} 智能体",
+    "reviewedEnglishHash": "7f81a87a2031858870afa2ac0ba312b6617dc711ce811659999603c0ea415d59"
+  },
+  "agents.bulkSheet.toArrow": {
+    "en": "to",
+    "zh-CN": "为",
+    "reviewedEnglishHash": "663ea1bfffe5038f3f0cf667f14c4257eff52d77ce7f2a218f72e9286616ea39"
+  },
+  "agents.bulkSheet.unavailableModel": {
+    "en": "Harness default",
+    "zh-CN": "运行环境默认",
+    "reviewedEnglishHash": "7760912abe8a12d7ad14c5344032d3365e80a8192b7e035bf5a54e12b5dd3596"
+  },
+  "agents.bulkSheet.updateCount_one": {
+    "en": "Update {{count}} agent",
+    "zh-CN": "更新 {{count}} 个智能体",
+    "reviewedEnglishHash": "8d57f997a6871c69c7c7eb9aade3bd70c13eb2249e3be2f084d4039915ace31d"
+  },
+  "agents.bulkSheet.updateCount_other": {
+    "en": "Update {{count}} agents",
+    "zh-CN": "更新 {{count}} 个智能体",
+    "reviewedEnglishHash": "8e78eb6d3c58e81ab2fe2d7d8d16769cc428a9ad9abd7143254be4aa9c907709"
+  },
+  "agents.bulkSheet.updating": {
+    "en": "Updating…",
+    "zh-CN": "正在更新…",
+    "reviewedEnglishHash": "dfe40efe921fe88e332575a3516f4e8cd6bbb71437cf260b2bb9b947c65d1484"
+  },
+  "agents.chatTooltip": {
+    "en": "chat with this agent",
+    "zh-CN": "与该智能体对话",
+    "reviewedEnglishHash": "2a6342f432052657f5e1a5a5d8d4a98c9cc20c607f7f802e5acc8328f61d7f9e"
+  },
+  "agents.chatWithAgent": {
+    "en": "Chat with {{name}}",
+    "zh-CN": "与 {{name}} 对话",
+    "reviewedEnglishHash": "64f5ef1ebe317077e073ab12d621cffe7e08cbc190b746a87de5819e19758b87"
+  },
   "agents.count": {
     "en": "{{count}} agents",
     "zh-CN": "{{count}} 个智能体",
@@ -13,6 +288,31 @@
     "en": "{{count}} agents",
     "zh-CN": "{{count}} 个智能体",
     "reviewedEnglishHash": "977a7422900b40a5ade4526c98653a1b04619b8ff81240ead3699dea1b7df70e"
+  },
+  "agents.env.loading": {
+    "en": "Loading environment",
+    "zh-CN": "正在加载环境",
+    "reviewedEnglishHash": "07bae8d39556bb5efae04b2ed5ab6cba9021964214700ebfe40588a4034b6a98"
+  },
+  "agents.env.managedByPaperclip": {
+    "en": "Managed by Paperclip",
+    "zh-CN": "由 Paperclip 托管",
+    "reviewedEnglishHash": "eca360585456c302efe580a00b0c64b9afa0701b9ddb59a3f90e2130ef435e80"
+  },
+  "agents.env.paperclipHost": {
+    "en": "Paperclip host",
+    "zh-CN": "Paperclip 主机",
+    "reviewedEnglishHash": "e5b9978dd00580db2252c74eac22ea5d0e87b107f80c755a28777b0d9784d2cb"
+  },
+  "agents.env.sandboxProvider": {
+    "en": "{{provider}} sandbox provider",
+    "zh-CN": "{{provider}} 沙箱提供方",
+    "reviewedEnglishHash": "cab3cfa42d6a0c7243fdf3d541e7f1d5fde038224a74240d1289af9ae70f0a88"
+  },
+  "agents.env.unknown": {
+    "en": "Unknown environment",
+    "zh-CN": "未知环境",
+    "reviewedEnglishHash": "ea7edbd56b1ce88c891f26eae2931fd2d5128c35ec1417693ea0d118340c8667"
   },
   "agents.filters.allConnections": {
     "en": "All connections",
@@ -139,6 +439,11 @@
     "zh-CN": "汇报链无效",
     "reviewedEnglishHash": "bf9c6d9dc8a902fc2e58f3e4ca9c5c63b48f9fb5fd1fcbe7a2bddd592f85af1b"
   },
+  "agents.lastHeartbeat": {
+    "en": "Last heartbeat",
+    "zh-CN": "最近心跳",
+    "reviewedEnglishHash": "40f7951c09dbc025eec26f753c21f5bd6a5dc65a2192d6a788594479b1437207"
+  },
   "agents.noFilterMatches": {
     "en": "No agents match these filters.",
     "zh-CN": "没有智能体符合当前筛选条件。",
@@ -154,6 +459,16 @@
     "zh-CN": "组织图视图",
     "reviewedEnglishHash": "a33c82404434fb9d0cf1f51e65ce733cb0452899d70a081962647c32b247a1b4"
   },
+  "agents.pin.pin": {
+    "en": "Pin {{name}}",
+    "zh-CN": "固定 {{name}}",
+    "reviewedEnglishHash": "2ea586c444fddfff30bb51b08e6fa37e7ff7a809e5a0e4505f925c3131ee15ed"
+  },
+  "agents.pin.unpin": {
+    "en": "Unpin {{name}}",
+    "zh-CN": "取消固定 {{name}}",
+    "reviewedEnglishHash": "f62fb5da7859ee4d09b4b923046389bf072d59271b0348c0bb849bafee58aa1a"
+  },
   "agents.retryWelcome": {
     "en": "Retry welcome",
     "zh-CN": "重试欢迎消息",
@@ -163,6 +478,36 @@
     "en": "Star agent to pin",
     "zh-CN": "收藏以置顶智能体",
     "reviewedEnglishHash": "28d20be60a21a827660b3719ec3d4bb7581506766a1c895f39badd9ae8a8f996"
+  },
+  "agents.toolbar.ariaLabel": {
+    "en": "Agents controls",
+    "zh-CN": "智能体控制栏",
+    "reviewedEnglishHash": "e13f828b2f4513832b2a46cc99478184fe20b406a2e9aa58431838633e02ac17"
+  },
+  "agents.toolbar.listView": {
+    "en": "List view",
+    "zh-CN": "列表视图",
+    "reviewedEnglishHash": "5d8c3e1b635eed6f3475260c63650062958ebd2f2e2cddd8abc59de76bea7f72"
+  },
+  "agents.toolbar.orgView": {
+    "en": "Org chart view",
+    "zh-CN": "组织架构视图",
+    "reviewedEnglishHash": "a33c82404434fb9d0cf1f51e65ce733cb0452899d70a081962647c32b247a1b4"
+  },
+  "agents.toolbar.searchLabel": {
+    "en": "Search agents",
+    "zh-CN": "搜索智能体",
+    "reviewedEnglishHash": "212fd04a1d202b4f0258c0c8b959ed0cfd3871b322197fe58122f9f153ac7eab"
+  },
+  "agents.toolbar.searchPlaceholder": {
+    "en": "Search agents…",
+    "zh-CN": "搜索智能体…",
+    "reviewedEnglishHash": "e05cb78e973da37232be8465b57995620a02d3cfa153ffe0c62cfdb6eb253494"
+  },
+  "agents.toolbar.viewGroup": {
+    "en": "Agent view",
+    "zh-CN": "智能体视图",
+    "reviewedEnglishHash": "c26e47e839f072c8a66517a40cf3b9a892fff400438b7a6f7f93f65355e3d4c7"
   },
   "agents.unstarAgent": {
     "en": "Unstar agent",

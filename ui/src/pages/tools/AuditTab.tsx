@@ -29,6 +29,7 @@ import { AgentSelect } from "@/components/AgentMultiSelect";
 import { ToolsPageHeader, LoadingState, RelativeTime } from "./shared";
 import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 import { googleAccessRetrySummary } from "../../features/connections/googleAccessRemoval";
+import { auditTransportLabel } from "@/lib/connection-transport-label";
 
 const PAGE_SIZE = 50;
 const ALL = "__all";
@@ -126,26 +127,26 @@ function lifecycleSummary(event: ToolGatewayActivityEvent): string | null {
 
 /** Plain-words "why" for the row expander, keyed off the reason code. */
 function plainReason(event: ToolGatewayActivityEvent): string {
-  if (event.lifecycleType) return "This connection change was recorded in the app's activity history.";
+  if (event.lifecycleType) return translateInstant("This connection change was recorded in the app's activity history.");
   const code = detailString(event.details, "reasonCode");
   if (code === "permitted_connections_not_installed") {
-    return "Permitted connections were not installed, so their tools were not added to this run.";
+    return translateInstant("tools.audit.reasons.notInstalled");
   }
   switch (event.normalizedOutcome) {
     case "allowed":
-      return "Allowed by your rules.";
+      return translateInstant("tools.audit.reasons.allowed");
     case "blocked":
-      if (code === "rate_limited") return "Blocked because it ran too many times in a short window.";
-      if (code?.includes("secret")) return "Blocked to keep a sensitive value from leaving.";
-      return "Blocked by a rule.";
+      if (code === "rate_limited") return translateInstant("tools.audit.reasons.rateLimited");
+      if (code?.includes("secret")) return translateInstant("tools.audit.reasons.secretBlocked");
+      return translateInstant("tools.audit.reasons.blocked");
     case "asked_first":
-      return "Held for someone to approve before it could run.";
+      return translateInstant("tools.audit.reasons.askedFirst");
     case "waiting":
-      return "Waiting — the app it needs wasn't ready yet.";
+      return translateInstant("tools.audit.reasons.waiting");
     case "failed":
-      return "The app was allowed to run it, but returned an error.";
+      return translateInstant("tools.audit.reasons.failed");
     default:
-      return "Recorded by Paperclip.";
+      return translateInstant("tools.audit.reasons.recorded");
   }
 }
 
@@ -285,7 +286,7 @@ function ActivityRow({
                 <DetailFact label={translateInstant("tools.audit.details.reasonCode")} value={reasonCode} mono />
                 <DetailFact label={translateInstant("tools.audit.details.actorType")} value={event.actorType ?? "—"} />
                 {runId ? <DetailFact label={translateInstant("tools.audit.details.runId")} value={runId} mono /> : null}
-                {transport ? <DetailFact label={translateInstant("tools.audit.details.transport")} value={transport} mono /> : null}
+                {transport ? <DetailFact label={translateInstant("Type")} value={auditTransportLabel(transport)} /> : null}
                 {requestMethod && endpoint ? <DetailFact label={translateInstant("tools.audit.details.httpRequest")} value={`${requestMethod} ${endpoint}`} mono /> : null}
                 {mcpMethod ? <DetailFact label={translateInstant("tools.audit.details.mcpMethod")} value={mcpMethod} mono /> : null}
                 {requestId ? <DetailFact label={translateInstant("tools.audit.details.requestId")} value={requestId} mono /> : null}

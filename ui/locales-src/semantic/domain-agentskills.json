@@ -44,6 +44,11 @@
     "zh-CN": "适配器检测到（只读）",
     "reviewedEnglishHash": "d4504c9260892a56fa52c4bcd87a3c4ff366e2b170a321aa188375c9688a19e7"
   },
+  "agentSkills.emptyImportPrompt": {
+    "en": "Import skills into the organization library to enable them here.",
+    "zh-CN": "请先将技能导入组织技能库，然后在此处启用。",
+    "reviewedEnglishHash": "0a6dc3a575a7785938fbe8a6ad8f5e4bb64523bfc59a3472d0e192a09afffe80"
+  },
   "agentSkills.emptyLibraryMessage": {
     "en": "Install skills to the company, then enable them on this agent.",
     "zh-CN": "先将技能安装到公司，然后在此智能体上启用。",
@@ -55,6 +60,11 @@
     "reviewedEnglishHash": "e4afe08cca52dd9bc5ede6e0ce3a57e6498940091c2563454309e8c1d43372e2"
   },
   "agentSkills.enabledCount": {
+    "en": "{{enabled}} of {{total}} enabled",
+    "zh-CN": "已启用 {{enabled}}/{{total}}",
+    "reviewedEnglishHash": "ac7ef05519e75f4795a3e33ceac4ac3fe6c3a51853b892d5e78e6bdf36ed3ec9"
+  },
+  "agentSkills.enabledOfTotal": {
     "en": "{{enabled}} of {{total}} enabled",
     "zh-CN": "已启用 {{enabled}}/{{total}}",
     "reviewedEnglishHash": "ac7ef05519e75f4795a3e33ceac4ac3fe6c3a51853b892d5e78e6bdf36ed3ec9"
@@ -84,6 +94,11 @@
     "zh-CN": "保留在工作区中",
     "reviewedEnglishHash": "a45133eab53bdeced5c2d57c3849545e0f4d8e971cf54d530650327b99b0dd84"
   },
+  "agentSkills.legacyPaperclipBlocked": {
+    "en": "Paperclip Runner uses native semantic coordination and cannot attach the legacy Paperclip operational skill.",
+    "zh-CN": "Paperclip Runner 使用原生语义协调，无法附加旧版 Paperclip 操作技能。",
+    "reviewedEnglishHash": "84a89c4e0148fb41cb8ee638f422401ebb48aca5bcca362bf3354fd0ef49b63c"
+  },
   "agentSkills.location": {
     "en": "Location: {{location}}",
     "zh-CN": "位置：{{location}}",
@@ -103,6 +118,21 @@
     "en": "is enabled but missing from the company library.",
     "zh-CN": "已启用，但公司技能库中缺少该技能。",
     "reviewedEnglishHash": "f8fdf98b4b0fd1f3460b80c3017b791579b15435df51bc615f9b878cd181e344"
+  },
+  "agentSkills.mode.appliedOnNextRun": {
+    "en": "Applied on next run",
+    "zh-CN": "将在下次运行时应用",
+    "reviewedEnglishHash": "64f90de9dc5a3ba3730a72d1187d6d472bf0bc8a2f591b78d9a58ca93dc074c1"
+  },
+  "agentSkills.mode.keptInWorkspace": {
+    "en": "Kept in workspace",
+    "zh-CN": "保留在工作区中",
+    "reviewedEnglishHash": "2142c99515c8b3c2e104f55f89f18a063256ca01ca72bccfdc776331f7214abe"
+  },
+  "agentSkills.mode.trackedOnly": {
+    "en": "Tracked only",
+    "zh-CN": "仅跟踪",
+    "reviewedEnglishHash": "a714c282c6d70a085f89cdfd3e0c81176fd0a89cd3ac040f49c96c29aed6d22d"
   },
   "agentSkills.noAvailableSearchResults": {
     "en": "No available skills match your search.",
@@ -179,10 +209,25 @@
     "zh-CN": "搜索技能",
     "reviewedEnglishHash": "76c02b7eddcaa320d260092a736a954c0dad45c92e8c193acd83a95560cd433f"
   },
+  "agentSkills.source.localFolder": {
+    "en": "Local folder",
+    "zh-CN": "本地文件夹",
+    "reviewedEnglishHash": "b53e4dccdfe92f2a7c063640dee6dcdcd0f9dedd6ea17be2a146749a97ca870b"
+  },
+  "agentSkills.source.paperclipManaged": {
+    "en": "Paperclip managed",
+    "zh-CN": "Paperclip 托管",
+    "reviewedEnglishHash": "e97c654cd427acdc96363b8ae6c91b64d4d8f73a2cadba543edf1daebe98d1aa"
+  },
   "agentSkills.staleDesiredSkill": {
     "en": "{{key}} is enabled but missing from the company library.",
     "zh-CN": "{{key}} 已启用，但公司技能库中已无此技能。",
     "reviewedEnglishHash": "394467ea2b119c0f47d36f6ca7487afa083369f88934c190e51352854795b97d"
+  },
+  "agentSkills.toolbarAria": {
+    "en": "Agent skills controls",
+    "zh-CN": "智能体技能控制栏",
+    "reviewedEnglishHash": "26cb73242bd571111a6cad86f7f4a8903393b29c747c9e42683e39474da05230"
   },
   "agentSkills.trackedOnly": {
     "en": "Tracked only",
@@ -193,6 +238,21 @@
     "en": "Unknown",
     "zh-CN": "未知",
     "reviewedEnglishHash": "b764cdc0eab7137467211272fa539f1260d1bf2e71bcf6ff3bdc960f5c16aa14"
+  },
+  "agentSkills.unsupported.customAcpx": {
+    "en": "Paperclip cannot manage skills for custom ACP commands yet.",
+    "zh-CN": "Paperclip 暂不支持管理自定义 ACP 命令的技能。",
+    "reviewedEnglishHash": "3f19494c31bd162263fcf9a25a970b0a26847389a6f17871af5412ca777c6128"
+  },
+  "agentSkills.unsupported.generic": {
+    "en": "Paperclip cannot manage skills for this adapter yet. Manage them in the adapter directly.",
+    "zh-CN": "Paperclip 暂不支持管理此适配器的技能，请直接在适配器中管理。",
+    "reviewedEnglishHash": "50d3ab86096864fdf57c7f4f2239296fd289130b00cdc2814b6d69b917d72688"
+  },
+  "agentSkills.unsupported.openclawGateway": {
+    "en": "Paperclip cannot manage OpenClaw skills here. Visit your OpenClaw instance to manage this agent's skills.",
+    "zh-CN": "Paperclip 暂不能在此处管理 OpenClaw 技能，请前往你的 OpenClaw 实例管理该智能体的技能。",
+    "reviewedEnglishHash": "49be839d7a6bc45254c97cc8b8e03bae1bfec0dc5309c4f204aee6512b673837"
   },
   "agentSkills.unsupportedAdapter": {
     "en": "Paperclip cannot manage skills for this adapter yet. Manage them in the adapter directly.",

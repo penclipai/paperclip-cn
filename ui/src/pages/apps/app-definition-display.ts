@@ -1,5 +1,6 @@
 import { aiConnectionSourceSlug, type AppDefinition, type ToolApplication, type ToolConnection } from "@penclipai/shared";
 import { aiConnectionRouterSlug, aiConnectionRouterPluginKey } from "@penclipai/shared";
+import { translateInstant } from "@/i18n";
 
 export { aiConnectionSourceSlug };
 
@@ -15,7 +16,11 @@ export function appDefinitionSlug(entry: AppGalleryDisplayEntry | null | undefin
 }
 
 export function appDefinitionName(entry: AppGalleryDisplayEntry | null | undefined): string {
-  return entry?.name ?? appDefinitionSlug(entry) ?? "App";
+  const slug = appDefinitionSlug(entry);
+  if (slug === "local" || entry?.name === "Local endpoint") {
+    return translateInstant("aiProvider.local.name", { defaultValue: "Local endpoint" });
+  }
+  return entry?.name ?? slug ?? translateInstant("App", { defaultValue: "App" });
 }
 
 export function appDefinitionDescription(entry: AppGalleryDisplayEntry | null | undefined): string {

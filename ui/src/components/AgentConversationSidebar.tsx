@@ -10,6 +10,7 @@ import { AgentAvatar } from "@/components/AgentAvatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "@/lib/router";
+import { displayAgentRole } from "@/lib/agent-role";
 import { agentRouteRef, cn } from "@/lib/utils";
 
 export interface AgentConversationSidebarProps {
@@ -66,7 +67,7 @@ export function AgentConversationSidebar({ agents, compact = false, existingChat
     }} />;
   if (compact) return picker;
   const query = search.trim().toLocaleLowerCase();
-  const matching = agents.filter(agent => `${agent.name} ${agent.title ?? ""} ${agent.role}`.toLocaleLowerCase().includes(query));
+  const matching = agents.filter(agent => `${agent.name} ${agent.title ?? ""} ${agent.role} ${displayAgentRole(agent.role)}`.toLocaleLowerCase().includes(query));
   const byId = new Map(matching.map(agent => [agent.id, agent]));
   const pins = pinnedAgentIds.flatMap(id => {
     const agent = byId.get(id);
@@ -115,7 +116,7 @@ export function AgentConversationSidebar({ agents, compact = false, existingChat
           <AgentAvatar agent={agent} size={40} />
           <span className="agent-pin-text flex min-w-0 flex-1 flex-col gap-0.5">
             <span className="truncate text-sm font-medium">{agent.name}</span>
-            <span className="truncate text-xs text-muted-foreground">{agent.status === "terminated" ? translateInstant("status.terminated", { defaultValue: "Terminated" }) : agent.title ?? agent.role}</span>
+            <span className="truncate text-xs text-muted-foreground">{agent.status === "terminated" ? translateInstant("status.terminated", { defaultValue: "Terminated" }) : (agent.title ?? displayAgentRole(agent.role))}</span>
           </span>
           {unreadCount > 0 ? <Badge variant="ghost" aria-label={translateInstant(unreadCount === 1 ? "agentChatPicker.unreadFrom_one" : "agentChatPicker.unreadFrom_other", { count: unreadCount, agentName: agent.name })} className="shrink-0 bg-primary font-mono tabular-nums text-primary-foreground">{unreadCount}</Badge>
             : unreadIds.has(agent.id) && <span role="img" aria-label={translateInstant("sidebar.chat.unreadMessagesFrom", { agentName: agent.name, defaultValue: "Unread messages from {{agentName}}" })} className="size-2 shrink-0 rounded-full bg-primary" />}

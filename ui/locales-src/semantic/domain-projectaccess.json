@@ -144,6 +144,11 @@
     "zh-CN": "原因",
     "reviewedEnglishHash": "f81ab834de5f84918dc040b884267c2b61cb1a52d46442de10e97f35a94d0500"
   },
+  "projectAccess.removeMemberAria": {
+    "en": "Remove {{name}}",
+    "zh-CN": "移除 {{name}}",
+    "reviewedEnglishHash": "43e1269ac88aba53770f74a888e94434ed456cafba03b1bd4bd40350f31befb0"
+  },
   "projectAccess.respondPendingQuestion": {
     "en": "Respond to the pending question to continue.",
     "zh-CN": "请先回复待处理问题以继续。",

@@ -202,7 +202,6 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
     hiddenSettingsLoaded &&
     !hidesCompanyPage(hiddenSettings, "company.members") &&
     !hidesCompanyPage(hiddenSettings, "company.invites");
-  const switcherNoun = "organization";
   const currentName = selectedCompany?.name ?? null;
   // Managed hosts forbid local company creation. Their extension owns that action.
   const companyCreationManaged = Boolean(useCloudInstance());
@@ -291,7 +290,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
               className="min-w-0 truncate text-sm font-bold text-foreground"
               title={currentName ?? undefined}
             >
-              {currentName ?? `Select ${switcherNoun}`}
+              {currentName ?? t("sidebar.selectOrganization", { defaultValue: "Select organization" })}
             </TruncatedText>
           </span>
           {showChevron && <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />}
@@ -314,7 +313,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
             }}
             className="rounded px-1.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
-            {isEditingOrder ? "Done" : "Edit"}
+            {isEditingOrder ? t("sidebar.done", { defaultValue: "Done" }) : t("sidebar.edit", { defaultValue: "Edit" })}
           </button>
         </FlyoutHeader>
         <FlyoutOptions className="flex max-h-96 flex-col gap-0.5 overflow-y-auto px-2.5 pb-2 pt-1">
@@ -345,7 +344,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
             // offer the way back.
             companyListUnavailable ? (
               <>
-                <DropdownMenuItem disabled>{translateInstant("Couldn&apos;t load organizations")}</DropdownMenuItem>
+                <DropdownMenuItem disabled>{t("sidebar.couldNotLoadOrganizations", { defaultValue: "Could not load organizations" })}</DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={(event) => {
                     // Keep the menu open so the result of the retry is visible.
@@ -371,7 +370,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
               <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground">
                 <Plus className="size-4" />
               </span>
-              <TruncatedText className="min-w-0 flex-1 truncate">Create organization</TruncatedText>
+              <TruncatedText className="min-w-0 flex-1 truncate">{t("Create organization", { defaultValue: "Create organization" })}</TruncatedText>
             </DropdownMenuItem>
           )}
           {showInvitePeople ? (
@@ -390,7 +389,9 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
                   <UserPlus className="size-4" />
                 </span>
                 <TruncatedText className="min-w-0 flex-1 truncate">
-                  {currentName ? `Invite people to ${currentName}` : "Invite people"}
+                  {currentName
+                    ? t("Invite people to {{name}}", { name: currentName, defaultValue: "Invite people to {{name}}" })
+                    : t("Invite people", { defaultValue: "Invite people" })}
                 </TruncatedText>
               </Link>
             </DropdownMenuItem>
@@ -405,7 +406,9 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
                 <LogOut className="size-4" />
               </span>
               <TruncatedText className="min-w-0 flex-1 truncate">
-                {signOutMutation.isPending ? "Signing out..." : "Sign out"}
+                {signOutMutation.isPending
+                  ? t("Signing out...", { defaultValue: "Signing out..." })
+                  : t("Sign out", { defaultValue: "Sign out" })}
               </TruncatedText>
             </DropdownMenuItem>
           ) : null}

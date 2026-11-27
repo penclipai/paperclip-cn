@@ -1,4 +1,5 @@
 import type { Issue } from "@penclipai/shared";
+import { translateInstant } from "@/i18n";
 import { TASK_VIEW_PARAM, normalizeTaskViewKey, taskView } from "./task-views";
 
 type IssueDetailSource = "issues" | "inbox";
@@ -151,14 +152,14 @@ function inferIssueDetailSource(
   // Since PAP-670 the inbox is a set of views on /issues, so the href alone no
   // longer separates the two sources — the view key does.
   if (isInboxBackedTaskViewHref(breadcrumb.href)) return "inbox";
-  if (breadcrumb.label === "Inbox") return "inbox";
-  if (breadcrumb.label === "Tasks" || breadcrumb.href.includes("/issues")) return "issues";
+  if (breadcrumb.label === "Inbox" || breadcrumb.label === translateInstant("Inbox")) return "inbox";
+  if (breadcrumb.label === "Tasks" || breadcrumb.label === translateInstant("sidebar.issues") || breadcrumb.href.includes("/issues")) return "issues";
   return null;
 }
 
 function breadcrumbForSource(source: IssueDetailSource): IssueDetailBreadcrumb {
-  if (source === "inbox") return { label: "Inbox", href: "/inbox" };
-  return { label: "Tasks", href: "/issues" };
+  if (source === "inbox") return { label: translateInstant("Inbox"), href: "/inbox" };
+  return { label: translateInstant("sidebar.issues"), href: "/issues" };
 }
 
 export function createIssueDetailLocationState(

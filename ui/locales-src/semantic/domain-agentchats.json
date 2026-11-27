@@ -1,0 +1,17 @@
+{
+  "agentChats.disabledPrefix": {
+    "en": "Agent Chat is off for this instance. An administrator can enable it in",
+    "zh-CN": "此实例已关闭智能体对话。管理员可在",
+    "reviewedEnglishHash": "dd51f711ab6e19cf0291136bfe58f0aa5a0144bd6fe5f846d1154792a219baa1"
+  },
+  "agentChats.disabledSuffix": {
+    "en": ". Your workspace preference does not change Chat availability.",
+    "zh-CN": "中启用。你的工作区偏好不会影响对话功能是否可用。",
+    "reviewedEnglishHash": "ee25ea76bc84c7c1876f27dddcb63848ffae39a2ee3f31326fd67e1ee56bc397"
+  },
+  "agentChats.openFailed": {
+    "en": "Couldn’t open chat. Try again.",
+    "zh-CN": "无法打开对话，请重试。",
+    "reviewedEnglishHash": "b3d6fb0472f1cd3c4e755017ded8d5f4c8c68b56ebbd48292254ded571c82200"
+  }
+}

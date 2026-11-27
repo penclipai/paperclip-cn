@@ -323,7 +323,9 @@ function sourceMeta(
     case "paperclip":
       return {
         icon: Paperclip,
-        label: sourceLabel ?? "Paperclip",
+        label: sourceLabel === "Paperclip bundled"
+          ? translateInstant("companySkills.paperclipBundled")
+          : sourceLabel ?? "Paperclip",
         managedLabel: "Paperclip managed",
       };
     default:
@@ -1074,7 +1076,7 @@ function SkillCard({
             {card.name}
           </div>
           <div className="truncate text-xs text-muted-foreground">
-            {translateInstant("by")} {card.author}
+            {translateInstant("by")} {card.author === "Paperclip bundled" ? translateInstant("companySkills.paperclipBundled") : card.author}
             {card.version ? ` · ${card.version}` : ""}
           </div>
           {badgeFolder !== undefined ? (

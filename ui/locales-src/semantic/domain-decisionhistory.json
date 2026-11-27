@@ -1,0 +1,127 @@
+{
+  "decisionHistory.col.connection": {
+    "en": "Connection",
+    "zh-CN": "连接",
+    "reviewedEnglishHash": "639a40e82b9a96f0cbeed5f006cf5634c8d1b990b3c83753c00a910fc268d2a6"
+  },
+  "decisionHistory.col.cost": {
+    "en": "Cost",
+    "zh-CN": "费用",
+    "reviewedEnglishHash": "204a5eb2cd28bcfdf3be9f8c765948e9e831609e3c57048cdbd6b8a94cf49126"
+  },
+  "decisionHistory.col.duration": {
+    "en": "Duration",
+    "zh-CN": "耗时",
+    "reviewedEnglishHash": "4fc52a3c4c558b517c463b22d86d0e3b9cfd4255c98fe3510f9075b37ab419c9"
+  },
+  "decisionHistory.col.model": {
+    "en": "Model",
+    "zh-CN": "模型",
+    "reviewedEnglishHash": "5e2c614c23f02239bc03c6c04fcb681950f9e72bf8fdff6be79c79841cbb10c0"
+  },
+  "decisionHistory.col.responsible": {
+    "en": "Responsible",
+    "zh-CN": "负责人",
+    "reviewedEnglishHash": "bc110a6d0722098ac63e93b5fd6222afe478819ec5a6f4ce2557330684eb6264"
+  },
+  "decisionHistory.col.status": {
+    "en": "Status",
+    "zh-CN": "状态",
+    "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "decisionHistory.col.task": {
+    "en": "Task",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "4bc74b21357c6cf5cca8f66b4d4ee948be64d0396feb434c9645e168ad61ceaf"
+  },
+  "decisionHistory.col.tokensInOut": {
+    "en": "Tokens in / out",
+    "zh-CN": "输入 / 输出词元",
+    "reviewedEnglishHash": "56826c615053f419f61ecc4691521ab84c1b35f49e9e30a6b9154d72b9f5aa7f"
+  },
+  "decisionHistory.col.whenFeature": {
+    "en": "When / feature",
+    "zh-CN": "时间 / 功能",
+    "reviewedEnglishHash": "262fe9a31dd27c52c2092aab7e5368c74e794ab04f1a01b3e81fdc7dd8322e61"
+  },
+  "decisionHistory.configureModelLink": {
+    "en": "Configure a decision model",
+    "zh-CN": "配置决策模型",
+    "reviewedEnglishHash": "b30518f21599188e4348fb1805b1b054aa3eeb9e7586ec9088e4ab0cf6dd4f70"
+  },
+  "decisionHistory.emptyInPeriod": {
+    "en": "No decision requests in this period.",
+    "zh-CN": "该时间段内暂无决策请求。",
+    "reviewedEnglishHash": "4fba71f5360ee1d13563ad504f8f382ef14955949e2fb6a7c009b6907819987e"
+  },
+  "decisionHistory.formerUser": {
+    "en": "Former user",
+    "zh-CN": "已离任用户",
+    "reviewedEnglishHash": "6f48f04fa43f926c0e42d92aa71bdd477ba7f9fcaf5f8dcbaef8effcbd08a6da"
+  },
+  "decisionHistory.loadError": {
+    "en": "Could not load decision requests.",
+    "zh-CN": "无法加载决策请求。",
+    "reviewedEnglishHash": "4daac4ccaa4c50505db45fa7103523d44d022ade5696e083d721f262066c7e91"
+  },
+  "decisionHistory.loading": {
+    "en": "Loading decision requests…",
+    "zh-CN": "正在加载决策请求…",
+    "reviewedEnglishHash": "ec462bfbaf4bbf9c9613fb276178e9c9abf07f13cf050acd9f7691c1cb9b20d3"
+  },
+  "decisionHistory.removedConnection": {
+    "en": "Removed connection",
+    "zh-CN": "已移除的连接",
+    "reviewedEnglishHash": "1210095436f4d1cadb3badf1b5e7d23150f1ddf94294d6219704455160ab9103"
+  },
+  "decisionHistory.reported": {
+    "en": "Reported",
+    "zh-CN": "已上报",
+    "reviewedEnglishHash": "34540bb7b0899b49687569aeff3ac9232eaccd40dc0e57235eb05db4ecff553c"
+  },
+  "decisionHistory.setupTest": {
+    "en": "Setup test",
+    "zh-CN": "设置测试",
+    "reviewedEnglishHash": "d3ed4758020542e079c0b0a18091040c0d51b87045db1770035f16b93431d16e"
+  },
+  "decisionHistory.status.failed": {
+    "en": "Failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "decisionHistory.status.pending": {
+    "en": "Pending",
+    "zh-CN": "待处理",
+    "reviewedEnglishHash": "331551b0de4157c9abc7b72b61b96a2a928fd6db3cdf029c1fc44b08ad633aa6"
+  },
+  "decisionHistory.status.running": {
+    "en": "Running",
+    "zh-CN": "运行中",
+    "reviewedEnglishHash": "f4ccae29e1bb0c20a124570a1b43f4347ea94bba9f84ffdfddd9c7445b126128"
+  },
+  "decisionHistory.status.skipped": {
+    "en": "Skipped",
+    "zh-CN": "已跳过",
+    "reviewedEnglishHash": "12698ce1ea5cd4ab13ff4b7e6b1239908c41a4b2dfa0c2661cfb53fc2aa71bd0"
+  },
+  "decisionHistory.status.succeeded": {
+    "en": "Succeeded",
+    "zh-CN": "成功",
+    "reviewedEnglishHash": "6d9a6f97a5fdaf3b90a0cf02e0b43d8b7ec1d05c0e4718e02ddd1c5b450e5b39"
+  },
+  "decisionHistory.status.unknown": {
+    "en": "Unresolved",
+    "zh-CN": "未解析",
+    "reviewedEnglishHash": "36afca802c4d6f013f6f44f8276c3e8441bebe90bf1b1d629f3fc228e209b000"
+  },
+  "decisionHistory.tableAria": {
+    "en": "Decision requests",
+    "zh-CN": "决策请求",
+    "reviewedEnglishHash": "f78eb626b6ed66c420fd4e1c51c902540d5aae9b5dbd47e62694af5965ed9e3e"
+  },
+  "decisionHistory.toRunTestSuffix": {
+    "en": " to run a test.",
+    "zh-CN": "以运行测试。",
+    "reviewedEnglishHash": "e065496ed628282f6cd24284f2c4db2c91b6a8840a657d2299608d9062ab5a47"
+  }
+}

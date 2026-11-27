@@ -1,5 +1,19 @@
-import type { RoutineDetail, RoutineTrigger } from "@penclipai/shared";
+import type { RoutineDetail, RoutineListItem, RoutineTrigger } from "@penclipai/shared";
+import i18n, { getCurrentLocale, translateInstant } from "@/i18n";
 import { describeSchedule } from "@/components/ScheduleEditor";
+
+const BUILT_IN_ROUTINE_TITLE_KEYS: Record<string, string> = {
+  "Refresh stale summary slots": "routines.builtInTitle.refreshStaleSummarySlots",
+  "Review recent agent trajectories for coaching proposals": "routines.builtInTitle.reviewRecentAgentTrajectories",
+};
+
+export function displayBuiltInRoutineTitle(
+  routine: Pick<RoutineListItem, "title" | "originKind">,
+): string {
+  if (routine.originKind !== "built_in_agent_bundle") return routine.title;
+  const key = BUILT_IN_ROUTINE_TITLE_KEYS[routine.title];
+  return key ? translateInstant(key, { defaultValue: routine.title }) : routine.title;
+}
 
 export type RoutineAutomationState = "active" | "paused" | "draft" | "archived";
 
@@ -11,10 +25,10 @@ export function routineAutomationState(routine: Pick<RoutineDetail, "status" | "
 }
 
 export const ROUTINE_STATE_LABELS: Record<RoutineAutomationState, string> = {
-  active: "Active",
-  paused: "Paused",
-  draft: "Draft",
-  archived: "Archived",
+  get active() { return translateInstant("status.active", { defaultValue: "Active" }); },
+  get paused() { return translateInstant("Paused", { defaultValue: "Paused" }); },
+  get draft() { return translateInstant("status.draft", { defaultValue: "Draft" }); },
+  get archived() { return translateInstant("status.archived", { defaultValue: "Archived" }); },
 };
 
 /** What a paused or draft routine skips; null when it would not run on its own anyway. */
@@ -28,9 +42,21 @@ export function routinePausedNotice({
   hasSchedule: boolean;
 }): string | null {
   if (state !== "paused" && state !== "draft") return null;
-  if (hasWebhooks && hasSchedule) return "Scheduled runs are skipped and webhook events are ignored until this routine is on.";
-  if (hasWebhooks) return "Webhook events are ignored until this routine is on. The sending app gets an error.";
-  if (hasSchedule) return "Scheduled runs are skipped until this routine is on.";
+  if (hasWebhooks && hasSchedule) {
+    return translateInstant("routinePage.pausedNotice.both", {
+      defaultValue: "Scheduled runs are skipped and webhook events are ignored until this routine is on.",
+    });
+  }
+  if (hasWebhooks) {
+    return translateInstant("routinePage.pausedNotice.webhooks", {
+      defaultValue: "Webhook events are ignored until this routine is on. The sending app gets an error.",
+    });
+  }
+  if (hasSchedule) {
+    return translateInstant("routinePage.pausedNotice.schedule", {
+      defaultValue: "Scheduled runs are skipped until this routine is on.",
+    });
+  }
   return null;
 }
 
@@ -49,12 +75,12 @@ export function routineStatusDetail({
   now?: Date;
 }): string | null {
   if (state === "draft") return null;
-  if (state === "archived") return "No longer runs";
-  if (state === "paused") return "Run now still works";
-  if (nextRun) return `Next run ${formatNextRun(nextRun, now)}`;
-  if (hasEnabledWebhook) return "Runs when a webhook arrives";
-  if (hasStandingCheck) return "Checked each time the agent wakes up";
-  return "Only runs when you start it";
+  if (state === "archived") return translateInstant("routinePage.statusDetail.archived", { defaultValue: "No longer runs" });
+  if (state === "paused") return translateInstant("routinePage.statusDetail.paused", { defaultValue: "Run now still works" });
+  if (nextRun) return translateInstant("routinePage.statusDetail.nextRun", { when: formatNextRun(nextRun, now), defaultValue: "Next run {{when}}" });
+  if (hasEnabledWebhook) return translateInstant("routinePage.statusDetail.webhook", { defaultValue: "Runs when a webhook arrives" });
+  if (hasStandingCheck) return translateInstant("routinePage.statusDetail.standingCheck", { defaultValue: "Checked each time the agent wakes up" });
+  return translateInstant("routinePage.statusDetail.manual", { defaultValue: "Only runs when you start it" });
 }
 
 export function nextScheduledRun(triggers: readonly RoutineTrigger[]): Date | null {
@@ -67,21 +93,24 @@ export function nextScheduledRun(triggers: readonly RoutineTrigger[]): Date | nu
 
 /** "today at 9:36 AM", "tomorrow at 2:00 PM", otherwise a short dated form. */
 export function formatNextRun(date: Date, now: Date = new Date()): string {
-  const time = date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  const locale = i18n.isInitialized && i18n.hasResourceBundle(getCurrentLocale(), "common") ? getCurrentLocale() : undefined;
+  const time = date.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" });
   const startOfDay = (value: Date) => new Date(value.getFullYear(), value.getMonth(), value.getDate()).getTime();
   const days = Math.round((startOfDay(date) - startOfDay(now)) / 86_400_000);
-  if (days === 0) return `today at ${time}`;
-  if (days === 1) return `tomorrow at ${time}`;
-  const day = date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
-  return `${day} at ${time}`;
+  if (days === 0) return translateInstant("routinePage.nextRunToday", { time, defaultValue: `today at ${time}` });
+  if (days === 1) return translateInstant("routinePage.nextRunTomorrow", { time, defaultValue: `tomorrow at ${time}` });
+  const day = date.toLocaleDateString(locale, { weekday: "short", month: "short", day: "numeric" });
+  return translateInstant("routinePage.nextRunDated", { day, time, defaultValue: `${day} at ${time}` });
 }
 
 export function describeScheduleTrigger(trigger: Pick<RoutineTrigger, "cronExpression">): string {
-  return trigger.cronExpression ? describeSchedule(trigger.cronExpression) : "Schedule";
+  return trigger.cronExpression ? describeSchedule(trigger.cronExpression) : translateInstant("routineDetail.schedule", { defaultValue: "Schedule" });
 }
 
 export function webhookTitle(trigger: Pick<RoutineTrigger, "signingMode" | "label">): string {
-  const kind = trigger.signingMode === "github_hmac" ? "GitHub webhook" : "Webhook";
+  const kind = trigger.signingMode === "github_hmac"
+    ? translateInstant("routineWebhook.githubTitle", { defaultValue: "GitHub webhook" })
+    : translateInstant("routineWebhook.genericTitle", { defaultValue: "Webhook" });
   return trigger.label ? `${kind} · ${trigger.label}` : kind;
 }
 
@@ -103,12 +132,12 @@ export function webhookHealth(trigger: RoutineTrigger): WebhookHealth {
 }
 
 export const WEBHOOK_HEALTH_LABELS: Record<WebhookHealth, string> = {
-  setup: "Setup unfinished",
-  testing: "Testing · events don’t run",
-  paused: "Paused",
-  rejected: "Key rejected",
-  receiving: "Receiving events",
-  waiting: "Waiting for the first event",
+  get setup() { return translateInstant("routineWebhook.health.setup", { defaultValue: "Setup unfinished" }); },
+  get testing() { return translateInstant("routineWebhook.health.testing", { defaultValue: "Testing · events don’t run" }); },
+  get paused() { return translateInstant("Paused", { defaultValue: "Paused" }); },
+  get rejected() { return translateInstant("routineWebhook.health.rejected", { defaultValue: "Key rejected" }); },
+  get receiving() { return translateInstant("routineWebhook.health.receiving", { defaultValue: "Receiving events" }); },
+  get waiting() { return translateInstant("routineWebhook.health.waiting", { defaultValue: "Waiting for the first event" }); },
 };
 
 /** Which status the webhook dialog shows; each key has one entry in WEBHOOK_STATUS_COPY. */
@@ -134,31 +163,46 @@ export function webhookStatusKey(
 }
 
 export const WEBHOOK_STATUS_COPY: Record<WebhookStatusKey, { title: string; detail: string }> = {
-  setup: { title: "Waiting for a test event", detail: "Send one from your app. Test events never start the routine." },
+  setup: {
+    get title() { return translateInstant("routineWebhook.status.setup.title", { defaultValue: "Waiting for a test event" }); },
+    get detail() { return translateInstant("routineWebhook.status.setup.detail", { defaultValue: "Send one from your app. Test events never start the routine." }); },
+  },
   setup_testing: {
-    title: "Waiting for a test event",
-    detail: "Send one from your app. It won’t start the routine. Real events are ignored until you finish testing.",
+    get title() { return translateInstant("routineWebhook.status.setup.title", { defaultValue: "Waiting for a test event" }); },
+    get detail() { return translateInstant("routineWebhook.status.setupTesting.detail", { defaultValue: "Send one from your app. It won’t start the routine. Real events are ignored until you finish testing." }); },
   },
   testing: {
-    title: "Testing",
-    detail: "Send an event from your app. It won’t start the routine. Real events are ignored until you finish testing.",
+    get title() { return translateInstant("routineWebhook.status.testing.title", { defaultValue: "Testing" }); },
+    get detail() { return translateInstant("routineWebhook.status.testing.detail", { defaultValue: "Send an event from your app. It won’t start the routine. Real events are ignored until you finish testing." }); },
   },
-  waiting: { title: "Ready", detail: "The next event starts this routine." },
-  receiving: { title: "Receiving events", detail: "Each event starts this routine." },
+  waiting: {
+    get title() { return translateInstant("routineWebhook.status.waiting.title", { defaultValue: "Ready" }); },
+    get detail() { return translateInstant("routineWebhook.status.waiting.detail", { defaultValue: "The next event starts this routine." }); },
+  },
+  receiving: {
+    get title() { return translateInstant("routineWebhook.health.receiving", { defaultValue: "Receiving events" }); },
+    get detail() { return translateInstant("routineWebhook.status.receiving.detail", { defaultValue: "Each event starts this routine." }); },
+  },
   rejected: {
-    title: "The last event was rejected",
-    detail: "The key didn’t match. Replace the key, then paste the new one into your app.",
+    get title() { return translateInstant("routineWebhook.status.rejected.title", { defaultValue: "The last event was rejected" }); },
+    get detail() { return translateInstant("routineWebhook.status.rejected.detail", { defaultValue: "The key didn’t match. Replace the key, then paste the new one into your app." }); },
   },
   test_rejected: {
-    title: "The last event was rejected",
-    detail: "The key didn’t match. Replace the key, then paste the new one into your app.",
+    get title() { return translateInstant("routineWebhook.status.rejected.title", { defaultValue: "The last event was rejected" }); },
+    get detail() { return translateInstant("routineWebhook.status.rejected.detail", { defaultValue: "The key didn’t match. Replace the key, then paste the new one into your app." }); },
   },
-  test_received: { title: "Test event received", detail: "The connection works. No task was created." },
+  test_received: {
+    get title() { return translateInstant("routineWebhook.status.testReceived.title", { defaultValue: "Test event received" }); },
+    get detail() { return translateInstant("routineWebhook.status.testReceived.detail", { defaultValue: "The connection works. No task was created." }); },
+  },
   ignored_while_paused: {
-    title: "Ignoring events while the routine is paused",
-    detail: "Turn the routine on to start it from this webhook. Until then the sending app gets an error.",
+    get title() { return translateInstant("routineWebhook.status.ignoredWhilePaused.title", { defaultValue: "Ignoring events while the routine is paused" }); },
+    get detail() { return translateInstant("routineWebhook.status.ignoredWhilePaused.detail", { defaultValue: "Turn the routine on to start it from this webhook. Until then the sending app gets an error." }); },
   },
-  paused: { title: "Paused", detail: "Events are ignored until you resume this webhook." },
+  paused: {
+    get title() { return translateInstant("Paused", { defaultValue: "Paused" }); },
+    get detail() { return translateInstant("routineWebhook.status.paused.detail", { defaultValue: "Events are ignored until you resume this webhook." }); },
+  },
 };
 
 /** Plain-language lines for saved run rules that differ from the defaults. Empty for most routines. */
@@ -166,14 +210,14 @@ export function customRunRules(
   routine: Pick<RoutineDetail, "concurrencyPolicy" | "catchUpPolicy" | "activityGatePolicy" | "activityGateScope">,
 ): string[] {
   const rules: string[] = [];
-  if (routine.concurrencyPolicy === "always_enqueue") rules.push("Queues every run, even while one is still working");
-  if (routine.concurrencyPolicy === "skip_if_active") rules.push("Skips a run while one is still working");
-  if (routine.catchUpPolicy === "enqueue_missed_with_cap") rules.push("Catches up on runs missed while paused");
+  if (routine.concurrencyPolicy === "always_enqueue") rules.push(translateInstant("routinePage.runRule.alwaysEnqueue", { defaultValue: "Queues every run, even while one is still working" }));
+  if (routine.concurrencyPolicy === "skip_if_active") rules.push(translateInstant("routinePage.runRule.skipIfActive", { defaultValue: "Skips a run while one is still working" }));
+  if (routine.catchUpPolicy === "enqueue_missed_with_cap") rules.push(translateInstant("routinePage.runRule.catchUp", { defaultValue: "Catches up on runs missed while paused" }));
   if (routine.activityGatePolicy === "require_external_activity") {
     rules.push(
       routine.activityGateScope === "project"
-        ? "Skips scheduled runs when nothing changed in its project"
-        : "Skips scheduled runs when nothing changed",
+        ? translateInstant("routinePage.runRule.requireActivityProject", { defaultValue: "Skips scheduled runs when nothing changed in its project" })
+        : translateInstant("routinePage.runRule.requireActivity", { defaultValue: "Skips scheduled runs when nothing changed" }),
     );
   }
   return rules;

@@ -75,37 +75,38 @@ export function AgentBulkRoster({ companyId, agents, visibleAgents, renderAgent,
       // The display cache excludes private runtime fields. Only complete,
       // freshly authorized agents can become the editor's optimistic base.
       if (complete.some(a => a.companyId !== companyId || bulkAgentHarness(a) !== harness || bulkAgentDisabledReason(a, cloud, harnessPolicy))) {
-        setOpenError("The selected agents changed. Refresh the roster and select them again.");
+        setOpenError(t("agents.bulk.selectionChanged", { defaultValue: "The selected agents changed. Refresh the roster and select them again." }));
         return;
       }
-      setEditing(complete);
     } catch (error) {
       if (account.isCurrentScope() && revision === selectionRevision.current) setOpenError(describeError(error).body);
     } finally { openingRef.current = false; setOpening(false); }
   }
 
   return <div className="space-y-4">
-    {createPortal(<div role="region" aria-label="Bulk actions" aria-hidden={selectedAgents.length === 0} inert={selectedAgents.length === 0}
+    {createPortal(<div role="region" aria-label={t("agents.bulk.actionsAria", { defaultValue: "Bulk actions" })} aria-hidden={selectedAgents.length === 0} inert={selectedAgents.length === 0}
       data-state={selectedAgents.length > 0 ? "open" : "closed"} className="agent-selection-bar flex flex-wrap items-center gap-3 rounded-lg border bg-background p-3">
-      <span className="text-sm font-medium">{actionAgents.length} selected</span>
-      {hidden > 0 && <span className="text-xs text-muted-foreground">{hidden} hidden by filters</span>}
-      {groups.length > 1 && <span className="text-xs text-muted-foreground">Choose a harness to edit</span>}
+      <span className="text-sm font-medium">{t("agents.bulk.selectedCount", { count: actionAgents.length, defaultValue: "{{count}} selected" })}</span>
+      {hidden > 0 && <span className="text-xs text-muted-foreground">{t("agents.bulk.hiddenByFilters", { count: hidden, defaultValue: "{{count}} hidden by filters" })}</span>}
+      {groups.length > 1 && <span className="text-xs text-muted-foreground">{t("agents.bulk.chooseHarness", { defaultValue: "Choose a harness to edit" })}</span>}
       <div className="flex flex-1 flex-wrap items-center justify-end gap-2">{groups.map(h => <Button key={h} size="sm" variant="outline" disabled={opening} onClick={() => void openEditor(h)}>
-        <Pencil className="size-3.5" aria-hidden />{groups.length === 1 ? "Edit connection & model" : `Edit ${actionAgents.filter(a => bulkAgentHarness(a) === h).length} ${getAdapterLabel(h)}`}
-      </Button>)}<Button size="icon-sm" variant="ghost" aria-label="Clear selection" onClick={() => changeSelection([])}><X className="size-4" /></Button></div>
+        <Pencil className="size-3.5" aria-hidden />{groups.length === 1
+          ? t("agents.bulk.editConnectionAndModel", { defaultValue: "Edit connection & model" })
+          : t("agents.bulk.editHarnessGroup", { count: actionAgents.filter(a => bulkAgentHarness(a) === h).length, harness: getAdapterLabel(h), defaultValue: "Edit {{count}} {{harness}}" })}
+      </Button>)}<Button size="icon-sm" variant="ghost" aria-label={t("agents.bulk.clearSelection", { defaultValue: "Clear selection" })} onClick={() => changeSelection([])}><X className="size-4" /></Button></div>
     </div>, document.body)}
-    {opening && <p role="status" className="text-sm text-muted-foreground">Loading current agent settings…</p>}
+    {opening && <p role="status" className="text-sm text-muted-foreground">{t("agents.bulk.loadingCurrentSettings", { defaultValue: "Loading current agent settings…" })}</p>}
     {openError && <p role="alert" className="text-sm text-destructive">{openError}</p>}
     {notice && <p role="status" className="flex items-center gap-2 text-sm"><Check className="size-4" aria-hidden />{notice}</p>}
-    <div className="overflow-x-auto"><table aria-label="Agent roster" className="agent-roster w-full text-left text-sm">
+    <div className="overflow-x-auto"><table aria-label={t("agents.bulk.rosterAria", { defaultValue: "Agent roster" })} className="agent-roster w-full text-left text-sm">
       <thead className="text-xs text-muted-foreground [&_th]:px-3 [&_th]:py-3 [&_th]:font-normal"><tr>
-        <th className="w-10"><Checkbox aria-label="Select all visible editable agents" checked={all ? true : some ? "indeterminate" : false} disabled={!selectable.length} onCheckedChange={toggleAll} /></th>
-        <th scope="col">{t("agents.count", { count: visible.length })}</th>{renderChat && <th scope="col"><span className="sr-only">Chat</span></th>}<th scope="col">Status</th><th scope="col">Harness</th><th scope="col">Default model</th><th scope="col">Connection</th>
+        <th className="w-10"><Checkbox aria-label={t("agents.bulk.selectAllVisible", { defaultValue: "Select all visible editable agents" })} checked={all ? true : some ? "indeterminate" : false} disabled={!selectable.length} onCheckedChange={toggleAll} /></th>
+        <th scope="col">{t("agents.count", { count: visible.length })}</th>{renderChat && <th scope="col"><span className="sr-only">{t("Chat", { defaultValue: "Chat" })}</span></th>}<th scope="col">{t("Status", { defaultValue: "Status" })}</th><th scope="col">{t("Harness", { defaultValue: "Harness" })}</th><th scope="col">{t("agents.bulk.defaultModel", { defaultValue: "Default model" })}</th><th scope="col">{t("Connection", { defaultValue: "Connection" })}</th>
       </tr></thead>
       <tbody>{visible.map(agent => {
         const metadata = rosterIndex.byAgentId.get(agent.id)!;
         return <tr key={agent.id} data-state={selected.includes(agent.id) ? "selected" : undefined} className="group/agent-row border-t border-border data-[state=selected]:bg-accent/30 hover:bg-accent/50 focus-within:bg-accent/50 [&_td]:px-3 [&_td]:align-middle">
-        <td title={bulkAgentDisabledReason(agent, cloud, harnessPolicy)}><Checkbox aria-label={`Select ${agent.name}`} checked={selectedAgents.some(a => a.id === agent.id)} disabled={!!bulkAgentDisabledReason(agent, cloud, harnessPolicy)} onCheckedChange={value => changeSelection(value ? [...new Set([...selected, agent.id])] : selected.filter(id => id !== agent.id))} /></td>
+        <td title={bulkAgentDisabledReason(agent, cloud, harnessPolicy)}><Checkbox aria-label={t("agents.bulk.selectAgent", { name: agent.name, defaultValue: "Select {{name}}" })} checked={selectedAgents.some(a => a.id === agent.id)} disabled={!!bulkAgentDisabledReason(agent, cloud, harnessPolicy)} onCheckedChange={value => changeSelection(value ? [...new Set([...selected, agent.id])] : selected.filter(id => id !== agent.id))} /></td>
         <td className="min-w-64 p-0">{renderAgent(agent)}</td>
         {renderChat && <td>{renderChat(agent)}</td>}
         <td>{renderStatus ? renderStatus(agent) : <AgentStatusBadge status={agent.status} />}</td>
@@ -115,12 +116,15 @@ export function AgentBulkRoster({ companyId, agents, visibleAgents, renderAgent,
       </tr>;
       })}</tbody>
     </table></div>
-    {!visible.length && <p className="py-8 text-center text-sm text-muted-foreground">No agents match these filters.</p>}
-    {editing && <Suspense fallback={<p role="status" className="text-sm text-muted-foreground">Loading editor…</p>}><AgentBulkSettingsSheet companyId={companyId} agents={editing} totalSelected={selectedAgents.length} onClose={(updatedIds, complete) => {
+    {!visible.length && <p className="py-8 text-center text-sm text-muted-foreground">{t("agents.bulk.noMatches", { defaultValue: "No agents match these filters." })}</p>}
+    {editing && <Suspense fallback={<p role="status" className="text-sm text-muted-foreground">{t("agents.bulk.loadingEditor", { defaultValue: "Loading editor…" })}</p>}><AgentBulkSettingsSheet companyId={companyId} agents={editing} totalSelected={selectedAgents.length} onClose={(updatedIds, complete) => {
       setEditing(null);
       if (updatedIds.length) {
         changeSelection(ids => ids.filter(id => !(complete ? editing.map(a => a.id) : updatedIds).includes(id)));
-        setNotice(`Updated ${updatedIds.length} ${getAdapterLabel(bulkAgentHarness(editing[0]))} ${updatedIds.length === 1 ? "agent" : "agents"}.`);
+        const harnessLabel = getAdapterLabel(bulkAgentHarness(editing[0]));
+        setNotice(updatedIds.length === 1
+          ? t("agents.bulk.updatedNotice_one", { count: updatedIds.length, harness: harnessLabel, defaultValue: "Updated {{count}} {{harness}} agent." })
+          : t("agents.bulk.updatedNotice_other", { count: updatedIds.length, harness: harnessLabel, defaultValue: "Updated {{count}} {{harness}} agents." }));
       }
     }} /></Suspense>}
   </div>;

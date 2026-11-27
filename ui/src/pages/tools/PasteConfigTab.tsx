@@ -25,6 +25,7 @@ import {
   type OAuthConnectPhase,
 } from "@/features/connections/ConnectionSetupFlow";
 import { endpointHost } from "@/pages/apps/generic-mcp-connect";
+import { withoutUnavailableActions } from "@/pages/apps/app-detail/action-permissions";
 import { McpConfigHelpDialog } from "./McpConfigHelpDialog";
 import { describeError } from "@/api/errors";
 
@@ -289,18 +290,13 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
 
   const finishMutation = useMutation({
     mutationFn: () => {
-      const askFirstLevels = connectResult
-        ? askFirstLevelsFrom(connectResult)
-        : [];
-      const enabledIds = Object.entries(enabled)
-        .filter(([, on]) => on)
-        .map(([id]) => id);
+      const askFirstLevels = connectResult ? askFirstLevelsFrom(connectResult) : [];
+      const enabledIds = withoutUnavailableActions(
+        Object.entries(enabled).filter(([, on]) => on).map(([id]) => id),
+        connectResult?.catalog ?? [],
+      );
       const askFirstIds = (connectResult?.actions.canMakeChanges ?? [])
-        .filter(
-          (action) =>
-            enabled[action.catalogEntryId] &&
-            askFirstLevels.includes(action.riskLevel),
-        )
+        .filter((action) => enabledIds.includes(action.catalogEntryId) && askFirstLevels.includes(action.riskLevel))
         .map((action) => action.catalogEntryId);
       return toolsApi.finishApp(companyId, connectResult!.connectionId, {
         enabledCatalogEntryIds: enabledIds,

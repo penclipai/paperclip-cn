@@ -577,12 +577,17 @@ npx penclip agent inbox-mine --user-id <board-user-id>
 npx penclip agent wake <agent-id-or-shortname> [--company-id <company-id>] [--reason "..."] [--payload '{"issueId":"..."}']
 npx penclip agent pause <agent-id>
 npx penclip agent resume <agent-id>
+npx penclip agent clear-error <agent-id>
 npx penclip agent approve <agent-id>
 npx penclip agent terminate <agent-id>
 npx penclip agent heartbeat:invoke <agent-id>
 npx penclip agent claude-login <agent-id>
 npx penclip agent local-cli <agent-id-or-shortname> --company-id <company-id>
 ```
+
+`agent clear-error` uses the server's existing clear-error action. The server
+checks permissions and the agent state. Use it to clear an error after addressing
+its cause; use `agent resume` to resume a paused agent.
 
 Agent configuration and runtime endpoints:
 

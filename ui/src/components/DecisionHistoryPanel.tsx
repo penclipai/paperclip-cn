@@ -1,6 +1,7 @@
-import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { useState, type ReactNode } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import type { Agent, DecisionHistoryScope } from "@penclipai/shared";
 import { attentionApi } from "@/api/attention";
 import { projectsApi } from "@/api/projects";
@@ -10,7 +11,8 @@ import { DECISION_HISTORY_OUTCOME_OPTIONS, DECISION_HISTORY_SCOPE_OPTIONS, DEFAU
 import { CoordinatorDecisionReceipt as Receipt } from "@/components/coordinator/CoordinatorDecisionReceipt";
 import { ToolbarSearch } from "@/components/ToolbarSearch";
 import { Button } from "@/components/ui/button";
-import { NativeSelect } from "@/components/ui/select";
+import { EmptyState } from "@/components/EmptyState";
+import { InboxFilter } from "@/components/InboxFilter";
 
 type Group = "none" | "task" | "agent" | "project";
 
@@ -28,13 +30,14 @@ export function DecisionHistoryPanel({
   companyId,
   agents,
   userLabelMap,
-  header,
+  afterControls,
 }: {
   companyId: string;
   agents: Agent[];
   userLabelMap?: ReadonlyMap<string, string>;
-  header?: ReactNode;
+  afterControls?: ReactNode;
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [outcome, setOutcome] = useState("");
@@ -58,33 +61,40 @@ export function DecisionHistoryPanel({
   const items = history.data?.pages.flatMap((page) => page.items) ?? [];
   const groups = new Map<string, typeof items>();
   for (const item of items) {
-    const label = groupBy === "task" ? item.issueIdentifier ?? item.issueTitle ?? "No task" : groupBy === "agent" ? item.agentName ?? "Other agents" : groupBy === "project" ? item.projectName ?? "No project" : "";
+    const label = groupBy === "task" ? item.issueIdentifier ?? item.issueTitle ?? t("decisions.history.noTask", { defaultValue: "No task" }) : groupBy === "agent" ? item.agentName ?? t("decisions.history.otherAgents", { defaultValue: "Other agents" }) : groupBy === "project" ? item.projectName ?? t("No project") : "";
     groups.set(label, [...(groups.get(label) ?? []), item]);
   }
   return <div className="space-y-5" data-decision-history>
-    {header}
-    <ToolbarSearch query={search} onQueryChange={setSearch} label="Search decision history" placeholder="Search decisions or task IDs…" />
-    <div className="grid grid-cols-2 gap-2">
-      <NativeSelect aria-label="Whose decision history" value={scope} onChange={(event) => setScope(event.target.value as DecisionHistoryScope)} className="col-span-2">
-        {DECISION_HISTORY_SCOPE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-      </NativeSelect>
-      <NativeSelect aria-label="Filter decision outcomes" value={outcome} onChange={(event) => setOutcome(event.target.value)}>
-        <option value="">All outcomes</option>
-        {DECISION_HISTORY_OUTCOME_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-        <option value={HANDLED_FOR_ME}>Handled for me</option>
-      </NativeSelect>
-      <NativeSelect aria-label="Sort decision history" value={sort} onChange={(event) => setSort(event.target.value as typeof sort)}><option value="newest">Newest first</option><option value="oldest">Oldest first</option></NativeSelect>
-      <NativeSelect aria-label="Filter decision history by agent" value={agentId} onChange={(event) => setAgentId(event.target.value)} className="col-span-2"><option value="">All agents</option>{agents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}</NativeSelect>
-      <NativeSelect aria-label="Filter decision history by project" value={projectId} onChange={(event) => setProjectId(event.target.value)} className="col-span-2"><option value="">All projects</option>{(projects.data ?? []).map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</NativeSelect>
-      <NativeSelect aria-label="Group decision history" value={groupBy} onChange={(event) => setGroupBy(event.target.value as Group)} className="col-span-2"><option value="none">No grouping</option><option value="task">By task</option><option value="agent">By agent</option><option value="project">By project</option></NativeSelect>
+    <div role="toolbar" aria-label={t("decisions.history.toolbarAria", { defaultValue: "Decision history controls" })} className="space-y-5">
+      <ToolbarSearch query={search} onQueryChange={setSearch} label={t("decisions.history.searchAria", { defaultValue: "Search decision history" })} placeholder={t("decisions.history.searchPlaceholder", { defaultValue: "Search decisions or task IDs…" })} />
+      <div data-canonical-toolbar="history">
+        <InboxFilter<DecisionHistoryScope> label={t("decisions.history.scopeAria", { defaultValue: "Whose decision history" })} heading={t("decisions.history.scopeHeading", { defaultValue: "Whose decisions" })} value={scope}
+          options={DECISION_HISTORY_SCOPE_OPTIONS} onChange={setScope} />
+        <InboxFilter label={t("decisions.history.outcomeAria", { defaultValue: "Filter decision outcomes" })} heading={t("decisions.history.outcomeHeading", { defaultValue: "Outcome" })} value={outcome} onChange={setOutcome}
+          options={[{ value: "", label: t("decisions.history.allOutcomes", { defaultValue: "All outcomes" }) }, ...DECISION_HISTORY_OUTCOME_OPTIONS, { value: HANDLED_FOR_ME, label: t("decisions.history.handledForMe", { defaultValue: "Handled for me" }) }]} />
+        <InboxFilter<typeof sort> label={t("decisions.history.sortAria", { defaultValue: "Sort decision history" })} heading={t("decisions.history.sortHeading", { defaultValue: "Sort by" })} value={sort} onChange={setSort}
+          options={[{ value: "newest", label: t("decisions.history.newestFirst", { defaultValue: "Newest first" }) }, { value: "oldest", label: t("decisions.history.oldestFirst", { defaultValue: "Oldest first" }) }]} />
+        <InboxFilter label={t("decisions.history.agentAria", { defaultValue: "Filter decision history by agent" })} heading={t("Agents")} value={agentId} onChange={setAgentId}
+          options={[{ value: "", label: t("All agents") }, ...agents.map(agent => ({ value: agent.id, label: agent.name }))]} />
+        <InboxFilter label={t("decisions.history.projectAria", { defaultValue: "Filter decision history by project" })} heading={t("Projects")} value={projectId} onChange={setProjectId}
+          options={[{ value: "", label: t("All projects") }, ...(projects.data ?? []).map(project => ({ value: project.id, label: project.name }))]} />
+        <InboxFilter<Group> label={t("decisions.history.groupAria", { defaultValue: "Group decision history" })} heading={t("decisions.groupHeading", { defaultValue: "Group by" })} value={groupBy} onChange={setGroupBy}
+          options={[{ value: "none", label: t("decisions.group.none", { defaultValue: "No grouping" }) }, { value: "task", label: t("decisions.group.task", { defaultValue: "By task" }) }, { value: "agent", label: t("decisions.group.agent", { defaultValue: "By agent" }) }, { value: "project", label: t("decisions.group.project", { defaultValue: "By project" }) }]} />
+      </div>
     </div>
-    {waiting ? <p role="status" className="text-sm text-muted-foreground">Loading decisions…</p> : null}
+    {afterControls}
+    {waiting ? <p role="status" className="text-sm text-muted-foreground">{t("decisions.loading", { defaultValue: "Loading decisions…" })}</p> : null}
     {historyView.kind === "error" ? <QueryErrorState error={historyView.error} onRetry={historyView.retry} /> : null}
-    {!waiting && historyView.kind !== "error" && !items.length ? <div className="space-y-2 text-sm text-muted-foreground">
-      <p>{scope === "mine" && !search && !outcome && !agentId && !projectId ? "No decisions handled by you or for you yet." : "No decisions match these filters."}</p>
-      {scope === "mine" ? <Button variant="outline" size="sm" onClick={() => setScope("all")}>Show everyone's decisions</Button> : null}
-    </div> : null}
-    <div className="space-y-4">{[...groups].map(([label, entries]) => <section key={label} className="space-y-3">{label ? <h3 className="text-sm font-medium text-muted-foreground">{label}</h3> : null}{entries.map((item) => <div key={item.id} className="space-y-1"><Receipt item={item} onOpen={navigate} userLabelMap={userLabelMap} /><p className="px-1 text-xs text-muted-foreground"><time dateTime={item.resolvedAt}>{new Date(item.resolvedAt).toLocaleString()}</time></p></div>)}</section>)}</div>
-    {history.hasNextPage ? <Button variant="outline" disabled={history.isFetchingNextPage} onClick={() => void history.fetchNextPage()}>{history.isFetchingNextPage ? "Loading…" : "Load more decisions"}</Button> : null}
+    {!waiting && historyView.kind !== "error" && !items.length && <EmptyState placement="upper"
+      message={scope === "mine" && !search && !outcome && !agentId && !projectId ? t("decisions.history.emptyMine", { defaultValue: "No decisions handled by you or for you yet." }) : t("decisions.history.emptyFiltered", { defaultValue: "No decisions match these filters." })}
+      action={scope === "mine" ? t("decisions.history.showEveryones", { defaultValue: "Show everyone's decisions" }) : undefined}
+      onAction={() => setScope("all")}
+      hideActionIcon
+    />}
+    <div className="space-y-4">{[...groups].map(([label, entries]) => <section key={label} className="space-y-3">
+      {label && <h3 className="text-sm font-medium text-muted-foreground">{label}</h3>}
+      {entries.map(item => <Receipt key={item.id} item={item} onOpen={navigate} userLabelMap={userLabelMap} showTimestamp />)}
+    </section>)}</div>
+    {history.hasNextPage ? <Button variant="outline" disabled={history.isFetchingNextPage} onClick={() => void history.fetchNextPage()}>{history.isFetchingNextPage ? t("Loading…", { defaultValue: "Loading…" }) : t("decisions.history.loadMore", { defaultValue: "Load more decisions" })}</Button> : null}
   </div>;
 }

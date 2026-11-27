@@ -14,15 +14,80 @@
     "zh-CN": "本月已用 {{spent}} / {{budget}}",
     "reviewedEnglishHash": "984dedb047baa61fdf93a87df01768e39f65c0b42a837c9fbc9496c8667f63f1"
   },
+  "costs.budgetsHeading.agent": {
+    "en": "agent budgets",
+    "zh-CN": "智能体预算",
+    "reviewedEnglishHash": "d47327d3d55d29fa62acd3128659c17837b3e67437f63b2d72fadff823fb8166"
+  },
+  "costs.budgetsHeading.company": {
+    "en": "organization budgets",
+    "zh-CN": "组织预算",
+    "reviewedEnglishHash": "8733f939e2f50ae525e1929c2aee5a59de9600c0fcde397f74a44b7f2eb3815c"
+  },
+  "costs.budgetsHeading.project": {
+    "en": "project budgets",
+    "zh-CN": "项目预算",
+    "reviewedEnglishHash": "5c5973127f817fbd394d468b13e4f0a7b7f0da3c6590c7d6211b542e24f671bf"
+  },
+  "costs.companyBudgetDescription": {
+    "en": "Organization-wide monthly policy.",
+    "zh-CN": "全组织月度预算策略。",
+    "reviewedEnglishHash": "17c42f187c6b4f1a0c43dab5df50524b19032ed3cd1a175216463e02c6d675f5"
+  },
+  "costs.costDateRangeAria": {
+    "en": "Cost date range",
+    "zh-CN": "成本日期范围",
+    "reviewedEnglishHash": "d6b49e112b475ad79b6167055e6e92ee65087112d4ae1728d96478ff1e83ef8e"
+  },
+  "costs.dateRange.30d": {
+    "en": "30 Days",
+    "zh-CN": "最近 30 天",
+    "reviewedEnglishHash": "4ae21a9bc8175e7084384deebb79ea20df371828751414ed0b2eaad19fcb476b"
+  },
+  "costs.dateRange.7d": {
+    "en": "7 Days",
+    "zh-CN": "最近 7 天",
+    "reviewedEnglishHash": "a9ad9dc1405e67bbc08b030e5c32020517e5a7ae95a8bbe5c3fdd55779c905e0"
+  },
+  "costs.dateRange.all": {
+    "en": "All Time",
+    "zh-CN": "全部时间",
+    "reviewedEnglishHash": "476adfac4cd9494eb2dc13f0159c513952f744900979aa4f8807494947bf04e8"
+  },
+  "costs.dateRange.custom": {
+    "en": "Custom",
+    "zh-CN": "自定义",
+    "reviewedEnglishHash": "494ca78f7374e46fb2de9ad9f2dbd4aaae89b50b2ca044177a1566a59e06627e"
+  },
+  "costs.dateRange.mtd": {
+    "en": "Month to Date",
+    "zh-CN": "本月至今",
+    "reviewedEnglishHash": "951ce1b0aa8f5c626b5dd87d269397e7f965b7eb6f63bac91e06fc43114e6f4b"
+  },
+  "costs.dateRange.ytd": {
+    "en": "Year to Date",
+    "zh-CN": "本年至今",
+    "reviewedEnglishHash": "92176dd3a3c9381ee17d77e24a77f2d53d34948ce1954a131308cb8a7231d5a8"
+  },
   "costs.financialDataUnavailable": {
     "en": "Financial data unavailable",
     "zh-CN": "财务数据不可用",
     "reviewedEnglishHash": "2d12276741c126d7fed8c70a441a34e66cd2fdeefacf8a4b33e666aad652e240"
   },
+  "costs.loadingFinancialEvents": {
+    "en": "Loading financial events…",
+    "zh-CN": "正在加载财务事件…",
+    "reviewedEnglishHash": "b493ea6fb40b0cfa86922a462ef64b7763771eaebe6eb11593d24b2edffb79b8"
+  },
   "costs.monthlyLimit": {
     "en": "Monthly limit",
     "zh-CN": "月度限额",
     "reviewedEnglishHash": "c52f575884d08440c774db679d754d1dba27ba46c39f26b71598af8ae269ee3c"
+  },
+  "costs.museUsageUnavailable": {
+    "en": "{{name}}'s Muse activity has no reported usage or cost. Totals below show recorded organization charges only. Paperclip cannot enforce a Muse spend ceiling.",
+    "zh-CN": "{{name}} 的 Muse 活动暂无上报的用量或费用。下方总计仅显示已记录的组织费用。Paperclip 无法强制执行 Muse 支出上限。",
+    "reviewedEnglishHash": "5904497d5e4909f5b8bddafed1a76034daedc0f52cb7cea9ceb6166bc224b631"
   },
   "costs.otherBillingUsage": {
     "en": "Other billing usage: {{tokens}} tokens{{recordedCharges}}, included in the inference ledger.",
@@ -39,6 +104,11 @@
     "zh-CN": " · 已记录费用 {{amount}}",
     "reviewedEnglishHash": "0cf2467f3275c62d7cf96b69cf800f24669b1a242f1992cc193dd10bbba5f218"
   },
+  "costs.scopedAgentError": {
+    "en": "Could not load agent details. Totals below show recorded organization costs.",
+    "zh-CN": "无法加载智能体详情。下方总计显示已记录的组织成本。",
+    "reviewedEnglishHash": "9d368555af5239a3392275be75c2f7edc74c4a3b8aad4e95a8bdc3ded15c54d0"
+  },
   "costs.subscriptionRecordedUsage": {
     "en": "Subscription accounts also have {{amount}} in recorded usage charges for this period, separate from monthly fees.",
     "zh-CN": "订阅账户在此期间还产生了 {{amount}} 的已记录用量费用，该费用不含月度订阅费。",
@@ -48,6 +118,21 @@
     "en": "Showing the last loaded API and subscription usage. Updates will resume automatically.",
     "zh-CN": "正在显示最近一次加载的 API 和订阅用量。更新将自动恢复。",
     "reviewedEnglishHash": "909e980bba1f175010709902d4daa45671fd20127ab9000e6b2e674317d1d1b1"
+  },
+  "costs.totalEventsInRange": {
+    "en": "{{count}} total events in range",
+    "zh-CN": "范围内共 {{count}} 条事件",
+    "reviewedEnglishHash": "b0671e4af97ea7d8cfa729faa7970108c4d0c7a012029bceee1e73f598269f7f"
+  },
+  "costs.totalEventsInRange_one": {
+    "en": "{{count}} total event in range",
+    "zh-CN": "范围内共 {{count}} 条事件",
+    "reviewedEnglishHash": "baf74e7cdc1998d671af4b29ec0c82c30aa91c8885bd8f297f354bc092f489b8"
+  },
+  "costs.totalEventsInRange_other": {
+    "en": "{{count}} total events in range",
+    "zh-CN": "范围内共 {{count}} 条事件",
+    "reviewedEnglishHash": "b0671e4af97ea7d8cfa729faa7970108c4d0c7a012029bceee1e73f598269f7f"
   },
   "costs.unlimited": {
     "en": "Open",

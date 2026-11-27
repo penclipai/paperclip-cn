@@ -54,6 +54,11 @@
     "zh-CN": "打开源任务",
     "reviewedEnglishHash": "235f4e7d2c8de5f42fc3f75596ad61af9b350f3dfdaf3556fae1eba6de70203c"
   },
+  "taskSidePanel.recentFilesUnavailable": {
+    "en": "Recent files are temporarily unavailable.",
+    "zh-CN": "近期文件暂时不可用。",
+    "reviewedEnglishHash": "8915221c5bebfeedf880cc154aec2bfecb905a9848d347f5f3fbd71bf6c419c8"
+  },
   "taskSidePanel.reviewedRevisionUnavailable": {
     "en": "Reviewed revision unavailable",
     "zh-CN": "所审阅的修订版本不可用",
@@ -68,6 +73,11 @@
     "en": "· Reviewed version",
     "zh-CN": "· 已审阅版本",
     "reviewedEnglishHash": "36363885f626e61af4ab541273015e38f01d20edc78398c69f9dc964c7cb9eb7"
+  },
+  "taskSidePanel.revision": {
+    "en": "Revision {{revision}}",
+    "zh-CN": "第 {{revision}} 版",
+    "reviewedEnglishHash": "1d27ad2c17e676e5bc54ea95775bafcba07d5618fa7d01d444d6b9d867e0f48b"
   },
   "taskSidePanel.total": {
     "en": "{{count}} total",

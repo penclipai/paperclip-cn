@@ -15,6 +15,7 @@ import { agentRouteRef } from "@/lib/utils";
 import { TaskDetailSurface } from "./IssueDetail";
 import { isUuidLike, type Issue } from "@penclipai/shared";
 import { afterVisibleConversationPaint } from "@/lib/onboarding-chat";
+import { captureOnboardingStepFailed } from "@/lib/analytics/onboarding-analytics";
 import { Button } from "@/components/ui/button";
 
 export function AgentChat() {
@@ -98,7 +99,10 @@ export function AgentChat() {
       void agentChatsApi.greet(selectedCompanyId, agent.id).then(() => {
         if (!cancelled) void client.invalidateQueries({ queryKey: queryKeys.issues.detail(chat.data!.id) });
       }).catch(error => {
-        if (!cancelled) setGreetingError(error instanceof Error ? error.message : translateInstant("agents.welcomeStartFailed", { defaultValue: "The welcome could not start." }));
+        if (!cancelled) {
+          captureOnboardingStepFailed({ step: "launch", reason: "greeting_failed" });
+          setGreetingError(error instanceof Error ? error.message : translateInstant("agents.welcomeStartFailed", { defaultValue: "The welcome could not start." }));
+        }
       });
     });
     return () => { cancelled = true; cancelPaint(); };
@@ -165,16 +169,14 @@ export function AgentChat() {
   if (!enabled && !chat.data)
     return (
       <p className="text-sm text-muted-foreground">
-        Agent Chat is disabled for this instance. An administrator can enable it
-        in{" "}
+        {translateInstant("agentChat.disabledPrefix", { defaultValue: "Agent Chat is disabled for this instance. An administrator can enable it in" })}{" "}
         <Link
           className="underline underline-offset-4"
           to="/company/settings/instance/experimental#experimental-enableAgentChat"
         >
-          Experimental settings
+          {translateInstant("agentChat.experimentalSettingsLink", { defaultValue: "Experimental settings" })}
         </Link>
-        . Your workspace preference does not change Chat availability. Existing
-        history remains available through task links.
+        {translateInstant("agentChat.disabledSuffix", { defaultValue: ". Your workspace preference does not change Chat availability. Existing history remains available through task links." })}
       </p>
     );
   const failed = [

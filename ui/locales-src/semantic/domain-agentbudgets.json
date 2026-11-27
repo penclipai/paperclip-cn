@@ -1,0 +1,27 @@
+{
+  "agentBudgets.keepPausedFailed": {
+    "en": "Could not keep this agent paused.",
+    "zh-CN": "无法保持此智能体处于暂停状态。",
+    "reviewedEnglishHash": "745a0716df5018b1d67a87cd093adeea24e9b8a8f51327fe50b175ff6e061e2c"
+  },
+  "agentBudgets.loadFailed": {
+    "en": "Budget data could not be loaded. Showing the agent's saved monthly budget.",
+    "zh-CN": "无法加载预算数据，正在显示该智能体已保存的月度预算。",
+    "reviewedEnglishHash": "bc7da5b3021f2f8dc5c7644395540795b0a03eb768a21ea92cbf0af8bcd76a95"
+  },
+  "agentBudgets.raiseAndResumeFailed": {
+    "en": "Could not raise the budget and resume.",
+    "zh-CN": "无法提高预算并恢复运行。",
+    "reviewedEnglishHash": "249f68cec8636527b831f93a6fe5773a78a653c7956dc47192198c74753aff35"
+  },
+  "agentBudgets.tryAgain": {
+    "en": "Try again.",
+    "zh-CN": "请重试。",
+    "reviewedEnglishHash": "a0c2cc1374d949943e01a455a7bde5e07ad03af2106124340d4ce4d3da9bded9"
+  },
+  "agentBudgets.updateFailed": {
+    "en": "Could not update {{name}}'s budget. Review the amount and try again.",
+    "zh-CN": "无法更新 {{name}} 的预算。请检查金额后重试。",
+    "reviewedEnglishHash": "6f2020ac92fbcbcfeac99cae6726e32f5cf513992dd67f6a3219a4203d36f06e"
+  }
+}

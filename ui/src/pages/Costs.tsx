@@ -146,7 +146,7 @@ function FinanceSummaryCard({
         <MetricTile
           label={translateInstant("Debits")}
           value={formatCents(debitCents)}
-          subtitle={`${eventCount} total event${eventCount === 1 ? "" : "s"} in range`}
+          subtitle={translateInstant("costs.totalEventsInRange", { count: eventCount, defaultValue: `${eventCount} total event${eventCount === 1 ? "" : "s"} in range` })}
           icon={ArrowUpRight}
         />
         <MetricTile
@@ -610,11 +610,16 @@ export function Costs({
   return (
     <div className="space-y-6">
       {scopedAgentError && (
-        <p role="alert" className="text-sm text-destructive">Could not load agent details. Totals below show recorded organization costs.</p>
+        <p role="alert" className="text-sm text-destructive">
+          {translateInstant("costs.scopedAgentError", { defaultValue: "Could not load agent details. Totals below show recorded organization costs." })}
+        </p>
       )}
       {museUsageUnavailable && (
         <p role="status" className="text-sm text-muted-foreground">
-          {scopedAgent.name}'s Muse activity has no reported usage or cost. Totals below show recorded organization charges only. Paperclip cannot enforce a Muse spend ceiling.
+          {translateInstant("costs.museUsageUnavailable", {
+            name: scopedAgent.name,
+            defaultValue: `${scopedAgent.name}'s Muse activity has no reported usage or cost. Totals below show recorded organization charges only. Paperclip cannot enforce a Muse spend ceiling.`,
+          })}
         </p>
       )}
       {showSummaryChrome ? (
@@ -628,7 +633,7 @@ export function Costs({
               )}
             </div>
 
-            <div data-canonical-toolbar="cost-range" role="toolbar" aria-label="Cost date range" className="flex flex-wrap items-center gap-2">
+            <div data-canonical-toolbar="cost-range" role="toolbar" aria-label={translateInstant("costs.costDateRangeAria", { defaultValue: "Cost date range" })} className="flex flex-wrap items-center gap-2">
               {PRESET_KEYS.map((key) => (
                 <Button
                   key={key}
@@ -681,7 +686,7 @@ export function Costs({
               value={activeBudgetIncidents.length > 0 ? String(activeBudgetIncidents.length) : (
                 spendData?.summary.budgetCents && spendData.summary.budgetCents > 0
                   ? preset === "mtd" ? `${spendData.summary.utilizationPercent}%` : formatCents(spendData.summary.budgetCents)
-                  : translateInstant("Open")
+                  : translateInstant("costs.unlimited")
               )}
               subtitle={
                 activeBudgetIncidents.length > 0
@@ -914,7 +919,7 @@ export function Costs({
                 />
               ) : (
                 <p role="status" className="text-sm text-muted-foreground">
-                  {financeLoading ? "Loading financial events…" : translateInstant("Financial events could not be loaded. Please try again shortly.")}
+                  {financeLoading ? translateInstant("costs.loadingFinancialEvents", { defaultValue: "Loading financial events…" }) : translateInstant("Financial events could not be loaded. Please try again shortly.")}
                 </p>
               )}
             </>
@@ -994,10 +999,16 @@ export function Costs({
                   return (
                     <section key={scopeType} className="space-y-3">
                       <div>
-                        <h2 className="text-lg font-semibold capitalize">{scopeType === "company" ? "organization" : scopeType} budgets</h2>
+                        <h2 className="text-lg font-semibold capitalize">
+                          {scopeType === "company"
+                            ? translateInstant("costs.budgetsHeading.company", { defaultValue: "organization budgets" })
+                            : scopeType === "agent"
+                              ? translateInstant("costs.budgetsHeading.agent", { defaultValue: "agent budgets" })
+                              : translateInstant("costs.budgetsHeading.project", { defaultValue: "project budgets" })}
+                        </h2>
                         <p className="text-sm text-muted-foreground">
                           {scopeType === "company"
-                            ? "Organization-wide monthly policy."
+                            ? translateInstant("costs.companyBudgetDescription", { defaultValue: "Organization-wide monthly policy." })
                             : scopeType === "agent"
                               ? translateInstant("Recurring monthly spend policies for individual agents.")
                               : translateInstant("Lifetime spend policies for execution-bound projects.")}

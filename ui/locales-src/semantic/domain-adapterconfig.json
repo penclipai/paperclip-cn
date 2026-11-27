@@ -4,9 +4,44 @@
     "zh-CN": "可选覆盖 Codex ACP 服务器命令。默认使用包内的 codex-acp 二进制文件。",
     "reviewedEnglishHash": "d8c7b6ad7becd4e2a10991f9bb1f39dfec76055cf4ce671499c434f703cf94fc"
   },
+  "adapterConfig.dotRunner.assignmentAccepted": {
+    "en": "accepted by Dot",
+    "zh-CN": "Dot 已接受",
+    "reviewedEnglishHash": "29c45e313c695768438d91ff828f732e4ec96a27fb412cda133acd506bbc6395"
+  },
+  "adapterConfig.dotRunner.assignmentOffered": {
+    "en": "waiting for Dot to accept",
+    "zh-CN": "等待 Dot 接受",
+    "reviewedEnglishHash": "d28b2c8c519c2a223bd563427d59ff9bfd0333fe8f0e3e3b12faef5099c8a4b4"
+  },
   "adapterConfig.dotRunner.enableExperimentalSettings": {
     "en": "Enable OpenAI Dot in experimental settings.",
     "zh-CN": "请在实验性设置中启用 OpenAI Dot。",
     "reviewedEnglishHash": "f42d6c3a2d88864ed772eef5fb8f2667a90db3f190134d633ab5306b9c627cb4"
+  },
+  "adapterConfig.dotRunner.eventSubscriptionLabel": {
+    "en": "Event subscription:",
+    "zh-CN": "事件订阅：",
+    "reviewedEnglishHash": "e2c02b49636c65982f0be7d656f8b6eb28c8bc13205158933a39045328fcd931"
+  },
+  "adapterConfig.dotRunner.subscriptionExpired": {
+    "en": "expired",
+    "zh-CN": "已过期",
+    "reviewedEnglishHash": "fa64ea1e82e1206f828ab2a02917c7e92accb98e3b95881a1b4ad52b914b66e3"
+  },
+  "adapterConfig.dotRunner.subscriptionExpiredNotice": {
+    "en": "Event subscriptions last up to 24 hours. Ask the Dot to subscribe again to paperclip.dot.mailbox_updated. You do not need to pair it again.",
+    "zh-CN": "事件订阅最长有效 24 小时。请让 Dot 重新订阅 paperclip.dot.mailbox_updated，无需重新配对。",
+    "reviewedEnglishHash": "7cba255455d0893849414e55eb04d2cf7c0bb97fe2ac752fabf39a8b35250f7d"
+  },
+  "adapterConfig.dotRunner.subscriptionRequired": {
+    "en": "required",
+    "zh-CN": "必需",
+    "reviewedEnglishHash": "d0a3630555bbec7fc05a98d311c23b00fd1ab4d8296ac4a4125976d80b6a6959"
+  },
+  "adapterConfig.dotRunner.subscriptionVerified": {
+    "en": "verified",
+    "zh-CN": "已验证",
+    "reviewedEnglishHash": "1c34f88707b55e6104c4eb20e71ffa3d33e414b71ef689a15fad0640d0ac58cb"
   }
 }

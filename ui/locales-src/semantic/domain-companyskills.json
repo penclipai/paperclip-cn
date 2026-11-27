@@ -1,19 +1,4 @@
 {
-  "companySkills.paperclipBundled": {
-    "en": "Paperclip bundled",
-    "zh-CN": "Paperclip 内置",
-    "reviewedEnglishHash": "a6aad4d9b2784df2b7a702908e0a76faf8523fcd6b134d4a96140ead8d034c1f"
-  },
-  "companySkills.enabledForAgents_one": {
-    "en": "Enabled for {{count}} agent",
-    "zh-CN": "已为 {{count}} 个智能体启用",
-    "reviewedEnglishHash": "7f5d353b780256b861b907c858f61225b8ea64c480dbe2802d4032308dd39c33"
-  },
-  "companySkills.enabledForAgents_other": {
-    "en": "Enabled for {{count}} agents",
-    "zh-CN": "已为 {{count}} 个智能体启用",
-    "reviewedEnglishHash": "ceb4a7fcf9ab26c691bf78a6b8d96bf91571141c57d4c82f7ba7a2573ae51514"
-  },
   "companySkills.about": {
     "en": "About",
     "zh-CN": "关于",
@@ -113,6 +98,11 @@
     "en": "Attach to agents",
     "zh-CN": "附加到智能体",
     "reviewedEnglishHash": "f047c39bbe95305e41780d7ea1527986a01cc27b8d62ca1d17400ac5613a1a08"
+  },
+  "companySkills.authoredDescription": {
+    "en": "Skills you can open, edit and test in Studio.",
+    "zh-CN": "可在工作室中打开、编辑和测试的技能。",
+    "reviewedEnglishHash": "ca065a6a91cb3ff3b266608f967852a8674b2907adcba35120b6af05b920a086"
   },
   "companySkills.availableCount": {
     "en": "{{count}} available",
@@ -554,6 +544,31 @@
     "zh-CN": "通过 URL 导入的技能为只读。请先保存到本地后再编辑。",
     "reviewedEnglishHash": "e2e69a228fc532dc4f8029ac148497475b9a63e3476d86c9ad1b59a2fb85bcb0"
   },
+  "companySkills.emptyAuthored": {
+    "en": "No skills yet. Create a skill to start working in Studio.",
+    "zh-CN": "暂无技能。创建技能以在工作室中开始使用。",
+    "reviewedEnglishHash": "049d3d528bc52f0d5d5937f50e3ced3cf3e6ac27266b2799188ccb44dbc1897c"
+  },
+  "companySkills.emptyDiscoverable": {
+    "en": "No skills are available to discover yet.",
+    "zh-CN": "暂无可供发现的技能。",
+    "reviewedEnglishHash": "7f91a28205dff9e9e70f4fc7e4864e7fdfa76a625b408f149c40d3c94f2f6e95"
+  },
+  "companySkills.emptyInstalled": {
+    "en": "No installed skills yet. Discover a skill or create one.",
+    "zh-CN": "尚未安装任何技能。你可以发现技能或新建一个。",
+    "reviewedEnglishHash": "d564611698965200fdb73f1e5d5ad81a5d179af34567a99252b047bbe113dcb5"
+  },
+  "companySkills.enabledForAgents_one": {
+    "en": "Enabled for {{count}} agent",
+    "zh-CN": "已为 {{count}} 个智能体启用",
+    "reviewedEnglishHash": "7f5d353b780256b861b907c858f61225b8ea64c480dbe2802d4032308dd39c33"
+  },
+  "companySkills.enabledForAgents_other": {
+    "en": "Enabled for {{count}} agents",
+    "zh-CN": "已为 {{count}} 个智能体启用",
+    "reviewedEnglishHash": "ceb4a7fcf9ab26c691bf78a6b8d96bf91571141c57d4c82f7ba7a2573ae51514"
+  },
   "companySkills.existingSkillConflictPrefix": {
     "en": "An existing skill with key {{key}} is installed",
     "zh-CN": "已安装 key 为 {{key}} 的技能",
@@ -819,6 +834,11 @@
     "zh-CN": "模式",
     "reviewedEnglishHash": "5e23ec6a300dc60a79641769017e16e9bf042cbd8fd0a54586a048ab9da972ff"
   },
+  "companySkills.navigation.ariaLabel": {
+    "en": "Skills views",
+    "zh-CN": "技能视图",
+    "reviewedEnglishHash": "acfcb8b06f021ea5c3d7bd86cac75b8fa731cd1e6c97717b5dcd3a2d9d9ce8b2"
+  },
   "companySkills.new": {
     "en": "New",
     "zh-CN": "新建",
@@ -858,6 +878,11 @@
     "en": "No matches.",
     "zh-CN": "没有匹配项。",
     "reviewedEnglishHash": "d6572bd2e77380cece5ea9e23f3dcb01e208b8e872f46b4bb0a9f06e38b7a148"
+  },
+  "companySkills.noMatchingSkills": {
+    "en": "No skills match your filters.",
+    "zh-CN": "没有符合筛选条件的技能。",
+    "reviewedEnglishHash": "cd87ca0e827f3d4ab709ac148d6a6b63533bc90ce7285d8b2df17b5b39a3a2d6"
   },
   "companySkills.noOverviewYet": {
     "en": "No overview yet.",
@@ -913,6 +938,11 @@
     "en": "Open in Studio",
     "zh-CN": "在技能工作室中打开",
     "reviewedEnglishHash": "27661534054e8fac2548b672eb0fac905bd770ebafff08359b36c58ceb1b80c4"
+  },
+  "companySkills.paperclipBundled": {
+    "en": "Paperclip bundled",
+    "zh-CN": "Paperclip 内置",
+    "reviewedEnglishHash": "a6aad4d9b2784df2b7a702908e0a76faf8523fcd6b134d4a96140ead8d034c1f"
   },
   "companySkills.pin": {
     "en": "Pin",
@@ -1164,6 +1194,11 @@
     "zh-CN": "范围",
     "reviewedEnglishHash": "b073f6c68ef8721107fd9815b19b2c35ec111d526b75c2123d1111ba64424000"
   },
+  "companySkills.searchDiscoverableSkills": {
+    "en": "Search discoverable skills",
+    "zh-CN": "搜索可发现的技能",
+    "reviewedEnglishHash": "9bf95bbdeeaa777ac61af4bfb54219cf338ae2e50c333f3457fe6680aeb2d2df"
+  },
   "companySkills.searchGitHub": {
     "en": "Search GitHub",
     "zh-CN": "搜索 GitHub",
@@ -1178,6 +1213,11 @@
     "en": "Find skills in GitHub repositories.",
     "zh-CN": "在 GitHub 仓库中查找技能。",
     "reviewedEnglishHash": "c49c95a896c8f98ded606409677444db013011d62abc6152f77832032c867887"
+  },
+  "companySkills.searchMySkills": {
+    "en": "Search my skills",
+    "zh-CN": "搜索我的技能",
+    "reviewedEnglishHash": "afec2e1e01c07ad3a443e12a5905a36bb0d41ec97de6fd0672445ee89b0175f7"
   },
   "companySkills.searchPlaceholder": {
     "en": "Search skills...",
@@ -1399,6 +1439,26 @@
     "zh-CN": "覆盖 slug",
     "reviewedEnglishHash": "93e7204d086bd0200bdd646065a26b56a06556a7d457117388651c1655b353ed"
   },
+  "companySkills.sort.alphabetical": {
+    "en": "Alphabetical",
+    "zh-CN": "按字母排序",
+    "reviewedEnglishHash": "a49d631f8c6cf6fb1660fb5229dfa0c08b55727549c0e48cc0cef1f7770ba0e2"
+  },
+  "companySkills.sort.forks": {
+    "en": "Most forks",
+    "zh-CN": "复刻最多",
+    "reviewedEnglishHash": "9dafd3bc09e34e74874bc8f42407f37ae93dc94eed78a19294c57d5b5bab48a5"
+  },
+  "companySkills.sort.recent": {
+    "en": "Recently updated",
+    "zh-CN": "最近更新",
+    "reviewedEnglishHash": "474b2a869ac1477d2c174d764815230c13edb7a9d194d5aa8ea349c6d0c9dee2"
+  },
+  "companySkills.sort.stars": {
+    "en": "Most stars",
+    "zh-CN": "星标最多",
+    "reviewedEnglishHash": "e0ab48c820fc48429a817112438bfcb8b28d920640b3b8bda7b458c0ef383ba4"
+  },
   "companySkills.source.catalog": {
     "en": "Catalog",
     "zh-CN": "目录",
@@ -1543,6 +1603,46 @@
     "en": "Skills",
     "zh-CN": "技能",
     "reviewedEnglishHash": "66d0f523a379b2de6f8d5fba3a817ebc395f7bcaa54cc132ca9dfa665d1e9378"
+  },
+  "companySkills.toolbar.ariaLabel": {
+    "en": "Skills controls",
+    "zh-CN": "技能控制栏",
+    "reviewedEnglishHash": "3dbb80b837a6ac9b852d1b19aeb9194e9dc6c02f6156b8b6ae8e67d446824b93"
+  },
+  "companySkills.toolbar.createNewSkill": {
+    "en": "Create new skill",
+    "zh-CN": "新建技能",
+    "reviewedEnglishHash": "7d7d4a1ad70f7b9dc5c505ed34f34ad348d12991b3c0de9bfeec3503f8839fee"
+  },
+  "companySkills.toolbar.importFromPathOrUrl": {
+    "en": "Import from path or URL",
+    "zh-CN": "从路径或 URL 导入",
+    "reviewedEnglishHash": "abed2dfba3bf7b4bc899839f4a06d661dd2f84e682921427c9f095bbf02f84ce"
+  },
+  "companySkills.toolbar.importFromProject": {
+    "en": "Import skills from project",
+    "zh-CN": "从项目导入技能",
+    "reviewedEnglishHash": "364c89b0f1b44de1f2463c4bd18770a2c102527c9b9681a131e59ea7286d3b54"
+  },
+  "companySkills.toolbar.manageSources": {
+    "en": "Manage sources",
+    "zh-CN": "管理来源",
+    "reviewedEnglishHash": "b00d1920b294270220f0c1024c3b24b66d134846d0ae178359df368ae957b9fe"
+  },
+  "companySkills.toolbar.newMenu": {
+    "en": "New",
+    "zh-CN": "新建",
+    "reviewedEnglishHash": "18fdd549b2ed367ac0c74cbec1214644728515b30edbcb78e7d322757a7c8359"
+  },
+  "companySkills.toolbar.sort": {
+    "en": "Sort",
+    "zh-CN": "排序",
+    "reviewedEnglishHash": "bec69036aa27e7fab7d44cad3909477b76631c39ba46fd7841ea71aae7e5a735"
+  },
+  "companySkills.toolbar.source": {
+    "en": "Source",
+    "zh-CN": "来源",
+    "reviewedEnglishHash": "0e570ca6fabe24f94e52c1833f3ffd25567022beb826fa16891f3322051bc221"
   },
   "companySkills.trackingRef": {
     "en": "tracking {{ref}}",

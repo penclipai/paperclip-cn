@@ -1,0 +1,192 @@
+{
+  "commentary.allAgents": {
+    "en": "All agents",
+    "zh-CN": "全部智能体",
+    "reviewedEnglishHash": "54c32d3e2cfa1cc879f746643e6b41360541692fc0a163f3793595510398e6f5"
+  },
+  "commentary.allTypes": {
+    "en": "All types",
+    "zh-CN": "全部类型",
+    "reviewedEnglishHash": "f10988e79e8d9a49f45a71ecf3f4ebe143a96eb9d83272156ab54101b3777046"
+  },
+  "commentary.backToLatest": {
+    "en": "Back to latest",
+    "zh-CN": "返回最新",
+    "reviewedEnglishHash": "86cf0aefc0c1933dda48623c2ad184214aa8920b9bf4291badc8d9c264680310"
+  },
+  "commentary.colMessage": {
+    "en": "Message",
+    "zh-CN": "消息",
+    "reviewedEnglishHash": "2f77668a9dfbf8d5848b9eeb4a7145ca94c6ed9236e4a773f6dcafa5132b2f91"
+  },
+  "commentary.colSubmitted": {
+    "en": "Submitted",
+    "zh-CN": "提交时间",
+    "reviewedEnglishHash": "64900440a8c9a5eda335b124b9824aa4f14f2c280097d5556498d276f60ecdf1"
+  },
+  "commentary.colType": {
+    "en": "Type",
+    "zh-CN": "类型",
+    "reviewedEnglishHash": "baaddf70fb5d432b8bd948ef91d6f910124a6d138edae4d5f000c4610ddc8eae"
+  },
+  "commentary.complaint": {
+    "en": "Complaint",
+    "zh-CN": "投诉",
+    "reviewedEnglishHash": "f5a84a3c39e9d9a0fcb31b45c89ea18eb810359b0329703fc76fc5bc17662554"
+  },
+  "commentary.complaints": {
+    "en": "Complaints",
+    "zh-CN": "投诉",
+    "reviewedEnglishHash": "3f1c40e9f5fddf19aef71212edc6b9c0aae9069b0c549c82e24846af8723f151"
+  },
+  "commentary.detailFallbackDescription": {
+    "en": "Message details and source context.",
+    "zh-CN": "消息详情与来源上下文。",
+    "reviewedEnglishHash": "9961ce7030586644e0758a1e7e2b8b4a39a53c28c82ffc73ddc8e944dff83311"
+  },
+  "commentary.emptyDescription": {
+    "en": "Suggestions and complaints will appear here when agents submit them.",
+    "zh-CN": "当智能体提交建议或投诉时，将在此处显示。",
+    "reviewedEnglishHash": "6a4a316fc91048281ff1a79b5e68e18745378aa6757b8cf422518c03fd5c82f6"
+  },
+  "commentary.emptyFilteredDescription": {
+    "en": "Try another agent, message type, or search.",
+    "zh-CN": "请尝试其他智能体、消息类型或搜索关键词。",
+    "reviewedEnglishHash": "93cb1981f219abbe0605632e307fb49e3767e8a69b8d49a2b2481b6d9676c9c8"
+  },
+  "commentary.emptyFilteredTitle": {
+    "en": "No messages match these filters.",
+    "zh-CN": "没有符合当前筛选条件的消息。",
+    "reviewedEnglishHash": "4d5cf3789c5fdcf4a2fca242fb6201a47e3e0d50764007bd69f7ad3fc6a57d40"
+  },
+  "commentary.emptyPageDescription": {
+    "en": "Return to the newest messages.",
+    "zh-CN": "返回查看最新消息。",
+    "reviewedEnglishHash": "c77fe940e6783b1649d2330fe0788ece330c66e1c82a22de0cf634053f0dc357"
+  },
+  "commentary.emptyPageTitle": {
+    "en": "No messages on this page.",
+    "zh-CN": "当前页没有消息。",
+    "reviewedEnglishHash": "94d5ab08d1a76f658a1720b3771ed85f4d42457d1d2f61d8e92e5144e64ec932"
+  },
+  "commentary.emptyTitle": {
+    "en": "No agent commentary yet.",
+    "zh-CN": "暂无智能体建言。",
+    "reviewedEnglishHash": "1eec6682660aa1a47b40e317bc035831f503a46affd2bbc38286ad5fd1247803"
+  },
+  "commentary.filterByAgent": {
+    "en": "Filter by agent",
+    "zh-CN": "按智能体筛选",
+    "reviewedEnglishHash": "94dc2569edb014636216936280f2287350bad6aabf16dbb026bbcac567027550"
+  },
+  "commentary.filterByType": {
+    "en": "Filter by message type",
+    "zh-CN": "按消息类型筛选",
+    "reviewedEnglishHash": "1122b3c70f86401a61e1a6aa245c7fa0d7a5fc9502e1865ee4b3751fc81baf09"
+  },
+  "commentary.filtersToolbarAria": {
+    "en": "Commentary filters",
+    "zh-CN": "建言筛选",
+    "reviewedEnglishHash": "8f81dcfd2bcfccb42f9ea38ac900b8c27b0a73daa7f42cb8c22bba39651ca92b"
+  },
+  "commentary.loadAgentsError": {
+    "en": "Could not load agent filters.",
+    "zh-CN": "无法加载智能体筛选列表。",
+    "reviewedEnglishHash": "a6c65cead39d2cdc676908559ff7f4b13b6d1ed548641f2d454b62bff6ac5db6"
+  },
+  "commentary.loading": {
+    "en": "Loading commentary…",
+    "zh-CN": "正在加载建言…",
+    "reviewedEnglishHash": "0bea4b89bf5123690c36a3f582f92647b5225483441a46475970a8f6dfe798e3"
+  },
+  "commentary.loadingMessage": {
+    "en": "Loading message…",
+    "zh-CN": "正在加载消息…",
+    "reviewedEnglishHash": "865a0106ae9aa8ea9c014616dacbc3ad148ece1b26a66192ea2f8531f2870222"
+  },
+  "commentary.messagesAria": {
+    "en": "Commentary messages",
+    "zh-CN": "建言消息列表",
+    "reviewedEnglishHash": "df28703146b238117ce6655541e527c865f9a8746887385623cb846039b9df03"
+  },
+  "commentary.next": {
+    "en": "Next",
+    "zh-CN": "下一页",
+    "reviewedEnglishHash": "1ff57a29d7c9d11bdf61c1b80f2b289b44c1ea844824d4b94a0d52b6ba5fc858"
+  },
+  "commentary.nextPage": {
+    "en": "Next page",
+    "zh-CN": "下一页",
+    "reviewedEnglishHash": "c08ac736a5e29c291b681cbdc15f06901a735f28d2e04645b92cf331861cb8c0"
+  },
+  "commentary.previous": {
+    "en": "Previous",
+    "zh-CN": "上一页",
+    "reviewedEnglishHash": "a57b08a480b822a0a572b993391c292ede593bf8000b406675b180bbb16260fa"
+  },
+  "commentary.previousPage": {
+    "en": "Previous page",
+    "zh-CN": "上一页",
+    "reviewedEnglishHash": "1208ec01f223c616b981ee76749e4f435f9c6bc2998d6cc43a9f59d71bd6f697"
+  },
+  "commentary.rangeCount": {
+    "en": "{{from}}–{{to}} of {{total}} messages",
+    "zh-CN": "第 {{from}}–{{to}} 条，共 {{total}} 条消息",
+    "reviewedEnglishHash": "031bb8fc1fb5f7fb13b0438593e1c6befa14370edce37af96f1968fa7f9164ba"
+  },
+  "commentary.readAriaLabel": {
+    "en": "Read {{kind}} from {{name}}",
+    "zh-CN": "查看来自 {{name}} 的{{kind}}",
+    "reviewedEnglishHash": "0c0024209e5671a41357c2e46dbb6c4a0a6f848e7a7a77c2f7ec7a7343794a52"
+  },
+  "commentary.searchAria": {
+    "en": "Search commentary",
+    "zh-CN": "搜索建言",
+    "reviewedEnglishHash": "ac721197b9678cf484603236710b0efa9feaae25ceb00f418a3b0dc32f851207"
+  },
+  "commentary.searchPlaceholder": {
+    "en": "Search messages…",
+    "zh-CN": "搜索消息…",
+    "reviewedEnglishHash": "cd889ff473992e87ffc9b8ef01fb7391d51da132ec07b112f004780ee28f84c7"
+  },
+  "commentary.sourceTask": {
+    "en": "Source task",
+    "zh-CN": "来源任务",
+    "reviewedEnglishHash": "d0e467ea7a90eaf220ca47144862aa2f7b55e69907130e668aaf221b255a12f9"
+  },
+  "commentary.submittedAt": {
+    "en": "Submitted {{time}}",
+    "zh-CN": "提交于 {{time}}",
+    "reviewedEnglishHash": "361614cc6d08483bcdbb90ea5e251ecfd688e7fed1ced1ec5642974fa0dd9339"
+  },
+  "commentary.subtitle": {
+    "en": "Suggestions and complaints from your agents.",
+    "zh-CN": "来自智能体的建议与投诉。",
+    "reviewedEnglishHash": "2b0efed1e53f59b184513cd92f14d01edcd968d1563f56e6ac848214de239d42"
+  },
+  "commentary.suggestion": {
+    "en": "Suggestion",
+    "zh-CN": "建议",
+    "reviewedEnglishHash": "527f6bc857ad184e17849e11be6524113ac7b77003dd2acfb67fba9f0b829848"
+  },
+  "commentary.suggestions": {
+    "en": "Suggestions",
+    "zh-CN": "建议",
+    "reviewedEnglishHash": "16c1d601fc66950402ca8d54257acea0f5d21be1e00b9eb99224e436da66c950"
+  },
+  "commentary.taskFallback": {
+    "en": "Task",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "4bc74b21357c6cf5cca8f66b4d4ee948be64d0396feb434c9645e168ad61ceaf"
+  },
+  "commentary.title": {
+    "en": "Commentary",
+    "zh-CN": "智能体建言",
+    "reviewedEnglishHash": "4a7a75ab79cde05b0b1baa8f7a704c991586ea44d7e7793e57178ef56f778ff8"
+  },
+  "commentary.viewRun": {
+    "en": "View run",
+    "zh-CN": "查看运行",
+    "reviewedEnglishHash": "aaf7fccc7d1315f23f35073f1d89aa8357c5d0cdb9b00a03ee2a4291e976b9ac"
+  }
+}

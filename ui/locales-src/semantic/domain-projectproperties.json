@@ -84,6 +84,11 @@
     "zh-CN": "代码库说明",
     "reviewedEnglishHash": "4505bd9bd0e2291e48e87f2e54f36f801fde04ef47707255eed9f114b332d3df"
   },
+  "projectProperties.codebaseManagedHelp": {
+    "en": "Repo identifies the source of truth. Agents check it out in the platform-managed environment.",
+    "zh-CN": "仓库用于标识代码事实来源，智能体会在平台托管环境中检出它。",
+    "reviewedEnglishHash": "5d9728932ba4ff7b315f0cca4a365489968eeea6888652c621cd0f736d2d35f0"
+  },
   "projectProperties.concurrency.allow": {
     "en": "Allow",
     "zh-CN": "允许并发",
@@ -404,6 +409,11 @@
     "zh-CN": "请选择一家公司以创建密钥",
     "reviewedEnglishHash": "1935ffb5c5850146a831b31ed0b9b53bace8de8d72d6e1fdf321420459d7e4df"
   },
+  "projectProperties.selectOrgToCreateSecrets": {
+    "en": "Select an organization to create secrets",
+    "zh-CN": "请选择一个组织以创建密钥",
+    "reviewedEnglishHash": "adf6ccc039883f9c9119d418d59a6b951245962e9cc06c62ee39efdb6c1144d6"
+  },
   "projectProperties.setLocalFolder": {
     "en": "Set local folder",
     "zh-CN": "设置本地目录",
@@ -473,6 +483,16 @@
     "en": "Repo must use a valid GitHub or GitHub Enterprise repo URL.",
     "zh-CN": "仓库必须使用有效的 GitHub 或 GitHub Enterprise 仓库 URL。",
     "reviewedEnglishHash": "4baf885f37f92be8b90107ec793d70c9fd379a5bda8e2b092ba490be169d5b40"
+  },
+  "projectProperties.visibilityOpenHelp": {
+    "en": "Everyone in the company can discover this project. Individually private tasks keep their own access rules.",
+    "zh-CN": "组织内的所有成员都可发现此项目。单独设为私密的任务仍保留各自的访问规则。",
+    "reviewedEnglishHash": "89e81a419224ca9d1bfa1078bee6a33ded10176361c4ebade676147631cf26ae"
+  },
+  "projectProperties.visibilityPrivateHelp": {
+    "en": "Only access members can discover this project. Tasks shared directly remain readable on their own.",
+    "zh-CN": "仅具备访问权限的成员可发现此项目。直接共享的任务仍可单独查看。",
+    "reviewedEnglishHash": "6654d7ff857b2558c6744580ba816f7aa8af25c87a285c15220f5a1141cdee0a"
   },
   "projectProperties.worktreeParentDir": {
     "en": "Worktree parent dir",

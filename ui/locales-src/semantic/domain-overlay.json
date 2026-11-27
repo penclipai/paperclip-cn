@@ -1,0 +1,17 @@
+{
+  "overlay.couldNotOpen": {
+    "en": "Couldn't open {{title}}",
+    "zh-CN": "无法打开{{title}}",
+    "reviewedEnglishHash": "61a2fa669e0aaec194144467398b334c9107764c6740ad037d632c2b6db6a3fa"
+  },
+  "overlay.loading": {
+    "en": "Loading {{title}}…",
+    "zh-CN": "正在加载{{title}}…",
+    "reviewedEnglishHash": "7c05aff639ff1b9a57c9348ea7a9a34b2f49ba2d46074de7acbacd591c92ad42"
+  },
+  "overlay.reloadPrompt": {
+    "en": "Close this window to keep working. Reload the page before trying again.",
+    "zh-CN": "关闭此窗口即可继续工作。重试前请先刷新页面。",
+    "reviewedEnglishHash": "acc29aeaecb8ea344a4c193428d0e81b954db0251d2303c1573a7b2f33ecc85a"
+  }
+}

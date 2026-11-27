@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import type { AgentDetail as AgentDetailRecord, BudgetOverview, BudgetPolicySummary } from "@penclipai/shared";
 import { budgetsApi } from "../api/budgets";
 import { BudgetIncidentCard } from "../components/BudgetIncidentCard";
@@ -41,6 +42,7 @@ export function agentBudgetSummary(overview: BudgetOverview | undefined, agent: 
 }
 
 export function AgentBudgetsPanel({ agent, companyId }: { agent: BudgetAgent; companyId: string }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const overview = useQuery({
     queryKey: queryKeys.budgets.overview(companyId),
@@ -78,10 +80,10 @@ export function AgentBudgetsPanel({ agent, companyId }: { agent: BudgetAgent; co
   return (
     <div className="space-y-4">
       {overview.error && !overview.data ? (
-        <p role="alert" className="text-sm text-destructive">Budget data could not be loaded. Showing the agent's saved monthly budget.</p>
+        <p role="alert" className="text-sm text-destructive">{t("agentBudgets.loadFailed", { defaultValue: "Budget data could not be loaded. Showing the agent's saved monthly budget." })}</p>
       ) : null}
       {policy.error ? (
-        <p role="alert" className="text-sm text-destructive">Could not update {agent.name}'s budget. Review the amount and try again.</p>
+        <p role="alert" className="text-sm text-destructive">{t("agentBudgets.updateFailed", { name: agent.name, defaultValue: "Could not update {{name}}'s budget. Review the amount and try again." })}</p>
       ) : null}
       {incidents.map((entry) => (
         <div key={entry.id} className="space-y-2">
@@ -93,8 +95,10 @@ export function AgentBudgetsPanel({ agent, companyId }: { agent: BudgetAgent; co
           />
           {incident.error && incident.variables?.incidentId === entry.id ? (
             <p role="alert" className="text-sm text-destructive">
-              {incident.variables.action === "keep_paused" ? "Could not keep this agent paused." : "Could not raise the budget and resume."}{" "}
-              {incident.error instanceof Error && incident.error.message ? incident.error.message : "Try again."}
+              {incident.variables.action === "keep_paused"
+                ? t("agentBudgets.keepPausedFailed", { defaultValue: "Could not keep this agent paused." })
+                : t("agentBudgets.raiseAndResumeFailed", { defaultValue: "Could not raise the budget and resume." })}{" "}
+              {incident.error instanceof Error && incident.error.message ? incident.error.message : t("agentBudgets.tryAgain", { defaultValue: "Try again." })}
             </p>
           ) : null}
         </div>

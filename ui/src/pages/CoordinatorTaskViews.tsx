@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { TaskViewsMenu } from "@/components/TaskViewsMenu";
 import { Button } from "@/components/ui/button";
 import { useCompany } from "@/context/CompanyContext";
@@ -23,6 +24,7 @@ function loadView(key: string, userId: string | null): TaskViewKey {
 }
 
 export function CoordinatorTaskViews() {
+  const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { userId, loaded } = useCoordinatorWorkspaceEnabled();
   const { openNewIssue } = useDialogActions();
@@ -48,9 +50,9 @@ export function CoordinatorTaskViews() {
   }
   const views = <TaskViewsMenu coordinator value={view} onChange={next => navigate(`/issues?view=${next}`)} />;
   if (definition.surface === "issues") return <CoordinatorTasks viewControl={views} />;
-  return <section className="coordinator-task-list" aria-label="Tasks"><Inbox
+  return <section className="coordinator-task-list" aria-label={t("sidebar.issues")}><Inbox
     tab={definition.inboxTab}
     surfaceLabel="Tasks"
-    toolbarContext={<div className="flex min-w-0 items-center gap-2">{views}<Button variant="outline" size="sm" onClick={() => openNewIssue()}><Plus className="size-4" />New Task</Button></div>}
+    toolbarContext={<div className="flex min-w-0 items-center gap-2">{views}<Button variant="outline" size="sm" onClick={() => openNewIssue()}><Plus className="size-4" />{t("sidebar.newTask")}</Button></div>}
   /></section>;
 }

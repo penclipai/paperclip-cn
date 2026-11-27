@@ -26,7 +26,7 @@ export async function provisionKimiPackageRoot(entrypoint) {
     if (!before.isFile() || before.nlink !== 1n || before.size < 1n || before.size > 64n * 1024n) throw new Error("Kimi setup package manifest is invalid");
     const bytes = await file.readFile(), after = await file.stat({ bigint: true }), named = await lstat(manifest, { bigint: true });
     if (bytes.length !== Number(before.size) || before.dev !== after.dev || before.ino !== after.ino || before.size !== after.size || before.mtimeNs !== after.mtimeNs || before.ctimeNs !== after.ctimeNs || named.dev !== before.dev || named.ino !== before.ino || named.isSymbolicLink()) throw new Error("Kimi setup package manifest changed");
-    if (JSON.parse(bytes.toString("utf8")).name !== (vendored ? "@paperclipai/server" : "@paperclipai/paperclip-runner")) throw new Error("Kimi setup package identity does not match its layout");
+    if (JSON.parse(bytes.toString("utf8")).name !== (vendored ? "@penclipai/server" : "@penclipai/paperclip-runner")) throw new Error("Kimi setup package identity does not match its layout");
   } finally { await file.close(); }
   return { root, manifest, cli, assetRoot: vendored ? resolve(cli, "..") : root };
 }
@@ -67,7 +67,7 @@ export async function provisionKimi(entrypoint, checkCancelled = () => {}, signa
     }
     temporary = await mkdtemp(join(parent, ".setup-private-")); temporaryIdentity = await lstat(temporary, { bigint: true });
     const stagingRoot = join(temporary, "package"); await mkdir(stagingRoot, { mode: 0o700 });
-    await writeFile(join(stagingRoot, "package.json"), JSON.stringify({ name: "@paperclipai/paperclip-runner" }), { flag: "wx", mode: 0o600 });
+    await writeFile(join(stagingRoot, "package.json"), JSON.stringify({ name: "@penclipai/paperclip-runner" }), { flag: "wx", mode: 0o600 });
     const stagedOutput = join(stagingRoot, "provider-assets/kimi", target);
     await materializeKimiDistribution({ outputRoot: stagedOutput, lockDirectory: join(cli, "kimi-provision-inputs"), checkCancelled, signal });
     await verifyInstallation(stagingRoot, join(stagingRoot, "package.json"));

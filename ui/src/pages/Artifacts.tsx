@@ -27,12 +27,12 @@ const ARTIFACTS_PAGE_SIZE = 30;
 const SEARCH_DEBOUNCE_MS = 250;
 
 export const ARTIFACT_KIND_FILTERS: { value: ArtifactKindFilter; label: string }[] = [
-  { value: "all", get label() { return translateInstant("All"); } },
+  { value: "all", get label() { return translateInstant("artifacts.filter.all"); } },
   { value: "image", get label() { return translateInstant("artifacts.filter.images"); } },
   { value: "video", get label() { return translateInstant("artifacts.filter.videos"); } },
   { value: "document", get label() { return translateInstant("newIssue.documents"); } },
   { value: "text", get label() { return translateInstant("artifacts.filter.text"); } },
-  { value: "file", get label() { return translateInstant("Files"); } },
+  { value: "file", get label() { return translateInstant("artifacts.filter.files"); } },
 ];
 
 export const ARTIFACT_GROUP_OPTIONS: { value: ArtifactGroupBy; label: string }[] = [
@@ -337,7 +337,7 @@ export function Artifacts() {
                 ))}
           </ArtifactTileGrid>
           <div ref={loadMoreRef} className="flex min-h-10 items-center justify-center pb-2 text-xs text-muted-foreground">
-            {isFetchingNextPage ? "Loading more artifacts..." : hasNextPage ? null : isFetching ? "Updating artifacts..." : null}
+            {isFetchingNextPage ? translateInstant("artifacts.loadingMore") : hasNextPage ? null : isFetching ? translateInstant("artifacts.updating") : null}
           </div>
         </>
       ) : (

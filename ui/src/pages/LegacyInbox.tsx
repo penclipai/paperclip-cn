@@ -32,6 +32,7 @@ import { useSidebar } from "../context/SidebarContext";
 import { queryKeys } from "../lib/queryKeys";
 import { useDialogActions } from "../context/DialogContext";
 import { useIssueExternalObjectSummaries } from "../hooks/useIssueExternalObjects";
+import { useIssueUpdatedFilterNow } from "../hooks/useIssueUpdatedFilterNow";
 import {
   applyIssueFilters,
   countActiveIssueFilters,
@@ -1028,13 +1029,15 @@ export function Inbox() {
     externalObjectSummaryByIssueId,
     externalObjectSummariesReady: externalObjectSummariesReady && !externalObjectSummariesLoading,
   }), [externalObjectSummariesLoading, externalObjectSummariesReady, externalObjectSummaryByIssueId]);
+  const mineUpdatedNow = useIssueUpdatedFilterNow(mineIssues, issueFilters.updatedWithin);
+  const touchedUpdatedNow = useIssueUpdatedFilterNow(touchedIssues, issueFilters.updatedWithin);
   const visibleMineIssues = useMemo(
-    () => applyIssueFilters(mineIssues, issueFilters, currentUserId, false, liveIssueIds, issueFilterContext),
-    [mineIssues, issueFilters, currentUserId, liveIssueIds, issueFilterContext],
+    () => applyIssueFilters(mineIssues, issueFilters, currentUserId, false, liveIssueIds, issueFilterContext, mineUpdatedNow),
+    [mineIssues, issueFilters, currentUserId, liveIssueIds, issueFilterContext, mineUpdatedNow],
   );
   const visibleTouchedIssues = useMemo(
-    () => applyIssueFilters(touchedIssues, issueFilters, currentUserId, false, liveIssueIds, issueFilterContext),
-    [touchedIssues, issueFilters, currentUserId, liveIssueIds, issueFilterContext],
+    () => applyIssueFilters(touchedIssues, issueFilters, currentUserId, false, liveIssueIds, issueFilterContext, touchedUpdatedNow),
+    [touchedIssues, issueFilters, currentUserId, liveIssueIds, issueFilterContext, touchedUpdatedNow],
   );
   const unreadTouchedIssues = useMemo(
     () => visibleTouchedIssues.filter((issue) => issue.isUnreadForMe),
@@ -2237,7 +2240,7 @@ export function Inbox() {
   useWarmTaskDetailCode(Boolean(selectedCompanyId) && allLoaded && tab !== "blocked" && totalVisibleWorkItems > 0);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={InboxIcon} message={translateInstant("Select a company to view inbox.")} />;
+    return <EmptyState placement="upper" icon={InboxIcon} message={translateInstant("Select a company to view inbox.")} />;
   }
 
   const hasRunFailures = failedRuns.length > 0;
@@ -2626,7 +2629,7 @@ export function Inbox() {
       )}
 
       {tab !== "blocked" && allLoaded && visibleSections.length === 0 && (
-        <EmptyState
+        <EmptyState placement="upper"
           icon={searchQuery.trim() ? Search : InboxIcon}
           message={
             searchQuery.trim()
@@ -2863,8 +2866,8 @@ export function Inbox() {
                               variant="ghost"
                               size="icon-xs"
                               className="-mr-2 text-muted-foreground"
-                              title={`New task in ${group.label}`}
-                              aria-label={`New task in ${group.label}`}
+                              title={translateInstant("issuesList.newTaskInGroup", { group: group.label, defaultValue: `New task in ${group.label}` })}
+                              aria-label={translateInstant("issuesList.newTaskInGroup", { group: group.label, defaultValue: `New task in ${group.label}` })}
                               onClick={(event) => {
                                 event.stopPropagation();
                                 openCreateIssueForGroup(group);

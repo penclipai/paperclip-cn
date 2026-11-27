@@ -4,7 +4,8 @@ import {
   presentationDecisionCommentId,
   semanticProgressCommentIds,
 } from "@/lib/run-answer-visibility";
-import { imagePreparationReceiptIds } from "./task-chat/image-resources";
+import { preparationReceiptIds, runFileCardAttachments } from "./task-chat/image-resources";
+import { RunFileCardsContext } from "./task-chat/RunFileCardsContext";
 import type { ScrollingHistory } from "@/components/task-chat/TaskMessageScroller";
 import { TaskChatShimmerScope } from "@/components/task-chat/TaskChatShimmer";
 import { translateInstant } from "@/i18n";
@@ -198,6 +199,14 @@ import { safeNavigableUrl } from "@/lib/safe-url";
 
 const EMPTY_BROWSERS: TaskBrowser[] = [];
 const COMPACT_RUN_LOG_READ_LIMIT_BYTES = 32_000;
+
+/** Mirrors task-interruption-presentation.ts: a swarm-route failure needs the person when Antigravity says so. */
+function swarmFailureNeedsAction(resultJson: Record<string, unknown> | null | undefined): boolean {
+  const failure = resultJson?.providerFailure;
+  if (!failure || typeof failure !== "object" || Array.isArray(failure)) return false;
+  const { provider, retryability } = failure as Record<string, unknown>;
+  return provider === "antigravity" && retryability === "requires_action";
+}
 
 function toMs(value: Date | string | null | undefined): number {
   if (!value) return 0;
@@ -523,6 +532,7 @@ function durableInputLabel(
  * folded row. flag-OFF remains byte-for-byte IssueChatThread.
  */
 export function TaskChatThread(props: TaskChatThreadProps) {
+  const { t } = useTranslation();
   const coordinatorEnabled = useCoordinatorPresentation();
   const { status: connectionStatus } = useConnectivity();
   const { enabled: streamlinedPreference } = useStreamlinedUiEnabled();
@@ -553,7 +563,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
     showComposer = true,
     composerPause,
     composerDisabledReason,
-    emptyMessage = "No messages yet.",
+    emptyMessage: emptyMessageProp,
     companyId,
     linkedRuns,
     liveRuns,
@@ -606,6 +616,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
     resumeAssigneePending = false,
     onOpenSkill,
   } = props;
+  const emptyMessage = emptyMessageProp ?? t("taskChat.noMessagesYet", { defaultValue: "No messages yet." });
   const {
     data: planDocument,
     isLoading: planLoading,
@@ -1016,9 +1027,10 @@ export function TaskChatThread(props: TaskChatThreadProps) {
   // prefers the accepted semantic result so runs such as DOT-20 recover their
   // real upstream response without a data migration.
   const imageReceipts = useMemo(
-    () => imagePreparationReceiptIds(comments, attachments, workProducts),
+    () => preparationReceiptIds(comments, attachments, workProducts),
     [comments, attachments, workProducts],
   );
+  const runFileCards = useMemo(() => runFileCardAttachments(workProducts), [workProducts]);
   const projectedComments = useMemo(
     () =>
       comments.flatMap((comment) => {
@@ -2087,56 +2099,72 @@ export function TaskChatThread(props: TaskChatThreadProps) {
         const label =
           code === "native_provider_runtime_missing" &&
           source.status === "failed"
-            ? "Runtime missing"
+            ? translateInstant("taskChat.interrupted.runtimeMissing", { defaultValue: "Runtime missing" })
             : code === "native_provider_model_rejected" &&
                 source.status === "failed"
-              ? "Model unavailable"
-              : code === "native_provider_approval_required" &&
+              ? translateInstant("taskChat.interrupted.modelUnavailable", { defaultValue: "Model unavailable" })
+              : code === "antigravity_swarm_unavailable" &&
                   source.status === "failed"
-                ? "Approval required"
-                : code === "native_provider_usage_limit" &&
+                ? swarmFailureNeedsAction(meta?.resultJson)
+                  ? translateInstant("taskChat.swarmDidNotStart", { defaultValue: "Swarm did not start" })
+                  : translateInstant("taskChat.swarmDidNotFinish", { defaultValue: "Swarm did not finish" })
+                : code === "native_provider_approval_required" &&
                     source.status === "failed"
-                  ? "Usage limit reached"
-                  : code === "sandbox_disk_full" && source.status === "failed"
-                    ? translateInstant("taskChat.error.diskFull", { defaultValue: "Disk full" })
-                    : source.status === "cancelled"
-                      ? "Run cancelled"
-                      : source.status === "interrupted"
-                        ? "Run interrupted"
-                        : source.status === "timed_out"
-                          ? "Run timed out"
-                          : "Run failed";
+                  ? translateInstant("taskChat.interrupted.approvalRequired", { defaultValue: "Approval required" })
+                  : code === "native_provider_usage_limit" &&
+                      source.status === "failed"
+                    ? translateInstant("taskChat.interrupted.usageLimitReached", { defaultValue: "Usage limit reached" })
+                    : code === "sandbox_disk_full" && source.status === "failed"
+                      ? translateInstant("taskChat.error.diskFull", { defaultValue: "Disk full" })
+                      : source.status === "cancelled"
+                        ? translateInstant("taskChat.interrupted.runCancelled", { defaultValue: "Run cancelled" })
+                        : source.status === "interrupted"
+                          ? translateInstant("taskChat.interrupted.runInterrupted", { defaultValue: "Run interrupted" })
+                          : source.status === "timed_out"
+                            ? translateInstant("taskChat.interrupted.runTimedOut", { defaultValue: "Run timed out" })
+                            : translateInstant("taskChat.interrupted.runFailed", { defaultValue: "Run failed" });
         const responseBoundary = sourceHasNativeResponse
-          ? " after returning a final response"
+          ? translateInstant("taskChat.interrupted.afterFinalResponse", { defaultValue: " after returning a final response" })
           : "";
         const detail =
           source.status === "cancelled"
-            ? `The run was cancelled${responseBoundary}.`
+            ? translateInstant("taskChat.interrupted.cancelledDetail", { boundary: responseBoundary, defaultValue: `The run was cancelled${responseBoundary}.` })
             : source.status === "interrupted"
-              ? `The run was interrupted${responseBoundary}.`
+              ? translateInstant("taskChat.interrupted.interruptedDetail", { boundary: responseBoundary, defaultValue: `The run was interrupted${responseBoundary}.` })
               : code === "native_provider_runtime_missing"
-                ? "The selected provider runtime is missing a required package. Reinstall or rebuild Paperclip with its bundled provider dependencies, restart the server, then test the agent's runtime before retrying."
+                ? translateInstant("taskChat.interrupted.runtimeMissingDetail", { defaultValue: "The selected provider runtime is missing a required package. Reinstall or rebuild Paperclip with its bundled provider dependencies, restart the server, then test the agent's runtime before retrying." })
                 : code === "native_provider_approval_required"
-                  ? "This operation requires approval, but this runner has no interactive approval handler. Review the operation and update the agent's permission setting before retrying."
+                  ? translateInstant("taskChat.interrupted.approvalRequiredDetail", { defaultValue: "This operation requires approval, but this runner has no interactive approval handler. Review the operation and update the agent's permission setting before retrying." })
                   : code === "native_provider_model_rejected"
-                    ? `${props.interruption?.observedRunId === source.id && props.interruption.rejectedModel
-                        ? translateInstant("taskChat.error.modelRejectedNamed", {
-                            model: props.interruption.rejectedModel,
-                            defaultValue: 'The provider rejected the model "{{model}}".',
-                          })
-                        : meta?.error || "The provider rejected the selected model."} Choose a supported model or clear the task's model override, then retry.`
-                    : code === "native_provider_usage_limit" &&
-                        source.status === "failed"
-                      ? "The model provider has reached its current usage limit. Try again after the limit resets."
-                      : code === "sandbox_disk_full" && source.status === "failed"
-                        ? translateInstant("taskChat.error.diskFullDetail", {
-                            defaultValue: "The agent filled the disk of its computer, so the run stopped. Ask the agent to use less disk space, then retry.",
-                          })
-                        : code === "provider_frame_too_large"
-                          ? "Provider output exceeded the safe limit."
-                          : source.status === "timed_out"
-                            ? `The runner timed out${responseBoundary} (${code}).`
-                            : `The runner stopped${responseBoundary} (${code}).`;
+                    ? translateInstant("taskChat.interrupted.modelRejectedDetail", {
+                        reason: props.interruption?.observedRunId === source.id && props.interruption.rejectedModel
+                          ? translateInstant("taskChat.error.modelRejectedNamed", {
+                              model: props.interruption.rejectedModel,
+                              defaultValue: 'The provider rejected the model "{{model}}".',
+                            })
+                          : meta?.error || translateInstant("taskChat.interrupted.modelRejectedFallback", { defaultValue: "The provider rejected the selected model." }),
+                        defaultValue: `${props.interruption?.observedRunId === source.id && props.interruption.rejectedModel
+                          ? translateInstant("taskChat.error.modelRejectedNamed", {
+                              model: props.interruption.rejectedModel,
+                              defaultValue: 'The provider rejected the model "{{model}}".',
+                            })
+                          : meta?.error || "The provider rejected the selected model."} Choose a supported model or clear the task's model override, then retry.`,
+                      })
+                    : code === "antigravity_swarm_unavailable" && source.status === "failed"
+                      // The swarm route's own plain sentence; never the code.
+                      ? meta?.error?.trim() || translateInstant("taskChat.swarmDidNotStartDetail", { defaultValue: "Swarm did not start, and nothing was changed. Send /swarm again to try once more." })
+                      : code === "native_provider_usage_limit" &&
+                          source.status === "failed"
+                        ? translateInstant("taskChat.interrupted.usageLimitDetail", { defaultValue: "The model provider has reached its current usage limit. Try again after the limit resets." })
+                        : code === "sandbox_disk_full" && source.status === "failed"
+                          ? translateInstant("taskChat.error.diskFullDetail", {
+                              defaultValue: "The agent filled the disk of its computer, so the run stopped. Ask the agent to use less disk space, then retry.",
+                            })
+                          : code === "provider_frame_too_large"
+                            ? translateInstant("taskChat.interrupted.frameTooLargeDetail", { defaultValue: "Provider output exceeded the safe limit." })
+                            : source.status === "timed_out"
+                              ? translateInstant("taskChat.interrupted.timedOutDetail", { boundary: responseBoundary, code, defaultValue: `The runner timed out${responseBoundary} (${code}).` })
+                              : translateInstant("taskChat.interrupted.stoppedDetail", { boundary: responseBoundary, code, defaultValue: `The runner stopped${responseBoundary} (${code}).` });
         const id = `${source.id}:failure`;
         const runAgent = meta?.agentId
           ? agentMap?.get(meta.agentId)
@@ -2169,9 +2197,16 @@ export function TaskChatThread(props: TaskChatThreadProps) {
               tone: source.status === "cancelled" ? "neutral" : "error",
               label,
               detail,
+              // A /swarm the route refused for something the person must change (another model,
+              // a planning run) has no Retry; one that ran and failed (no result, helpers timed
+              // out) keeps it. The same rule as the server's task interruption state.
               retryable:
                 code !== "native_session_cleanup_quarantined" &&
-                !diskFullBesideInterruption,
+                !diskFullBesideInterruption &&
+                !(
+                  code === "antigravity_swarm_unavailable" &&
+                  swarmFailureNeedsAction(meta?.resultJson)
+                ),
               ...(credentialAccess
                 ? { credentialAccess, retryable: false }
                 : {}),
@@ -4105,6 +4140,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                           ) : null}
                         </div>
                       ) : (
+                        <RunFileCardsContext.Provider value={runFileCards}>
                         <TaskChatThreadView
                           items={threadItems}
                           scrollingHistory={scrollingHistory}
@@ -4322,6 +4358,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                           contentKey={`${autoFollowContentKey}:${historyRevealed}`}
                           className={isMobile ? undefined : "pt-3"}
                         />
+                        </RunFileCardsContext.Provider>
                       )}
                     </>
                   ) : null}

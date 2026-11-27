@@ -584,21 +584,21 @@ function Setup({
     return config;
   }
   function preparedConfig(nextConnection = connection, setupRunner?: AgentRunner) {
-    if (nativeCursorCloud && !model.trim()) throw new Error("Enter the exact Cursor Cloud model ID.");
-    if (isKimi && !model.trim()) throw new Error("Enter the exact Kimi model ID.");
-    if (isKimi && !apiKey.trim() && !selectedBinding) throw new Error("Enter KIMI_API_KEY or select an organization secret.");
+    if (nativeCursorCloud && !model.trim()) throw new Error(translateInstant("newAgent.validation.cursorModelId", { defaultValue: "Enter the exact Cursor Cloud model ID." }));
+    if (isKimi && !model.trim()) throw new Error(translateInstant("newAgent.validation.kimiModelId", { defaultValue: "Enter the exact Kimi model ID." }));
+    if (isKimi && !apiKey.trim() && !selectedBinding) throw new Error(translateInstant("newAgent.validation.kimiKeyOrSecret", { defaultValue: "Enter KIMI_API_KEY or select an organization secret." }));
     if (brandType === "antigravity_runtime" && (!model.trim() || model !== model.trim() || /\s/.test(model) || ["auto", "default"].includes(model.toLowerCase())))
-      throw new Error("Choose or enter an exact Google Antigravity model ID.");
+      throw new Error(translateInstant("newAgent.validation.antigravityModelId", { defaultValue: "Choose or enter an exact Google Antigravity model ID." }));
     if (brandType === "copilot_runtime" && !models.data?.some(candidate => candidate.id === model))
-      throw new Error("Refresh Copilot models and select an available model before creating this agent.");
-    if (isDot && !allowUnmeteredProvider) throw new Error("Acknowledge external provider billing before creating your Dot agent.");
+      throw new Error(translateInstant("newAgent.validation.copilotModel", { defaultValue: "Refresh Copilot models and select an available model before creating this agent." }));
+    if (isDot && !allowUnmeteredProvider) throw new Error(translateInstant("newAgent.validation.dotBillingAck", { defaultValue: "Acknowledge external provider billing before creating your Dot agent." }));
     if (multiProvider && (!model.trim() || !model.includes("/")))
-      throw new Error("Choose or enter a model in provider/model format.");
+      throw new Error(translateInstant("newAgent.validation.providerModelFormat", { defaultValue: "Choose or enter a model in provider/model format." }));
     if (
       adapterType === "cursor_cloud" &&
       !/^https:\/\/github\.com\/[^/]+\/[^/]+/.test(repository.trim())
     )
-      throw new Error("Enter a GitHub repository URL.");
+      throw new Error(translateInstant("newAgent.validation.githubRepoUrl", { defaultValue: "Enter a GitHub repository URL." }));
     if (
       (adapterType === "cursor_cloud" || setupCredential?.required === true) &&
       !apiKey.trim() &&
@@ -606,8 +606,8 @@ function Setup({
     )
       throw new Error(
         adapterType === "cursor_cloud"
-          ? "Enter a Cursor API key."
-          : `Enter ${envKey} or select an organization secret.`,
+          ? translateInstant("newAgent.validation.cursorApiKey", { defaultValue: "Enter a Cursor API key." })
+          : translateInstant("newAgent.validation.envKeyOrSecret", { envKey, defaultValue: "Enter {{envKey}} or select an organization secret." }),
       );
     if (setupEndpoint && (setupEndpoint.required || endpoint.trim())) {
       try {
@@ -618,7 +618,7 @@ function Setup({
       }
     }
     if (usingKimiApi && !kimiModel.trim())
-      throw new Error("Enter the Kimi API model name.");
+      throw new Error(translateInstant("newAgent.validation.kimiApiModelName", { defaultValue: "Enter the Kimi API model name." }));
     return buildConfig(nextConnection, selectedBinding, setupRunner);
   }
   function pendingCredentials(nextConnection = connection) {
@@ -815,7 +815,7 @@ function Setup({
         (tested.checks.some(check => check.code === "environment_agent_approval_required") || !connectionAdapter ||
           tested.checks.some((check) =>
             check.code.endsWith("hello_probe_passed") || check.code === "ai_connection_api_key_reverified"
-            || (brandType === "antigravity_runtime" && check.code === "antigravity_metadata_verified"),
+            || (brandType === "antigravity_runtime" && (check.code === "antigravity_metadata_verified" || check.code === "antigravity_remote_runtime_ready")),
           ))
       ) ? config : null;
     } catch (cause) {
@@ -924,11 +924,11 @@ function Setup({
         className="text-sm text-muted-foreground"
       >
         {savedAgent.error
-          ? "Could not load the created agent. Return to Agents to view it."
-          : "Loading your agent…"}
+          ? translateInstant("newAgent.setup.loadCreatedError", { defaultValue: "Could not load the created agent. Return to Agents to view it." })
+          : translateInstant("newAgent.setup.loadingCreated", { defaultValue: "Loading your agent…" })}
       </p>
     );
-  if (resumeSavedChoice) return <p role="status" className="text-sm text-muted-foreground">Loading your agent setup…</p>;
+  if (resumeSavedChoice) return <p role="status" className="text-sm text-muted-foreground">{translateInstant("newAgent.setup.loadingSetup", { defaultValue: "Loading your agent setup…" })}</p>;
   if (choosingAdapter || !name || !adapterType || (created?.metadata?.setupAdapterPending === true && !unreleasedAntigravity))
     return (
       <AgentBasicsDialog
@@ -948,12 +948,12 @@ function Setup({
   if (cloud && !(adapterType === "paperclip_runner"
     ? harnessPolicy.isCloudRunnerProviderAllowed(runnerProvider)
     : harnessPolicy.isCloudHarnessAllowed(adapterType))) return <div className="space-y-4">
-    <p role="alert">This adapter is unavailable. Choose an enabled adapter.</p>
-    <Button onClick={() => setChoosingAdapter(true)}>Change adapter</Button>
+    <p role="alert">{translateInstant("This adapter is unavailable. Choose an enabled adapter.", { defaultValue: "This adapter is unavailable. Choose an enabled adapter." })}</p>
+    <Button onClick={() => setChoosingAdapter(true)}>{translateInstant("newAgent.setup.changeAdapter", { defaultValue: "Change adapter" })}</Button>
   </div>;
   if (!created && connectionSettingsReady && !pendingAntigravity) return <div className="space-y-4">
-    <p role={error ? "alert" : "status"}>{error ?? "Creating your agent…"}</p>
-    {error && <Button onClick={() => setCreationAttempt(value => value + 1)}>Retry</Button>}
+    <p role={error ? "alert" : "status"}>{error ?? translateInstant("newAgent.setup.creating", { defaultValue: "Creating your agent…" })}</p>
+    {error && <Button onClick={() => setCreationAttempt(value => value + 1)}>{translateInstant("Retry", { defaultValue: "Retry" })}</Button>}
   </div>;
   const steps = [
     ...(connectionAdapter ? ["connect" as const] : []),
@@ -961,9 +961,9 @@ function Setup({
     "saved" as const,
   ];
   const labels = {
-    connect: "Connect",
-    runtime: "Configure",
-    saved: "Confirmation",
+    connect: translateInstant("Connect", { defaultValue: "Connect" }),
+    runtime: translateInstant("Configure", { defaultValue: "Configure" }),
+    saved: translateInstant("Confirmation", { defaultValue: "Confirmation" }),
   };
   const confirmationEnvironment = created?.defaultEnvironmentId
     ? envs.data?.find((env) => env.id === created.defaultEnvironmentId)
@@ -978,7 +978,7 @@ function Setup({
       ? createdKimiModel
       : (createdKimiModel as { value?: string } | undefined)?.value) ||
     model ||
-    "Default";
+    translateInstant("Default", { defaultValue: "Default" });
   const environmentLabel =
     adapterType === "cursor_cloud"
       ? "Cursor Cloud"
@@ -986,7 +986,7 @@ function Setup({
         ? getAdapterDisplay(adapterType).label
         : confirmationEnvironment
           ? environmentDisplayLabel(confirmationEnvironment)
-          : "Local machine";
+          : translateInstant("newAgent.setup.localMachine", { defaultValue: "Local machine" });
   const setupError =
     adapters.error ??
     adapterInventory.error ??
@@ -1017,7 +1017,7 @@ function Setup({
                 <span>
                   ·{" "}
                   {runnerProvider === "codex"
-                    ? "Native app server runner"
+                    ? translateInstant("newAgent.setup.nativeAppServerRunner", { defaultValue: "Native app server runner" })
                     : "Paperclip Runner"}
                 </span>
               )}
@@ -1029,7 +1029,7 @@ function Setup({
             {environmentError}
           </p>
         )}
-        {preparingComputer && <p role="status" className="text-sm text-muted-foreground">Preparing your agent computer…</p>}
+        {preparingComputer && <p role="status" className="text-sm text-muted-foreground">{translateInstant("newAgent.setup.preparingComputer", { defaultValue: "Preparing your agent computer…" })}</p>}
         {created?.lifecycleError && <div className="space-y-2">
           <p role="alert" className="text-sm text-destructive">{created.lifecycleError}</p>
           <Button disabled={busy} onClick={() => {
@@ -1038,9 +1038,9 @@ function Setup({
               await cache.cancelQueries({ queryKey: queryKeys.agents.detail(agent.id) });
               setCreated(agent);
               cache.setQueryData(queryKeys.agents.detail(agent.id), agent);
-            }).catch(cause => setError(cause instanceof Error ? cause.message : "Could not retry computer preparation."))
+            }).catch(cause => setError(cause instanceof Error ? cause.message : translateInstant("newAgent.setup.retryComputerError", { defaultValue: "Could not retry computer preparation." })))
               .finally(() => setEnvironmentSaving(false));
-          }}>Retry preparation</Button>
+          }}>{translateInstant("newAgent.setup.retryPreparation", { defaultValue: "Retry preparation" })}</Button>
         </div>}
         {setupError && (
           <QueryErrorState
@@ -1053,12 +1053,12 @@ function Setup({
         {pendingAntigravity && configurationAvailable && (
           <div className="space-y-2">
             <p role="status" className="text-sm text-muted-foreground">
-              Google Antigravity is not available yet. You can connect your Google account and review settings. This agent cannot finish setup or run tasks yet. Model and connection settings are not saved to this agent yet.
+              {translateInstant("newAgent.setup.antigravityPending", { defaultValue: "Google Antigravity is not available yet. You can connect your Google account and review settings. This agent cannot finish setup or run tasks yet. Model and connection settings are not saved to this agent yet." })}
             </p>
-            {created && <Button variant="link" className="px-0" onClick={() => setChoosingAdapter(true)}>Change adapter</Button>}
+            {created && <Button variant="link" className="px-0" onClick={() => setChoosingAdapter(true)}>{translateInstant("newAgent.setup.changeAdapter", { defaultValue: "Change adapter" })}</Button>}
           </div>
         )}
-        {antigravityCandidate && <p role="status" className="text-sm text-muted-foreground">Google Antigravity candidate is enabled for testing on this instance.</p>}
+        {antigravityCandidate && <p role="status" className="text-sm text-muted-foreground">{translateInstant("newAgent.setup.antigravityCandidate", { defaultValue: "Google Antigravity candidate is enabled for testing on this instance." })}</p>}
         {adapterInventory.data && !configurationAvailable && (
           <p role="alert" className="text-sm text-destructive">
             {translateInstant("This adapter is unavailable. Choose an enabled adapter.", { defaultValue: "This adapter is unavailable. Choose an enabled adapter." })}
@@ -1186,9 +1186,9 @@ function Setup({
                       <h2 className="flex items-center gap-3 text-lg font-semibold">
                         <Check className="size-5" />
                         {created.status === "pending_approval"
-                          ? "Agent submitted for approval"
-                          : isDot ? "Your Dot agent has been created"
-                            : finishingSetup ? "Finishing agent setup" : runtimeReady ? "Your agent is ready" : "Your agent is paused"}
+                          ? translateInstant("newAgent.setup.submittedForApproval", { defaultValue: "Agent submitted for approval" })
+                          : isDot ? translateInstant("newAgent.setup.dotCreated", { defaultValue: "Your Dot agent has been created" })
+                            : finishingSetup ? translateInstant("newAgent.setup.finishingSetup", { defaultValue: "Finishing agent setup" }) : runtimeReady ? translateInstant("newAgent.setup.agentReady", { defaultValue: "Your agent is ready" }) : translateInstant("newAgent.setup.agentPaused", { defaultValue: "Your agent is paused" })}
                       </h2>
                       <dl className="grid grid-cols-2 gap-4 text-sm">
                         <dt className="text-muted-foreground">{translateInstant("Adapter", { defaultValue: "Adapter" })}</dt>
@@ -1206,10 +1206,10 @@ function Setup({
                       </dl>
                       <p className="text-sm text-muted-foreground">
                         {created.status === "pending_approval"
-                          ? "An organization administrator must approve this agent before it can work."
-                          : isDot ? "Pair your Dot and test event delivery in configuration before assigning work."
-                            : finishingSetup ? "Paperclip is preparing and verifying your agent. You can assign a task when it is ready."
-                              : runtimeReady ? "Assign a task when you’re ready for this agent to work." : "Review the agent’s status in configuration before assigning work."}
+                          ? translateInstant("newAgent.setup.pendingApprovalHelp", { defaultValue: "An organization administrator must approve this agent before it can work." })
+                          : isDot ? translateInstant("newAgent.setup.dotHelp", { defaultValue: "Pair your Dot and test event delivery in configuration before assigning work." })
+                            : finishingSetup ? translateInstant("newAgent.setup.finishingHelp", { defaultValue: "Paperclip is preparing and verifying your agent. You can assign a task when it is ready." })
+                              : runtimeReady ? translateInstant("newAgent.setup.readyHelp", { defaultValue: "Assign a task when you’re ready for this agent to work." }) : translateInstant("newAgent.setup.pausedHelp", { defaultValue: "Review the agent’s status in configuration before assigning work." })}
                       </p>
                     </div>
                     <div className="flex flex-wrap justify-between gap-3">
@@ -1218,7 +1218,7 @@ function Setup({
                         onClick={() => navigate(isDot ? "/agents/all" : `${agentUrl(created)}/runtime`)}
                       >
                         <Settings2 className="size-4" />
-                        {isDot ? "Back to Agents" : "Edit configuration"}
+                        {isDot ? translateInstant("newAgent.setup.backToAgents", { defaultValue: "Back to Agents" }) : translateInstant("newAgent.setup.editConfiguration", { defaultValue: "Edit configuration" })}
                       </Button>
                       <Button
                         disabled={created.status === "pending_approval" || (!isDot && !runtimeReady)}
@@ -1227,7 +1227,7 @@ function Setup({
                           : void assignFirstTask()
                         }
                       >
-                        {isDot ? "Pair Dot" : `Assign ${created.name} a Task`}
+                        {isDot ? translateInstant("Pair Dot", { defaultValue: "Pair Dot" }) : translateInstant("newAgent.setup.assignTask", { name: created.name, defaultValue: "Assign {{name}} a Task" })}
                         <ArrowRight className="size-4" />
                       </Button>
                     </div>
@@ -1247,7 +1247,7 @@ function Setup({
                       <section className="space-y-5">
                         {isDot && <>
                           <p className="text-sm text-muted-foreground">{translateInstant("Create this agent, then copy its pairing prompt to your Dot.", { defaultValue: "Create this agent, then copy its pairing prompt to your Dot." })}</p>
-                          <ToggleField label={translateInstant("Allow externally billed provider", { defaultValue: "Allow externally billed provider" })} hint="Dot does not report token usage or cost. Paperclip cannot enforce a provider spend ceiling; known company and agent budget limits still apply."
+                          <ToggleField label={translateInstant("Allow externally billed provider", { defaultValue: "Allow externally billed provider" })} hint={translateInstant("newAgent.setup.dotBillingHint", { defaultValue: "Dot does not report token usage or cost. Paperclip cannot enforce a provider spend ceiling; known company and agent budget limits still apply." })}
                             checked={allowUnmeteredProvider} onChange={value => { setAllowUnmeteredProvider(value); resetTest(); }} />
                         </>}
                         {!connectionAdapter && aiProviderForAdapter(brandType) && (
@@ -1435,8 +1435,8 @@ function Setup({
                             )}
                             <p className="text-xs text-muted-foreground sm:col-span-2">
                               {translateInstant("New keys are saved as organization secrets when you finish setup.", { defaultValue: "New keys are saved as organization secrets when you finish setup." })}
-                              {isKimi && " Use a Kimi Code API key for this runner."}
-                              {multiProvider && ` Use a ${provider}/model ID.`}
+                              {isKimi && ` ${translateInstant("newAgent.setup.useKimiKey", { defaultValue: "Use a Kimi Code API key for this runner." })}`}
+                              {multiProvider && ` ${translateInstant("newAgent.setup.useProviderModelId", { provider, defaultValue: "Use a {{provider}}/model ID." })}`}
                             </p>
                           </div>
                         )}
@@ -1455,9 +1455,9 @@ function Setup({
                         )}
                         {usingKimiApi && (
                           <div className="grid gap-5 sm:grid-cols-2">
-                            <Field label="Kimi API model name">
+                            <Field label={translateInstant("newAgent.setup.kimiModelLabel", { defaultValue: "Kimi API model name" })}>
                               <Input
-                                aria-label="Kimi API model name"
+                                aria-label={translateInstant("newAgent.setup.kimiModelLabel", { defaultValue: "Kimi API model name" })}
                                 value={kimiModel}
                                 onChange={(event) => {
                                   setKimiModel(event.target.value);
@@ -1466,9 +1466,9 @@ function Setup({
                                 placeholder="kimi-for-coding"
                               />
                             </Field>
-                            <Field label="Kimi API protocol">
+                            <Field label={translateInstant("newAgent.setup.kimiProtocolLabel", { defaultValue: "Kimi API protocol" })}>
                               <select
-                                aria-label="Kimi API protocol"
+                                aria-label={translateInstant("newAgent.setup.kimiProtocolLabel", { defaultValue: "Kimi API protocol" })}
                                 className={controlClass}
                                 value={kimiProtocol}
                                 onChange={(event) => {
@@ -1484,11 +1484,11 @@ function Setup({
                               </select>
                             </Field>
                             <Field
-                              label="Kimi API base URL"
-                              hint="Optional override for your provider endpoint."
+                              label={translateInstant("newAgent.setup.kimiBaseUrlLabel", { defaultValue: "Kimi API base URL" })}
+                              hint={translateInstant("newAgent.setup.kimiBaseUrlHint", { defaultValue: "Optional override for your provider endpoint." })}
                             >
                               <Input
-                                aria-label="Kimi API base URL"
+                                aria-label={translateInstant("newAgent.setup.kimiBaseUrlLabel", { defaultValue: "Kimi API base URL" })}
                                 value={kimiBaseUrl}
                                 onChange={(event) => {
                                   setKimiBaseUrl(event.target.value);
@@ -1570,10 +1570,10 @@ function Setup({
                       </p>
                     )}
                     {environmentSaveError && <p role="alert" className="text-sm text-destructive">{environmentSaveError}</p>}
-                    {environmentSaveError && !environmentSelectionSaved && <Button disabled={busy} onClick={() => void changeEnvironment()}>Retry saving environment</Button>}
+                    {environmentSaveError && !environmentSelectionSaved && <Button disabled={busy} onClick={() => void changeEnvironment()}>{translateInstant("newAgent.setup.retrySavingEnvironment", { defaultValue: "Retry saving environment" })}</Button>}
                     <div className="flex justify-between border-t border-border py-5">
                       <div className="flex items-center gap-3">
-                        <Button type="button" variant="ghost" disabled={busy} onClick={() => void saveAndExit()}>{pendingAntigravity ? "Back to agents" : "Save & exit"}</Button>
+                        <Button type="button" variant="ghost" disabled={busy} onClick={() => void saveAndExit()}>{pendingAntigravity ? translateInstant("newAgent.setup.backToAgentsAction", { defaultValue: "Back to agents" }) : translateInstant("Save & exit", { defaultValue: "Save & exit" })}</Button>
                       {connectionAdapter ? (
                         <Button
                           type="button"
@@ -1605,7 +1605,7 @@ function Setup({
                           Boolean(connectionAdapter && !connection)
                         }
                       >
-                        {saving ? "Saving…" : "Finish setup"}
+                        {saving ? translateInstant("Saving…", { defaultValue: "Saving…" }) : translateInstant("Finish setup", { defaultValue: "Finish setup" })}
                         <Check className="size-4" />
                       </Button>}
                     </div>

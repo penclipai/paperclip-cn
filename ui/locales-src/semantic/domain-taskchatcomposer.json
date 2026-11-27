@@ -1,4 +1,39 @@
 {
+  "taskChatComposer.addMenu.askDetail": {
+    "en": "Answer without changes",
+    "zh-CN": "只回答问题，不做改动",
+    "reviewedEnglishHash": "a717e98b400a40f6805b168187668817b73ed58b55a52fa27ff205700b2e81d8"
+  },
+  "taskChatComposer.addMenu.goalDetail": {
+    "en": "Keep pursuing",
+    "zh-CN": "持续推进",
+    "reviewedEnglishHash": "68a1acaa06e2affac310da582ca0c8b0a3035294f622e82c5f11afe11bbd1198"
+  },
+  "taskChatComposer.addMenu.planDetail": {
+    "en": "Plan before acting",
+    "zh-CN": "先制定计划再行动",
+    "reviewedEnglishHash": "5adf7f29c01f9eefc5c627143d3f83b99942cf52745536b2d7d7c8fd855eab3b"
+  },
+  "taskChatComposer.command.goalDescription": {
+    "en": "Pursue work across turns.",
+    "zh-CN": "跨多轮对话持续推进任务。",
+    "reviewedEnglishHash": "2f077b6bfeaf80b0a4362194db053a3d91ea945736a21f098f3fdadd9ea779fa"
+  },
+  "taskChatComposer.command.goalUnsupported": {
+    "en": "Session goals are unsupported by this agent.",
+    "zh-CN": "此智能体不支持会话目标。",
+    "reviewedEnglishHash": "83fd8f1270f9d954fa0d9e04890314639fd4b8a1cf1536d6c82b2b3107f04809"
+  },
+  "taskChatComposer.command.goalVerifyLater": {
+    "en": "Support will be verified when the session starts.",
+    "zh-CN": "会话开始时将验证是否支持。",
+    "reviewedEnglishHash": "127652569d07242aa1698a48e5c0f63c0aa5a2b1c9cb2a7b33606b0461c01f4f"
+  },
+  "taskChatComposer.command.newSessionName": {
+    "en": "New session",
+    "zh-CN": "新会话",
+    "reviewedEnglishHash": "cffdba22adf299e8fc6f937ef63ca4352ca9db3022d4634004c0a9bd10aa0dfe"
+  },
   "taskChatComposer.command.planDescription": {
     "en": "Plan before acting. Nothing changes until you accept the plan.",
     "zh-CN": "先制定计划再行动。在你接受计划前不会做任何改动。",
@@ -13,6 +48,21 @@
     "en": "the agent",
     "zh-CN": "智能体",
     "reviewedEnglishHash": "c770ef7d03b6965625b626eb0871705a566d6a89a39bb670f0cccffbac97270d"
+  },
+  "taskChatComposer.dismissLabel": {
+    "en": "Dismiss {{label}}",
+    "zh-CN": "关闭 {{label}}",
+    "reviewedEnglishHash": "de7463bc3d03af0bb3021b71a359c3e955c0cd037a4a4570d873dd6e2a4f5a96"
+  },
+  "taskChatComposer.editingQueuedMessage": {
+    "en": "Editing queued message",
+    "zh-CN": "正在编辑已排队消息",
+    "reviewedEnglishHash": "3bb5020b9725d3b49d3b6140be4478bc4af5ccead599a2e2cfd6a243a24d94f7"
+  },
+  "taskChatComposer.pendingInput": {
+    "en": "Pending input",
+    "zh-CN": "待处理输入",
+    "reviewedEnglishHash": "bc6e0973dfa1a08665849ce5579d06ac90f4c5afc6f5f3e8b965110336dd022e"
   },
   "taskChatComposer.placeholder.ask": {
     "en": "Ask {{agentName}} a question — read-only, nothing runs…",
@@ -48,5 +98,50 @@
     "en": "Work with {{agentName}}",
     "zh-CN": "与 {{agentName}} 协作",
     "reviewedEnglishHash": "9509c26046aa1fa6a9b6d2a71aa55c037f5c75104f9cbd7cb99fcba87d3476e1"
+  },
+  "taskChatComposer.privateExplanation": {
+    "en": "Only you and people you share with can read this task",
+    "zh-CN": "只有你和你共享的人可以查看此任务",
+    "reviewedEnglishHash": "e9d75faa521e7ef5a520ab62a4354fc36d787381389f264fe88a3c6044a36b09"
+  },
+  "taskChatComposer.queuedMessageChanged": {
+    "en": "Queued message changed",
+    "zh-CN": "已排队消息已更改",
+    "reviewedEnglishHash": "2dc0f5a680d75f466f52ed28eab5bed8612c37f2b6e449e05b264ac7e0366447"
+  },
+  "taskChatComposer.removeAttachment": {
+    "en": "Remove {{name}}",
+    "zh-CN": "移除 {{name}}",
+    "reviewedEnglishHash": "43e1269ac88aba53770f74a888e94434ed456cafba03b1bd4bd40350f31befb0"
+  },
+  "taskChatComposer.removeMode": {
+    "en": "Remove {{label}}",
+    "zh-CN": "移除{{label}}",
+    "reviewedEnglishHash": "cfa1164624af6623336a7fc4897af31f9e8bd9a6d6aef4fce65f10848fafe21a"
+  },
+  "taskChatComposer.removePrivateTask": {
+    "en": "Remove private task",
+    "zh-CN": "移除私密任务标记",
+    "reviewedEnglishHash": "ba572379c86a123699923d713291a81d7e96c87e3279a9f4b5f74cebd359fb44"
+  },
+  "taskChatComposer.retryAttachment": {
+    "en": "Retry {{name}}",
+    "zh-CN": "重试 {{name}}",
+    "reviewedEnglishHash": "65174dd1f084baf5c8f9d849df08994012955d51f823544c11b965301d7d43e9"
+  },
+  "taskChatComposer.sendTitle": {
+    "en": "{{label}} ({{shortcut}})",
+    "zh-CN": "{{label}}（{{shortcut}}）",
+    "reviewedEnglishHash": "34bed00fe4a8c650564bcc28725ff22494a679f38b83878cf72d40ade83db952"
+  },
+  "taskChatComposer.swarmHint": {
+    "en": "Sends as a swarm: helpers work on this together in the task folder.",
+    "zh-CN": "以集群模式发送：助手们将在任务文件夹中协同处理。",
+    "reviewedEnglishHash": "a08c1b7b9793144af16044d3ec9fe3694431bba33fca59e46d06cb8e90d43bda"
+  },
+  "taskChatComposer.takeoverSkipFailed": {
+    "en": "This request could not be skipped.",
+    "zh-CN": "无法跳过此请求。",
+    "reviewedEnglishHash": "663913f609288f352c4002980dd120cc6bcb65170d690ee9bc7ada5bd288307c"
   }
 }

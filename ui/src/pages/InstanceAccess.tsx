@@ -12,9 +12,11 @@ import { Card } from "@/components/ui/card";
 import { companyDirectoryQueryOptions, useAccountIdentity } from "@/api/companies-query";
 import { useToast } from "@/context/ToastContext";
 import { queryKeys } from "@/lib/queryKeys";
+import { formatDate } from "@/lib/utils";
+import { translateStatusLabel } from "@/lib/i18n-labels";
 
 export function InstanceAccess() {
-  useTranslation();
+  const { t } = useTranslation();
   const { userId: accountUserId, settled: accountSettled } = useAccountIdentity();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToast();
@@ -104,7 +106,13 @@ export function InstanceAccess() {
 
   if (usersView.kind === "error") {
     if (usersView.errorKind === "forbidden") {
-      return <div className="text-sm text-destructive">Instance admin access is required to manage users.</div>;
+      return (
+        <div className="text-sm text-destructive">
+          {translateInstant("instanceAccess.adminRequired", {
+            defaultValue: "Instance admin access is required to manage users.",
+          })}
+        </div>
+      );
     }
     return (
       <QueryErrorState
@@ -246,7 +254,11 @@ export function InstanceAccess() {
                     onClick={() => updateCompanyAccessMutation.mutate()}
                     disabled={updateCompanyAccessMutation.isPending}
                   >
-                    {updateCompanyAccessMutation.isPending ? translateInstant("Saving…") : "Save organization access"}
+                    {updateCompanyAccessMutation.isPending
+                      ? translateInstant("Saving…")
+                      : translateInstant("instanceAccess.saveOrganizationAccess", {
+                          defaultValue: "Save organization access",
+                        })}
                   </Button>
                 </div>
               </div>
@@ -262,11 +274,16 @@ export function InstanceAccess() {
                       <div>
                         <div className="font-medium">{membership.companyName || membership.companyId}</div>
                         <div className="text-muted-foreground">
-                          {membership.membershipRole || translateInstant("unset")} • {membership.status}
+                          {membership.membershipRole
+                            ? translateInstant(`humanRole.${membership.membershipRole}`, {
+                                defaultValue: membership.membershipRole,
+                              })
+                            : translateInstant("unset")}{" "}
+                          • {translateStatusLabel(t, membership.status)}
                         </div>
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {new Date(membership.updatedAt).toLocaleDateString()}
+                        {formatDate(membership.updatedAt)}
                       </div>
                     </div>
                   ))}

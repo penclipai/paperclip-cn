@@ -2,8 +2,8 @@ import { useTranslation } from "react-i18next";
 import { translateInstant } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Loader2, ShieldQuestion, X } from "lucide-react";
-import type { ToolActionRequestListItem } from "@penclipai/shared";
+import { ArrowUpRight, Check, Loader2, MoreHorizontal, ShieldQuestion, X } from "lucide-react";
+import type { Agent, ToolActionRequestListItem } from "@penclipai/shared";
 import { googleWorkspaceToolTitle, humanizeConnectionDisplayName } from "@penclipai/shared";
 import { useCompany } from "@/context/CompanyContext";
 import { useToast } from "@/context/ToastContext";
@@ -16,6 +16,15 @@ import { toolsApi } from "@/api/tools";
 import { Button } from "@/components/ui/button";
 import { MarkdownBody } from "@/components/MarkdownBody";
 import { describeError } from "@/api/errors";
+import { agentsApi } from "@/api/agents";
+import { Link } from "@/lib/router";
+import { cn } from "@/lib/utils";
+import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
+import { AgentAvatar } from "@/components/AgentAvatar";
+import { DecisionCardFooter } from "@/components/DecisionCardFooter";
+import { NeedsYouPanel, NeedsYouPanelNote, NeedsYouPanelRow } from "@/components/coordinator/NeedsYouCardKit";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AppLogo } from "./AppLogo";
 
 /**
  * "Ask first" review queue (M1b float / M9 card, PAP-10859).
@@ -27,19 +36,26 @@ import { describeError } from "@/api/errors";
  *
  * Pass `connectionId` to scope the queue to a single app (App detail); omit it
  * to show every pending request (Needs attention page).
+ *
+ * `layout="decisions"` draws each request as a decision card with no section
+ * heading, for the Reviews page, which carries its own title and count.
  */
 export function ReviewQueueCard({
   connectionId,
   emptyState = "hidden",
-  heading = "Waiting for your OK",
+  heading,
   plain = false,
+  layout = "queue",
 }: {
   connectionId?: string;
   emptyState?: "hidden" | "reassure";
   heading?: string;
   plain?: boolean;
+  layout?: "queue" | "decisions";
 }) {
   useTranslation();
+  const resolvedHeading = heading ?? translateInstant("apps.review.headingWaitingOk", { defaultValue: "Waiting for your OK" });
+  void resolvedHeading;
   const { selectedCompanyId } = useCompany();
 
   const query = useQuery({
@@ -55,6 +71,14 @@ export function ReviewQueueCard({
     return connectionId ? all.filter((item) => item.connectionId === connectionId) : all;
   }, [query.data, connectionId]);
 
+  const decisions = layout === "decisions";
+  const agentsQuery = useQuery({
+    queryKey: queryKeys.agents.list(selectedCompanyId ?? "__none__"),
+    queryFn: () => agentsApi.list(selectedCompanyId!),
+    enabled: decisions && !!selectedCompanyId && items.some((item) => item.requestedByAgentId),
+  });
+  const agents = useMemo(() => indexAgentsById(agentsQuery.data ?? []), [agentsQuery.data]);
+
   if (!selectedCompanyId) return null;
   if (query.isLoading || view.kind === "reconnecting") return null;
   if (view.kind === "error") {
@@ -66,6 +90,18 @@ export function ReviewQueueCard({
     return (
       <div className={plain ? "py-5 text-sm text-muted-foreground" : "rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground"}>
         {translateInstant("apps.review.empty")}</div>
+    );
+  }
+
+  if (decisions) {
+    return (
+      <ul aria-label={translateInstant("apps.review.requestsAria", { defaultValue: "Requests to review" })} className="flex flex-col gap-3">
+        {items.map((item) => (
+          <li key={item.request.id}>
+            <ReviewRow companyId={selectedCompanyId} item={item} plain={false} decision agent={item.requestedByAgentId ? agents.get(item.requestedByAgentId) ?? null : null} />
+          </li>
+        ))}
+      </ul>
     );
   }
 
@@ -91,10 +127,14 @@ function ReviewRow({
   companyId,
   item,
   plain,
+  decision = false,
+  agent = null,
 }: {
   companyId: string;
   item: ToolActionRequestListItem;
   plain: boolean;
+  decision?: boolean;
+  agent?: Agent | null;
 }) {
   useTranslation();
   const queryClient = useQueryClient();
@@ -119,7 +159,7 @@ function ReviewRow({
     mutationFn: () => toolsApi.approveActionRequest(companyId, item.request.id),
     onMutate: () => setResolving("allow"),
     onSuccess: () => {
-      pushToast({ title: translateInstant("apps.review.allowedOnce"), body: `${actionLabel(item)} can run this time.`, tone: "success" });
+      pushToast({ title: translateInstant("apps.review.allowedOnce"), body: translateInstant("apps.review.canRunThisTime", { action: actionLabel(item), defaultValue: `${actionLabel(item)} can run this time.` }), tone: "success" });
       invalidate();
     },
     onError: (error) => {
@@ -137,7 +177,7 @@ function ReviewRow({
     onSuccess: () => {
       pushToast({
         title: translateInstant("apps.review.alwaysAllowed"),
-        body: `${actionLabel(item)} won’t ask again.`,
+        body: translateInstant("apps.review.wontAskAgain", { action: actionLabel(item), defaultValue: `${actionLabel(item)} won’t ask again.` }),
         tone: "success",
       });
       invalidate();
@@ -154,7 +194,7 @@ function ReviewRow({
     mutationFn: () => toolsApi.declineActionRequest(companyId, item.request.id),
     onMutate: () => setResolving("decline"),
     onSuccess: () => {
-      pushToast({ title: translateInstant("Declined"), body: `${actionLabel(item)} won’t run.`, tone: "info" });
+      pushToast({ title: translateInstant("Declined"), body: translateInstant("apps.review.wontRun", { action: actionLabel(item), defaultValue: `${actionLabel(item)} won’t run.` }), tone: "info" });
       invalidate();
     },
     onError: (error) => {
@@ -164,8 +204,19 @@ function ReviewRow({
     onSettled: () => setResolving(null),
   });
 
-  if (linkedInteraction) return <IssueThreadInteractionCard
+  if (decision && interactionQuery.isLoading) {
+    return (
+      <article className="coordinator-decision-card" aria-busy="true">
+        <p className="text-sm text-muted-foreground">{translateInstant("apps.review.loadingRequest", { defaultValue: "Loading request…" })}</p>
+      </article>
+    );
+  }
+
+  if (linkedInteraction) {
+    const card = <IssueThreadInteractionCard
     interaction={linkedInteraction}
+    presentationVariant={decision ? "coordinator-decision" : "default"}
+    primaryActionOnRight={decision}
     onAcceptInteraction={async (_interaction, _keys, _options, rememberAction) => {
       try { await toolsApi.approveActionRequest(companyId, item.request.id, rememberAction); }
       finally { invalidate(); }
@@ -175,9 +226,95 @@ function ReviewRow({
       finally { invalidate(); }
     }}
   />;
+    return decision ? <article className="coordinator-decision-card space-y-3">{card}</article> : card;
+  }
 
   const busy = resolving !== null;
   const preview = item.request.previewMarkdown?.trim();
+  const canAlwaysAllow = Boolean(item.requestedByAgentId && item.connectionId && !item.request.approvalId);
+
+  if (decision) {
+    const action = actionLabel(item);
+    const app = item.applicationName ? humanizeConnectionDisplayName(item.applicationName) : null;
+    const risk = item.riskLevel ? RISK_LABELS[item.riskLevel] : null;
+    const decisionTitle = app
+      ? translateInstant("apps.review.actionInApp", { action, app, defaultValue: `${action} in ${app}` })
+      : action;
+    return (
+      <article className={cn("coordinator-decision-card space-y-3", ANALYTICS_MASK_CLASS)} aria-label={decisionTitle}>
+        <div className="flex items-center justify-between gap-4">
+          <span className="min-w-0 truncate text-xs leading-4.5 text-muted-foreground">{translateInstant("apps.review.approveToolAccess", { defaultValue: "Approve tool access" })}</span>
+          <div className="flex shrink-0 items-center gap-3" data-attention-context>
+            {agent ? (
+              <span className="inline-flex min-w-0 items-center gap-2 text-xs leading-4.5 text-muted-foreground">
+                <AgentAvatar agent={agent} size={20} />
+                <span className="truncate">{translateInstant("apps.review.fromAgent", { name: agent.name, defaultValue: `from ${agent.name}` })}</span>
+              </span>
+            ) : null}
+            <time className="shrink-0 text-xs leading-4.5 text-muted-foreground" dateTime={new Date(item.request.createdAt).toISOString()}>
+              {timeAgo(item.request.createdAt)}
+            </time>
+            {canAlwaysAllow ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button type="button" variant="ghost" size="icon-sm" className="-mr-1.5 size-7 text-muted-foreground" aria-label={translateInstant("apps.review.moreForAction", { action, defaultValue: `More for ${action}` })} disabled={busy}>
+                    <MoreHorizontal aria-hidden />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className={`w-72 ${ANALYTICS_MASK_CLASS}`}>
+                  <DropdownMenuItem className="flex flex-col items-start gap-0.5 py-2" onSelect={() => alwaysAllow.mutate()}>
+                    <span className="text-sm text-foreground">{translateInstant("apps.review.alwaysAllow")}</span>
+                    <span className="text-xs text-muted-foreground">{translateInstant("apps.review.alwaysAllowDescription", { defaultValue: "This agent can run this action on this connection without asking again." })}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <h2>{decisionTitle}</h2>
+          <p className="text-sm text-muted-foreground">
+            {app
+              ? translateInstant("apps.review.askFirstInAppNote", { action, app, defaultValue: `${action} is set to Ask first in ${app}, so it waits for your OK.` })
+              : translateInstant("apps.review.askFirstGenericNote", { defaultValue: "This action is set to Ask first, so it waits for your OK." })}{" "}
+            {translateInstant("apps.review.allowOnceNote", { defaultValue: "Allow once runs it now." })}
+          </p>
+        </div>
+        <NeedsYouPanel>
+          {app ? (
+            <NeedsYouPanelRow
+              icon={<AppLogo name={app} size={20} compact className="bg-transparent" />}
+              title={app}
+              meta={<>{action}{risk ? <> · <span className={cn(risk.danger && "text-destructive")}>{risk.label}</span></> : null}</>}
+            />
+          ) : null}
+          {preview ? <div className="text-sm"><MarkdownBody>{preview}</MarkdownBody></div> : null}
+          {agent ? <NeedsYouPanelNote>{translateInstant("apps.review.requestedBy", { name: agent.name, defaultValue: `Requested by ${agent.name}.` })}</NeedsYouPanelNote> : null}
+        </NeedsYouPanel>
+        <DecisionCardFooter
+          leading={item.request.issueId ? (
+            <Link to={`/issues/${item.request.issueId}`} className="flex max-w-full min-w-0 items-center gap-1.5 text-(length:--text-compact) leading-5 text-muted-foreground hover:text-foreground">
+              <span className="min-w-0 truncate">
+                {agent
+                  ? translateInstant("apps.review.openTaskChatWith", { name: agent.name, defaultValue: `Open task · Chat with ${agent.name}` })
+                  : translateInstant("apps.review.openTask", { defaultValue: "Open task" })}
+              </span>
+              <ArrowUpRight className="size-4 shrink-0" aria-hidden />
+            </Link>
+          ) : undefined}
+        >
+          <Button type="button" variant="ghost" onClick={() => decline.mutate()} disabled={busy}>
+            {resolving === "decline" ? <Loader2 className="animate-spin" aria-hidden /> : null}
+            {translateInstant("apps.review.decline")}
+          </Button>
+          <Button type="button" onClick={() => allowOnce.mutate()} disabled={busy}>
+            {resolving === "allow" || resolving === "always" ? <Loader2 className="animate-spin" aria-hidden /> : null}
+            {translateInstant("apps.review.allowOnce")}
+          </Button>
+        </DecisionCardFooter>
+      </article>
+    );
+  }
 
   return (
     <div className={plain ? "py-3" : "rounded-xl border border-border bg-card p-4"}>
@@ -216,8 +353,24 @@ function ReviewRow({
   );
 }
 
+const RISK_LABELS: Record<NonNullable<ToolActionRequestListItem["riskLevel"]>, { label: string; danger: boolean }> = {
+  low: { get label() { return translateInstant("apps.review.risk.low", { defaultValue: "Low risk" }); }, danger: false },
+  medium: { get label() { return translateInstant("apps.review.risk.medium", { defaultValue: "Medium risk" }); }, danger: false },
+  high: { get label() { return translateInstant("apps.review.risk.high", { defaultValue: "High risk" }); }, danger: true },
+  critical: { get label() { return translateInstant("apps.review.risk.critical", { defaultValue: "Critical risk" }); }, danger: true },
+  read: { get label() { return translateInstant("apps.review.risk.read", { defaultValue: "Reads data" }); }, danger: false },
+  write: { get label() { return translateInstant("apps.review.risk.write", { defaultValue: "Changes data" }); }, danger: false },
+  destructive: { get label() { return translateInstant("apps.review.risk.destructive", { defaultValue: "Destructive" }); }, danger: true },
+};
+
+export function indexAgentsById<T extends { id: string }>(agents: readonly T[]): Map<string, T> {
+  const byId = new Map<string, T>();
+  for (const agent of agents) byId.set(agent.id, agent);
+  return byId;
+}
+
 function actionLabel(item: ToolActionRequestListItem): string {
-  if (!item.toolTitle && !item.toolName) return "This action";
+  if (!item.toolTitle && !item.toolName) return translateInstant("apps.review.thisAction", { defaultValue: "This action" });
   return humanizeConnectionDisplayName(item.toolName ?? "", { title: googleWorkspaceToolTitle(item.toolName ?? "", item.toolTitle) });
 }
 
@@ -226,7 +379,7 @@ function failToast(
   error: unknown,
 ) {
   pushToast({
-    title: "Couldn’t save that",
+    title: translateInstant("apps.review.couldNotSave", { defaultValue: "Couldn’t save that" }),
     body: describeError(error).body,
     tone: "error",
   });

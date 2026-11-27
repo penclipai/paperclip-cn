@@ -1,0 +1,37 @@
+{
+  "approvals.budgetMetric.billed_cents": {
+    "en": "Billed cents",
+    "zh-CN": "计费金额（美分）",
+    "reviewedEnglishHash": "3ab517c6fe6adf2c1024fcadb872248439926e928c383bbde7b00852879d614b"
+  },
+  "approvals.budgetScope.agent": {
+    "en": "Agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "11b39c93777e8f1f3983bdba7c72b22fe68cfea20c677e9de53e17cb7dbfb19f"
+  },
+  "approvals.budgetScope.company": {
+    "en": "Organization",
+    "zh-CN": "组织",
+    "reviewedEnglishHash": "d764d42592fc968709b4c6c25c6e6b77919295dfce2c57ead02bedac5ddb3218"
+  },
+  "approvals.budgetScope.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "approvals.budgetWindow.calendar_month_utc": {
+    "en": "Monthly (UTC)",
+    "zh-CN": "自然月（UTC）",
+    "reviewedEnglishHash": "85acbe1174ad2b4425734545742a0830cbbd6dad7a74b494858225f93b583549"
+  },
+  "approvals.budgetWindow.lifetime": {
+    "en": "Lifetime",
+    "zh-CN": "全周期",
+    "reviewedEnglishHash": "bdcd897ab8ed585981ac297f3df0ee185c82a7a65c39ef3af8f863354086ef21"
+  },
+  "approvals.confirmDeleteDisapprovedAgent": {
+    "en": "Delete this disapproved agent? This cannot be undone.",
+    "zh-CN": "确定删除此未获批准的智能体吗？此操作无法撤销。",
+    "reviewedEnglishHash": "272afb7640dbb73ab9935ae5e5c5853a1534e3a5985b7810c2b07f0f25b47468"
+  }
+}

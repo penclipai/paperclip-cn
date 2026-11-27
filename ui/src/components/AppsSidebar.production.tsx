@@ -3,13 +3,12 @@ import { useTranslation } from "react-i18next";
 import { useLocation } from "@/lib/router";
 import { ChatDetailSidebar } from "./chat/ChatDetailSidebar";
 import { ChatSetupSidebar } from "./chat/ChatSetupNavigation";
-import { ChevronLeft, AppWindow, Store, ShieldQuestion } from "lucide-react";
+import { ChevronLeft, AppWindow, Store } from "lucide-react";
 import { Link } from "@/lib/router";
 import { useCompany } from "@/context/CompanyContext";
 import { useSidebar } from "@/context/SidebarContext";
 import { DEVELOPER_TABS, advancedTabHref, isExperimentalToolTab } from "@/pages/tools/tool-tabs";
 import { useSmokeLabEnabled } from "@/hooks/useSmokeLabEnabled";
-import { useReviewCount } from "@/pages/apps/useReviewCount";
 import { SidebarNavItem } from "./SidebarNavItem.production";
 
 /**
@@ -35,7 +34,6 @@ export function AppsSidebar() {
   const { selectedCompany } = useCompany();
   const { isMobile, setSidebarOpen } = useSidebar();
 
-  const reviewCount = useReviewCount();
   const { enabled: smokeLabEnabled } = useSmokeLabEnabled();
   const developerTabs = DEVELOPER_TABS.filter(
     (tab) => !isExperimentalToolTab(tab.key) || smokeLabEnabled,
@@ -56,11 +54,11 @@ export function AppsSidebar() {
           className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
         >
           <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{selectedCompany?.name ?? "Company"}</span>
+          <span className="truncate">{selectedCompany?.name ?? translateInstant("Company")}</span>
         </Link>
         <div className="flex items-center gap-2 px-2 py-1">
           <AppWindow className="h-4 w-4 text-muted-foreground shrink-0" />
-          <span className="flex-1 truncate text-sm font-bold text-foreground">{translateInstant("Connectors")}</span>
+          <span className="flex-1 truncate text-sm font-bold text-foreground">{translateInstant("Plugins")}</span>
         </div>
       </div>
 
@@ -68,15 +66,7 @@ export function AppsSidebar() {
         <div className="px-3 pb-1 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
           {translateInstant("Connectors")}</div>
         <div className="flex flex-col gap-0.5">
-          <SidebarNavItem to="/apps" label={translateInstant("apps.sidebar.browse")} icon={Store} end />
-          <SidebarNavItem
-            to="/apps/review"
-            label={translateInstant("Review")}
-            icon={ShieldQuestion}
-            badge={reviewCount > 0 ? reviewCount : undefined}
-            badgeTone="warning"
-            badgeLabel="waiting for your OK"
-          />
+          <SidebarNavItem to="/apps" label={translateInstant("apps.sidebar.allPlugins", { defaultValue: "All plugins" })} icon={Store} end />
         </div>
         <div className="px-3 pb-1 pt-4 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
           {translateInstant("apps.sidebar.developer")}</div>
@@ -88,7 +78,7 @@ export function AppsSidebar() {
             <SidebarNavItem
               key={tab.key}
               to={advancedTabHref(tab.key)}
-              label={tab.label}
+              label={translateInstant(`tools.tabs.${tab.key === "smoke-lab" ? "smokeLab" : tab.key}`, { defaultValue: tab.label })}
               icon={tab.icon}
               end
             />

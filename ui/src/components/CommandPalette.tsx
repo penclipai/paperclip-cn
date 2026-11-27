@@ -39,6 +39,7 @@ import {
   Search,
 } from "lucide-react";
 import { Identity } from "./Identity";
+import { displayAgentRole } from "@/lib/agent-role";
 import { agentUrl, projectUrl } from "../lib/utils";
 import {
   SEARCH_OPERATOR_QUICK_FILTERS,
@@ -94,7 +95,7 @@ function scoreProjectMatch(name: string, description: string, q: string): number
 }
 
 export function CommandPalette() {
-  useTranslation();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
@@ -252,7 +253,7 @@ export function CommandPalette() {
               <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-(length:--text-nano)">↵</kbd>{" "}
               {translateInstant("commandPalette.noQuickMatchesSuffix")}{" "}<span className="font-medium">{translateInstant("commandPalette.searchAll")}</span> {translateInstant("commandPalette.noQuickMatchesContinue")}</span>
           ) : (
-            "No results found."
+            t("No results found.", { defaultValue: "No results found." })
           )}
         </CommandEmpty>
 
@@ -428,7 +429,7 @@ export function CommandPalette() {
                 <CommandItem key={agent.id} onSelect={() => go(agentUrl(agent))}>
                   <Bot className="mr-2 h-4 w-4" />
                   {agent.name}
-                  <span className="text-xs text-muted-foreground ml-2">{agent.role}</span>
+                  <span className="text-xs text-muted-foreground ml-2">{displayAgentRole(agent.role, t)}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

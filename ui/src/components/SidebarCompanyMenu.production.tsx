@@ -196,7 +196,6 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
     hiddenSettingsLoaded &&
     !hidesCompanyPage(hiddenSettings, "company.members") &&
     !hidesCompanyPage(hiddenSettings, "company.invites");
-  const switcherNoun = "company";
   const currentName = selectedCompany?.name ?? null;
   // Managed hosts forbid local company creation. Their extension owns that action.
   const companyCreationManaged = Boolean(useCloudInstance());
@@ -284,7 +283,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
               className="min-w-0 truncate text-sm font-bold text-foreground"
               title={currentName ?? undefined}
             >
-              {currentName ?? `Select ${switcherNoun}`}
+              {currentName ?? t("sidebar.selectCompany", { defaultValue: "Select company" })}
             </span>
           </span>
           <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />
@@ -307,7 +306,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
             }}
             className="rounded px-1.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
-            {isEditingOrder ? "Done" : "Edit"}
+            {isEditingOrder ? t("sidebar.done", { defaultValue: "Done" }) : t("sidebar.edit", { defaultValue: "Edit" })}
           </button>
         </div>
         <div className="flex max-h-96 flex-col gap-0.5 overflow-y-auto px-2.5 pb-2 pt-1">
@@ -338,7 +337,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
             // offer the way back.
             companyListUnavailable ? (
               <>
-                <DropdownMenuItem disabled>{translateInstant("Couldn&apos;t load companies")}</DropdownMenuItem>
+                <DropdownMenuItem disabled>{t("sidebar.couldNotLoadCompanies", { defaultValue: "Couldn't load companies" })}</DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={(event) => {
                     // Keep the menu open so the result of the retry is visible.
@@ -350,7 +349,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
                   {translateInstant("Try again")}</DropdownMenuItem>
               </>
             ) : (
-              <DropdownMenuItem disabled>{translateInstant("No companies")}</DropdownMenuItem>
+              <DropdownMenuItem disabled>{translateInstant("sidebar.noCompanies", { defaultValue: "No companies" })}</DropdownMenuItem>
             )
           ) : null}
         </div>
@@ -388,8 +387,8 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
                 </span>
                 <span className="min-w-0 flex-1 truncate">
                   {currentName
-                    ? `Invite people to ${currentName}`
-                    : "Invite people"}
+                    ? t("Invite people to {{name}}", { name: currentName, defaultValue: "Invite people to {{name}}" })
+                    : t("Invite people", { defaultValue: "Invite people" })}
                 </span>
               </Link>
             </DropdownMenuItem>
@@ -404,7 +403,9 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
                 <LogOut className="size-4" />
               </span>
               <span className="min-w-0 flex-1 truncate">
-                {signOutMutation.isPending ? "Signing out..." : "Sign out"}
+                {signOutMutation.isPending
+                  ? t("Signing out...", { defaultValue: "Signing out..." })
+                  : t("Sign out", { defaultValue: "Sign out" })}
               </span>
             </DropdownMenuItem>
           ) : null}

@@ -1,4 +1,34 @@
 {
+  "companyAccess.checkingAssignedTasks": {
+    "en": "Checking assigned tasks...",
+    "zh-CN": "正在检查已分配的任务...",
+    "reviewedEnglishHash": "12ce7101dd969fc10d600bbb310f55324562a3f9f375ea0bbd7e7a97c70caf1c"
+  },
+  "companyAccess.joinInviteContext": {
+    "en": "{{types}} join invite",
+    "zh-CN": "{{types}}加入邀请",
+    "reviewedEnglishHash": "1a30318b5081cf9c4e98e6bb7b23e0e914c111a0d3e034c3500b24ff02a2277f"
+  },
+  "companyAccess.joinInviteContextWithRole": {
+    "en": "{{types}} join invite • default role {{role}}",
+    "zh-CN": "{{types}}加入邀请 • 默认角色 {{role}}",
+    "reviewedEnglishHash": "a2a37fbd5ac1023531d27abf2ba10da80c15593416e2aeb5d03dfa254ad02c09"
+  },
+  "companyAccess.joinType.agent": {
+    "en": "Agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "11b39c93777e8f1f3983bdba7c72b22fe68cfea20c677e9de53e17cb7dbfb19f"
+  },
+  "companyAccess.joinType.both": {
+    "en": "Human or agent",
+    "zh-CN": "人工或智能体",
+    "reviewedEnglishHash": "a9d069a5635aa7339c1c6c8683cfccd4b836831d1842948936614eda897a77f8"
+  },
+  "companyAccess.joinType.human": {
+    "en": "Human",
+    "zh-CN": "人工",
+    "reviewedEnglishHash": "9ffa865f2bc6e850157bb454ef3e00fa789e3f8cc631552941a99ba3fcddde51"
+  },
   "companyAccess.moreTask": {
     "en": "{{count}} more task",
     "zh-CN": "还有 {{count}} 项任务",
@@ -8,5 +38,30 @@
     "en": "{{count}} more tasks",
     "zh-CN": "还有 {{count}} 项任务",
     "reviewedEnglishHash": "f4502411b689d96c1b68c00597246d6821b313e4a0b2c711564af1468ad39c66"
+  },
+  "companyAccess.noPermissionManageMembers": {
+    "en": "You do not have permission to manage organization members.",
+    "zh-CN": "你没有权限管理组织成员。",
+    "reviewedEnglishHash": "f9a456a5cbe9488558f6e764953e844b7578e3a450c32fffd6683d9749e88594"
+  },
+  "companyAccess.openAssignedTasksCount": {
+    "en": "{{count}} open assigned tasks",
+    "zh-CN": "{{count}} 个未关闭的已分配任务",
+    "reviewedEnglishHash": "ddef809c6f2d6ba77d257b56fec3b42b823d514dba882cc154d8eaee86658145"
+  },
+  "companyAccess.openAssignedTasksCount_one": {
+    "en": "{{count}} open assigned task",
+    "zh-CN": "{{count}} 个未关闭的已分配任务",
+    "reviewedEnglishHash": "37ac09d5316cd946a622023f8507ca213da43f6394f40d2681e1804e7b2aa121"
+  },
+  "companyAccess.openAssignedTasksCount_other": {
+    "en": "{{count}} open assigned tasks",
+    "zh-CN": "{{count}} 个未关闭的已分配任务",
+    "reviewedEnglishHash": "ddef809c6f2d6ba77d257b56fec3b42b823d514dba882cc154d8eaee86658145"
+  },
+  "companyAccess.submittedAt": {
+    "en": "Submitted {{time}}",
+    "zh-CN": "提交于 {{time}}",
+    "reviewedEnglishHash": "361614cc6d08483bcdbb90ea5e251ecfd688e7fed1ced1ec5642974fa0dd9339"
   }
 }

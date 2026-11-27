@@ -149,6 +149,11 @@
     "zh-CN": "ACP 预热进程空闲时间（毫秒）",
     "reviewedEnglishHash": "4d464a532c7fafdbbcafa809f51716a6a91726f26cf173344726755e5ef2ef83"
   },
+  "ACPX (retired)": {
+    "en": "ACPX (retired)",
+    "zh-CN": "ACPX（已退役）",
+    "reviewedEnglishHash": "8b657a5385e370da16e1176c58c1862d6f3a32bad7f1cfa693d3c2ff042e6e30"
+  },
   "AI account settings": {
     "en": "AI account settings",
     "zh-CN": "人工智能账户设置",
@@ -358,6 +363,11 @@
     "en": "Accounting model",
     "zh-CN": "会计模型",
     "reviewedEnglishHash": "811f1fa2a5af2e68076786c02688300335b74b0d8128e65e46baa5573c922ce2"
+  },
+  "Accounts": {
+    "en": "Accounts",
+    "zh-CN": "账户",
+    "reviewedEnglishHash": "8a7c8b67fe8bde8bb31f62db5896a1cd8c7bfa29ff7b86554a1ad2958c166e92"
   },
   "Accounts and sign-in are managed in": {
     "en": "Accounts and sign-in are managed in",
@@ -796,7 +806,7 @@
   },
   "Add to composer": {
     "en": "Add to composer",
-    "zh-CN": "添加到作曲家",
+    "zh-CN": "添加到输入栏",
     "reviewedEnglishHash": "423f6a56cd74f7a4c3e6b2b800466048b75eb18cda9e5845b7730a1e63a25ccf"
   },
   "Add trigger": {
@@ -1209,6 +1219,11 @@
     "zh-CN": "全部时间",
     "reviewedEnglishHash": "476adfac4cd9494eb2dc13f0159c513952f744900979aa4f8807494947bf04e8"
   },
+  "All agents": {
+    "en": "All agents",
+    "zh-CN": "全部智能体",
+    "reviewedEnglishHash": "54c32d3e2cfa1cc879f746643e6b41360541692fc0a163f3793595510398e6f5"
+  },
   "All agents are paused. Resume agents from the sidebar to see activity.": {
     "en": "All agents are paused. Resume agents from the sidebar to see activity.",
     "zh-CN": "所有智能体均已暂停。请从侧边栏恢复智能体以查看活动。",
@@ -1258,6 +1273,11 @@
     "en": "All organization members",
     "zh-CN": "所有组织成员",
     "reviewedEnglishHash": "eac0894ea8e40b816a21594c3fc874c190cb5bb4eec9b226298071c84167f31e"
+  },
+  "All projects": {
+    "en": "All projects",
+    "zh-CN": "全部项目",
+    "reviewedEnglishHash": "4b87271b6b8170d4578c23a03f0b338c34fad2341178a4702795519056a2ab18"
   },
   "All providers": {
     "en": "All providers",
@@ -1544,6 +1564,11 @@
     "zh-CN": "此处仍处于暂停状态的智能体和例行任务会继续显示在公司的“智能体”和“例行任务”页面中，你也可以在那里执行相同的恢复操作。离开此页面不会丢失任何内容。",
     "reviewedEnglishHash": "dcc6f3f9e8a2783ff34d1dd7d3b00fac9fc8e7ec235643f1c2f7ea7d2890557c"
   },
+  "App": {
+    "en": "App",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "0d04bfeb7d64b71c74fc925cca93d683154e8cc7e6e5838faced498e34c9984d"
+  },
   "App ID": {
     "en": "App ID",
     "zh-CN": "App ID",
@@ -1814,6 +1839,11 @@
     "zh-CN": "升序",
     "reviewedEnglishHash": "cddeba5cfc9a05ad4415f0d25b1c9be2d44103e5b12352a2a811f0c7ebffffe7"
   },
+  "Ascending": {
+    "en": "Ascending",
+    "zh-CN": "升序",
+    "reviewedEnglishHash": "77184595bde3befc7f5a20efc97caea43f4858e4c97cd2ee406af2c61db3266c"
+  },
   "Ask a question, think through an idea, or plan the next step with your team.": {
     "en": "Ask a question, think through an idea, or plan the next step with your team.",
     "zh-CN": "向团队提问、一起梳理想法，或规划下一步。",
@@ -2014,6 +2044,11 @@
     "zh-CN": "审计活动",
     "reviewedEnglishHash": "c01a41f9b005cae206a5bae9de174c9b0e1d82e30212c7eab2360502fac67e9b"
   },
+  "Audit filters": {
+    "en": "Audit filters",
+    "zh-CN": "审计筛选",
+    "reviewedEnglishHash": "1cf1e43ed389f27e02fab7046bce40c3e9421d416b344fb6219530cc1621c510"
+  },
   "Audit log": {
     "en": "Audit log",
     "zh-CN": "审计日志",
@@ -2188,6 +2223,11 @@
     "en": "Available across your company.",
     "zh-CN": "在整个公司范围内可用。",
     "reviewedEnglishHash": "0fecc5d5aabe0ef9ae2ac37da16f0562d04582e4b58a965dd39ac85a0d0e3951"
+  },
+  "Available system plugins": {
+    "en": "Available system plugins",
+    "zh-CN": "可用系统插件",
+    "reviewedEnglishHash": "2a4c30052d4cd40df09c002cbf8ddb3b42f72bd02722bfe1fa2dec72e232b19e"
   },
   "Available this session": {
     "en": "Available this session",

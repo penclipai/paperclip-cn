@@ -1,4 +1,4 @@
-import { translateInstant } from "@/i18n";
+import { getCurrentLocale, translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -69,7 +69,7 @@ function resolveWorktreeRunExecutionDisplayState(
 function formatActivationTimestamp(iso: string): string {
   const parsed = new Date(iso);
   if (Number.isNaN(parsed.getTime())) return iso;
-  return parsed.toLocaleString(undefined, {
+  return parsed.toLocaleString(getCurrentLocale(), {
     dateStyle: "medium",
     timeStyle: "short",
   });
@@ -306,6 +306,8 @@ export function InstanceExperimentalSettings() {
     experimentalQuery.data?.enableSimplifiedEnglishInteractions === true;
   const enableFirstTaskPlanProposal =
     experimentalQuery.data?.enableFirstTaskPlanProposal === true;
+  const enableCloudTrialInference =
+    experimentalQuery.data?.enableCloudTrialInference === true;
   const enableSmokeLab = experimentalQuery.data?.enableSmokeLab === true;
   const autoRestartDevServerWhenIdle =
     experimentalQuery.data?.autoRestartDevServerWhenIdle === true;
@@ -475,7 +477,7 @@ export function InstanceExperimentalSettings() {
             "Connect agents to Slack, Discord, Microsoft Teams, and Telegram conversations.",
           )}
           footnote={translateInstant(
-            "Turning this off hides experimental chat setup and connected-task controls. Existing chat connections keep running. AgentMail, GitHub review bots, and tool connectors are controlled separately.",
+            "Turning this off hides experimental chat setup and connected-task controls. Existing chat connections keep running. AgentMail, GitHub review bots, and tool connectors are unaffected.",
           )}
           checked={enableChatConnectors}
           onCheckedChange={(checked) =>
@@ -490,9 +492,28 @@ export function InstanceExperimentalSettings() {
         />
 
         <ExperimentalToggleCard
+          title={translateInstant("Cloud starter inference")}
+          description={translateInstant(
+            "Lets new Cloud workspaces start their first agent right away (OpenCode / GPT-6 Luna via server proxy) before asking the user to connect a model provider.",
+          )}
+          checked={enableCloudTrialInference}
+          onCheckedChange={(checked) =>
+            toggleMutation.mutate({ enableCloudTrialInference: checked })
+          }
+          disabled={toggleMutation.isPending}
+          settingKey="enableCloudTrialInference"
+          managed={managedKeys.enableCloudTrialInference}
+          ariaLabel={translateInstant("Toggle Cloud starter inference experimental setting")}
+        />
+
+        <ExperimentalToggleCard
           title={translateInstant("Combined Inbox + Task List")}
-          description="In the Classic workspace, fold Inbox into Tasks. One Tasks row carries the unread badge, and a Views menu reaches every personal and organization task view."
-          footnote="Coordinator always includes personal views in Tasks. For Classic, turning this off restores its separate Inbox. No data changes."
+          description={translateInstant("experimental.combinedInboxTasks.description", {
+            defaultValue: "In the Classic workspace, fold Inbox into Tasks. One Tasks row carries the unread badge, and a Views menu reaches every personal and organization task view.",
+          })}
+          footnote={translateInstant("experimental.combinedInboxTasks.footnote", {
+            defaultValue: "Coordinator always includes personal views in Tasks. For Classic, turning this off restores its separate Inbox. No data changes.",
+          })}
           checked={experimentalQuery.data?.enableCombinedInboxTasks ?? false}
           onCheckedChange={(checked) =>
             toggleMutation.mutate({ enableCombinedInboxTasks: checked })
@@ -527,9 +548,15 @@ export function InstanceExperimentalSettings() {
         ) : null}
 
         <ExperimentalToggleCard
-          title="Command/Ctrl+Enter to Submit"
-          description="Restore the previous keyboard shortcut for task replies and new tasks: Command/Ctrl+Enter submits, and Enter adds a new line."
-          footnote="Off by default: Enter submits, and Shift+Enter adds a new line."
+          title={translateInstant("experimental.legacyComposerSubmit.title", {
+            defaultValue: "Command/Ctrl+Enter to Submit",
+          })}
+          description={translateInstant("experimental.legacyComposerSubmit.description", {
+            defaultValue: "Restore the previous keyboard shortcut for task replies and new tasks: Command/Ctrl+Enter submits, and Enter adds a new line.",
+          })}
+          footnote={translateInstant("experimental.legacyComposerSubmit.footnote", {
+            defaultValue: "Off by default: Enter submits, and Shift+Enter adds a new line.",
+          })}
           checked={experimentalQuery.data?.enableLegacyComposerSubmit === true}
           onCheckedChange={(checked) =>
             toggleMutation.mutate({ enableLegacyComposerSubmit: checked })
@@ -537,7 +564,9 @@ export function InstanceExperimentalSettings() {
           disabled={toggleMutation.isPending}
           settingKey="enableLegacyComposerSubmit"
           managed={managedKeys.enableLegacyComposerSubmit}
-          ariaLabel="Toggle Command/Ctrl+Enter to submit"
+          ariaLabel={translateInstant("experimental.legacyComposerSubmit.ariaLabel", {
+            defaultValue: "Toggle Command/Ctrl+Enter to submit",
+          })}
         />
 
         <ExperimentalToggleCard
@@ -567,6 +596,22 @@ export function InstanceExperimentalSettings() {
           settingKey="enableMcpTasks"
           managed={managedKeys.enableMcpTasks}
           ariaLabel={translateInstant("instanceExperimentalSettings.mcpTasksToggle", { defaultValue: "Toggle durable app actions experimental setting" })}
+        />
+
+        <ExperimentalToggleCard
+          title={translateInstant("Google Antigravity swarm")}
+          description={translateInstant(
+            "Start a comment on a Google Antigravity agent's task with /swarm to run its native swarm: a coordinator, helpers and a checker that work together in the task folder.",
+          )}
+          footnote={translateInstant(
+            "Local computers with a Google sign-in only. Helper actions are approved automatically. Paperclip does not sandbox the helpers: their shell commands can write outside the task folder, for example in temp directories.",
+          )}
+          checked={experimentalQuery.data?.enableAntigravitySwarm === true}
+          onCheckedChange={(checked) => toggleMutation.mutate({ enableAntigravitySwarm: checked })}
+          disabled={toggleMutation.isPending}
+          settingKey="enableAntigravitySwarm"
+          managed={managedKeys.enableAntigravitySwarm}
+          ariaLabel={translateInstant("Toggle Google Antigravity swarm experimental setting")}
         />
 
         <ExperimentalToggleCard
@@ -694,9 +739,15 @@ export function InstanceExperimentalSettings() {
         />
 
         <ExperimentalToggleCard
-          title="Google Workspace connector (Paperclip)"
-          description="Show the built-in Google Workspace connector for Gmail, Drive, and Calendar while Google verification is pending."
-          footnote="Off by default. While off, Google apps are offered through Composio and Arcade instead, and the built-in connector cannot be set up or run."
+          title={translateInstant("experimental.googleWorkspaceConnector.title", {
+            defaultValue: "Google Workspace connector (Paperclip)",
+          })}
+          description={translateInstant("experimental.googleWorkspaceConnector.description", {
+            defaultValue: "Show the built-in Google Workspace connector for Gmail, Drive, and Calendar while Google verification is pending.",
+          })}
+          footnote={translateInstant("experimental.googleWorkspaceConnector.footnote", {
+            defaultValue: "Off by default. While off, Google apps are offered through Composio and Arcade instead, and the built-in connector cannot be set up or run.",
+          })}
           checked={
             experimentalQuery.data?.enableGoogleWorkspaceConnector === true
           }
@@ -706,13 +757,19 @@ export function InstanceExperimentalSettings() {
           disabled={toggleMutation.isPending}
           settingKey="enableGoogleWorkspaceConnector"
           managed={managedKeys.enableGoogleWorkspaceConnector}
-          ariaLabel="Toggle Paperclip Google Workspace connector experimental setting"
+          ariaLabel={translateInstant("experimental.googleWorkspaceConnector.ariaLabel", {
+            defaultValue: "Toggle Paperclip Google Workspace connector experimental setting",
+          })}
         />
 
 
         <ExperimentalToggleCard
-          title="Grok Bot"
-          description="Connect an existing Grok Bot as an agent. Verify routine delivery and an authenticated reply before assigning work."
+          title={translateInstant("experimental.grokBot.title", {
+            defaultValue: "Grok Bot",
+          })}
+          description={translateInstant("experimental.grokBot.description", {
+            defaultValue: "Connect an existing Grok Bot as an agent. Verify routine delivery and an authenticated reply before assigning work.",
+          })}
           footnote={translateInstant("experimental.grokBotRequirements", {
             defaultValue: "Requires Paperclip Runner and authenticated public HTTPS. Usage is not reported. Turning this off blocks Grok calls and new dispatch.",
           })}
@@ -723,7 +780,9 @@ export function InstanceExperimentalSettings() {
           disabled={toggleMutation.isPending}
           settingKey="enableGrokBot"
           managed={managedKeys.enableGrokBot}
-          ariaLabel="Toggle Grok Bot experimental setting"
+          ariaLabel={translateInstant("experimental.grokBot.ariaLabel", {
+            defaultValue: "Toggle Grok Bot experimental setting",
+          })}
         />
 
         <ExperimentalToggleCard
@@ -747,9 +806,15 @@ export function InstanceExperimentalSettings() {
         />
 
         <ExperimentalToggleCard
-          title="Muse — Personal agent"
-          description="Connect your personal Meta Muse. Pair it, detect its receiver, and verify an independent background reply before assigning tasks."
-          footnote="Requires Paperclip Runner and an authenticated instance with a public HTTPS URL. Turning this off blocks new work; cleanup and stop evidence remain available. Provider usage and cost are unavailable."
+          title={translateInstant("experimental.muse.title", {
+            defaultValue: "Muse — Personal agent",
+          })}
+          description={translateInstant("experimental.muse.description", {
+            defaultValue: "Connect your personal Meta Muse. Pair it, detect its receiver, and verify an independent background reply before assigning tasks.",
+          })}
+          footnote={translateInstant("experimental.muse.footnote", {
+            defaultValue: "Requires Paperclip Runner and an authenticated instance with a public HTTPS URL. Turning this off blocks new work; cleanup and stop evidence remain available. Provider usage and cost are unavailable.",
+          })}
           checked={experimentalQuery.data?.enableMuse === true}
           onCheckedChange={(checked) =>
             toggleMutation.mutate({ enableMuse: checked })
@@ -757,7 +822,9 @@ export function InstanceExperimentalSettings() {
           disabled={toggleMutation.isPending}
           settingKey="enableMuse"
           managed={managedKeys.enableMuse}
-          ariaLabel="Toggle Muse experimental setting"
+          ariaLabel={translateInstant("experimental.muse.ariaLabel", {
+            defaultValue: "Toggle Muse experimental setting",
+          })}
         />
 
         <ExperimentalToggleCard

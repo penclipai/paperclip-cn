@@ -239,10 +239,20 @@
     "zh-CN": "已将“{{name}}”移至“未分类”。",
     "reviewedEnglishHash": "1c2b7915080fbbe42667dd8f6ad8ce76b2f61222087495f3d4f58b72f1ff018e"
   },
+  "folders.movedRoutineToFolder": {
+    "en": "Moved \"{{title}}\" to {{folder}}.",
+    "zh-CN": "已将“{{title}}”移至“{{folder}}”。",
+    "reviewedEnglishHash": "5b4a3130e7a8049c2e6a38083516bf608e272ecdc0adaf4bbe0ac2dc4c1dde04"
+  },
+  "folders.movedRoutineToUnfiled": {
+    "en": "Moved \"{{title}}\" to Unfiled.",
+    "zh-CN": "已将“{{title}}”移至未归档。",
+    "reviewedEnglishHash": "d83811915c06c453ea94725be13d6c999852fe7a53b375335ce1cc563c9ebc67"
+  },
   "folders.movedToUnfiled": {
-    "en": "Moved to Unfiled.",
-    "zh-CN": "已移至“未分类”。",
-    "reviewedEnglishHash": "82f0c284c115ae8c153e1d70ad92f0db0f27f80f40e90b0a456bdda4fa1542fa"
+    "en": "Items moved to Unfiled.",
+    "zh-CN": "已将条目移至未归档。",
+    "reviewedEnglishHash": "ec2297b4826e483fc761d05705e80278243e27ddc396ae0dec4c563c1936d8c8"
   },
   "folders.moving": {
     "en": "Moving...",
@@ -408,6 +418,21 @@
     "en": "routines",
     "zh-CN": "例行任务",
     "reviewedEnglishHash": "2a90353984b239a91775226e200db4a5195338a4ee2d8ab166aeeca3333fad92"
+  },
+  "folders.routinesFiledCount": {
+    "en": "{{count}} routines filed.",
+    "zh-CN": "已归类 {{count}} 个例行任务。",
+    "reviewedEnglishHash": "0414f5e3b03bbd7dd23040ea5c7a4246856fb31b4d5063946ae0d0c1a9f6460c"
+  },
+  "folders.routinesFiledCount_one": {
+    "en": "1 routine filed.",
+    "zh-CN": "已归类 1 个例行任务。",
+    "reviewedEnglishHash": "1bb1698128df44bcaa3e2b3c405e10ede8291cf66d737e3d3a0c246132723074"
+  },
+  "folders.routinesFiledCount_other": {
+    "en": "{{count}} routines filed.",
+    "zh-CN": "已归类 {{count}} 个例行任务。",
+    "reviewedEnglishHash": "0414f5e3b03bbd7dd23040ea5c7a4246856fb31b4d5063946ae0d0c1a9f6460c"
   },
   "folders.routinesTitle": {
     "en": "Routines",

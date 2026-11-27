@@ -39,6 +39,56 @@
     "zh-CN": "返回",
     "reviewedEnglishHash": "76900f1bfd16c8d4dd3d25e6f46638d7165aee23883ccea6bfe071c514421769"
   },
+  "newAgent.basics.candidate": {
+    "en": "Candidate",
+    "zh-CN": "候选",
+    "reviewedEnglishHash": "b2452d1eba32254aac41a394ae0ded977d9e5e6584313170b2a25e4b0a44db88"
+  },
+  "newAgent.basics.chooseAdapterAction": {
+    "en": "Choose adapter",
+    "zh-CN": "选择适配器",
+    "reviewedEnglishHash": "83a3d0a902c86b70d1fea6c84e73c82364818cc123c9ed54dbecf33210358d86"
+  },
+  "newAgent.basics.chooseAdapterTitle": {
+    "en": "Choose an adapter",
+    "zh-CN": "选择适配器",
+    "reviewedEnglishHash": "ea43ab7d464433ea9d4b943eb911f46a07ad0cef5b00a861030b92a230c34bbe"
+  },
+  "newAgent.basics.configureAgentAction": {
+    "en": "Configure agent",
+    "zh-CN": "配置智能体",
+    "reviewedEnglishHash": "14c603bd68de7530626429c1cc2173030fd92bdee055108ad34d092ee27b9c27"
+  },
+  "newAgent.basics.howShouldWork": {
+    "en": "How should {{name}} work?",
+    "zh-CN": "希望 {{name}} 如何工作？",
+    "reviewedEnglishHash": "957709b4514d8bd811ef629c49f4fba04182ad69cada49fe4ad18380dd21122b"
+  },
+  "newAgent.basics.meetDescription": {
+    "en": "Start with a name. Make them your own.",
+    "zh-CN": "先取个名字，打造属于你的智能体。",
+    "reviewedEnglishHash": "8d8fc9f2333c03eb35ebd18174dbef4895947a9f04aa058eb12a352e434d21eb"
+  },
+  "newAgent.basics.meetTitle": {
+    "en": "Meet your next agent",
+    "zh-CN": "认识你的下一位智能体",
+    "reviewedEnglishHash": "945b95776ed6e2104b37c0da0bbfdcb6d333bb400019a9337e20edda9e4fdac1"
+  },
+  "newAgent.basics.namePlaceholder": {
+    "en": "e.g. Darnold",
+    "zh-CN": "例如：小助手",
+    "reviewedEnglishHash": "4c64e4feedf5facc55e284b880e79b8b4d1937807d2f56e833317b0a06f2049b"
+  },
+  "newAgent.basics.notAvailableYet": {
+    "en": "Not available yet",
+    "zh-CN": "暂不可用",
+    "reviewedEnglishHash": "787406ddea2a10a482aadb0a7af672d2621eef25af4aba9af33d4ae4ed135509"
+  },
+  "newAgent.basics.saveError": {
+    "en": "Could not save agent setup.",
+    "zh-CN": "无法保存智能体设置。",
+    "reviewedEnglishHash": "1c159892ad557d616b1570819d593bd4248088749c4161ed92137bc2b4022fb0"
+  },
   "newAgent.choiceIntro": {
     "en": "Ask a leader to propose the hire, configure a runtime yourself, or send an onboarding prompt to an external agent.",
     "zh-CN": "可以让负责人提出招聘建议，也可以自己配置运行时，或向外部智能体发送入职提示。",
@@ -104,15 +154,15 @@
     "zh-CN": "创建智能体",
     "reviewedEnglishHash": "14de4863d7d4e8317b7323bc7a012600fe03f72d3bda743b28d049898ab208a2"
   },
-  "newAgent.cursorCloudNotice": {
-    "en": "Experimental. Cursor hosts this agent’s execution environment. A Paperclip computer is not required. Cursor manages cloud command permissions; the effective model is not acknowledged.",
-    "zh-CN": "实验性功能。Cursor 托管此智能体的执行环境，无需 Paperclip 计算机。Cursor 会管理云端命令权限，且不会返回实际使用的模型标识。",
-    "reviewedEnglishHash": "4c3a3833e5fc8bbf0773c3896e0fa30feeb23dcb657efeffd3bfe1a9034df526"
-  },
   "newAgent.creatingAgent": {
     "en": "Creating agent...",
     "zh-CN": "正在创建智能体...",
     "reviewedEnglishHash": "3b9ff09bd8673a1281de70a09709c836a83599b6708959dd6b9a42b16eaee7c8"
+  },
+  "newAgent.cursorCloudNotice": {
+    "en": "Experimental. Cursor hosts this agent’s execution environment. A Paperclip computer is not required. Cursor manages cloud command permissions; the effective model is not acknowledged.",
+    "zh-CN": "实验性功能。Cursor 托管此智能体的执行环境，无需 Paperclip 计算机。Cursor 会管理云端命令权限，且不会返回实际使用的模型标识。",
+    "reviewedEnglishHash": "4c3a3833e5fc8bbf0773c3896e0fa30feeb23dcb657efeffd3bfe1a9034df526"
   },
   "newAgent.defaultIssueDescription": {
     "en": "(type in what kind of agent you want here)",
@@ -179,6 +229,11 @@
     "zh-CN": "：等待中",
     "reviewedEnglishHash": "1c9b478097648c499578c1889e039cb88132082966860f8499926520a4ed3fdb"
   },
+  "newAgent.dotConnectTitle": {
+    "en": "Connect your Dot",
+    "zh-CN": "连接你的 Dot",
+    "reviewedEnglishHash": "767ddfb33ac2cde24e1078527fc1b38f11471f3e27cf03749334928af9754e83"
+  },
   "newAgent.dotConnectedTitle": {
     "en": "Your Dot is connected",
     "zh-CN": "你的 Dot 已连接",
@@ -193,11 +248,6 @@
     "en": "Dot connection checks",
     "zh-CN": "Dot 连接检查",
     "reviewedEnglishHash": "0c8a99e80eed8f3fc03b5887cf41b76e9329baeadb3074e6a0e35f3872b1a580"
-  },
-  "newAgent.dotConnectTitle": {
-    "en": "Connect your Dot",
-    "zh-CN": "连接你的 Dot",
-    "reviewedEnglishHash": "767ddfb33ac2cde24e1078527fc1b38f11471f3e27cf03749334928af9754e83"
   },
   "newAgent.dotFinishingDescription": {
     "en": "Your Dot has connected and confirmed task updates. Paperclip is preparing it for assignments.",
@@ -464,6 +514,56 @@
     "zh-CN": "智能体入职提示已在下方生成，并已复制到剪贴板。",
     "reviewedEnglishHash": "0f57c40d9d5e21b6fef8fe350786238bb457cc589201e9ef734b953ace43197c"
   },
+  "newAgent.providerConnection.continueToProvider": {
+    "en": "Continue to {{provider}}",
+    "zh-CN": "继续前往 {{provider}}",
+    "reviewedEnglishHash": "3426a48f842a9d723aeac71967ba171ef78bcb03e322fa908f9f2fac835698b8"
+  },
+  "newAgent.providerConnection.missingSavedConnection": {
+    "en": "The login did not return a saved connection. Try again.",
+    "zh-CN": "登录未返回已保存的连接，请重试。",
+    "reviewedEnglishHash": "35407fca6141c3d5f8c64dee769cf9ca7af520a59e3103b97e6dff59a390b044"
+  },
+  "newAgent.providerConnection.prepareSignInFailed": {
+    "en": "Could not prepare sign-in. Reload this page to try again.",
+    "zh-CN": "无法准备登录，请重新加载页面重试。",
+    "reviewedEnglishHash": "f89460cd30450471640c4995f4c71928cf25a88e0639a8a80e14548522dfddbd"
+  },
+  "newAgent.providerConnection.retrieveSavedFailed": {
+    "en": "Could not retrieve the saved connection. Go back and retry.",
+    "zh-CN": "无法获取已保存的连接，请返回重试。",
+    "reviewedEnglishHash": "f016b92c55ebdcab385a9952cd2e5083ca74b0c4341286455f0db1e90ab6c183"
+  },
+  "newAgent.providerConnection.retryKeyPlaceholder": {
+    "en": "Key entered. Retry the connection.",
+    "zh-CN": "已输入密钥，请重新尝试连接。",
+    "reviewedEnglishHash": "43912a0d7bab5cc28c238bfc92b48ec0d92b80454dc1c3dc1668f4e094d96155"
+  },
+  "newAgent.providerConnection.signInToProvider": {
+    "en": "Sign in to {{provider}}",
+    "zh-CN": "登录 {{provider}}",
+    "reviewedEnglishHash": "b47688800f56bdaef54b307a8c353d613a5779a7330cfefc691a8a5707591c89"
+  },
+  "newAgent.providerConnection.useExistingEnvironment": {
+    "en": "Use the existing provider connection for this environment.",
+    "zh-CN": "使用此环境现有的提供方连接。",
+    "reviewedEnglishHash": "c910c4a898f08c6a9311707700ce9d56b61dd44d8151f365592547afa718720a"
+  },
+  "newAgent.providerConnection.useSavedClaude": {
+    "en": "Use your saved Claude subscription for this agent.",
+    "zh-CN": "为此智能体使用你已保存的 Claude 订阅。",
+    "reviewedEnglishHash": "bb2c110688d831e78fd31608817f3ca50e83e5c682da2d0caa51a3b766d1c027"
+  },
+  "newAgent.providerConnection.waitingAuth": {
+    "en": "Waiting for auth…",
+    "zh-CN": "正在等待授权…",
+    "reviewedEnglishHash": "abb10b99761062931722367ceb4a70c46618ced62eb3c64f0730f28b54ad9457"
+  },
+  "newAgent.providerConnection.waitingCode": {
+    "en": "Waiting for code",
+    "zh-CN": "正在等待授权码",
+    "reviewedEnglishHash": "f22b705c3b7ce68f30f6056bbefc696c593a34a6b942e21f42c5b3d580f06018"
+  },
   "newAgent.recommendation": {
     "en": "We recommend letting your CEO handle agent setup. They know the org structure and can configure reporting, permissions, and adapters.",
     "zh-CN": "建议让你的 CEO 来处理智能体创建。他更了解组织结构，也能顺手配置汇报关系、权限和适配器。",
@@ -484,6 +584,176 @@
     "zh-CN": "把这段提示发送给要加入此公司的外部智能体。",
     "reviewedEnglishHash": "a99cc54d61476d5aa8adec279baa789a20121f578ec6318530cc886a14a85010"
   },
+  "newAgent.setup.agentPaused": {
+    "en": "Your agent is paused",
+    "zh-CN": "你的智能体已暂停",
+    "reviewedEnglishHash": "418f91068a5f33d1192b9b2441b070f22dca6eeb8206a401be40ace6ee462ddf"
+  },
+  "newAgent.setup.agentReady": {
+    "en": "Your agent is ready",
+    "zh-CN": "你的智能体已就绪",
+    "reviewedEnglishHash": "bf213d4f14f8cecca596d420efaa79ce39395b2dcd6800b6a2127d66afa7ab21"
+  },
+  "newAgent.setup.antigravityCandidate": {
+    "en": "Google Antigravity candidate is enabled for testing on this instance.",
+    "zh-CN": "此实例已启用 Google Antigravity 候选版以供测试。",
+    "reviewedEnglishHash": "0e5ede999818edcd3b1e88567356ff45849d10e19cc43ddb34a22f99f2b97338"
+  },
+  "newAgent.setup.antigravityPending": {
+    "en": "Google Antigravity is not available yet. You can connect your Google account and review settings. This agent cannot finish setup or run tasks yet. Model and connection settings are not saved to this agent yet.",
+    "zh-CN": "Google Antigravity 暂不可用。你可以先连接 Google 账户并预览设置。此智能体尚无法完成设置或运行任务，模型与连接设置也暂不会保存至该智能体。",
+    "reviewedEnglishHash": "0c6af11d95c112b261d9c14a438bd43ca2737154a8dc959d2408401be1c85cce"
+  },
+  "newAgent.setup.assignTask": {
+    "en": "Assign {{name}} a Task",
+    "zh-CN": "为 {{name}} 分配任务",
+    "reviewedEnglishHash": "f0d77a366e98106411a9c68bd6eab66b452b4795b61ac2bdea7dc042e3bbcac3"
+  },
+  "newAgent.setup.backToAgents": {
+    "en": "Back to Agents",
+    "zh-CN": "返回智能体列表",
+    "reviewedEnglishHash": "28a2018a409007fc3626a9f73e37dc695e73b1246a659cbac7070cac540f1ce7"
+  },
+  "newAgent.setup.backToAgentsAction": {
+    "en": "Back to agents",
+    "zh-CN": "返回智能体",
+    "reviewedEnglishHash": "7da2164b2679aec23b3a76b90bd08d1abd31288812e65c1c5ef0c10023ae4230"
+  },
+  "newAgent.setup.changeAdapter": {
+    "en": "Change adapter",
+    "zh-CN": "更换适配器",
+    "reviewedEnglishHash": "0d84fc0029e0ea8c4ba11ef0019af0f2e9c6e20d42ee3f98cab4f41858070861"
+  },
+  "newAgent.setup.creating": {
+    "en": "Creating your agent…",
+    "zh-CN": "正在创建你的智能体…",
+    "reviewedEnglishHash": "f9cb256797a694eecd095a5c46e17909d505fa04a826e055288efad4cc8fe34d"
+  },
+  "newAgent.setup.dotBillingHint": {
+    "en": "Dot does not report token usage or cost. Paperclip cannot enforce a provider spend ceiling; known company and agent budget limits still apply.",
+    "zh-CN": "Dot 不会上报词元用量或费用。Paperclip 无法强制执行提供方消费上限；但已设置的公司和智能体预算限制依然生效。",
+    "reviewedEnglishHash": "e22939899c00945bf722bbaaa564ce37d3cffa7dfb53f4ac67bc882e747dfba2"
+  },
+  "newAgent.setup.dotCreated": {
+    "en": "Your Dot agent has been created",
+    "zh-CN": "你的 Dot 智能体已创建",
+    "reviewedEnglishHash": "2b64e542da05414557e10533d04ffa94c83c73a92485d2e4a2f32690c01f1bb1"
+  },
+  "newAgent.setup.dotHelp": {
+    "en": "Pair your Dot and test event delivery in configuration before assigning work.",
+    "zh-CN": "在分配工作前，请先在配置中配对 Dot 并测试事件投递。",
+    "reviewedEnglishHash": "8909236066a70fd3790f4841c2523ee1a962596060107a445c1724a06b1a617c"
+  },
+  "newAgent.setup.editConfiguration": {
+    "en": "Edit configuration",
+    "zh-CN": "编辑配置",
+    "reviewedEnglishHash": "3076810095c3d8bea49cfd09ab1738ea5b0fb6d2aa0394c01a325015a2b2e1b2"
+  },
+  "newAgent.setup.finishingHelp": {
+    "en": "Paperclip is preparing and verifying your agent. You can assign a task when it is ready.",
+    "zh-CN": "Paperclip 正在准备并验证你的智能体。就绪后即可为其分配任务。",
+    "reviewedEnglishHash": "acea527b1513db20966a71df5e77b3a6d4d444aff1c234db9917ef3cd6672e9b"
+  },
+  "newAgent.setup.finishingSetup": {
+    "en": "Finishing agent setup",
+    "zh-CN": "正在完成智能体设置",
+    "reviewedEnglishHash": "4c48019a5e6968acc0772fa6727c61c03a4a61e068468c22731757fe2a3a9f63"
+  },
+  "newAgent.setup.kimiBaseUrlHint": {
+    "en": "Optional override for your provider endpoint.",
+    "zh-CN": "可选的提供方端点覆盖地址。",
+    "reviewedEnglishHash": "1f92d2d49e09f477ee047c3c5be8de09a57236240738f2eab4fb4dfd745f40f2"
+  },
+  "newAgent.setup.kimiBaseUrlLabel": {
+    "en": "Kimi API base URL",
+    "zh-CN": "Kimi API 基础 URL",
+    "reviewedEnglishHash": "b46e77c4df79ef575d300305062d7b96ce59dbb48124d3c239c01d3ca8937a95"
+  },
+  "newAgent.setup.kimiModelLabel": {
+    "en": "Kimi API model name",
+    "zh-CN": "Kimi API 模型名称",
+    "reviewedEnglishHash": "d880c2be9c0434c9ecbd5b59f4e5c763026eeeb8561f799c7dd47ecad41594af"
+  },
+  "newAgent.setup.kimiProtocolLabel": {
+    "en": "Kimi API protocol",
+    "zh-CN": "Kimi API 协议",
+    "reviewedEnglishHash": "2fd46541e58944c0780a6cf1d7c7895535666e00f5242f772560db3556164164"
+  },
+  "newAgent.setup.loadCreatedError": {
+    "en": "Could not load the created agent. Return to Agents to view it.",
+    "zh-CN": "无法加载已创建的智能体。请返回智能体列表查看。",
+    "reviewedEnglishHash": "07abe0b11e9461b83dd12505a0df3d6f2f30507e4565924dc9390730f87cd782"
+  },
+  "newAgent.setup.loadingCreated": {
+    "en": "Loading your agent…",
+    "zh-CN": "正在加载你的智能体…",
+    "reviewedEnglishHash": "48046357d49e459c212d4af38b0bbcd100531e313d7c35093205e336027d812b"
+  },
+  "newAgent.setup.loadingSetup": {
+    "en": "Loading your agent setup…",
+    "zh-CN": "正在加载智能体设置…",
+    "reviewedEnglishHash": "0fddbaffa59d6a47bfe0f3858ee239afb8a35e9f139fd4806104d313cca3dc99"
+  },
+  "newAgent.setup.localMachine": {
+    "en": "Local machine",
+    "zh-CN": "本地机器",
+    "reviewedEnglishHash": "2424a1564127ccc8a1e69ea5abb27fe6079e0b0fe42b345067bc69f503322df7"
+  },
+  "newAgent.setup.nativeAppServerRunner": {
+    "en": "Native app server runner",
+    "zh-CN": "原生应用服务器运行器",
+    "reviewedEnglishHash": "6254c5e60349e936c6c00bd4aa07a2625818e9e1eaa1a7bd0636fe674d4f45a4"
+  },
+  "newAgent.setup.pausedHelp": {
+    "en": "Review the agent’s status in configuration before assigning work.",
+    "zh-CN": "在分配工作前，请在配置中检查该智能体的状态。",
+    "reviewedEnglishHash": "c07db7aa30cc4974e5dfe205be1380367a501d3a73acfb52e2beb1d333411ccf"
+  },
+  "newAgent.setup.pendingApprovalHelp": {
+    "en": "An organization administrator must approve this agent before it can work.",
+    "zh-CN": "组织管理员需先批准此智能体，之后才可开始工作。",
+    "reviewedEnglishHash": "77d7c0fff464d622321dfee8f33ace0090db38be528da7c47d31c76c28239ffb"
+  },
+  "newAgent.setup.preparingComputer": {
+    "en": "Preparing your agent computer…",
+    "zh-CN": "正在准备你的智能体计算环境…",
+    "reviewedEnglishHash": "9d62a64ecf52c3394b0b46b1997664bd7d0bca3692659b55ac6de521ca7c1fd2"
+  },
+  "newAgent.setup.readyHelp": {
+    "en": "Assign a task when you’re ready for this agent to work.",
+    "zh-CN": "准备好让此智能体开始工作时，即可为它分配任务。",
+    "reviewedEnglishHash": "adbf2c57694b3da1beac098d0fb6696153650a4ba4a1cdfb5f0ce8a76b92fd1b"
+  },
+  "newAgent.setup.retryComputerError": {
+    "en": "Could not retry computer preparation.",
+    "zh-CN": "无法重试计算环境准备。",
+    "reviewedEnglishHash": "85c419e2ecf1d5877670e7f01a952e449a04b6a29d96f2351a0ab78ec78349c9"
+  },
+  "newAgent.setup.retryPreparation": {
+    "en": "Retry preparation",
+    "zh-CN": "重试准备",
+    "reviewedEnglishHash": "e42e093a3e4efc1826f7659e8d8beeae9bdd8b0e7829931328bf34c187b9ce62"
+  },
+  "newAgent.setup.retrySavingEnvironment": {
+    "en": "Retry saving environment",
+    "zh-CN": "重试保存环境",
+    "reviewedEnglishHash": "971a3b0fcfba735dbaa5181d38432b81ff7c8a126d4a6024431b2e18124bc57f"
+  },
+  "newAgent.setup.submittedForApproval": {
+    "en": "Agent submitted for approval",
+    "zh-CN": "智能体已提交审批",
+    "reviewedEnglishHash": "9357fe166529b09a13036c574b9093b8235ac6cc1e3caafef3970c39f27bce75"
+  },
+  "newAgent.setup.useKimiKey": {
+    "en": "Use a Kimi Code API key for this runner.",
+    "zh-CN": "为此运行器使用 Kimi Code API 密钥。",
+    "reviewedEnglishHash": "83327238ea49398824d6e131bde55ecaf14e3faaf94eec46b1c8c9fe5defeb8a"
+  },
+  "newAgent.setup.useProviderModelId": {
+    "en": "Use a {{provider}}/model ID.",
+    "zh-CN": "使用 {{provider}}/model 格式的 ID。",
+    "reviewedEnglishHash": "502ed9c234ea8e63d196be9b9075aaa1a182f777d7828af3ec3592e9884a6a92"
+  },
   "newAgent.testAgent": {
     "en": "Test agent",
     "zh-CN": "测试智能体",
@@ -503,6 +773,61 @@
     "en": "Agent title",
     "zh-CN": "智能体职称",
     "reviewedEnglishHash": "b63fa84060f1f4749ce22a48436c7eb45eb182032d714c33b68070859b320a32"
+  },
+  "newAgent.validation.antigravityModelId": {
+    "en": "Choose or enter an exact Google Antigravity model ID.",
+    "zh-CN": "请选择或输入准确的 Google Antigravity 模型 ID。",
+    "reviewedEnglishHash": "5903963f853d1818503bff8afd5410f7caab442ed245e460448e28f62c387d1c"
+  },
+  "newAgent.validation.copilotModel": {
+    "en": "Refresh Copilot models and select an available model before creating this agent.",
+    "zh-CN": "请刷新 Copilot 模型列表，并在创建此智能体前选择一个可用模型。",
+    "reviewedEnglishHash": "67f6087b09d824069fd981246238095de02228c0af04291fd74f23d7614ce7cb"
+  },
+  "newAgent.validation.cursorApiKey": {
+    "en": "Enter a Cursor API key.",
+    "zh-CN": "请输入 Cursor API 密钥。",
+    "reviewedEnglishHash": "16226bb87d9820b13b49824c15aeffd9caa90c20e07d01cde4209366ab1cfdb4"
+  },
+  "newAgent.validation.cursorModelId": {
+    "en": "Enter the exact Cursor Cloud model ID.",
+    "zh-CN": "请输入准确的 Cursor Cloud 模型 ID。",
+    "reviewedEnglishHash": "32279de67564ba4061f6f0dc9dea5127a32f7c517ad9cc290487ffe611821d5c"
+  },
+  "newAgent.validation.dotBillingAck": {
+    "en": "Acknowledge external provider billing before creating your Dot agent.",
+    "zh-CN": "创建 Dot 智能体前，请先确认外部提供方计费说明。",
+    "reviewedEnglishHash": "5dccc379224652a42f14c8d40ddfc560cbf2dfa7ad2f8a9d5bd19aaf3e229201"
+  },
+  "newAgent.validation.envKeyOrSecret": {
+    "en": "Enter {{envKey}} or select an organization secret.",
+    "zh-CN": "请输入 {{envKey}} 或选择一个组织密钥。",
+    "reviewedEnglishHash": "9ae24bdf4897e56d30c2deab523787724d56c2aaed3effece5248d44543ed0bd"
+  },
+  "newAgent.validation.githubRepoUrl": {
+    "en": "Enter a GitHub repository URL.",
+    "zh-CN": "请输入 GitHub 仓库 URL。",
+    "reviewedEnglishHash": "f1953f7cbd56f5a6108a3283b38efdcec8072bbe69641002616bc568bacecc70"
+  },
+  "newAgent.validation.kimiApiModelName": {
+    "en": "Enter the Kimi API model name.",
+    "zh-CN": "请输入 Kimi API 模型名称。",
+    "reviewedEnglishHash": "b90b9fe2d5178fee589df396a19698aa071b9671d909204ce9dae85e9f8eb448"
+  },
+  "newAgent.validation.kimiKeyOrSecret": {
+    "en": "Enter KIMI_API_KEY or select an organization secret.",
+    "zh-CN": "请输入 KIMI_API_KEY 或选择一个组织密钥。",
+    "reviewedEnglishHash": "cc7b0242470c092bc614af75be6bd920500f12615ced9d581c3d9a7d30bf3370"
+  },
+  "newAgent.validation.kimiModelId": {
+    "en": "Enter the exact Kimi model ID.",
+    "zh-CN": "请输入准确的 Kimi 模型 ID。",
+    "reviewedEnglishHash": "89ceb5c95e08cd4913d12c7acf87b8e788b34f1c5a7375afd88c9c76872a7941"
+  },
+  "newAgent.validation.providerModelFormat": {
+    "en": "Choose or enter a model in provider/model format.",
+    "zh-CN": "请选择或输入 provider/model 格式的模型。",
+    "reviewedEnglishHash": "52b1bb73b476f2734523022a0b0ed3011923a5bb6ec39030f53558cba83e2ed0"
   },
   "newAgent.validation.validEndpointUrl": {
     "en": "Enter a valid endpoint URL.",

@@ -244,6 +244,11 @@
     "zh-CN": "更新时间",
     "reviewedEnglishHash": "3a5ecca188c0579c00ee24cf3cab21bd02c15a06f7a70cc8e0a8ff2381dcbbfd"
   },
+  "routines.table.responsibleUser": {
+    "en": "Responsible user",
+    "zh-CN": "责任人",
+    "reviewedEnglishHash": "aafb04857380906bd0a5d94fb5a8c1d19208064e92d9b403039cb455bc96856b"
+  },
   "routines.titlePlaceholder": {
     "en": "Routine title",
     "zh-CN": "例行任务标题",

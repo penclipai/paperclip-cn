@@ -44,7 +44,7 @@ function firstNonEmptyLine(value: string | null | undefined): string | null {
 }
 
 function getPluginErrorSummary(plugin: PluginRecord): string {
-  return firstNonEmptyLine(plugin.lastError) ?? "Plugin entered an error state without a stored error message.";
+  return firstNonEmptyLine(plugin.lastError) ?? translateInstant("pluginManager.noStoredError", { defaultValue: "Plugin entered an error state without a stored error message." });
 }
 
 function isExperimentalPluginIdentity(input: {
@@ -106,7 +106,7 @@ export function PluginManager() {
     setBreadcrumbs([
       { label: selectedCompany?.name ?? translateInstant("Organization"), href: "/dashboard" },
       { label: translateInstant("Settings"), href: "/company/settings" },
-      { label: translateInstant("Plugins") },
+      { label: translateInstant("System plugins") },
     ]);
   }, [selectedCompany?.name, setBreadcrumbs]);
 
@@ -213,18 +213,19 @@ export function PluginManager() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Puzzle className="h-6 w-6 text-muted-foreground" />
-          <h1 className="text-xl font-semibold">{translateInstant("Plugin Manager")}</h1>
+          <h1 className="text-xl font-semibold">{translateInstant("System plugins")}</h1>
         </div>
         
         <Dialog open={installDialogOpen} onOpenChange={setInstallDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="gap-2">
               <Plus className="h-4 w-4" />
-              {translateInstant("Install Plugin")}</Button>
+              {translateInstant("Install system plugin")}
+            </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{translateInstant("Install Plugin")}</DialogTitle>
+              <DialogTitle>{translateInstant("Install system plugin")}</DialogTitle>
               <DialogDescription>
                 {translateInstant("Enter the npm package name of the plugin you wish to install.")}</DialogDescription>
             </DialogHeader>
@@ -256,7 +257,7 @@ export function PluginManager() {
         <div className="flex items-start gap-3">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
           <div className="space-y-1 text-sm">
-            <p className="font-medium text-foreground">{translateInstant("Plugins are alpha.")}</p>
+            <p className="font-medium text-foreground">{translateInstant("System plugins are alpha.")}</p>
             <p className="text-muted-foreground">
               {translateInstant("The plugin runtime and API surface are still changing. Expect breaking changes while this feature settles.")}</p>
           </div>
@@ -266,7 +267,7 @@ export function PluginManager() {
       <section className="space-y-3">
         <div className="flex items-center gap-2">
           <FlaskConical className="h-5 w-5 text-muted-foreground" />
-          <h2 className="text-base font-semibold">{translateInstant("Available Plugins")}</h2>
+          <h2 className="text-base font-semibold">{translateInstant("Available system plugins")}</h2>
           <Badge variant="outline">{translateInstant("Bundled")}</Badge>
         </div>
 
@@ -317,7 +318,7 @@ export function PluginManager() {
                             variant={installedPlugin.status === "ready" ? "default" : "secondary"}
                             className={installedPlugin.status === "ready" ? "bg-green-600 hover:bg-green-700" : ""}
                           >
-                            {installedPlugin.status}
+                            {translateInstant(`pluginManager.status.${installedPlugin.status}`, { defaultValue: installedPlugin.status })}
                           </Badge>
                         ) : (
                           <Badge variant="secondary">{translateInstant("Not installed")}</Badge>
@@ -374,14 +375,14 @@ export function PluginManager() {
       <section className="space-y-3">
         <div className="flex items-center gap-2">
           <Puzzle className="h-5 w-5 text-muted-foreground" />
-          <h2 className="text-base font-semibold">{translateInstant("Installed Plugins")}</h2>
+          <h2 className="text-base font-semibold">{translateInstant("Installed system plugins")}</h2>
         </div>
 
         {!installedPlugins.length ? (
           <Card className="bg-muted/30">
             <CardContent className="flex flex-col items-center justify-center py-10">
               <Puzzle className="h-10 w-10 text-muted-foreground mb-4" />
-              <p className="text-sm font-medium">{translateInstant("No plugins installed")}</p>
+              <p className="text-sm font-medium">{translateInstant("No system plugins installed")}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 {translateInstant("Install a plugin to extend functionality.")}</p>
             </CardContent>
@@ -465,7 +466,7 @@ export function PluginManager() {
                             plugin.status === "ready" ? "bg-green-600 hover:bg-green-700" : ""
                           )}
                         >
-                          {plugin.status}
+                          {translateInstant(`pluginManager.status.${plugin.status}`, { defaultValue: plugin.status })}
                         </Badge>
                         <Button
                           variant="outline"

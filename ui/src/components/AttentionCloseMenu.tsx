@@ -1,6 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { AlarmClock, Archive, ArrowRightLeft, Ban, Clock, MoreHorizontal, ExternalLink, RotateCcw, UserRound } from "lucide-react";
 import type { AttentionItem } from "@penclipai/shared";
+import { useTranslation } from "react-i18next";
+import { translateInstant } from "@/i18n";
+import { formatDateTime } from "@/lib/utils";
 import { Link } from "@/lib/router";
 import {
   attentionCanWithdraw,
@@ -42,11 +45,11 @@ function tomorrowMorningIso(): string {
 }
 
 /** Snooze presets, resolved to a future ISO timestamp at click time. */
-const SNOOZE_PRESETS: ReadonlyArray<{ label: string; resolve: () => string }> = [
-  { label: "1 hour", resolve: () => new Date(Date.now() + HOUR_MS).toISOString() },
-  { label: "4 hours", resolve: () => new Date(Date.now() + 4 * HOUR_MS).toISOString() },
-  { label: "Tomorrow morning", resolve: tomorrowMorningIso },
-  { label: "Next week", resolve: () => new Date(Date.now() + 7 * DAY_MS).toISOString() },
+const SNOOZE_PRESETS: ReadonlyArray<{ id: string; labelKey: string; defaultLabel: string; resolve: () => string }> = [
+  { id: "1h", labelKey: "attentionQueue.snooze.oneHour", defaultLabel: "1 hour", resolve: () => new Date(Date.now() + HOUR_MS).toISOString() },
+  { id: "4h", labelKey: "attentionQueue.snooze.fourHours", defaultLabel: "4 hours", resolve: () => new Date(Date.now() + 4 * HOUR_MS).toISOString() },
+  { id: "tomorrow", labelKey: "attentionQueue.snooze.tomorrowMorning", defaultLabel: "Tomorrow morning", resolve: tomorrowMorningIso },
+  { id: "week", labelKey: "attentionQueue.snooze.nextWeek", defaultLabel: "Next week", resolve: () => new Date(Date.now() + 7 * DAY_MS).toISOString() },
 ];
 
 export interface AttentionCloseMenuProps {
@@ -86,6 +89,7 @@ export function AttentionCloseMenu({
   busy = false,
   className,
 }: AttentionCloseMenuProps) {
+  const { t } = useTranslation();
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [transferTo, setTransferTo] = useState<{ userId: string; label: string } | null>(null);
   const otherUserId = attentionOtherAudienceUserId(item, currentUserId);
@@ -115,8 +119,8 @@ export function AttentionCloseMenu({
             size="icon-xs"
             disabled={busy}
             className={className ?? "text-muted-foreground"}
-            aria-label="Close…"
-            title="Close…"
+            aria-label={t("decisions.closeMenu.triggerAria", { defaultValue: "Close…" })}
+            title={t("decisions.closeMenu.triggerAria", { defaultValue: "Close…" })}
             data-attention-close-menu
             onClick={(event) => event.stopPropagation()}
           >
@@ -127,32 +131,32 @@ export function AttentionCloseMenu({
           {canWithdraw && (
             <DropdownMenuItem onSelect={() => setWithdrawOpen(true)} data-attention-close-mode="withdraw">
               <Ban className="h-4 w-4" />
-              Withdraw request…
+              {t("decisions.closeMenu.withdrawMenu", { defaultValue: "Withdraw request…" })}
             </DropdownMenuItem>
           )}
           {canRestore && (
             <DropdownMenuItem onSelect={() => onRestore?.(item)} data-attention-close-mode="restore">
               <RotateCcw className="h-4 w-4" />
-              {hidden?.kind === "snoozed" ? "Restore now" : "Restore"}
+              {hidden?.kind === "snoozed" ? t("decisions.closeMenu.restoreNow", { defaultValue: "Restore now" }) : t("Restore")}
             </DropdownMenuItem>
           )}
           {canArchive && (
             <DropdownMenuItem onSelect={() => onArchive?.(item)} data-attention-close-mode="archive">
               <Archive className="h-4 w-4" />
-              Archive for me
+              {t("decisions.closeMenu.archiveForMe", { defaultValue: "Archive for me" })}
             </DropdownMenuItem>
           )}
           {canSnooze && (
             <SnoozeSubmenu
               onSnooze={(until) => onSnooze?.(item, until)}
-              label={hidden?.kind === "snoozed" ? "Change snooze time" : undefined}
+              label={hidden?.kind === "snoozed" ? t("decisions.closeMenu.changeSnoozeTime", { defaultValue: "Change snooze time" }) : undefined}
             />
           )}
           {targets.length > 0 && (
             <DropdownMenuSub>
               <DropdownMenuSubTrigger data-attention-close-mode="transfer">
                 <ArrowRightLeft className="h-4 w-4" />
-                Transfer to…
+                {t("decisions.closeMenu.transferTo", { defaultValue: "Transfer to…" })}
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 {targets.map((target) => (
@@ -170,7 +174,7 @@ export function AttentionCloseMenu({
               <DropdownMenuItem asChild>
                 <Link to={href}>
                   <ExternalLink className="h-4 w-4" />
-                  Open source
+                  {t("attentionQueue.openSource")}
                 </Link>
               </DropdownMenuItem>
             </>
@@ -197,11 +201,15 @@ export function AttentionCloseMenu({
             <DialogHeader>
               <DialogTitle>{attentionForOtherText(otherName, "continue")}</DialogTitle>
               <DialogDescription>
-                The card leaves the list of @{otherName} and goes to @{transferTo.label}. The history records the transfer.
+                {t("decisions.closeMenu.transferDescription", {
+                  otherName,
+                  targetName: transferTo.label,
+                  defaultValue: `The card leaves the list of @${otherName} and goes to @${transferTo.label}. The history records the transfer.`,
+                })}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="sm:justify-between">
-              <Button type="button" variant="outline" onClick={() => setTransferTo(null)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setTransferTo(null)}>{t("Cancel")}</Button>
               <Button
                 type="button"
                 onClick={() => {
@@ -209,7 +217,7 @@ export function AttentionCloseMenu({
                   setTransferTo(null);
                 }}
               >
-                Transfer to @{transferTo.label}
+                {t("decisions.closeMenu.transferToUser", { name: transferTo.label, defaultValue: `Transfer to @${transferTo.label}` })}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -237,28 +245,29 @@ function WithdrawRequestDialog({
   otherName: string | null;
   onConfirm: (reason: string) => void;
 }) {
+  const { t } = useTranslation();
   const [reason, setReason] = useState("");
   return (
     <Dialog open={open} onOpenChange={(next) => { if (!next) setReason(""); onOpenChange(next); }}>
       <DialogContent showCloseButton={false} onClick={(event) => event.stopPropagation()} data-attention-withdraw-dialog>
         <DialogHeader>
-          <DialogTitle>{otherName ? attentionForOtherText(otherName, "withdraw") : "Withdraw this request?"}</DialogTitle>
+          <DialogTitle>{otherName ? attentionForOtherText(otherName, "withdraw") : t("decisions.withdrawDialog.title", { defaultValue: "Withdraw this request?" })}</DialogTitle>
           <DialogDescription>
             {title ? <><span className="font-medium text-foreground">{title}</span>{" — "}</> : null}
-            This closes the request for everyone and tells the agent it is out of date. It is not an approval. You cannot undo it.
+            {t("decisions.withdrawDialog.description", { defaultValue: "This closes the request for everyone and tells the agent it is out of date. It is not an approval. You cannot undo it." })}
           </DialogDescription>
         </DialogHeader>
         <Textarea
           value={reason}
           onChange={(event) => setReason(event.target.value)}
-          placeholder="Why is it out of date? (optional, shown in history and to the agent)"
-          aria-label="Reason for withdrawing"
+          placeholder={t("decisions.withdrawDialog.reasonPlaceholder", { defaultValue: "Why is it out of date? (optional, shown in history and to the agent)" })}
+          aria-label={t("decisions.withdrawDialog.reasonAria", { defaultValue: "Reason for withdrawing" })}
           className="min-h-16 text-sm"
         />
         <DialogFooter className="sm:justify-between">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t("Cancel")}</Button>
           <Button type="button" variant="destructive" onClick={() => { onConfirm(reason); setReason(""); }}>
-            Withdraw request
+            {t("decisions.withdrawDialog.confirm", { defaultValue: "Withdraw request" })}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -267,7 +276,8 @@ function WithdrawRequestDialog({
 }
 
 /** Snooze submenu: presets + a custom date-time. Personal; it does not move a shared deadline. */
-export function SnoozeSubmenu({ onSnooze, label = "Snooze for me" }: { onSnooze: (snoozedUntil: string) => void; label?: string }) {
+export function SnoozeSubmenu({ onSnooze, label = translateInstant("decisions.closeMenu.snoozeForMe", { defaultValue: "Snooze for me" }) }: { onSnooze: (snoozedUntil: string) => void; label?: string }) {
+  const { t } = useTranslation();
   const [customValue, setCustomValue] = useState("");
   const applyCustom = () => {
     if (!customValue) return;
@@ -283,8 +293,8 @@ export function SnoozeSubmenu({ onSnooze, label = "Snooze for me" }: { onSnooze:
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
         {SNOOZE_PRESETS.map((preset) => (
-          <DropdownMenuItem key={preset.label} onSelect={() => onSnooze(preset.resolve())}>
-            {preset.label}
+          <DropdownMenuItem key={preset.id} onSelect={() => onSnooze(preset.resolve())}>
+            {t(preset.labelKey, { defaultValue: preset.defaultLabel })}
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
@@ -296,17 +306,17 @@ export function SnoozeSubmenu({ onSnooze, label = "Snooze for me" }: { onSnooze:
           onClick={(e) => e.stopPropagation()}
         >
           <span className="text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-            Custom
+            {t("attentionQueue.snooze.custom")}
           </span>
           <input
             type="datetime-local"
             value={customValue}
             onChange={(e) => setCustomValue(e.target.value)}
-            aria-label="Snooze until"
+            aria-label={t("decisions.closeMenu.snoozeUntilAria", { defaultValue: "Snooze until" })}
             className="w-full rounded-sm border border-border bg-background px-2 py-1 text-xs"
           />
           <Button type="button" size="xs" disabled={!customValue} onClick={applyCustom}>
-            Snooze until…
+            {t("attentionQueue.snooze.until")}
           </Button>
         </div>
       </DropdownMenuSubContent>
@@ -316,12 +326,13 @@ export function SnoozeSubmenu({ onSnooze, label = "Snooze for me" }: { onSnooze:
 
 /** "Stale · Waiting 30+ days" (PAP-749 plan §2, Rule 10). Nothing for a current card. */
 export function AttentionStaleChip({ item }: { item: AttentionItem }) {
+  const { t } = useTranslation();
   const text = attentionStaleChipText(item);
   if (!text || !item.stale) return null;
   return (
     <Badge variant="outline" data-attention-stale={item.stale.reason} className="text-muted-foreground">
       <Clock aria-hidden="true" />
-      Stale · {text}
+      {t("decisions.staleChip", { text, defaultValue: `Stale · ${text}` })}
     </Badge>
   );
 }
@@ -332,11 +343,12 @@ export function AttentionStaleChip({ item }: { item: AttentionItem }) {
  * card you did not hide.
  */
 export function AttentionHiddenChip({ item }: { item: AttentionItem }) {
+  useTranslation();
   const hidden = attentionHiddenState(item);
   if (!hidden) return null;
   const at = hidden.kind === "snoozed" ? hidden.until : hidden.since;
   return (
-    <Badge variant="outline" data-attention-hidden={hidden.kind} className="text-muted-foreground" title={new Date(at).toLocaleString()}>
+    <Badge variant="outline" data-attention-hidden={hidden.kind} className="text-muted-foreground" title={formatDateTime(at)}>
       {hidden.kind === "snoozed" ? <AlarmClock aria-hidden="true" /> : <Archive aria-hidden="true" />}
       <time dateTime={at}>{attentionHiddenText(hidden)}</time>
     </Badge>
@@ -359,11 +371,12 @@ export function AttentionSnoozedGroup({
   onToggle: () => void;
   children: ReactNode;
 }) {
+  const { t } = useTranslation();
   if (count === 0) return null;
   return (
-    <section className="space-y-2" aria-label="Snoozed cards" data-attention-snoozed-group>
+    <section className="space-y-2" aria-label={t("decisions.snoozedGroup.aria", { defaultValue: "Snoozed cards" })} data-attention-snoozed-group>
       <IssueGroupHeader
-        label={`Snoozed (${count})`}
+        label={t("decisions.snoozedGroup.header", { count, defaultValue: `Snoozed (${count})` })}
         collapsible
         collapsed={!open}
         onToggle={onToggle}
@@ -401,6 +414,7 @@ export function AttentionForOtherGate({
   userLabelMap?: ReadonlyMap<string, string> | null;
   children: ReactNode;
 }) {
+  const { t } = useTranslation();
   const otherUserId = attentionOtherAudienceUserId(item, currentUserId);
   const audienceKey = `${item.id}:${otherUserId ?? ""}`;
   const [confirmedAudience, setConfirmedAudience] = useState<string | null>(null);
@@ -474,10 +488,10 @@ export function AttentionForOtherGate({
                 setSubmissionPending(false);
                 waiting?.reject(new DOMException("Action cancelled.", "AbortError"));
               }}>
-                Cancel
+                {t("Cancel")}
               </Button>
               <Button type="button" variant="outline" size="xs" onClick={(event) => { event.stopPropagation(); setConfirmedAudience(audienceKey); }}>
-                Continue
+                {t("Continue")}
               </Button>
             </span>
           </div>
@@ -515,18 +529,18 @@ export function AttentionStaleGroup({
   titleOf?: (item: AttentionItem) => string;
   children: ReactNode;
 }) {
+  const { t } = useTranslation();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [reason, setReason] = useState("");
   const { withdrawable, required, kept } = planStaleWithdraw(items);
   if (items.length === 0) return null;
   const forOthers = withdrawable.filter((item) => attentionOtherAudienceUserId(item, currentUserId));
-  const noun = withdrawable.length === 1 ? "request" : "requests";
   const closeDialog = () => { setConfirmOpen(false); setReason(""); };
 
   return (
-    <section className="space-y-2" aria-label="Stale cards" data-attention-stale-group>
+    <section className="space-y-2" aria-label={t("decisions.staleGroup.aria", { defaultValue: "Stale cards" })} data-attention-stale-group>
       <IssueGroupHeader
-        label={`Stale (${items.length})`}
+        label={t("decisions.staleGroup.header", { count: items.length, defaultValue: `Stale (${items.length})` })}
         collapsible
         collapsed={!open}
         onToggle={onToggle}
@@ -534,7 +548,7 @@ export function AttentionStaleGroup({
         trailing={onWithdrawAll && withdrawable.length > 0 ? (
           <Button type="button" variant="outline" size="xs" disabled={busy} onClick={() => setConfirmOpen(true)}>
             <Ban aria-hidden="true" />
-            {busy ? "Withdrawing…" : "Withdraw all stale"}
+            {busy ? t("decisions.staleGroup.withdrawing", { defaultValue: "Withdrawing…" }) : t("decisions.staleGroup.withdrawAll", { defaultValue: "Withdraw all stale" })}
           </Button>
         ) : null}
       />
@@ -543,34 +557,34 @@ export function AttentionStaleGroup({
       <Dialog open={confirmOpen} onOpenChange={(next) => { if (!next) closeDialog(); }}>
         <DialogContent showCloseButton={false} data-attention-stale-withdraw-dialog>
           <DialogHeader>
-            <DialogTitle>Withdraw {withdrawable.length} stale {noun}?</DialogTitle>
+            <DialogTitle>{t("decisions.staleGroup.confirmTitle", { count: withdrawable.length, defaultValue: `Withdraw ${withdrawable.length} stale ${withdrawable.length === 1 ? "request" : "requests"}?` })}</DialogTitle>
             <DialogDescription>
-              Each request closes for everyone and its agent is told it is out of date. None of them counts as approved. You cannot undo this.
+              {t("decisions.staleGroup.confirmDescription", { defaultValue: "Each request closes for everyone and its agent is told it is out of date. None of them counts as approved. You cannot undo this." })}
             </DialogDescription>
           </DialogHeader>
           {forOthers.length > 0 && (
             <p className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm" data-attention-stale-for-others>
               {forOthers.length === 1
                 ? attentionForOtherText(attentionUserLabel(attentionOtherAudienceUserId(forOthers[0]!, currentUserId)!, userLabelMap), "continue")
-                : `${forOthers.length} of these are for other people. Continue?`}
+                : t("decisions.staleGroup.forOthersPlural", { count: forOthers.length, defaultValue: `${forOthers.length} of these are for other people. Continue?` })}
             </p>
           )}
-          <StaleItemList items={withdrawable} currentUserId={currentUserId} userLabelMap={userLabelMap} titleOf={titleOf} label="Will be withdrawn" />
+          <StaleItemList items={withdrawable} currentUserId={currentUserId} userLabelMap={userLabelMap} titleOf={titleOf} label={t("decisions.staleGroup.willBeWithdrawn", { defaultValue: "Will be withdrawn" })} />
           {required.length > 0 && (
-            <StaleItemList items={required} currentUserId={currentUserId} userLabelMap={userLabelMap} titleOf={titleOf} label="Stay open: required, withdraw one at a time" />
+            <StaleItemList items={required} currentUserId={currentUserId} userLabelMap={userLabelMap} titleOf={titleOf} label={t("decisions.staleGroup.stayOpenRequired", { defaultValue: "Stay open: required, withdraw one at a time" })} />
           )}
           {kept.length > 0 && (
-            <StaleItemList items={kept} currentUserId={currentUserId} userLabelMap={userLabelMap} titleOf={titleOf} label="Stay open: no request to withdraw" />
+            <StaleItemList items={kept} currentUserId={currentUserId} userLabelMap={userLabelMap} titleOf={titleOf} label={t("decisions.staleGroup.stayOpenNoRequest", { defaultValue: "Stay open: no request to withdraw" })} />
           )}
           <Textarea
             value={reason}
             onChange={(event) => setReason(event.target.value)}
-            placeholder="Why are they out of date? (optional, shown in history and to the agents)"
-            aria-label="Reason for withdrawing stale requests"
+            placeholder={t("decisions.staleGroup.reasonPlaceholder", { defaultValue: "Why are they out of date? (optional, shown in history and to the agents)" })}
+            aria-label={t("decisions.staleGroup.reasonAria", { defaultValue: "Reason for withdrawing stale requests" })}
             className="min-h-16 text-sm"
           />
           <DialogFooter className="sm:justify-between">
-            <Button type="button" variant="outline" onClick={closeDialog}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={closeDialog}>{t("Cancel")}</Button>
             <Button
               type="button"
               variant="destructive"
@@ -581,7 +595,7 @@ export function AttentionStaleGroup({
                 void onWithdrawAll?.(withdrawable, confirmedReason);
               }}
             >
-              Withdraw {withdrawable.length} {noun}
+              {t("decisions.staleGroup.confirmButton", { count: withdrawable.length, defaultValue: `Withdraw ${withdrawable.length} ${withdrawable.length === 1 ? "request" : "requests"}` })}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -608,6 +622,7 @@ function StaleItemList({
   userLabelMap?: ReadonlyMap<string, string> | null;
   titleOf: (item: AttentionItem) => string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-1">
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
@@ -620,7 +635,7 @@ function StaleItemList({
               <span className="min-w-0 truncate font-medium text-foreground">{titleOf(item)}</span>
               {task && <span className="font-mono text-xs text-muted-foreground">{task}</span>}
               <span className="text-xs text-muted-foreground">{attentionStaleChipText(item)}</span>
-              {otherUserId && <span className="text-xs text-muted-foreground">For @{attentionUserLabel(otherUserId, userLabelMap)}</span>}
+              {otherUserId && <span className="text-xs text-muted-foreground">{t("decisions.staleGroup.forUser", { user: attentionUserLabel(otherUserId, userLabelMap), defaultValue: `For @${attentionUserLabel(otherUserId, userLabelMap)}` })}</span>}
             </li>
           );
         })}

@@ -24,6 +24,16 @@
     "zh-CN": "全部责任用户",
     "reviewedEnglishHash": "efee37a555813bca3636bee772e8c478d8ac97c091f1c47ae9729f9685bdd1e4"
   },
+  "auditFeed.appsAndTools": {
+    "en": "Apps & tools",
+    "zh-CN": "应用与工具",
+    "reviewedEnglishHash": "b10a5c4456cf1cdcf0acceae3628a150a0807ec3dcc5ec43138943ebcc413513"
+  },
+  "auditFeed.caseIdAria": {
+    "en": "Case ID or identifier",
+    "zh-CN": "案例 ID 或编号",
+    "reviewedEnglishHash": "b41187defc072d444a0104b7b5eb5d98823a72cffd611afe4ac905b7528856ce"
+  },
   "auditFeed.clearFilters": {
     "en": "Clear filters",
     "zh-CN": "清除筛选",
@@ -40,9 +50,9 @@
     "reviewedEnglishHash": "7280b68ca169223439efbc81b4da34b20dc39d54c6ab9b064355db2ba422e58d"
   },
   "auditFeed.emptyAllDescription": {
-    "en": "As soon as anyone in your company does something, it shows up here.",
-    "zh-CN": "公司中有人执行操作后，活动会显示在此处。",
-    "reviewedEnglishHash": "29840ec0b75c5b5bf73c5eabe90fc0a3a8e4f62319cb1b9b16ad66903e428f3c"
+    "en": "As soon as anyone in your organization does something, it shows up here.",
+    "zh-CN": "当组织中的任何成员执行操作时，都会显示在这里。",
+    "reviewedEnglishHash": "f92445e6bdc834901a61e7266c89cc879b0bdcc5a89001f99248fea4af138bbf"
   },
   "auditFeed.enterpriseTitle": {
     "en": "Agent audit is a Paperclip Enterprise view",
@@ -53,6 +63,11 @@
     "en": "Entity",
     "zh-CN": "实体",
     "reviewedEnglishHash": "2ed3bb60c9af04774f0ea421f81bd64e65083c969a43360c5887b6e17d050794"
+  },
+  "auditFeed.entityFallback": {
+    "en": "entity",
+    "zh-CN": "实体",
+    "reviewedEnglishHash": "bca3685fea8acd4e4b5c149874e1aa2bad0708e7e5ed490f3cf0702cb7a8bb56"
   },
   "auditFeed.exportCsv": {
     "en": "Export CSV",
@@ -118,6 +133,26 @@
     "en": "Responsible user",
     "zh-CN": "责任用户",
     "reviewedEnglishHash": "aafb04857380906bd0a5d94fb5a8c1d19208064e92d9b403039cb455bc96856b"
+  },
+  "auditFeed.scopedToAgent": {
+    "en": "Scoped to one agent",
+    "zh-CN": "仅限单个智能体",
+    "reviewedEnglishHash": "03939ef965412468f1afce0d860e806eabccfb56c2193638a709e70733ea7d5e"
+  },
+  "auditFeed.scopedToCase": {
+    "en": "Case",
+    "zh-CN": "案例",
+    "reviewedEnglishHash": "15f86e24ed25aed154934fb1f3275d9b33e1ebaa64350694ed8661a7d6fc0f21"
+  },
+  "auditFeed.scopedToEntity": {
+    "en": "Scoped to {{entity}}",
+    "zh-CN": "仅限 {{entity}}",
+    "reviewedEnglishHash": "725713ef684e9e725c452686385a95be7f85fe2e46d7a7aaf921c20244407779"
+  },
+  "auditFeed.scopedToRun": {
+    "en": "Scoped to run {{runId}}",
+    "zh-CN": "仅限运行 {{runId}}",
+    "reviewedEnglishHash": "aac10807d8e3c7a9e48ca764f3ecc95ed2040ac7878aeea482b442333e360778"
   },
   "auditFeed.taskFallback": {
     "en": "the task",

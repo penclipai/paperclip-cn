@@ -656,6 +656,7 @@ interface IssueChatThreadProps {
     attachmentIds?: string[],
     clientRequestId?: string,
     runSettings?: ComposerRunSettings,
+    nativeCommand?: "swarm",
   ) => Promise<void>;
   onCancelRun?: () => Promise<void>;
   stopPending?: boolean;
@@ -1267,10 +1268,10 @@ function formatInteractionActorLabel(args: {
     return (
       userLabelMap?.get(userId) ??
       formatAssigneeUserLabel(userId, currentUserId, userLabelMap) ??
-      "Board"
+      translateInstant("Board")
     );
   }
-  return "System";
+  return translateInstant("System");
 }
 
 export { resolveIssueChatHumanAuthor } from "@/lib/issue-chat-human-author";
@@ -1366,15 +1367,15 @@ function IssueChatChainOfThought({
   let headerVerb: string;
   let headerSuffix: string | null = null;
   if (isActive) {
-    headerVerb = "Working";
-    if (liveElapsed) headerSuffix = `for ${liveElapsed}`;
+    headerVerb = translateInstant("issueChat.working", { defaultValue: "Working" });
+    if (liveElapsed) headerSuffix = translateInstant("issueChat.forDuration", { duration: liveElapsed, defaultValue: `for ${liveElapsed}` });
   } else if (segmentTiming) {
     const durationMs = segmentTiming.endMs - segmentTiming.startMs;
     const durationText = formatDurationWords(durationMs);
-    headerVerb = "Worked";
-    if (durationText) headerSuffix = `for ${durationText}`;
+    headerVerb = translateInstant("Worked");
+    if (durationText) headerSuffix = translateInstant("issueChat.forDuration", { duration: durationText, defaultValue: `for ${durationText}` });
   } else {
-    headerVerb = "Worked";
+    headerVerb = translateInstant("Worked");
   }
 
   const toolSummary = toolCountSummary(toolParts);
@@ -5976,7 +5977,7 @@ const IssueChatComposer = forwardRef<
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    aria-label={`Retry ${attachment.name}`}
+                    aria-label={translateInstant("issueChat.retryAttachmentAria", { name: attachment.name, defaultValue: `Retry ${attachment.name}` })}
                     disabled={!!uncertainSubmission}
                     onClick={() => retryUpload(attachment)}
                   >
@@ -5988,7 +5989,7 @@ const IssueChatComposer = forwardRef<
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    aria-label={`Remove ${attachment.name}`}
+                    aria-label={translateInstant("issueChat.removeAttachmentAria", { name: attachment.name, defaultValue: `Remove ${attachment.name}` })}
                     disabled={!!uncertainSubmission}
                     onClick={() =>
                       setComposerAttachments((current) =>
@@ -6138,7 +6139,7 @@ const IssueChatComposer = forwardRef<
             size="icon-sm"
             disabled={stopControl.stopping}
             onClick={() => void stopControl.stop()}
-            aria-label={stopControl.stopping ? "Stopping…" : "Stop"}
+            aria-label={stopControl.stopping ? translateInstant("Stopping…") : translateInstant("Stop")}
             title={translateInstant("Stop response")}
           >
             {stopControl.stopping ? (
@@ -6576,12 +6577,13 @@ export function IssueChatThread({
       attachmentIds,
       clientRequestId,
       runSettings,
+      nativeCommand,
     ) => {
       pendingSubmitScrollRef.current = true;
       clientRequestId ??= createUuid();
       const attempt = beginSubmission(clientRequestId, undefined, reopen);
       try {
-        await (runSettings
+        await (nativeCommand
           ? onAdd(
               body,
               reopen,
@@ -6589,7 +6591,17 @@ export function IssueChatThread({
               attachmentIds,
               clientRequestId,
               runSettings,
+              nativeCommand,
             )
+          : runSettings
+            ? onAdd(
+                body,
+                reopen,
+                reassignment,
+                attachmentIds,
+                clientRequestId,
+                runSettings,
+              )
           : onAdd(body, reopen, reassignment, attachmentIds, clientRequestId));
       } catch (error) {
         rejectSubmission(attempt, error);

@@ -1,4 +1,19 @@
 {
+  "agentAction.chatWithThisAgent": {
+    "en": "Chat with this agent",
+    "zh-CN": "与该智能体对话",
+    "reviewedEnglishHash": "9b309a540addaa061bec4f02158fbde0af14bc72929817691212cbb6e8577887"
+  },
+  "agentAction.clipboardUnavailable": {
+    "en": "Clipboard access is unavailable.",
+    "zh-CN": "无法访问剪贴板。",
+    "reviewedEnglishHash": "0899c211b77f93b01d7f705107c2a8fdaf7abcf96e7c995884b4cab415099cf2"
+  },
+  "agentAction.openActionsFor": {
+    "en": "Open actions for {{name}}",
+    "zh-CN": "打开 {{name}} 的操作菜单",
+    "reviewedEnglishHash": "f87c4f282342cbf410d41048323336ef21fe360df9fc7aad9f9d956e80599425"
+  },
   "agentAction.pauseAnyway": {
     "en": "Pause anyway",
     "zh-CN": "仍然暂停",

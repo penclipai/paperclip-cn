@@ -57,16 +57,24 @@ const PROVIDER_HOSTED_MCP_SLUGS = new Set([
   "hugging-face", "jira", "kernel", "local-falcon", "make", "manufact",
   "miro", "mixpanel", "netlify", "oreilly", "pagerduty", "planetscale",
   "postman", "razorpay", "resend", "sanity", "similarweb", "stripe",
-  "supabase", "ticket-tailor", "ticktick", "todoist", "webflow", "wix",
+  "ticket-tailor", "ticktick", "todoist", "webflow", "wix",
   "xero", "youcom",
 ]);
 
 const PROVIDER_ACCOUNT_SLUGS = new Set(["google", "openai", "openrouter", "xai"]);
 
 const STATIC_DESCRIPTION_KEYS: Record<string, string> = {
+  "1password": "apps.gallery.appDescription.1password",
   agentmail: "apps.gallery.appDescription.agentmail",
+  antigravity: "apps.gallery.appDescription.antigravity",
+  anthropic: "apps.gallery.appDescription.anthropic",
+  arcade: "apps.gallery.appDescription.arcade",
+  aws: "apps.gallery.appDescription.aws",
+  bedrock: "apps.gallery.appDescription.bedrock",
+  braintrust: "apps.gallery.appDescription.braintrust",
   "browser-use-cloud": "apps.gallery.appDescription.browserUseCloud",
   cognee: "apps.gallery.appDescription.cognee",
+  daytona: "apps.gallery.appDescription.daytona",
   fireflies: "apps.gallery.appDescription.fireflies",
   calendly: "apps.gallery.appDescription.calendly",
   "chat-completions-api": "apps.gallery.appDescription.chatCompletionsApi",
@@ -75,6 +83,8 @@ const STATIC_DESCRIPTION_KEYS: Record<string, string> = {
   exa: "apps.gallery.appDescription.exa",
   executor: "apps.gallery.appDescription.executor",
   firecrawl: "apps.gallery.appDescription.firecrawl",
+  "github-code-review-bot": "apps.gallery.appDescription.githubCodeReviewBot",
+  "github-copilot": "apps.gallery.appDescription.githubCopilot",
   "gsc-wizard": "apps.gallery.appDescription.gscWizard",
   local: "apps.gallery.appDescription.local",
   "messages-api": "apps.gallery.appDescription.messagesApi",
@@ -82,6 +92,9 @@ const STATIC_DESCRIPTION_KEYS: Record<string, string> = {
   "responses-api": "apps.gallery.appDescription.responsesApi",
   sentry: "apps.gallery.appDescription.sentry",
   shopify: "apps.gallery.appDescription.shopify",
+  supabase: "apps.gallery.appDescription.supabase",
+  tavily: "apps.gallery.appDescription.tavily",
+  "windsor-ai": "apps.gallery.appDescription.windsorAi",
 };
 
 /**
@@ -213,7 +226,9 @@ export function appCopyFor(
   };
   const staticDescriptionKey = STATIC_DESCRIPTION_KEYS[key];
   if (staticDescriptionKey) {
-    const tagline = translateInstant(staticDescriptionKey);
+    const tagline = fallbackTagline
+      ? translateInstant(staticDescriptionKey, { defaultValue: fallbackTagline })
+      : translateInstant(staticDescriptionKey);
     return { tagline, short: tagline };
   }
   if (PROVIDER_HOSTED_MCP_SLUGS.has(key)) {

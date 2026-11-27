@@ -29,6 +29,11 @@
     "zh-CN": "无外部对象",
     "reviewedEnglishHash": "cfe9bbc4c9eb6db3b61543ee48d6f4cffab1f58c437fc550477079b522824435"
   },
+  "issueFilters.externalObjects.rateLimited": {
+    "en": "Rate limited",
+    "zh-CN": "请求受限",
+    "reviewedEnglishHash": "a06130a5a2818ae524dd3b9b83846510af328eeeee38fb620eb0b398436cd552"
+  },
   "issueFilters.externalObjects.stale": {
     "en": "Stale",
     "zh-CN": "已过期",
@@ -43,6 +48,61 @@
     "en": "Live runs only",
     "zh-CN": "仅显示实时运行",
     "reviewedEnglishHash": "596632fc019ac3aeb6166f5ae7e84dcbafca112638bd4d9b203c49b32b8fa528"
+  },
+  "issueFilters.noAssignee": {
+    "en": "No assignee",
+    "zh-CN": "未分配负责人",
+    "reviewedEnglishHash": "d64d8cecf4ebff54afe8a87fed86f1dd654047995cd310132fc461f4355fdf9c"
+  },
+  "issueFilters.noAssigneesMatch": {
+    "en": "No assignees match.",
+    "zh-CN": "没有匹配的负责人。",
+    "reviewedEnglishHash": "12ec8f7c13c49bac3873fbc79c9aa5645c633694335d9775ee12beea299eab26"
+  },
+  "issueFilters.noCreatorsAvailable": {
+    "en": "No creators available.",
+    "zh-CN": "没有可用的创建者。",
+    "reviewedEnglishHash": "05d39bdba1e52b473989649d20df955218982180d14459badc215050942f4e28"
+  },
+  "issueFilters.noLabelsAvailable": {
+    "en": "No labels available.",
+    "zh-CN": "没有可用的标签。",
+    "reviewedEnglishHash": "16dd988c9b622801118d4b992c144db9f190eb2e3bb1387b4f4e40b0841744e5"
+  },
+  "issueFilters.noLabelsMatch": {
+    "en": "No labels match.",
+    "zh-CN": "没有匹配的标签。",
+    "reviewedEnglishHash": "095cf10366f8cd8621c4ea6728ae37c969a8c6b5dcace1a6219b3fdb62d06ffe"
+  },
+  "issueFilters.noProjectsAvailable": {
+    "en": "No projects available.",
+    "zh-CN": "没有可用的项目。",
+    "reviewedEnglishHash": "c3c79bf053c6ed299a17933cbda9d13f036ebbff63e98b6b8a722dcd0c3fa7d6"
+  },
+  "issueFilters.noProjectsMatch": {
+    "en": "No projects match.",
+    "zh-CN": "没有匹配的项目。",
+    "reviewedEnglishHash": "cca6fcc027db893440717b2bac6bd8754bc6b9ac86fd055c27c3a65ca0d85f5d"
+  },
+  "issueFilters.priority.critical": {
+    "en": "Critical",
+    "zh-CN": "紧急",
+    "reviewedEnglishHash": "427dd2969bd140bec3c1bcc7983da982f4815938cd4510ad0b2bad48ac5b55f9"
+  },
+  "issueFilters.priority.high": {
+    "en": "High",
+    "zh-CN": "高",
+    "reviewedEnglishHash": "c4ebc6d4a5832cd9415f906ad03661110c705a72381c8b8b145761d02e2dd23a"
+  },
+  "issueFilters.priority.low": {
+    "en": "Low",
+    "zh-CN": "低",
+    "reviewedEnglishHash": "f793de205ead5ac302c4a1627829dea41f176b1068b993a32373fc869918374b"
+  },
+  "issueFilters.priority.medium": {
+    "en": "Medium",
+    "zh-CN": "中",
+    "reviewedEnglishHash": "8e588cd187741f1cd76f5fab77b7208782a8c21d764ce7d7a4cf3ac4e0968873"
   },
   "issueFilters.quick.active": {
     "en": "Active",
@@ -64,9 +124,89 @@
     "zh-CN": "已完成",
     "reviewedEnglishHash": "11a6767d5674c7e45f7e00dc525762275b3a48491ad6045427d2609cc496c516"
   },
-  "issueFilters.externalObjects.rateLimited": {
-    "en": "Rate limited",
-    "zh-CN": "请求受限",
-    "reviewedEnglishHash": "a06130a5a2818ae524dd3b9b83846510af328eeeee38fb620eb0b398436cd552"
+  "issueFilters.removeCreatorAria": {
+    "en": "Remove creator {{name}}",
+    "zh-CN": "移除创建者 {{name}}",
+    "reviewedEnglishHash": "5022e43b43c05881d5748ad6d00ae464bb18cf2937ab5115e3d3fa19443ce36f"
+  },
+  "issueFilters.routineTasks": {
+    "en": "Routine tasks",
+    "zh-CN": "例行任务",
+    "reviewedEnglishHash": "e956b3d0fecb5adce6505ed5672c90d5e3aa172e8442efc31c4580d78cc45a93"
+  },
+  "issueFilters.searchGroupAria": {
+    "en": "Search {{target}}",
+    "zh-CN": "搜索{{target}}",
+    "reviewedEnglishHash": "52b280eec11fe7e2775bcaede84abd78e59a5ac72b3d2564e7fa763ad0185d93"
+  },
+  "issueFilters.searchGroupPlaceholder": {
+    "en": "Search {{target}}...",
+    "zh-CN": "搜索{{target}}...",
+    "reviewedEnglishHash": "07742c8fd79ec63aca7a4520d87a816a0789a25d1f683371d3f1cae5da3310d0"
+  },
+  "issueFilters.searchTarget.assignees": {
+    "en": "assignees",
+    "zh-CN": "负责人",
+    "reviewedEnglishHash": "3277b75954eb4b947c6c64a7adc98425d94a296e9d131d26b51a29f0edb39a9f"
+  },
+  "issueFilters.searchTarget.creators": {
+    "en": "creators",
+    "zh-CN": "创建者",
+    "reviewedEnglishHash": "20f9ac62a0279206734c206eab38019a6aec36757ad10d5c2a9f5c4306498a86"
+  },
+  "issueFilters.searchTarget.labels": {
+    "en": "labels",
+    "zh-CN": "标签",
+    "reviewedEnglishHash": "d772ebb4590212c65cc31888ee55c3a893d866d8479f84a4c0ca36918a3fa75f"
+  },
+  "issueFilters.searchTarget.projects": {
+    "en": "projects",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "2577c0f557b2e4b591e9587374c6330c9c64de8017d5a848a682a135251a6f6f"
+  },
+  "issueFilters.showAgentCreatedTasks": {
+    "en": "Show agent-created tasks",
+    "zh-CN": "显示智能体创建的任务",
+    "reviewedEnglishHash": "716d2a631e273a0c670fabbac48e4e9733382c7ac2420c29d38913de1aa9f088"
+  },
+  "issueFilters.updatedFromAria": {
+    "en": "Updated from",
+    "zh-CN": "更新起始日期",
+    "reviewedEnglishHash": "e99bac5c644b736c822f69a87b6dbdf4f6d77490ed7f2fd5bff577a5e92bf878"
+  },
+  "issueFilters.updatedToAria": {
+    "en": "Updated to",
+    "zh-CN": "更新截止日期",
+    "reviewedEnglishHash": "acf06f63e81a638e07a4a80a39d32190e26e33b5332e0d4e8ed5e8078dbb5842"
+  },
+  "issueFilters.updatedWithin.anyTime": {
+    "en": "Any time",
+    "zh-CN": "任意时间",
+    "reviewedEnglishHash": "5e7de49a40c3d7546e1c0e7a514ca92bd4c524553f6f3eadb8b9de6b35909dfe"
+  },
+  "issueFilters.updatedWithin.customRange": {
+    "en": "Custom range",
+    "zh-CN": "自定义范围",
+    "reviewedEnglishHash": "add9164abf66c6154545762c87e61c935084086ec51845233b7e5651a28f20dc"
+  },
+  "issueFilters.updatedWithin.last24Hours": {
+    "en": "Last 24 hours",
+    "zh-CN": "最近 24 小时",
+    "reviewedEnglishHash": "5c37cf8f018b4ac5c8f0ae78adca85f4184f901bb8b4d28327f87d7350357a57"
+  },
+  "issueFilters.updatedWithin.last30Days": {
+    "en": "Last 30 days",
+    "zh-CN": "最近 30 天",
+    "reviewedEnglishHash": "f8f03fb441b8b4ae1abf7d0f8dd534ae0244cd4b842d2c08e5d3530dcab04eed"
+  },
+  "issueFilters.updatedWithin.last3Days": {
+    "en": "Last 3 days",
+    "zh-CN": "最近 3 天",
+    "reviewedEnglishHash": "0dbf14750367c7de942bba3560739b4a3c635343440c447e964c0deba4a03ec1"
+  },
+  "issueFilters.updatedWithin.last7Days": {
+    "en": "Last 7 days",
+    "zh-CN": "最近 7 天",
+    "reviewedEnglishHash": "0603deca4fcb660f1c06a02621423721bd48084970ecf2b2de0e326dc783d191"
   }
 }

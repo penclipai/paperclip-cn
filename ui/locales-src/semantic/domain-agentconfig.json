@@ -299,6 +299,41 @@
     "zh-CN": "启用搜索",
     "reviewedEnglishHash": "3fbfebdf38783813a1a6468d429057c925be87aab5054ee88d63dbd4b413051a"
   },
+  "agentConfig.envBindConflict.anotherCompanySecret": {
+    "en": "another company secret",
+    "zh-CN": "另一个公司密钥",
+    "reviewedEnglishHash": "3509e2d44e7e79df7d18913d0ee9f4df9570ac6ecccc6a6da97bfbc216f37301"
+  },
+  "agentConfig.envBindConflict.choosePrefix": {
+    "en": ". Choose ",
+    "zh-CN": "。请选择",
+    "reviewedEnglishHash": "62778c1fe6ddf973696e1e59a221a64e4fb197f1cb7b63dbdb3a23bf628b019a"
+  },
+  "agentConfig.envBindConflict.chooseSuffix": {
+    "en": " to keep the existing variable, or confirm replacing it.",
+    "zh-CN": "以保留现有变量，或确认将其替换。",
+    "reviewedEnglishHash": "2c62e41204367fb569ab21963fcce1e96daeb2f5ced9cadbf0891382c7430916"
+  },
+  "agentConfig.envBindConflict.isAlreadySetAs": {
+    "en": "is already set as",
+    "zh-CN": "已设置为",
+    "reviewedEnglishHash": "2225fbf28e428dde98bdf60947af03908dfc0aac71d85b8495e92d18cb860b9e"
+  },
+  "agentConfig.envBindConflict.plainValue": {
+    "en": "a plain value",
+    "zh-CN": "普通变量值",
+    "reviewedEnglishHash": "34f8ffc771f5885a1cf7e8e0356c62ab31117dac93a67d2ada92c255a14af7b3"
+  },
+  "agentConfig.envBindConflict.title": {
+    "en": "Environment variable already exists",
+    "zh-CN": "环境变量已存在",
+    "reviewedEnglishHash": "160d04cd7661e5e44e7604bda067e45069b9094d52b9dc0773ca9985bcc7205c"
+  },
+  "agentConfig.envBindConflict.userSecret": {
+    "en": "a user secret",
+    "zh-CN": "用户密钥",
+    "reviewedEnglishHash": "1fc9a3b2e124f9f2f4755087c098b11371df422c4d3938e6981c180df38e2c6d"
+  },
   "agentConfig.envKeyPlaceholder": {
     "en": "KEY",
     "zh-CN": "KEY",
@@ -434,15 +469,35 @@
     "zh-CN": "此智能体的运行方式：本地 CLI（Claude/Codex/CodeBuddy/Qwen/OpenCode）、OpenClaw Gateway、派生进程或通用 HTTP webhook。",
     "reviewedEnglishHash": "137bcb59817b0e6bda8ebfc5b3191a182314f8529e8f69f45e9c31e8d3e79f4c"
   },
+  "agentConfig.help.args": {
+    "en": "Command-line arguments, comma-separated.",
+    "zh-CN": "命令行参数，以英文逗号分隔。",
+    "reviewedEnglishHash": "e45feffdc8386d4c20afa06ea02096d06d94d01839057156cb82aa54ece0445a"
+  },
   "agentConfig.help.bootstrapPrompt": {
     "en": "Only sent when Paperclip starts a fresh session. Use this for stable setup guidance that should not be repeated on every heartbeat.",
     "zh-CN": "仅在 Paperclip 启动新会话时发送。适合放稳定的初始化说明，不应在每次心跳重复发送。",
     "reviewedEnglishHash": "30828fb4bfebcc39196ef773219575cc29fcfb0d4745d21965d343960a9c3dd8"
   },
+  "agentConfig.help.budgetMonthlyCents": {
+    "en": "Monthly spending limit in cents. 0 means no limit.",
+    "zh-CN": "月度消费上限（单位：美分）。0 表示不设上限。",
+    "reviewedEnglishHash": "a62d24f20f26a12589fb73a2555954687225666834783d72ab9a504ce9d61a53"
+  },
   "agentConfig.help.capabilities": {
     "en": "Describes what this agent can do. Shown in the org chart and used for task routing.",
     "zh-CN": "描述这个智能体能做什么。会显示在组织架构图中，并用于任务路由。",
     "reviewedEnglishHash": "eae8c70d35f43e2f0d979f78959f4b47ffa017a99555262be2e760b1795e17ad"
+  },
+  "agentConfig.help.chrome": {
+    "en": "Enable Claude's Chrome integration by passing --chrome.",
+    "zh-CN": "通过传递 --chrome 启用 Claude 的 Chrome 集成。",
+    "reviewedEnglishHash": "fca18a33c10e43a12e0cd2d1565231728ed264395d722593e881e4697dee4454"
+  },
+  "agentConfig.help.command": {
+    "en": "The command to execute (e.g. node, python).",
+    "zh-CN": "要执行的命令（例如 node、python）。",
+    "reviewedEnglishHash": "755a5e6fd111fc28d0169c5f4d8e254e085af8f873764341d6a9dff731d055cc"
   },
   "agentConfig.help.cooldownSec": {
     "en": "Minimum seconds between consecutive heartbeat runs.",
@@ -454,6 +509,16 @@
     "zh-CN": "本地适配器的旧版工作目录回退设置，已弃用。现有智能体可能仍带有此值，新配置应改用项目工作区。",
     "reviewedEnglishHash": "fceb82f854d3d8ab11c97bcec06b0b26c5c9c1050aab7553591054db49b481f7"
   },
+  "agentConfig.help.dangerouslyBypassSandbox": {
+    "en": "Run Codex without sandbox restrictions. Required for filesystem/network access.",
+    "zh-CN": "在无沙箱限制的情况下运行 Codex。访问文件系统或网络时需要启用。",
+    "reviewedEnglishHash": "3c9aee19d1f8090cb11b70ab1223c40f9bd76719332a42c82f7bc3b97b5234d6"
+  },
+  "agentConfig.help.dangerouslySkipPermissions": {
+    "en": "Run unattended by auto-approving adapter permission prompts when supported.",
+    "zh-CN": "在支持的情况下自动批准适配器权限提示，以无人值守方式运行。",
+    "reviewedEnglishHash": "bf4d9539d46673a505a54bd644d10fd7b88b729ed895de909ba9b956d77cdc9d"
+  },
   "agentConfig.help.envVars": {
     "en": "Environment variables injected into the adapter process. Use plain values or secret references.",
     "zh-CN": "注入适配器进程的环境变量。可以使用明文值或密钥引用。",
@@ -463,6 +528,11 @@
     "en": "Extra CLI arguments for local adapters, comma-separated.",
     "zh-CN": "传给本地适配器的额外 CLI 参数，用逗号分隔。",
     "reviewedEnglishHash": "2ead66f745bf3dfb202432ca1cb2e0a7625f349e1524b6e4ebc7c6d25fad9371"
+  },
+  "agentConfig.help.fastMode": {
+    "en": "Enable Codex Fast mode. This burns credits/tokens much faster and is supported on GPT-6, GPT-5.6, GPT-5.5, GPT-5.4, and manual Codex model IDs.",
+    "zh-CN": "启用 Codex Fast 模式。这会更快消耗额度与词元，适用于 GPT-6、GPT-5.6、GPT-5.5、GPT-5.4 及手动指定的 Codex 模型 ID。",
+    "reviewedEnglishHash": "ba706d7bdd82697a2acd2af0637f7d9695357f320b8c4313ce55d8a140f891bc"
   },
   "agentConfig.help.graceSec": {
     "en": "Seconds to wait after sending interrupt before force-killing the process.",
@@ -504,6 +574,11 @@
     "zh-CN": "一次 max-turn 停止后最多自动续跑多少次。这个值独立于每次运行的最大 turn 数。",
     "reviewedEnglishHash": "190d072ed313ac0fa8e4a858f78597285f741cdd4739dcce94c0159d526c1a8b"
   },
+  "agentConfig.help.maxTurnsPerRun": {
+    "en": "Maximum number of agentic turns (tool calls) per heartbeat run.",
+    "zh-CN": "每次心跳运行中智能体轮次（工具调用）的最大上限。",
+    "reviewedEnglishHash": "207554082d07d2bf616304013b4b78a33384056e0e2a12a190f575fd22ca65ce"
+  },
   "agentConfig.help.model": {
     "en": "Override the default model used by the adapter.",
     "zh-CN": "覆盖适配器使用的默认模型。",
@@ -514,6 +589,11 @@
     "zh-CN": "此智能体的显示名称。",
     "reviewedEnglishHash": "6bbe791c319d0e906d949934b3dec3804029537338c839705a527d743f0f26c5"
   },
+  "agentConfig.help.payloadTemplateJson": {
+    "en": "Optional JSON merged into remote adapter request payloads before Paperclip adds its standard wake and workspace fields.",
+    "zh-CN": "可选 JSON，会在 Paperclip 添加标准唤醒和工作区字段之前合并到远程适配器请求载荷中。",
+    "reviewedEnglishHash": "bbb83eae764e077c499c97e41c15d168221746cc77ef66fc8efb86e1baa0d6db"
+  },
   "agentConfig.help.promptTemplate": {
     "en": "Sent on every heartbeat. Keep this small and dynamic. Use it for current-task framing, not large static instructions. Supports agent.id, agent.name, agent.role, and other template variables.",
     "zh-CN": "每次心跳都会发送。保持短小、动态，用于当前任务框架，不要放大量静态说明。支持 agent.id、agent.name、agent.role 等模板变量。",
@@ -523,6 +603,26 @@
     "en": "The agent this one reports to in the org hierarchy.",
     "zh-CN": "该智能体在组织层级中汇报给谁。",
     "reviewedEnglishHash": "0e5a93fe2edd5b8bed9af3e45a767c592b14481e276ba2ba412eae1075edbfa4"
+  },
+  "agentConfig.help.role": {
+    "en": "Organizational role. Determines position and capabilities.",
+    "zh-CN": "组织角色。决定位置与职责权限。",
+    "reviewedEnglishHash": "0300a003cb414124238393ee20b5e1150a8f1b909360f42564b4d5d1ebf7c49e"
+  },
+  "agentConfig.help.runtimeServicesJson": {
+    "en": "Optional workspace runtime service definitions. Use this for shared app servers, workers, or other long-lived companion processes attached to the workspace.",
+    "zh-CN": "可选的工作区运行时服务定义。用于绑定到工作区的共享应用服务器、工作进程或其他常驻辅助进程。",
+    "reviewedEnglishHash": "b9f8336c351a364883c201e8fa2f77e186e215cb8a1809676e4bb0101a129f4e"
+  },
+  "agentConfig.help.search": {
+    "en": "Enable Codex web search capability during runs.",
+    "zh-CN": "在运行期间启用 Codex 网页搜索能力。",
+    "reviewedEnglishHash": "6bfbb11c239b718c2c2747398f1c1e9caf254867ac859bcb115b298d10a2790c"
+  },
+  "agentConfig.help.secretAccess": {
+    "en": "Secrets this agent can reach. Env-var bindings are injected at run start; API-access bindings are fetched on demand via the run-bound agent API and never written to the environment.",
+    "zh-CN": "此智能体可访问的密钥。环境变量绑定会在运行开始时注入；API 访问绑定则在运行时通过受运行绑定的智能体 API 按需获取，绝不会写入环境变量。",
+    "reviewedEnglishHash": "85da38102cdc670d759b55917322c88afab62465b4c1ef23550a2292bedfcf7e"
   },
   "agentConfig.help.thinkingEffort": {
     "en": "Control model reasoning depth. Supported values vary by adapter/model.",
@@ -543,6 +643,31 @@
     "en": "Allow this agent to be woken by assignments, API calls, UI actions, or automated systems.",
     "zh-CN": "允许此智能体被任务分配、API 调用、UI 操作或自动化系统唤醒。",
     "reviewedEnglishHash": "5d7951c2fd6e67f94545bf9311d5f92a73e762da32dab696755824da47a12d95"
+  },
+  "agentConfig.help.webhookUrl": {
+    "en": "The URL that receives POST requests when the agent is invoked.",
+    "zh-CN": "在调用智能体时接收 POST 请求的 URL。",
+    "reviewedEnglishHash": "f89f4cbef8ddd07b67b396bae1a891f35bb4ef4d92f45160030879b47af8748c"
+  },
+  "agentConfig.help.workspaceBaseRef": {
+    "en": "Base git ref used when creating a worktree branch. Leave blank to use the resolved workspace ref or HEAD.",
+    "zh-CN": "创建 worktree 分支时使用的基础 Git 引用。留空则使用解析出的工作区引用或 HEAD。",
+    "reviewedEnglishHash": "b93b16da0851126a851c6b7068a87b8a5b40252b9a5276ee27d418ef5033b6e8"
+  },
+  "agentConfig.help.workspaceBranchTemplate": {
+    "en": "Template for naming derived branches. Supports {{issue.identifier}}, {{issue.title}}, {{agent.name}}, {{project.id}}, {{workspace.repoRef}}, and {{slug}}.",
+    "zh-CN": "派生分支的命名模板。支持 {{issue.identifier}}、{{issue.title}}、{{agent.name}}、{{project.id}}、{{workspace.repoRef}} 和 {{slug}}。",
+    "reviewedEnglishHash": "1f6eee6b752c8d56605de222cfa9b5c6787d6160eb9e92b97a53c6f3326b8983"
+  },
+  "agentConfig.help.workspaceStrategy": {
+    "en": "How Paperclip should realize an execution workspace for this agent. Keep project_primary for normal cwd execution, or use git_worktree for issue-scoped isolated checkouts.",
+    "zh-CN": "Paperclip 为此智能体构建执行工作区的方式。保留 project_primary 可在常规工作目录中执行，使用 git_worktree 则为每个任务创建隔离签出目录。",
+    "reviewedEnglishHash": "7e77073d53f2cfd86fda980247bd2d3c93043a7d3b949e5670236a43d337d57a"
+  },
+  "agentConfig.help.worktreeParentDir": {
+    "en": "Directory where derived worktrees should be created. Absolute, ~-prefixed, and repo-relative paths are supported.",
+    "zh-CN": "用于创建派生 worktree 的目录。支持绝对路径、~ 开头路径以及相对于仓库的路径。",
+    "reviewedEnglishHash": "14855553b57c1a9d124690ba185b717d3de8eba10109d7dd2da6307f3a3b377e"
   },
   "agentConfig.high": {
     "en": "High",

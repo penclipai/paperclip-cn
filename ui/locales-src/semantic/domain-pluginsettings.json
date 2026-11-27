@@ -1,0 +1,17 @@
+{
+  "pluginSettings.categories.ui": {
+    "en": "UI",
+    "zh-CN": "界面",
+    "reviewedEnglishHash": "7c32699ff595e13b5c1315db137593163f4e28052592c776bea23471139b2422"
+  },
+  "pluginSettings.categories.workspace": {
+    "en": "Workspace",
+    "zh-CN": "工作区",
+    "reviewedEnglishHash": "87bb59ba2f92f2a5a9f13e021fd58dd14ae5c065b1046146875e6e68d5ebc8b7"
+  },
+  "pluginSettings.noDescription": {
+    "en": "No description provided.",
+    "zh-CN": "暂无描述。",
+    "reviewedEnglishHash": "2527a18acbadb69ede74ddab676d4dd8dbc7198d4abde9267f0db4e1ec466512"
+  }
+}

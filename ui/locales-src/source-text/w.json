@@ -404,6 +404,11 @@
     "zh-CN": "带图标",
     "reviewedEnglishHash": "1f71f4bc7203e22d5af86ac80c85fc2925aed9fdf5e0a38bde235df6b39c2271"
   },
+  "Withdrawn": {
+    "en": "Withdrawn",
+    "zh-CN": "已撤回",
+    "reviewedEnglishHash": "00c0b03fcfa2ac02fc0be8f640ccb282dc899197395335c38f2051f36f25d98b"
+  },
   "Withdrawn by": {
     "en": "Withdrawn by",
     "zh-CN": "撤回人：",
@@ -568,6 +573,11 @@
     "en": "Worktrees ·",
     "zh-CN": "工作树 ·",
     "reviewedEnglishHash": "0b4b48f7b678f72f055acd447d6fe1bc350673bc58842c96273f450b10331dbb"
+  },
+  "Wrap lines": {
+    "en": "Wrap lines",
+    "zh-CN": "自动换行",
+    "reviewedEnglishHash": "6727132ac799a2564bfae0065fed0ce09ed99e4e1ecee7b954d4d38892ff7590"
   },
   "Writable": {
     "en": "Writable",

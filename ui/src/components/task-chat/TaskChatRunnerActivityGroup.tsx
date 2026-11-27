@@ -36,7 +36,7 @@ import {
 import { TaskChatUsageReadout } from "./TaskChatUsageReadout";
 import { TaskChatReasoningSummary } from "./TaskChatReasoningSummary";
 import { latestReasoningHeadline } from "./reasoning-summary";
-import { toolActivityPresentation, type ToolIcon } from "./tool-taxonomy";
+import { retriedLabel, sentenceRowLabel, SUBJECT_FAMILIES, subjectRowLabel, toolActivityPresentation, type ToolIcon } from "./tool-taxonomy";
 import { useTaskChatShimmer } from "./TaskChatShimmer";
 import { TaskChatDiffCounts, TaskChatDiffView } from "./TaskChatDiffView";
 import { useTaskReferenceLabel, withTaskReference } from "./task-reference";
@@ -45,15 +45,6 @@ import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 type Activity = TaskChatActivityPhaseItem["items"][number];
 type ToolActivity = Extract<Activity, { kind: "tool" }>;
 
-/** Families whose rows read as "<verb> <subject>", for example "Ran $ node --test". */
-const SUBJECT_FAMILIES = new Set([
-  "terminal",
-  "read",
-  "edit",
-  "grep",
-  "search",
-  "web",
-]);
 const READ_RUN_MIN = 3;
 
 /** "120ms", "1.2s", "14s", "2m 03s". */
@@ -134,7 +125,7 @@ function presentation(
       active && (item.status === "pending" || item.status === "in_progress");
     const label =
       item.status === "failed"
-        ? tool.failedLabel
+        ? item.retried ? retriedLabel(tool.failedLabel) : tool.failedLabel
         : item.status === "interrupted"
           ? tool.interruptedLabel
           : running
@@ -148,18 +139,11 @@ function presentation(
     // With a concrete subject, the verb alone reads better: "Read README.md".
     // A finished command needs no verb at all: the icon and "$" say it ran.
     // A failure or stop keeps its marker ("Read · failed") unless an exit
-    // chip already says how a command ended.
-    const marker =
-      item.status === "failed" || item.status === "interrupted"
-        ? label.split(" · ").at(1)
-        : undefined;
-    const verb =
-      subject && SUBJECT_FAMILIES.has(tool.family)
-        ? terminal &&
-          !running &&
-          (item.status === "completed" || item.exitCode != null)
-          ? ""
-          : `${label.split(" ")[0]!}${marker ? ` · ${marker}` : ""}`
+    // chip already says how a command ended. Live rows use the same helper.
+    const verb = subject && tool.sentenceSubject
+      ? sentenceRowLabel(label)
+      : subject && SUBJECT_FAMILIES.has(tool.family)
+        ? subjectRowLabel(label, terminal && !running && (item.status === "completed" || item.exitCode != null))
         : label;
     // Exit 0 is only news for commands; for reads and searches it is noise.
     const exitCode = item.exitCode ?? null;
@@ -189,7 +173,7 @@ function presentation(
     const running = active && Boolean(item.streaming);
     return {
       icon: Brain,
-      label: running ? "Thinking" : "Thought",
+      label: running ? translateInstant("Thinking") : translateInstant("taskChat.thought", { defaultValue: "Thought" }),
       target:
         latestReasoningHeadline(item.lines.join("\n")) ??
         item.lines
@@ -238,7 +222,7 @@ function presentation(
     .join(" · ");
   return {
     icon: Gauge,
-    label: item.label ?? "Token usage",
+    label: item.label ?? translateInstant("Token usage"),
     target: usage || item.detail,
     mono: false,
     running: false,
@@ -518,7 +502,7 @@ function ActivityDetailsBody({ item }: { item: Activity }) {
         <p className="break-all font-mono">{item.target}</p>
       ) : null}
       {item.blockedReason ? (
-        <p className="text-destructive">Blocked: {item.blockedReason}</p>
+        <p className="text-destructive">{translateInstant("taskChat.blockedWithReason", { reason: item.blockedReason, defaultValue: `Blocked: ${item.blockedReason}` })}</p>
       ) : null}
       {item.detail ? (
         <pre className={cn("whitespace-pre-wrap break-words font-mono", ANALYTICS_MASK_CLASS)}>
@@ -679,7 +663,7 @@ function ReadRunActivity({ items }: { items: ToolActivity[] }) {
             <BookOpen className="size-3.5" aria-hidden="true" />
           </span>
           <span className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden whitespace-nowrap">
-            <span className="shrink-0 text-xs">Read {items.length} files</span>
+            <span className="shrink-0 text-xs">{translateInstant("taskChat.readFilesCount", { count: items.length, defaultValue: `Read ${items.length} files` })}</span>
             <span className="truncate font-mono text-xs text-muted-foreground">
               {readRunPreview(items)}
             </span>
@@ -694,7 +678,7 @@ function ReadRunActivity({ items }: { items: ToolActivity[] }) {
         <ol
           id={listId}
           className="ml-2.5 flex min-w-0 flex-col border-l border-border pl-2"
-          aria-label="Files read"
+          aria-label={translateInstant("taskChat.filesReadAria", { defaultValue: "Files read" })}
         >
           {items.map((item) => (
             <ExpandedActivity key={item.id} item={item} active={false} />
@@ -765,7 +749,9 @@ export function TaskChatRunnerActivityGroup({
             onClick={() => setExpanded(!expanded)}
             aria-expanded={expanded}
             aria-controls={expanded ? historyId : undefined}
-            aria-label={`${expanded ? "Collapse" : "Expand"} ${item.active ? countLabel : `${summary.fullLabel.toLowerCase()} (${countLabel})`}`}
+            aria-label={expanded
+              ? translateInstant("taskChat.collapseActivityAria", { detail: item.active ? countLabel : `${summary.fullLabel.toLowerCase()} (${countLabel})`, defaultValue: `Collapse ${item.active ? countLabel : `${summary.fullLabel.toLowerCase()} (${countLabel})`}` })
+              : translateInstant("taskChat.expandActivityAria", { detail: item.active ? countLabel : `${summary.fullLabel.toLowerCase()} (${countLabel})`, defaultValue: `Expand ${item.active ? countLabel : `${summary.fullLabel.toLowerCase()} (${countLabel})`}` })}
           >
             {!item.active ? (
               <span

@@ -1,0 +1,22 @@
+{
+  "nav.pinItem": {
+    "en": "Pin {{label}}",
+    "zh-CN": "固定 {{label}}",
+    "reviewedEnglishHash": "cfb82257aae0c32d12788faa6e07ff00f49a7f5b03216d4c1992a4fd10bb3753"
+  },
+  "nav.pinToSidebar": {
+    "en": "Pin {{label}} to sidebar",
+    "zh-CN": "将 {{label}} 固定到侧边栏",
+    "reviewedEnglishHash": "d163c392826d0a0371a61bfc7a7a5cb343f7643f96571cd4c0b8b340fd4e5aa2"
+  },
+  "nav.unpinFromSidebar": {
+    "en": "Unpin {{label}} from sidebar",
+    "zh-CN": "从侧边栏取消固定 {{label}}",
+    "reviewedEnglishHash": "f278cdcd5a7bb9fbf393d8ff09aa8a5f00c18642c1bb052e10fc5b11586770dd"
+  },
+  "nav.unpinItem": {
+    "en": "Unpin {{label}}",
+    "zh-CN": "取消固定 {{label}}",
+    "reviewedEnglishHash": "827abc1784e2f55626497f4f7f383b1581f15fcab81942fd24e6302bd6f25baa"
+  }
+}

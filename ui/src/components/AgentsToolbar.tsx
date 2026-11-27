@@ -1,4 +1,5 @@
 import type { ReactNode, Ref } from "react";
+import { useTranslation } from "react-i18next";
 import { List, Network, Plus } from "lucide-react";
 import { ToolbarSearch } from "./ToolbarSearch";
 import { Button } from "./ui/button";
@@ -18,12 +19,13 @@ export interface AgentsToolbarProps {
 
 /** Shared roster search, view controls and actions for the page and stories. */
 export function AgentsToolbar({ query, onQueryChange, view, onViewChange, hideViewToggle, onNewAgent, filters, orgControlsRef, orgActions }: AgentsToolbarProps) {
-  return <div data-canonical-toolbar="agents" role="toolbar" aria-label="Agents controls" className="flex flex-wrap items-center gap-3">
+  const { t } = useTranslation();
+  return <div data-canonical-toolbar="agents" role="toolbar" aria-label={t("agents.toolbar.ariaLabel", { defaultValue: "Agents controls" })} className="flex flex-wrap items-center gap-3">
     <div className="design-toolbar-controls flex w-full flex-wrap items-center gap-4">
-      <ToolbarSearch query={query} onQueryChange={onQueryChange} label="Search agents" placeholder="Search agents…" />
-      {!hideViewToggle && <div className="design-view-toggle" role="group" aria-label="Agent view">
-          <Button type="button" size="icon-sm" variant={view === "list" ? "secondary" : "ghost"} className="design-toolbar-icon" onClick={() => onViewChange("list")} title="List view" aria-label="List view" aria-pressed={view === "list"}><List aria-hidden /></Button>
-          <Button type="button" size="icon-sm" variant={view === "org" ? "secondary" : "ghost"} className="design-toolbar-icon" onClick={() => onViewChange("org")} title="Org chart view" aria-label="Org chart view" aria-pressed={view === "org"}><Network aria-hidden /></Button>
+      <ToolbarSearch query={query} onQueryChange={onQueryChange} label={t("agents.toolbar.searchLabel", { defaultValue: "Search agents" })} placeholder={t("agents.toolbar.searchPlaceholder", { defaultValue: "Search agents…" })} />
+      {!hideViewToggle && <div className="design-view-toggle" role="group" aria-label={t("agents.toolbar.viewGroup", { defaultValue: "Agent view" })}>
+          <Button type="button" size="icon-sm" variant={view === "list" ? "secondary" : "ghost"} className="design-toolbar-icon" onClick={() => onViewChange("list")} title={t("agents.toolbar.listView", { defaultValue: "List view" })} aria-label={t("agents.toolbar.listView", { defaultValue: "List view" })} aria-pressed={view === "list"}><List aria-hidden /></Button>
+          <Button type="button" size="icon-sm" variant={view === "org" ? "secondary" : "ghost"} className="design-toolbar-icon" onClick={() => onViewChange("org")} title={t("agents.toolbar.orgView", { defaultValue: "Org chart view" })} aria-label={t("agents.toolbar.orgView", { defaultValue: "Org chart view" })} aria-pressed={view === "org"}><Network aria-hidden /></Button>
       </div>}
       {filters}
       <div className="design-toolbar-actions">
@@ -33,7 +35,7 @@ export function AgentsToolbar({ query, onQueryChange, view, onViewChange, hideVi
             <div className="min-w-0 overflow-hidden"><OrgChartControls {...orgActions} /></div>
           </div>
         )}
-        <Button size="sm" variant="outline" data-toolbar-primary onClick={onNewAgent}><Plus aria-hidden />New Agent</Button>
+        <Button size="sm" variant="outline" data-toolbar-primary onClick={onNewAgent}><Plus aria-hidden />{t("New Agent", { defaultValue: "New Agent" })}</Button>
       </div>
     </div>
   </div>;

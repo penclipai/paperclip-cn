@@ -9,6 +9,11 @@
     "zh-CN": "清除产物搜索",
     "reviewedEnglishHash": "3bbc1b58ad114a7aef32a5d51854712c41dc207e9678f7a444159dd44436f00e"
   },
+  "artifacts.controlsAria": {
+    "en": "Artifacts controls",
+    "zh-CN": "产物控件",
+    "reviewedEnglishHash": "e239d8d34234b03a266d766c9a00f06cc260b7de2195d916988b56776ee8d07d"
+  },
   "artifacts.downloadFile": {
     "en": "Download file",
     "zh-CN": "下载文件",
@@ -31,17 +36,17 @@
   },
   "artifacts.emptySelectedStack": {
     "en": "No artifacts in this stack match the current filters.",
-    "zh-CN": "当前筛选条件下，这个堆栈中没有匹配的产物。",
+    "zh-CN": "当前筛选条件下，该产物分组中没有匹配的产物。",
     "reviewedEnglishHash": "16f4a28e29bb6e3f15157adf950b2d73b5ee4a40958ea12e7b917575b0d03961"
   },
   "artifacts.emptyStackSearch": {
     "en": "No artifact stacks match this search.",
-    "zh-CN": "没有产物堆栈匹配本次搜索。",
+    "zh-CN": "没有产物分组匹配本次搜索。",
     "reviewedEnglishHash": "a3b3ddf7910b88d31d14a41782bd72a5513b53c35a01d2b8fca4fad97be033d5"
   },
   "artifacts.emptyStacks": {
     "en": "No artifact stacks yet.",
-    "zh-CN": "还没有产物堆栈。",
+    "zh-CN": "暂无产物。",
     "reviewedEnglishHash": "7f21bb0ea0e278e3ba83b0cf1e9bbd8daec773945960c12b6543014d3aceb56d"
   },
   "artifacts.filter.all": {
@@ -179,6 +184,16 @@
     "zh-CN": "选择一家公司来查看产物。",
     "reviewedEnglishHash": "c1d86da6dda17558102f5254d3626211010c17a4d1ce84f1eabafa6653326948"
   },
+  "artifacts.tile.openSingle": {
+    "en": "Open {{name}}",
+    "zh-CN": "打开 {{name}}",
+    "reviewedEnglishHash": "e0f8c156c3df563d698eb036605a0db336b9a9778cfec39a8a77130c5cf0c60a"
+  },
+  "artifacts.tile.openStack": {
+    "en": "Open {{identifier}} {{title}}, {{countLabel}}",
+    "zh-CN": "打开 {{identifier}} {{title}}，{{countLabel}}",
+    "reviewedEnglishHash": "4d89eade35eadb0de28a8872a5063ed7f668d1991baa31e12f6e76cec6be65dd"
+  },
   "artifacts.title": {
     "en": "Artifacts",
     "zh-CN": "产物",
@@ -188,5 +203,50 @@
     "en": "Updating artifacts...",
     "zh-CN": "正在更新产物...",
     "reviewedEnglishHash": "e40329f09171d0397e164a5eefe7802ca48b39081d2b35f0cf078e29ddf2b5e8"
+  },
+  "artifacts.v1.allFiles": {
+    "en": "All files",
+    "zh-CN": "全部文件",
+    "reviewedEnglishHash": "866956901fd1536273ad6dd922ba6ae8f46bf4cc51a14b5f21353cdd56d7570d"
+  },
+  "artifacts.v1.filterAria": {
+    "en": "Show artifacts by task or by type",
+    "zh-CN": "按任务或类型显示产物",
+    "reviewedEnglishHash": "faa1d8e27ffd38e97fcc0377d61e08f464dc532d523012f37b2b244897295c14"
+  },
+  "artifacts.v1.tasks": {
+    "en": "Tasks",
+    "zh-CN": "按任务",
+    "reviewedEnglishHash": "b3a60e61a5233d0506ac737405a2a45280349683cac68722f18d0b73eb495ef4"
+  },
+  "artifacts.when.count": {
+    "en": "{{count}} Artifacts",
+    "zh-CN": "{{count}} 个产物",
+    "reviewedEnglishHash": "75e885d9254ddd041337d3432880cf02da4957e6c0ff97c57f158ea460d6ab87"
+  },
+  "artifacts.when.count_one": {
+    "en": "{{count}} Artifact",
+    "zh-CN": "{{count}} 个产物",
+    "reviewedEnglishHash": "caf29417ef0f390921ae1a0f384eb496d2e4b432f3bee4319ff65a0831b8af01"
+  },
+  "artifacts.when.count_other": {
+    "en": "{{count}} Artifacts",
+    "zh-CN": "{{count}} 个产物",
+    "reviewedEnglishHash": "75e885d9254ddd041337d3432880cf02da4957e6c0ff97c57f158ea460d6ab87"
+  },
+  "artifacts.when.daysAgoShort": {
+    "en": "{{days}}D ago",
+    "zh-CN": "{{days}} 天前",
+    "reviewedEnglishHash": "048b1b08e367ae779fab2a08dfbf4fb14aca959da81c2ef085fae5f2acbe4568"
+  },
+  "artifacts.when.today": {
+    "en": "Today",
+    "zh-CN": "今天",
+    "reviewedEnglishHash": "2b065c7c9ce466e5ebcad757987d5d660ee4c9ea708bc62c43444b53334738ba"
+  },
+  "artifacts.when.yesterday": {
+    "en": "Yesterday",
+    "zh-CN": "昨天",
+    "reviewedEnglishHash": "566181254b293aa66653e43313be9e39c12d44f9ac4fcd3236ef1e9c50a2903f"
   }
 }

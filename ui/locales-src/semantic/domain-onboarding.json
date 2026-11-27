@@ -119,6 +119,21 @@
     "zh-CN": "此环境不支持浏览器登录。请返回改用 API 密钥或选择其他模型。",
     "reviewedEnglishHash": "987a0bea55cc358fd0ada345cf992145902c7ad626f03f23905e6a5b813ea295"
   },
+  "onboarding.connect.chooseSavedOrNewKey": {
+    "en": "Choose a saved API key or enter a new one",
+    "zh-CN": "选择已保存的 API 密钥或输入新密钥",
+    "reviewedEnglishHash": "988b29600b546c068744bc8923f1a81993893ba3080cc8a3d65fa73f21e47fcf"
+  },
+  "onboarding.connect.defaultProviderAccount": {
+    "en": "This will be your default {{provider}} account.",
+    "zh-CN": "这将作为你的默认 {{provider}} 账户。",
+    "reviewedEnglishHash": "cd615855b8c82f9137d8c8ca3ed93439e8e972d74f98dc27ad10083069658f46"
+  },
+  "onboarding.connect.noRecommendedAdapters": {
+    "en": "Claude and Codex are unavailable on this instance. Ask an administrator to enable one, or exit setup and choose New Agent on the Agents page to use another provider.",
+    "zh-CN": "此实例上 Claude 和 Codex 均不可用。请联系管理员启用其中之一，或退出引导并在“智能体”页面选择“新建智能体”以使用其他提供方。",
+    "reviewedEnglishHash": "ffe36b7974e22926a8cd06b4f3ed1f21b1dc07d5150487190a9f9b7b01fbcc32"
+  },
   "onboarding.connectModel": {
     "en": "Connect a model",
     "zh-CN": "连接模型",

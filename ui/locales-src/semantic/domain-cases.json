@@ -24,6 +24,11 @@
     "zh-CN": "ID",
     "reviewedEnglishHash": "3843971dcfdee5083e6289e1bbdbb003e538b5a8a668fc43ae4f19d415ac18a2"
   },
+  "cases.columns.identifier": {
+    "en": "Identifier",
+    "zh-CN": "编号",
+    "reviewedEnglishHash": "9b10587f84a2c3749305f3421c8f2838ed88b0ab1e44326ff9eeb48083373144"
+  },
   "cases.columns.key": {
     "en": "Key",
     "zh-CN": "键",
@@ -33,6 +38,11 @@
     "en": "Parent case",
     "zh-CN": "父案例",
     "reviewedEnglishHash": "67636e37bde9aac212c414e227627d4c51b5f5f7c8ea546d1bd073d9d7783dc9"
+  },
+  "cases.columns.phase": {
+    "en": "Phase",
+    "zh-CN": "阶段",
+    "reviewedEnglishHash": "46342ec1eec9d78dd13d15f0e035d625a9b357b3493f8c2baef668633194852c"
   },
   "cases.columns.project": {
     "en": "Project",
@@ -63,6 +73,11 @@
     "en": "Updated",
     "zh-CN": "更新时间",
     "reviewedEnglishHash": "3a5ecca188c0579c00ee24cf3cab21bd02c15a06f7a70cc8e0a8ff2381dcbbfd"
+  },
+  "cases.columns.visibleFields": {
+    "en": "Visible fields",
+    "zh-CN": "显示字段",
+    "reviewedEnglishHash": "8b34a4a37d37fbc3f478cfec88cb1942ae2754d7b935db15d2f198d966418163"
   },
   "cases.common.noProject": {
     "en": "No project",
@@ -134,10 +149,50 @@
     "zh-CN": "全部标签",
     "reviewedEnglishHash": "3e8340066184126c9c94d5fee1da0ac7756f891428c1a908017b08fe2b869c01"
   },
+  "cases.filters.allStatuses": {
+    "en": "All statuses",
+    "zh-CN": "全部状态",
+    "reviewedEnglishHash": "8ee57323a6f24cc7a5e2395cc0bec1eafc76799ef0e0f31c7a81ddb87faf7a2b"
+  },
+  "cases.filters.allTypes": {
+    "en": "All types",
+    "zh-CN": "全部类型",
+    "reviewedEnglishHash": "f10988e79e8d9a49f45a71ecf3f4ebe143a96eb9d83272156ab54101b3777046"
+  },
+  "cases.filters.aria": {
+    "en": "Filter cases",
+    "zh-CN": "筛选案例",
+    "reviewedEnglishHash": "9fec841b1fe797b3e1ba2cf4ad85abd16e11cdf2a3706362bf80034cee2eb256"
+  },
+  "cases.filters.ariaActive_one": {
+    "en": "Filter cases ({{count}} active)",
+    "zh-CN": "筛选案例（已启用 {{count}} 项）",
+    "reviewedEnglishHash": "142cd56879cc4fc76786fb7bd8d452624e3b9cb42f091d1f0c238a5800878d0f"
+  },
+  "cases.filters.ariaActive_other": {
+    "en": "Filter cases ({{count}} active)",
+    "zh-CN": "筛选案例（已启用 {{count}} 项）",
+    "reviewedEnglishHash": "142cd56879cc4fc76786fb7bd8d452624e3b9cb42f091d1f0c238a5800878d0f"
+  },
   "cases.filters.clear": {
     "en": "Clear filters",
     "zh-CN": "清除筛选",
     "reviewedEnglishHash": "7179ea0035fca783ec62b7185659b68c75f2a7c12b909306a57183dc9b3fa44b"
+  },
+  "cases.filters.filterByProjectAria": {
+    "en": "Filter by project",
+    "zh-CN": "按项目筛选",
+    "reviewedEnglishHash": "9e2a0aec37e5b42da5bcee32bfdef4f50794b723598c35aacee4313b48a0cb50"
+  },
+  "cases.filters.filterByStatusAria": {
+    "en": "Filter by status",
+    "zh-CN": "按状态筛选",
+    "reviewedEnglishHash": "94d5a7703a8250de4c9e24b29839ffafa5d8477efb19c56ebce83470102e6212"
+  },
+  "cases.filters.filterByTypeAria": {
+    "en": "Filter by type",
+    "zh-CN": "按类型筛选",
+    "reviewedEnglishHash": "51035b5b67dca0d1ea2348d44a4b18658fd03a3ea4f774aaadc2ac6bcb4c61bc"
   },
   "cases.filters.label": {
     "en": "Label",
@@ -149,6 +204,11 @@
     "zh-CN": "暂无类型",
     "reviewedEnglishHash": "0c1355281bf6e951b1a4847c068841bbd3a408fe780b2917089f946fa4aee9c0"
   },
+  "cases.filters.popoverAria": {
+    "en": "Case filters",
+    "zh-CN": "案例筛选",
+    "reviewedEnglishHash": "ac221f00001642799201616d7cc874987844d869b9a064ba7892e5ae572107aa"
+  },
   "cases.filters.project": {
     "en": "Project",
     "zh-CN": "项目",
@@ -158,6 +218,11 @@
     "en": "Search",
     "zh-CN": "搜索",
     "reviewedEnglishHash": "49c266baaaa70981ea188fa714d5c40cf13830d786a861c9943ae0d26a7f3fe9"
+  },
+  "cases.filters.selectedProject": {
+    "en": "Selected project",
+    "zh-CN": "所选项目",
+    "reviewedEnglishHash": "dcdc01256306be8291ab75256134a96d398ff6d48ceb8d82faf11d6e6dbfa3f7"
   },
   "cases.filters.status": {
     "en": "Status",
@@ -173,6 +238,11 @@
     "en": "None",
     "zh-CN": "不分组",
     "reviewedEnglishHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "cases.group.popoverAria": {
+    "en": "Group cases",
+    "zh-CN": "案例分组",
+    "reviewedEnglishHash": "76ac827a2871919d43000c1e6eca1576a8672de0dd7014fe88fdd8ba4b47bff7"
   },
   "cases.group.project": {
     "en": "Project",
@@ -209,6 +279,86 @@
     "zh-CN": "案例键",
     "reviewedEnglishHash": "a741eb3c912be5a2aa563b82629a177b641297047763f6c4cb82ad8d6b317e23"
   },
+  "cases.list.ariaLabel": {
+    "en": "Case list",
+    "zh-CN": "案例列表",
+    "reviewedEnglishHash": "6e5d67948527b2bf9a2c35d2cfd6c43befa0385f3f38871e591c43479bf5b313"
+  },
+  "cases.list.controlsAria": {
+    "en": "Case controls",
+    "zh-CN": "案例控制栏",
+    "reviewedEnglishHash": "54f82102d34234bb4a9682b3746ebe2263856cc4d2dfdc554f84f8374b66ade6"
+  },
+  "cases.list.countPlus": {
+    "en": "{{count}}+ cases",
+    "zh-CN": "{{count}}+ 个案例",
+    "reviewedEnglishHash": "5664f540b73e4d754b35f93ffdf9cf08ab500dfcfb0fe1e39197712424d0aa3d"
+  },
+  "cases.list.filtersLoadError": {
+    "en": "Some case filters couldn’t be loaded.",
+    "zh-CN": "部分案例筛选项无法加载。",
+    "reviewedEnglishHash": "6704d545f93b8f91353ed658019ca5d2ed308582a7f7786cfddfa69f49f0e9a2"
+  },
+  "cases.list.firstPage": {
+    "en": "First page",
+    "zh-CN": "第一页",
+    "reviewedEnglishHash": "0bdbb750609ca61cb4a59ff84d565d437a5cd9a1abeb8abc0aaf243ceaec70b5"
+  },
+  "cases.list.loadError": {
+    "en": "Cases couldn’t be loaded.",
+    "zh-CN": "无法加载案例。",
+    "reviewedEnglishHash": "e0d0123ff23191700df581df779790881067d18bbd6ba84b737c5f45b30dc41c"
+  },
+  "cases.list.loading": {
+    "en": "Loading cases…",
+    "zh-CN": "正在加载案例…",
+    "reviewedEnglishHash": "ac19ccc4e3486d4f48933289e12b9dc10b01822517b6d128220902da5176edd3"
+  },
+  "cases.list.noCasesOnPage": {
+    "en": "No cases on this page",
+    "zh-CN": "当前页没有案例",
+    "reviewedEnglishHash": "688b6e266ec98c98506d4f93a482b97b5a577ad06fe968c01c1beb0d0373f832"
+  },
+  "cases.list.pageRangeCount": {
+    "en": "{{start}}–{{end}} cases",
+    "zh-CN": "第 {{start}}–{{end}} 个案例",
+    "reviewedEnglishHash": "20b5c9d754c2da1d183440c6d476a4d3dc8970adc2b308115cacb882f13147d4"
+  },
+  "cases.list.pagesAria": {
+    "en": "Case list pages",
+    "zh-CN": "案例列表分页",
+    "reviewedEnglishHash": "0067e1d3e3b2fc8678d1812d87747cf973f2bb3c14bf91ebcb17bd3ca73db957"
+  },
+  "cases.list.projectUnavailable": {
+    "en": "Project unavailable",
+    "zh-CN": "项目不可用",
+    "reviewedEnglishHash": "3d035c318fef3a2cd388755d5cc6e0f411a02a73f3797a9bd6b561d753002e80"
+  },
+  "cases.list.retryFilters": {
+    "en": "Retry filters",
+    "zh-CN": "重试加载筛选项",
+    "reviewedEnglishHash": "b3bfa71ecfeace0488806a7cdf8bcab8b5695b61c6caa26549ce4030a44db7f6"
+  },
+  "cases.list.selectCompany": {
+    "en": "Select a company to view cases.",
+    "zh-CN": "请选择一个公司以查看案例。",
+    "reviewedEnglishHash": "f3ccfd3be346f99c85e9dc9e8804ad1cf6000d13965102d9ff2f30b880a3c48e"
+  },
+  "cases.list.updating": {
+    "en": "Updating cases…",
+    "zh-CN": "正在更新案例…",
+    "reviewedEnglishHash": "1d3d0d7f34423dfe483c322430fbd6e62b49f1781a6acd802b24c148652c950d"
+  },
+  "cases.row.noTaskLinked": {
+    "en": "No task linked",
+    "zh-CN": "未关联任务",
+    "reviewedEnglishHash": "9ab7ec8db9bb1ea1fa664eea6ff7b6bca0577a1fa5cf1d984af11f928e786a95"
+  },
+  "cases.row.taskUnavailable": {
+    "en": "Task unavailable",
+    "zh-CN": "任务不可用",
+    "reviewedEnglishHash": "8e7e15761d565d0eeb54691fff6ddb84808d5a64cf4e3d123fcef82369ef5886"
+  },
   "cases.search.ariaLabel": {
     "en": "Search cases",
     "zh-CN": "搜索案例",
@@ -234,6 +384,11 @@
     "zh-CN": "最近更新",
     "reviewedEnglishHash": "382ac5f308f76c24b2c981e2041943bc2be2229cbd285ad362b9af1cfc386ef8"
   },
+  "cases.sort.popoverAria": {
+    "en": "Sort cases",
+    "zh-CN": "案例排序",
+    "reviewedEnglishHash": "15f14cf78e655ddc223821cdae955d92eb83aa0f4847f02c048dc08416ca451e"
+  },
   "cases.sort.project": {
     "en": "Project",
     "zh-CN": "项目",
@@ -253,6 +408,11 @@
     "en": "Type",
     "zh-CN": "类型",
     "reviewedEnglishHash": "baaddf70fb5d432b8bd948ef91d6f910124a6d138edae4d5f000c4610ddc8eae"
+  },
+  "cases.status.draft": {
+    "en": "Draft",
+    "zh-CN": "草稿",
+    "reviewedEnglishHash": "ebf12ef47cf575b3ba9a3cc019c5310146fdac88f6d1be6618d6e91158c2f174"
   },
   "cases.title": {
     "en": "Cases",

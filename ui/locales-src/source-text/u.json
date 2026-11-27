@@ -224,10 +224,20 @@
     "zh-CN": "未知上级（过期 ID）",
     "reviewedEnglishHash": "7c4ea0f2a6f44356a471086e4253aac6dc535fa5e7a71f1fbaab8674031f59c0"
   },
+  "Unknown member": {
+    "en": "Unknown member",
+    "zh-CN": "未知成员",
+    "reviewedEnglishHash": "29824c5acaf8e1d5786ee15c5a0fbd3b5b8ee0efd49820c3c2e6ae6ad39e9676"
+  },
   "Unknown project": {
     "en": "Unknown project",
     "zh-CN": "未知项目",
     "reviewedEnglishHash": "ed51cfeff0d96984b5a5fd0be3bb17df29251b7b41b720a5d11964e1d336ac7f"
+  },
+  "Unknown user": {
+    "en": "Unknown user",
+    "zh-CN": "未知用户",
+    "reviewedEnglishHash": "0bca69475fcfb2baa9aa2ceac4fc08be99c769c7f2f56998279fc337d8e2249f"
   },
   "Unlimited": {
     "en": "Unlimited",
@@ -293,6 +303,11 @@
     "en": "Unverified server",
     "zh-CN": "未验证的服务器",
     "reviewedEnglishHash": "ed7c13036ffed781b7582375afead6843e86953c2f53e85f0df2d51f64b04e8a"
+  },
+  "Unwrap lines": {
+    "en": "Unwrap lines",
+    "zh-CN": "取消自动换行",
+    "reviewedEnglishHash": "6de95a89b8eef199e26f88aaa78f1a6758a90adafd7c968ff942426668cc51ef"
   },
   "Up to date": {
     "en": "Up to date",

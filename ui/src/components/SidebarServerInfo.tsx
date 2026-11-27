@@ -27,7 +27,10 @@ function restartTimestamp(health: HealthStatus | undefined): string | null {
 function commitLabel(health: HealthStatus | undefined, t: TFunction): string {
   const git = health?.serverInfo?.git;
   if (!git?.available) return t("sidebarServerInfo.commitUnavailable");
-  return `${git.shortSha} · ${git.subject}`;
+  const subject = git.subject === "Source build"
+    ? t("sidebarServerInfo.sourceBuild", { defaultValue: "Source build" })
+    : git.subject;
+  return `${git.shortSha} · ${subject}`;
 }
 
 function localChangesLabel(health: HealthStatus | undefined, t: TFunction): string {

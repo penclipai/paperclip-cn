@@ -3,6 +3,7 @@ import { CoordinatorConversationTasksPanel } from "@/components/coordinator/Coor
 import { useCoordinatorWorkspaceEnabled } from "@/hooks/useCoordinatorWorkspaceEnabled";
 import { TextAttachmentContext } from "@/context/TextAttachmentContext";
 import { TaskAttachmentPanel } from "./TaskAttachmentPanel";
+import { focusPlanPane, scheduleTaskPaneScroll } from "./task-pane-focus";
 import { useQueryView } from "@/components/QueryView";
 import { useTaskBrowsers } from "@/hooks/useTaskBrowsers";
 import { taskPluginPanelActivationKey, taskPluginPanelId, type TaskPluginPanel } from "@/hooks/useTaskPluginPanels";
@@ -136,7 +137,7 @@ export interface TaskSidePanelProps {
   onCheckMonitorNow?: () => void;
   checkingMonitorNow?: boolean;
   fileTabsEnabled: boolean;
-  documentDeepLink?: { requestId: number; documentKey: string } | null;
+  documentDeepLink?: { requestId: number; documentKey: string; focusActivePlan?: boolean } | null;
   showDocumentSourceTask?: boolean;
   onArtifactVisibilityChange?: (showsArtifact: boolean) => void;
   /** A new durable output asks the host to reveal this tab once. */
@@ -514,8 +515,10 @@ function TaskSidePanelForScope({
     // A refresh must not replay a link after the user selects another tab.
     handledDocumentRequestRef.current = documentDeepLink.requestId;
     if (coordinatorWorkspaceEnabled) userInteractedRef.current = true;
-    controller.openTab(taskPanelDocumentTab(documentDeepLink.documentKey, label, target?.revisionId, documentIssueId));
-  }, [controller.openTab, documentDeepLink, documents, planDocument, location.hash, issue.id]);
+    const tab = taskPanelDocumentTab(documentDeepLink.documentKey, label, target?.revisionId, documentIssueId);
+    if (documentDeepLink.focusActivePlan && documentDeepLink.documentKey === "plan" && tab.id === controller.activeTabId) focusPlanPane(bodyRef.current);
+    controller.openTab(tab);
+  }, [controller.activeTabId, controller.openTab, documentDeepLink, documents, planDocument, location.hash, issue.id]);
 
   // Existing URL-backed workspace links remain the external integration API.
   useEffect(() => {
@@ -605,15 +608,15 @@ function TaskSidePanelForScope({
     }
   }
 
-  useEffect(() => {
-    const top = controller.activeTabId ? scrollPositionsRef.current.get(controller.activeTabId) ?? 0 : 0;
-    window.requestAnimationFrame(() => bodyRef.current?.scrollTo({ top, behavior: "auto" }));
+  useLayoutEffect(() => {
+    const top = scrollPositionsRef.current.get(controller.activeTabId ?? "") ?? 0;
+    return scheduleTaskPaneScroll(bodyRef.current, top);
   }, [controller.activeTabId]);
-
   useEffect(() => {
     if (activeTab) return;
     window.requestAnimationFrame(() => {
-      bodyRef.current?.querySelector<HTMLInputElement>('input[aria-label="Search tabs and resources…"]')?.focus();
+      const searchLabel = translateInstant("sidePanel.searchPlaceholder", { defaultValue: "Search tabs and resources…" });
+      bodyRef.current?.querySelector<HTMLInputElement>(`input[aria-label="${searchLabel}"], input[cmdk-input]`)?.focus();
     });
   }, [activeTab]);
 
@@ -701,7 +704,7 @@ function TaskSidePanelForScope({
       ...(planDocument ? [{
         id: "document:plan",
         label: documentDisplayTitle(planDocument),
-        description: `Revision ${planDocument.latestRevisionNumber ?? 1}`,
+        description: translateInstant("taskSidePanel.revision", { revision: planDocument.latestRevisionNumber ?? 1, defaultValue: `Revision ${planDocument.latestRevisionNumber ?? 1}` }),
         icon: <Lightbulb />,
         alreadyOpen: controller.tabs.some((tab) => tab.id === "document:plan"),
       }] : []),
@@ -711,7 +714,7 @@ function TaskSidePanelForScope({
         .map((document) => ({
           id: `document:${document.key}`,
           label: documentDisplayTitle(document),
-          description: `Revision ${document.latestRevisionNumber ?? 1}`,
+          description: translateInstant("taskSidePanel.revision", { revision: document.latestRevisionNumber ?? 1, defaultValue: `Revision ${document.latestRevisionNumber ?? 1}` }),
           icon: <FileText />,
           alreadyOpen: controller.tabs.some((tab) => tab.id === `document:${document.key}`),
         })),
@@ -737,7 +740,7 @@ function TaskSidePanelForScope({
         label: translateInstant("Recent workspace files"),
         items: recentItems,
         loading: recentFilesQuery.isLoading,
-        error: recentFilesView.kind === "error" ? "Recent files are temporarily unavailable." : null,
+        error: recentFilesView.kind === "error" ? translateInstant("taskSidePanel.recentFilesUnavailable", { defaultValue: "Recent files are temporarily unavailable." }) : null,
       });
     }
     return sections;

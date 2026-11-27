@@ -29,6 +29,11 @@
     "zh-CN": "正在应用...",
     "reviewedEnglishHash": "dba1ddefd778ad652f142fd4d77ad1b779de9dbcd36b4fa6fde8c2ab94b9218a"
   },
+  "issueDetail.approvedPlan": {
+    "en": "Approved plan",
+    "zh-CN": "已批准方案",
+    "reviewedEnglishHash": "ca676168d46679a781abb819d303d1358ad9924e264ece71c27b99d6296e123b"
+  },
   "issueDetail.archiveFailed": {
     "en": "Archive failed",
     "zh-CN": "归档失败",
@@ -199,6 +204,11 @@
     "zh-CN": "前往 {{name}} 项目",
     "reviewedEnglishHash": "e58389b2ba07bc0abd7bf45157a072c2e5a92eef1d80acfc13ef96010bb85c06"
   },
+  "issueDetail.grokBotRunNotice": {
+    "en": "Runs in Grok Bot · Usage not reported. Stop Paperclip work revokes this session’s authority; remote execution may continue. Open the Grok Bot desktop app to inspect it.",
+    "zh-CN": "在 Grok Bot 中运行 · 不上报用量。“停止 Paperclip 工作”将撤销此会话的权限，远程执行仍可能继续。请打开 Grok Bot 桌面应用查看。",
+    "reviewedEnglishHash": "735645cf4c4018c7b6d5d81f4085964f861fb3e47f0156b0c3f19c472e99c07c"
+  },
   "issueDetail.hidden": {
     "en": "This task is hidden",
     "zh-CN": "此任务已隐藏",
@@ -239,6 +249,11 @@
     "zh-CN": "加载更早的评论",
     "reviewedEnglishHash": "a41f98dd82a1500e2e2f177702b32023de442e4af541e92fc6cff0cf7e994575"
   },
+  "issueDetail.loadingConversation": {
+    "en": "Loading conversation",
+    "zh-CN": "正在加载对话",
+    "reviewedEnglishHash": "9deef600048b62e9c39375b5c709325b1cb7d82605c7845d8400c19f79a8002d"
+  },
   "issueDetail.loadingEarlierComments": {
     "en": "Loading earlier comments...",
     "zh-CN": "正在加载更早的评论…",
@@ -253,6 +268,11 @@
     "en": "More task actions",
     "zh-CN": "更多任务操作",
     "reviewedEnglishHash": "4fbf1e4ca386da9cb5257e12e71bc87c9ab97afe01d2d3c9deef8aa37687c2b5"
+  },
+  "issueDetail.moreMessages": {
+    "en": "More messages",
+    "zh-CN": "更多消息",
+    "reviewedEnglishHash": "9b4a407a035424a12e248df0ee89eab77b103700fb8b95ea0e7388fbfd5b5641"
   },
   "issueDetail.newSubIssue": {
     "en": "New Sub-issue",
@@ -399,6 +419,16 @@
     "zh-CN": "原因（可选）",
     "reviewedEnglishHash": "0f7d4664a9bcd28a42dc2bf2f0ff04382a0613b887134145bc471e1f0ef34bde"
   },
+  "issueDetail.requestedChanges": {
+    "en": "Requested changes",
+    "zh-CN": "已请求修改",
+    "reviewedEnglishHash": "ff8b3fedc9973b2d945a45de7a8835296ed0680cd2d9ac8c578dcfe57b27ce66"
+  },
+  "issueDetail.requestedChangesWithReason": {
+    "en": "Requested changes\n\n{{reason}}",
+    "zh-CN": "已请求修改\n\n{{reason}}",
+    "reviewedEnglishHash": "9b4bdb1d4d21e1a0b8d78f7fa079f6af136e728aa391d426e5dd13475df7623c"
+  },
   "issueDetail.restoreIssueCount": {
     "en": "Restore {{count}} tasks",
     "zh-CN": "恢复 {{count}} 个任务",
@@ -478,6 +508,11 @@
     "en": "Show properties",
     "zh-CN": "显示属性",
     "reviewedEnglishHash": "ae4293fcd74259169c834b58f97bc86c67d3b1ce2c0c827abe1cf5bc564a09da"
+  },
+  "issueDetail.showTaskActivity": {
+    "en": "Show task activity",
+    "zh-CN": "显示任务活动",
+    "reviewedEnglishHash": "ba901d24b7597e6046ad91cbb823c360845551bd34c522a2618c487fe2ad7c7d"
   },
   "issueDetail.startedRelative": {
     "en": "Started {{relative}}",

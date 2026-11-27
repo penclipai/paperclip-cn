@@ -1,5 +1,6 @@
 import { ChevronLeft, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { useCompany } from "@/context/CompanyContext";
 import { useSidebar } from "@/context/SidebarContext";
 import { useNavigate } from "@/lib/router";
@@ -26,6 +27,7 @@ export function ContextualSidebarFrame({
   className?: string;
   children: ReactNode;
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { selectedCompany } = useCompany();
   const { isMobile, setSidebarOpen } = useSidebar();
@@ -50,10 +52,10 @@ export function ContextualSidebarFrame({
             type="button"
             onClick={goBack}
             className="flex items-center gap-1.5 rounded-md px-2 py-1 text-left text-xs text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label={`Back from ${title}`}
+            aria-label={t("sidebar.backFrom", { title, defaultValue: "Back from {{title}}" })}
           >
             <ChevronLeft className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            <span className="truncate">{selectedCompany?.name ?? "Organization"}</span>
+            <span className="truncate">{selectedCompany?.name ?? t("Organization", { defaultValue: "Organization" })}</span>
           </button>
           <div className="flex min-w-0 items-center gap-2 px-2 py-1">
             {Icon ? <Icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" /> : null}

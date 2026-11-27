@@ -1,4 +1,4 @@
-import { translateInstant } from "@/i18n";
+import { getCurrentLocale, translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { companyProjectsQuery } from "@/lib/company-projects-query";
 import { describeError } from "../api/errors";
@@ -326,17 +326,17 @@ const OVERVIEW_ACTIVITY_LIMIT = 200;
 function agentViewDescription(view: AgentDetailView, name: string): string | null {
   switch (view) {
     case "runtime":
-      return `How ${name} runs: harness, model and environment.`;
+      return translateInstant("agentDetail.viewDescription.runtime", { name, defaultValue: "How {{name}} runs: harness, model and environment." });
     case "secrets":
-      return "Secrets this agent can reach. Values are never shown here.";
+      return translateInstant("agentDetail.viewDescription.secrets", { defaultValue: "Secrets this agent can reach. Values are never shown here." });
     case "permissions":
-      return `What ${name} may do without asking, and where.`;
+      return translateInstant("agentDetail.viewDescription.permissions", { name, defaultValue: "What {{name}} may do without asking, and where." });
     case "activity":
-      return `Everything ${name} did and everything done to ${name}.`;
+      return translateInstant("agentDetail.viewDescription.activity", { name, defaultValue: "Everything {{name}} did and everything done to {{name}}." });
     case "runs":
-      return `Every execution of ${name}, newest first.`;
+      return translateInstant("agentDetail.viewDescription.runs", { name, defaultValue: "Every execution of {{name}}, newest first." });
     case "costs":
-      return `What ${name} spent, by model.`;
+      return translateInstant("agentDetail.viewDescription.costs", { name, defaultValue: "What {{name}} spent, by model." });
     default:
       return null;
   }
@@ -863,7 +863,7 @@ export function AgentDetail() {
       ) : null}
       {/* Header */}
       <header className="agent-character-header flex items-center gap-2">
-        <div role="img" aria-label={`${agent.name} avatar`} className="shrink-0">
+        <div role="img" aria-label={translateInstant("agentDetail.header.avatarAria", { name: agent.name, defaultValue: "{{name}} avatar" })} className="shrink-0">
           <AgentCharacter agent={agent} state={characterStateForAgent(currentAgent.status) === "rest" ? "idle" : characterStateForAgent(currentAgent.status)} size={128} className="agent-header-character" trackingScope="page" followCursor />
         </div>
         <div className="min-w-0 flex-1">
@@ -881,7 +881,7 @@ export function AgentDetail() {
           <div className="mt-1 flex min-w-0 items-center gap-2 text-sm leading-5 text-muted-foreground">
             <Link
               to={agentDetailHref(canonicalAgentRef, "runtime")}
-              aria-label={`Open ${getAdapterDisplay(agentDisplayAdapterType(agent)).label} harness settings`}
+              aria-label={translateInstant("agentDetail.header.openHarnessSettings", { label: getAdapterDisplay(agentDisplayAdapterType(agent)).label, defaultValue: "Open {{label}} harness settings" })}
               className="flex shrink-0 items-center gap-1 rounded-sm no-underline transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
             >
               {agent.adapterType === "claude_local" || agent.adapterType === "codex_local"
@@ -904,16 +904,16 @@ export function AgentDetail() {
         <AgentActionButtons
           agent={currentAgent}
           companyId={resolvedCompanyId}
-          assignLabel="New task"
+          assignLabel={translateInstant("New task", { defaultValue: "New task" })}
           size="default"
           assignIcon={Paperclip}
           showChat
           showStatus={false}
           workActionsInMenu
-          menuItems={[{ label: "Agent history", icon: HistoryIcon, onSelect: () => setHistoryOpen(true) }]}
+          menuItems={[{ label: translateInstant("agentDetail.header.agentHistory", { defaultValue: "Agent history" }), icon: HistoryIcon, onSelect: () => setHistoryOpen(true) }]}
           actionsDisabled={agentAction.isPending || (activeView === "advanced" && configSaving)}
           workActionsDisabled={hasInvalidOrgChain}
-          workActionsDisabledReason="Repair this agent's reporting chain before assigning tasks or starting runs"
+          workActionsDisabledReason={translateInstant("agentDetail.header.repairReportingChain", { defaultValue: "Repair this agent's reporting chain before assigning tasks or starting runs" })}
           hasPendingNavigationChanges={configDirty}
           onBeforeNavigate={prepareAgentNavigation}
           onActionError={setActionError}
@@ -922,7 +922,7 @@ export function AgentDetail() {
           pauseConfirm={
             builtInState
               ? {
-                  title: `Pause the ${builtInState.definition.displayName}?`,
+                  title: translateInstant("agentDetail.header.pauseBuiltInTitle", { name: builtInState.definition.displayName, defaultValue: "Pause the {{name}}?" }),
                   description: (
                     <>
                       {builtInFeatureLabel} {translateInstant("agentDetail.dependsOnPaused", { defaultValue: "depends on this agent. While paused," })}{" "}
@@ -952,13 +952,23 @@ export function AgentDetail() {
       <AlertDialog open={pendingLeave !== null} onOpenChange={(open) => (open ? undefined : setPendingLeave(null))}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
+            <AlertDialogTitle>{translateInstant("agentDetail.discardDialog.title", { defaultValue: "Discard unsaved changes?" })}</AlertDialogTitle>
             <AlertDialogDescription>
-              You have unsaved changes to {agent.name}&rsquo;s {activeView === "runtime" ? "harness settings" : activeView === "secrets" ? "secrets and variables" : activeView === "advanced" ? "configuration" : "instructions"}. If you continue, they&rsquo;ll be lost.
+              {translateInstant("agentDetail.discardDialog.description", {
+                name: agent.name,
+                surface: activeView === "runtime"
+                  ? translateInstant("agentDetail.discardDialog.surface.runtime", { defaultValue: "harness settings" })
+                  : activeView === "secrets"
+                    ? translateInstant("agentDetail.discardDialog.surface.secrets", { defaultValue: "secrets and variables" })
+                    : activeView === "advanced"
+                      ? translateInstant("agentDetail.discardDialog.surface.advanced", { defaultValue: "configuration" })
+                      : translateInstant("agentDetail.discardDialog.surface.instructions", { defaultValue: "instructions" }),
+                defaultValue: "You have unsaved changes to {{name}}’s {{surface}}. If you continue, they’ll be lost.",
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="sm:justify-between">
-            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogCancel>{translateInstant("agentDetail.discardDialog.keepEditing", { defaultValue: "Keep editing" })}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-white hover:bg-destructive/90"
               onClick={() => {
@@ -974,7 +984,7 @@ export function AgentDetail() {
                 }
               }}
             >
-              Discard changes
+              {translateInstant("agentDetail.discardDialog.discardChanges", { defaultValue: "Discard changes" })}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1407,9 +1417,9 @@ export function AgentOverview({
   const agentRef = agentRouteRef(agent);
   const { openNewIssue } = useDialogActions();
   const taskSuggestions = [
-    "Research a topic and summarize the key findings",
-    "Create a step-by-step plan for a project",
-    "Review a document and suggest improvements",
+    translateInstant("agentDetail.suggestedTask.research", { defaultValue: "Research a topic and summarize the key findings" }),
+    translateInstant("agentDetail.suggestedTask.plan", { defaultValue: "Create a step-by-step plan for a project" }),
+    translateInstant("agentDetail.suggestedTask.review", { defaultValue: "Review a document and suggest improvements" }),
   ];
   const hasHumanCreator = Boolean(humanAgentCreatorUserId(agent.createdByUserId));
   const userDirectory = useQuery({
@@ -1438,39 +1448,43 @@ export function AgentOverview({
         <AgentMetricTile
           icon={ActivityIcon}
           value={activity.isLoading ? "–" : formatWindowCount(activityThisWeek)}
-          label="Activity"
-          description="Events this week"
+          label={translateInstant("Activity", { defaultValue: "Activity" })}
+          description={translateInstant("agentDetail.overview.eventsThisWeek", { defaultValue: "Events this week" })}
           to={agentDetailHref(agentRef, "activity")}
         />
         <AgentMetricTile
           icon={PlayCircle}
           value={formatWindowCount(runsThisWeek)}
           label={translateInstant("Runs", { defaultValue: "Runs" })}
-          description={`${formatWindowCount(recentFailures)} failed in the last 2 days`}
+          description={translateInstant("agentDetail.overview.failedLast2Days", { count: formatWindowCount(recentFailures), defaultValue: "{{count}} failed in the last 2 days" })}
           to={agentDetailHref(agentRef, "runs")}
         />
         <AgentMetricTile
           icon={ReceiptText}
           value={formatCents(spent)}
-          label="Costs"
-          description="Month to date"
+          label={translateInstant("Costs", { defaultValue: "Costs" })}
+          description={translateInstant("agentDetail.overview.monthToDate", { defaultValue: "Month to date" })}
           to={agentDetailHref(agentRef, "costs")}
         />
         <AgentMetricTile
           icon={Gauge}
           value={budgetPercent === null ? "–" : `${budgetPercent}%`}
-          label="Budget used"
-          description={budgetPercent === null ? "No monthly budget set" : `of ${formatCents(budget)} this month`}
+          label={translateInstant("agentDetail.overview.budgetUsed", { defaultValue: "Budget used" })}
+          description={budgetPercent === null ? translateInstant("agentDetail.overview.noMonthlyBudget", { defaultValue: "No monthly budget set" }) : translateInstant("agentDetail.overview.ofMonthlyBudget", { amount: formatCents(budget), defaultValue: "of {{amount}} this month" })}
           to={agentDetailHref(agentRef, "budgets")}
         />
-        <AgentPanel title="Profile" className="min-h-(--agent-detail-tile-min-h) sm:col-span-2" aria-label="Profile"
+        <AgentPanel title={translateInstant("agentDetail.overview.profile", { defaultValue: "Profile" })} className="min-h-(--agent-detail-tile-min-h) sm:col-span-2" aria-label={translateInstant("agentDetail.overview.profile", { defaultValue: "Profile" })}
           meta={<span className={creatorFailed ? "text-destructive" : undefined}>
-            {creatorFailed ? "Could not load creator" : creatorLabel ? `Created by ${creatorLabel} · ${formatDate(agent.createdAt)}` : `Created ${formatDate(agent.createdAt)}`}
+            {creatorFailed
+              ? translateInstant("agentDetail.overview.couldNotLoadCreator", { defaultValue: "Could not load creator" })
+              : creatorLabel
+                ? translateInstant("agentDetail.overview.createdByAt", { creator: creatorLabel, date: formatDate(agent.createdAt), defaultValue: "Created by {{creator}} · {{date}}" })
+                : translateInstant("agentDetail.overview.createdAt", { date: formatDate(agent.createdAt), defaultValue: "Created {{date}}" })}
           </span>}>
           <div className="flex flex-col pb-3">
             <AgentReportingManager key={agent.id} agent={agent} />
             {directReports.length > 0 && <div className="flex flex-col gap-1.5 px-(--agent-detail-module-inset) py-1.5 text-sm">
-              <span className="text-muted-foreground">Direct reports:</span>
+              <span className="text-muted-foreground">{translateInstant("agentDetail.overview.directReports", { defaultValue: "Direct reports:" })}</span>
               <AgentDirectReports reports={directReports} />
             </div>}
 
@@ -1478,7 +1492,7 @@ export function AgentOverview({
         </AgentPanel>
         <AgentPanel
           title={translateInstant("Skills", { defaultValue: "Skills" })}
-          meta={<span>{skillNames.length} enabled</span>}
+          meta={<span>{translateInstant("agentDetail.overview.skillsEnabledCount", { count: skillNames.length, defaultValue: "{{count}} enabled" })}</span>}
           className="min-h-(--agent-detail-tile-min-h) sm:col-span-2"
           aria-label={translateInstant("Skills", { defaultValue: "Skills" })}
         >
@@ -1491,12 +1505,12 @@ export function AgentOverview({
         </AgentPanel>
       </div>
 
-      <section className="flex flex-col gap-3" aria-label="Recent tasks">
+      <section className="flex flex-col gap-3" aria-label={translateInstant("agentDetail.overview.recentTasks", { defaultValue: "Recent tasks" })}>
         <AgentSectionHeading
-          title="Recent tasks"
+          title={translateInstant("agentDetail.overview.recentTasks", { defaultValue: "Recent tasks" })}
           action={
             <Link to={`/issues?participantAgentId=${agent.id}`} className="text-xs text-muted-foreground no-underline transition-colors hover:text-foreground">
-              See all tasks
+              {translateInstant("agentDetail.overview.seeAllTasks", { defaultValue: "See all tasks" })}
             </Link>
           }
         />
@@ -1715,14 +1729,14 @@ export function ConfigurationTab({
   const taskAssignLocked = agent.role === "ceo" || canCreateAgents;
   const taskAssignHint =
     taskAssignSource === "ceo_role"
-      ? "Enabled automatically for CEO agents."
+      ? translateInstant("agentDetail.permissions.taskAssign.ceoRole", { defaultValue: "Enabled automatically for CEO agents." })
       : taskAssignSource === "agent_creator"
-        ? "Enabled automatically while this agent can create new agents."
+        ? translateInstant("agentDetail.permissions.taskAssign.agentCreator", { defaultValue: "Enabled automatically while this agent can create new agents." })
         : taskAssignSource === "explicit_grant"
-          ? "Enabled via explicit organization permission grant."
+          ? translateInstant("agentDetail.permissions.taskAssign.explicitGrant", { defaultValue: "Enabled via explicit organization permission grant." })
           : taskAssignSource === "simple_default"
-            ? "Enabled by simple organization-wide task assignment defaults."
-            : "Disabled unless explicitly granted.";
+            ? translateInstant("agentDetail.permissions.taskAssign.simpleDefault", { defaultValue: "Enabled by simple organization-wide task assignment defaults." })
+            : translateInstant("agentDetail.permissions.taskAssign.disabled", { defaultValue: "Disabled unless explicitly granted." });
 
   return (
     <div className={cn("agent-settings-form", content === "permissions" ? "flex flex-col gap-(--agent-detail-module-gap)" : "space-y-6")}>
@@ -2510,7 +2524,7 @@ export function PromptsTab({
               }
               return (
                 <span className={cn("ml-3 shrink-0 rounded text-muted-foreground px-1.5 py-0.5 font-sans text-(length:--text-nano) uppercase tracking-wide", file.isEntryFile && "bg-(--agent-detail-tile-chip)")}>
-                  {file.isEntryFile ? "ROOT" : `${file.size}b`}
+                  {file.isEntryFile ? translateInstant("agentDetail.instructions.rootBadge", { defaultValue: "ROOT" }) : `${file.size}b`}
                 </span>
               );
             }}
@@ -2560,26 +2574,26 @@ export function PromptsTab({
                     </div>
                   ) : (
                     <button type="button" disabled={isSaving || Boolean(candidateRunId) || selectedFileSummary?.deprecated || selectedFileDetail?.binary || !selectedOrEntryFile.endsWith(".md")}
-                      aria-label={`Rename ${displayedFilePath}`} onClick={() => setEditingFileName(true)}
+                      aria-label={translateInstant("agentDetail.instructions.renameFile", { file: displayedFilePath, defaultValue: "Rename {{file}}" })} onClick={() => setEditingFileName(true)}
                       className={cn("agent-identity-preview-title min-w-0 truncate rounded font-mono text-(length:--agent-identity-preview-title-size) text-left hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pendingFiles.includes(selectedOrEntryFile) ? "italic text-muted-foreground/60" : "text-foreground")}>
                       {displayedFilePath}
                     </button>
                   )}
-                  <AgentChip>{currentMode === "external" ? "Managed externally" : "Managed by you"}</AgentChip>
+                  <AgentChip>{currentMode === "external" ? translateInstant("agentDetail.instructions.managedExternally", { defaultValue: "Managed externally" }) : translateInstant("agentDetail.instructions.managedByYou", { defaultValue: "Managed by you" })}</AgentChip>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {selectedFileExists
                     ? selectedFileSummary?.deprecated
-                      ? "Deprecated virtual file"
+                      ? translateInstant("agentDetail.instructions.deprecatedVirtualFile", { defaultValue: "Deprecated virtual file" })
                       : instructionFileDateLabel(selectedFileDetail ?? selectedFileSummary)
-                    : "New file in this bundle"}
+                    : translateInstant("agentDetail.instructions.newFileInBundle", { defaultValue: "New file in this bundle" })}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <span role="status" aria-hidden={!copyVisible} className={cn("agent-file-copy-notice flex items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground", !copyVisible && "opacity-0", copyNotice === "error" && "text-destructive")}>
                 {copyNotice === "copied" && <CheckCircle2 className="size-3.5" aria-hidden />}
-                {copyNotice === "copied" ? "File copied" : copyNotice === "error" ? "Copy failed" : null}
+                {copyNotice === "copied" ? translateInstant("agentDetail.instructions.fileCopied", { defaultValue: "File copied" }) : copyNotice === "error" ? translateInstant("Copy failed", { defaultValue: "Copy failed" }) : null}
               </span>
               <Button
                 type="button"
@@ -2587,8 +2601,8 @@ export function PromptsTab({
                 size="icon-xs"
                 className={cn("size-8", instructionMode === "edit" && "bg-(--agent-detail-tile-chip) text-foreground")}
                 aria-pressed={instructionMode === "edit"}
-                aria-label={instructionMode === "edit" ? `Stop editing ${selectedOrEntryFile}` : `Edit ${selectedOrEntryFile}`}
-                title={instructionMode === "edit" ? "Stop editing" : "Edit"}
+                aria-label={instructionMode === "edit" ? translateInstant("agentDetail.instructions.stopEditingFile", { file: selectedOrEntryFile, defaultValue: "Stop editing {{file}}" }) : translateInstant("agentDetail.instructions.editFile", { file: selectedOrEntryFile, defaultValue: "Edit {{file}}" })}
+                title={instructionMode === "edit" ? translateInstant("agentDetail.instructions.stopEditing", { defaultValue: "Stop editing" }) : translateInstant("Edit", { defaultValue: "Edit" })}
                 disabled={Boolean(selectedFileDetail?.binary)}
                 onClick={() => setInstructionMode(instructionMode === "edit" ? "raw" : "edit")}
               >
@@ -2610,11 +2624,11 @@ export function PromptsTab({
               {selectedOrEntryFile === currentEntryFile && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span tabIndex={0} aria-label="This file is required" className="inline-flex">
-                      <Button type="button" variant="ghost" size="icon-xs" className="size-8" aria-label={`Delete ${selectedOrEntryFile}`} disabled><Trash2 className="size-4" /></Button>
+                    <span tabIndex={0} aria-label={translateInstant("agentDetail.instructions.fileRequired", { defaultValue: "This file is required" })} className="inline-flex">
+                      <Button type="button" variant="ghost" size="icon-xs" className="size-8" aria-label={translateInstant("agentDetail.instructions.deleteFileAria", { file: selectedOrEntryFile, defaultValue: "Delete {{file}}" })} disabled><Trash2 className="size-4" /></Button>
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent>This file is required</TooltipContent>
+                  <TooltipContent>{translateInstant("agentDetail.instructions.fileRequired", { defaultValue: "This file is required" })}</TooltipContent>
                 </Tooltip>
               )}
               {selectedFileExists && !selectedFileSummary?.deprecated && selectedOrEntryFile !== currentEntryFile && (
@@ -2623,10 +2637,10 @@ export function PromptsTab({
                   size="icon-xs"
                   variant="ghost"
                   className="size-8"
-                  aria-label={`Delete ${selectedOrEntryFile}`}
-                  title="Delete file"
+                  aria-label={translateInstant("agentDetail.instructions.deleteFileAria", { file: selectedOrEntryFile, defaultValue: "Delete {{file}}" })}
+                  title={translateInstant("agentDetail.instructions.deleteFileTitle", { defaultValue: "Delete file" })}
                   onClick={() => {
-                    if (confirm(`Delete ${selectedOrEntryFile}?`)) {
+                    if (confirm(translateInstant("agentDetail.instructions.deleteFileConfirm", { file: selectedOrEntryFile, defaultValue: "Delete {{file}}?" }))) {
                       deleteFile.mutate(selectedOrEntryFile, {
                         onSuccess: () => {
                           setSelectedFile(currentEntryFile);
@@ -3025,7 +3039,11 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
     const entry = userDirectory?.users.find(
       (candidate) => candidate.principalId === run.responsibleUserId,
     );
-    return entry?.user?.name ?? entry?.user?.email ?? null;
+    const rawName = entry?.user?.name ?? entry?.user?.email ?? null;
+    if (rawName === "Board" || (!rawName && run.responsibleUserId === "local-board")) {
+      return translateInstant("Board");
+    }
+    return rawName;
   }, [run.responsibleUserId, userDirectory]);
   const responsibleDenialCode = isResponsibleUserDenialCode(run.errorCode) ? run.errorCode : null;
   const [sessionOpen, setSessionOpen] = useState(false);
@@ -3177,8 +3195,8 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
   }, [isRunning, run.startedAt]);
 
   const timeFormat: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false };
-  const startTime = run.startedAt ? new Date(run.startedAt).toLocaleTimeString("en-US", timeFormat) : null;
-  const endTime = run.finishedAt ? new Date(run.finishedAt).toLocaleTimeString("en-US", timeFormat) : null;
+  const startTime = run.startedAt ? new Date(run.startedAt).toLocaleTimeString(getCurrentLocale(), timeFormat) : null;
+  const endTime = run.finishedAt ? new Date(run.finishedAt).toLocaleTimeString(getCurrentLocale(), timeFormat) : null;
   const durationSec = run.startedAt && run.finishedAt
     ? Math.round((new Date(run.finishedAt).getTime() - new Date(run.startedAt).getTime()) / 1000)
     : null;
@@ -3490,7 +3508,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                     >
                       {clearSessionsForTouchedIssues.isPending
                         ? translateInstant("clearing session...")
-                        : "clear session for these tasks"}
+                        : translateInstant("agentDetail.clearSessionForTheseTasks", { defaultValue: "clear session for these tasks" })}
                     </button>
                     {clearSessionsForTouchedIssues.isError && ( // query-error-ok: mutation result, not a query
                       <p className="text-(length:--text-micro) text-destructive mt-1">

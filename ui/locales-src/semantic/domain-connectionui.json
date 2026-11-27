@@ -164,10 +164,20 @@
     "zh-CN": "通过 {{providers}} 连接。",
     "reviewedEnglishHash": "46bc02c8d677618c136a4ed27cbc1be9c558cc5fed25fece6a261cee44cfae03"
   },
+  "connectionUi.catalog.pagination.next": {
+    "en": "Next",
+    "zh-CN": "下一页",
+    "reviewedEnglishHash": "1ff57a29d7c9d11bdf61c1b80f2b289b44c1ea844824d4b94a0d52b6ba5fc858"
+  },
   "connectionUi.catalog.pagination.page": {
     "en": "Page {{current}} of {{total}}",
     "zh-CN": "第 {{current}} 页，共 {{total}} 页",
     "reviewedEnglishHash": "14929fd8d88d9d770287649814c25526120e2e0435b6586ea47d22f3410795fb"
+  },
+  "connectionUi.catalog.pagination.previous": {
+    "en": "Previous",
+    "zh-CN": "上一页",
+    "reviewedEnglishHash": "a57b08a480b822a0a572b993391c292ede593bf8000b406675b180bbb16260fa"
   },
   "connectionUi.catalog.pagination.range": {
     "en": "{{start}}–{{end}} of {{total}} connectors",
@@ -569,20 +579,55 @@
     "zh-CN": "在该配置中找到 {{count}} 个应用",
     "reviewedEnglishHash": "746d19036e7066cd80be6f17ec2681400e88020282b376312664c74341b3a9b1"
   },
+  "connectionUi.providerSetup.auth.bearerToken": {
+    "en": "Bearer token",
+    "zh-CN": "Bearer 令牌",
+    "reviewedEnglishHash": "b22ac30e61f624d5d9ecfaec62edc932976e15d2f1599809297f5422ed3b396b"
+  },
+  "connectionUi.providerSetup.auth.bedrockApiKey": {
+    "en": "Bedrock API key",
+    "zh-CN": "Bedrock API 密钥",
+    "reviewedEnglishHash": "52f1fd4be25042a7ce737abc470d61d301b9e4ad8aec20b31e7eb01ad3531f1e"
+  },
   "connectionUi.providerSetup.connect": {
     "en": "Connect",
     "zh-CN": "连接",
     "reviewedEnglishHash": "1a2303ede07493acc7caaa7c737f3c52bcc9cf04372be19ed1b0af6b9f2c791e"
+  },
+  "connectionUi.providerSetup.connectProvider": {
+    "en": "Connect {{provider}}",
+    "zh-CN": "连接 {{provider}}",
+    "reviewedEnglishHash": "14043ae3090996feca277d969a7a9dd67d0b3a863dc0030e0cff1d37b38dc9da"
+  },
+  "connectionUi.providerSetup.connectTitle": {
+    "en": "Connect a model provider",
+    "zh-CN": "连接模型提供方",
+    "reviewedEnglishHash": "4a5c018c6bedb14f9a3711d9259e92948df125c3387f88a85b5498c96edcae54"
   },
   "connectionUi.providerSetup.connecting": {
     "en": "Connecting…",
     "zh-CN": "正在连接…",
     "reviewedEnglishHash": "72021eb70e91b4d58254586a8519393a281eb830c165bf1ec42a5057d425bcaf"
   },
+  "connectionUi.providerSetup.genericProvider": {
+    "en": "provider",
+    "zh-CN": "提供方",
+    "reviewedEnglishHash": "5c4c1964340aca5b65393bbe9d3249cdd71be26665b3320ad694f034f2743283"
+  },
+  "connectionUi.providerSetup.invalidFields": {
+    "en": "Check the URL, API format, and authentication fields.",
+    "zh-CN": "请检查 URL、API 格式和身份验证字段。",
+    "reviewedEnglishHash": "ea521bb8f240e06471a6c790e1f82acd35f10a02fad8ca3888228befe99e6fd8"
+  },
   "connectionUi.providerSetup.reconnect": {
     "en": "Reconnect",
     "zh-CN": "重新连接",
     "reviewedEnglishHash": "bf8a9eab9e7e141bfb81f0ca9244a5f68f476ed0b57f03538410417298169d18"
+  },
+  "connectionUi.providerSetup.reconnectProvider": {
+    "en": "Reconnect {{provider}}",
+    "zh-CN": "重新连接 {{provider}}",
+    "reviewedEnglishHash": "12dfdc917e99b86dbb9eb4dea5b17b85eba4780d8c573fefb5409e0afbef2d2e"
   },
   "connectionUi.providerSetup.saving": {
     "en": "Saving…",
@@ -684,10 +729,25 @@
     "zh-CN": "使用 Paperclip 连接",
     "reviewedEnglishHash": "eee43f4794729ddea2dba549100e40dedcd6caf661d73326cc448f8d2aaf1f04"
   },
+  "connectionUi.setup.connectorUnavailableOnInstance": {
+    "en": "{{name}} is not available on this instance.",
+    "zh-CN": "{{name}} 在此实例上不可用。",
+    "reviewedEnglishHash": "5000d18ead5ea0b393ae73826aa58b69337591ab12850e0505c5c8279cc866f9"
+  },
   "connectionUi.setup.copySharingEmail": {
     "en": "Copy sharing email",
     "zh-CN": "复制共享邮箱",
     "reviewedEnglishHash": "7c5c2cd976654cc960edc5159abdbd25790f9eda6b539bcabaa4c2f330d42459"
+  },
+  "connectionUi.setup.couldNotLoadAvailability": {
+    "en": "Could not load connector availability. Refresh to try again.",
+    "zh-CN": "无法加载连接器可用性，请刷新重试。",
+    "reviewedEnglishHash": "e90597733387fe0524eaaaf0648af89285cfc88bd323a5fa91657e50a0f64174"
+  },
+  "connectionUi.setup.couldNotLoadConnection": {
+    "en": "Could not load this connection. Your saved access and credentials have not changed.",
+    "zh-CN": "无法加载此连接。你已保存的访问权限和凭据未作更改。",
+    "reviewedEnglishHash": "090f249fd745b52b562c42f99763c4a725b2ebf0e0f99c56fe93d03099f992a1"
   },
   "connectionUi.setup.enrollment.checkRegistrationFailed": {
     "en": "Paperclip couldn’t check Cloud registration. Try again.",
@@ -973,6 +1033,16 @@
     "en": "Who this connection acts as",
     "zh-CN": "此连接以谁的身份运行",
     "reviewedEnglishHash": "b49f00cfb5928bf4d6c0d1505d729f95c97eab08ff46151635a0cdb0f390b924"
+  },
+  "connectionUi.setup.loadingConnection": {
+    "en": "Loading connection…",
+    "zh-CN": "正在加载连接…",
+    "reviewedEnglishHash": "ca5b56e4cc0be238f8ebeade8264773421d27be2b2b5520bccf7d556f57a74dc"
+  },
+  "connectionUi.setup.loadingIdentity": {
+    "en": "Loading connection identity",
+    "zh-CN": "正在加载连接身份",
+    "reviewedEnglishHash": "abd3332a91f155afb49701836b8c3488be3fff3e342897bf13a6a27656461b64"
   },
   "connectionUi.setup.method.aria": {
     "en": "How to connect {{app}}",

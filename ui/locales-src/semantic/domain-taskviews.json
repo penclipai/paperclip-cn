@@ -1,0 +1,82 @@
+{
+  "taskViews.changeViewAria": {
+    "en": "Change view — currently {{label}}",
+    "zh-CN": "切换视图 — 当前为{{label}}",
+    "reviewedEnglishHash": "eb650c1f3f90c4a86d0203b614120b4b02fc7e3d73bf73c6ec439cdf810bc8f1"
+  },
+  "taskViews.groups.myWork": {
+    "en": "My work",
+    "zh-CN": "我的工作",
+    "reviewedEnglishHash": "b4b9c68509b915b9ecf9f6f0b2f8f93c891baac2511186a99ee01b1fb8dd0144"
+  },
+  "taskViews.groups.organization": {
+    "en": "Organization",
+    "zh-CN": "组织",
+    "reviewedEnglishHash": "d764d42592fc968709b4c6c25c6e6b77919295dfce2c57ead02bedac5ddb3218"
+  },
+  "taskViews.hints.active": {
+    "en": "Open tasks, running or not",
+    "zh-CN": "未关闭的任务，无论是否正在运行",
+    "reviewedEnglishHash": "421b914b0539536c335e28503741d2f4de3db30a520527b9190c653b2f53b1d5"
+  },
+  "taskViews.hints.allTasks": {
+    "en": "Every task in the organization",
+    "zh-CN": "组织中的全部任务",
+    "reviewedEnglishHash": "b4b27ae567907da0f2e2af7fdf24a5299fd25843bc9624cb2707e7eebfa4ba08"
+  },
+  "taskViews.hints.archived": {
+    "en": "Tasks archived for you",
+    "zh-CN": "为你归档的任务",
+    "reviewedEnglishHash": "0340b86bcec554733504819516ffdcc58d8d1a19891eb84ea280106b7b9a40d7"
+  },
+  "taskViews.hints.backlog": {
+    "en": "Not started yet",
+    "zh-CN": "尚未开始",
+    "reviewedEnglishHash": "1bd6c3aa48813703fd21f710499d635da1f740ff8b4ddc1795e93ca6dfcb9300"
+  },
+  "taskViews.hints.blocked": {
+    "en": "Blocked tasks, grouped by blocker",
+    "zh-CN": "已阻塞的任务，按阻塞原因分组",
+    "reviewedEnglishHash": "39b1f180b05391a8fccbdc6d995bd7f0a1580d6ad6191780ae0fe7820c4894ce"
+  },
+  "taskViews.hints.done": {
+    "en": "Completed and cancelled",
+    "zh-CN": "已完成和已取消",
+    "reviewedEnglishHash": "54868a8f35be1d8c3203ad41655e361cee8e62d94b5e2e4742fb9cfd85a7ac10"
+  },
+  "taskViews.hints.everything": {
+    "en": "Tasks, approvals, failed runs and join requests",
+    "zh-CN": "任务、审批、失败运行与加入申请",
+    "reviewedEnglishHash": "45e231a78a168ae359e28378c5d3b96b6f90c558b2321f83bbd6943457c4b2d4"
+  },
+  "taskViews.hints.mine": {
+    "en": "Assigned to you or waiting on you",
+    "zh-CN": "分配给你或等待你处理的任务",
+    "reviewedEnglishHash": "8f5bc2f2345af232675de74db3f4ab21b92826d7aad180942660ab6c8e660b00"
+  },
+  "taskViews.hints.needsAttention": {
+    "en": "Tasks with pending decisions",
+    "zh-CN": "有待处理决策的任务",
+    "reviewedEnglishHash": "0de9eb2ded80173d180e41ea45e89057d8f8613c36db160cffc893537981acdd"
+  },
+  "taskViews.hints.recent": {
+    "en": "Everything you touched lately",
+    "zh-CN": "你近期参与的所有事项",
+    "reviewedEnglishHash": "86dd915047237c9ffa4d1e463b846387dec320075964c61f2e863c70fea2eab5"
+  },
+  "taskViews.hints.unread": {
+    "en": "Tasks you touched with new activity",
+    "zh-CN": "你参与且有新动态的任务",
+    "reviewedEnglishHash": "b013972fb9b14b966fbecdda143aaef776cc4b0f525f76862adb14e6c687e5ea"
+  },
+  "taskViews.labels.allTasks": {
+    "en": "All tasks",
+    "zh-CN": "全部任务",
+    "reviewedEnglishHash": "cb66482383df9e907ddae703d9745b9e1eee483c70be1ae0b66e62daf1681307"
+  },
+  "taskViews.labels.everything": {
+    "en": "Everything",
+    "zh-CN": "全部",
+    "reviewedEnglishHash": "75304cf77db08b6e8386c3101ccc2a49435093ebf86a40bbb2ea3c6b5d24b096"
+  }
+}

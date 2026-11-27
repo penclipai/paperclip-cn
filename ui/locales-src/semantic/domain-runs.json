@@ -1,0 +1,107 @@
+{
+  "runs.showingRecent": {
+    "en": "Showing the {{count}} most recent runs.",
+    "zh-CN": "显示最近 {{count}} 次运行。",
+    "reviewedEnglishHash": "2242b9e310fa80cd84fcf3707e27cc8b647e4a250c4e0cb9e132d3b3c6b6e43b"
+  },
+  "runs.showingRecentRoutine": {
+    "en": "Showing the {{count}} most recent routine runs.",
+    "zh-CN": "显示最近 {{count}} 次例行任务运行。",
+    "reviewedEnglishHash": "239f523a1462d8f9040ba9733fd6c1abb8436364867bbfe9192f6a3002e5d666"
+  },
+  "runs.source.approval": {
+    "en": "approval",
+    "zh-CN": "审批",
+    "reviewedEnglishHash": "9deb65b8788f41ff94a217842017db2f843954fc0eb46110835903908e5a265f"
+  },
+  "runs.source.assignment": {
+    "en": "assignment",
+    "zh-CN": "指派",
+    "reviewedEnglishHash": "ce7a7c10b0dfd96808cca64c88cf5c5e13b7775283bdc924767887bfa32c8fa1"
+  },
+  "runs.source.automation": {
+    "en": "automation",
+    "zh-CN": "自动化",
+    "reviewedEnglishHash": "6d65ed5c750019a199c61a33ea9202fb727c05e257560f38f014e6b1520e50ed"
+  },
+  "runs.source.comment": {
+    "en": "comment",
+    "zh-CN": "评论",
+    "reviewedEnglishHash": "c44bb2fd516909dab78ae0bfedcd5672b131b996c4b7a4328ee55fba170da776"
+  },
+  "runs.source.on_demand": {
+    "en": "on demand",
+    "zh-CN": "按需",
+    "reviewedEnglishHash": "cfa1f74b1ca23226dd41bcab608e0d0dd15f0c6c2eead4bf886bab74f9e6d1d5"
+  },
+  "runs.source.routine": {
+    "en": "routine",
+    "zh-CN": "例行任务",
+    "reviewedEnglishHash": "fde55b36ec36cbcd2832b6b9f8f59ea0cf6d942c528053ca1171c063069a74cf"
+  },
+  "runs.source.schedule": {
+    "en": "schedule",
+    "zh-CN": "定时",
+    "reviewedEnglishHash": "5f72005e81c4ecbd5aa3588e80e3daf0df068ce0cf5638944508a0165fea609a"
+  },
+  "runs.source.timer": {
+    "en": "timer",
+    "zh-CN": "定时",
+    "reviewedEnglishHash": "cd94ec90364da372eb1a980c7ffb36e5654d7e2cd92cb810be418adb36fe2434"
+  },
+  "runs.source.webhook": {
+    "en": "webhook",
+    "zh-CN": "Webhook",
+    "reviewedEnglishHash": "9fd09dc33545f9cc19b81ebd0b98c4fd8c66ed1e34de89f4c9a81e6b26dc0d54"
+  },
+  "runs.sourceRun.approval": {
+    "en": "approval run",
+    "zh-CN": "审批触发运行",
+    "reviewedEnglishHash": "96835b3123ecec3e86c2f4aa5bffdc9d3c92d38f5dc74d57be652e3f7a6d3c6b"
+  },
+  "runs.sourceRun.assignment": {
+    "en": "assignment run",
+    "zh-CN": "指派运行",
+    "reviewedEnglishHash": "b9889e77792cd8b48052bf6b04083e61bf0c2c7fc94b1486283412a3ef7fd960"
+  },
+  "runs.sourceRun.automation": {
+    "en": "automation run",
+    "zh-CN": "自动化运行",
+    "reviewedEnglishHash": "846a79a10634a03c0cde9c67c3af94002fe44b4dfae8191e8ca7ff1f9fcab9ad"
+  },
+  "runs.sourceRun.comment": {
+    "en": "comment run",
+    "zh-CN": "评论触发运行",
+    "reviewedEnglishHash": "fe26b9d0fcdf0f94d2ca8695249b20934189df49a3588fa430442e9937947499"
+  },
+  "runs.sourceRun.on_demand": {
+    "en": "on demand run",
+    "zh-CN": "按需运行",
+    "reviewedEnglishHash": "0aa0416ab0166e95930a4d4ffedd7545d332ba3d5783d1a112ca0e38fd5a2fe9"
+  },
+  "runs.sourceRun.routine": {
+    "en": "routine run",
+    "zh-CN": "例行任务运行",
+    "reviewedEnglishHash": "f8093cbb552c448e90d7f2a8fae7bcd41e09228a5949a530cb4dcd18cdc7000a"
+  },
+  "runs.sourceRun.schedule": {
+    "en": "scheduled run",
+    "zh-CN": "定时运行",
+    "reviewedEnglishHash": "8a8d33cec5803a7c5a6fb84a58328047b877a86f0481858298c86994ac947b16"
+  },
+  "runs.sourceRun.timer": {
+    "en": "timer run",
+    "zh-CN": "定时运行",
+    "reviewedEnglishHash": "bf8324e32c78d7db859d43aa1a4574ffa421ecdab2182fd956d0eb8019420d60"
+  },
+  "runs.sourceRun.webhook": {
+    "en": "webhook run",
+    "zh-CN": "Webhook 触发运行",
+    "reviewedEnglishHash": "2329f1adf9c87565d5c36d15f0d12c3ee9862c3488d0f1d5a4149862d553401b"
+  },
+  "runs.sourceRunFallback": {
+    "en": "{{source}} run",
+    "zh-CN": "{{source}}运行",
+    "reviewedEnglishHash": "a3710e7b6982cc5d9e35379510a082c84c21330c90543d4893c3251db768d605"
+  }
+}

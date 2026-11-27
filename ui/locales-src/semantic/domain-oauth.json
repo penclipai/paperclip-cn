@@ -1,0 +1,132 @@
+{
+  "oauth.callback.denied": {
+    "en": "Authorization was cancelled or declined. Your saved connection was not changed.",
+    "zh-CN": "授权已取消或被拒绝。你已保存的连接未作更改。",
+    "reviewedEnglishHash": "65b751da07e33d9a12062afccb20988d619e1e4efc9608e0ebdc68aa12526f6c"
+  },
+  "oauth.callback.githubInstallationRequired": {
+    "en": "GitHub access is required. Install Paperclip and grant at least one repository, then try again.",
+    "zh-CN": "需要 GitHub 访问权限。请安装 Paperclip 并授权至少一个仓库后重试。",
+    "reviewedEnglishHash": "3ad3e19df5c4f5749d50aae923aab4f7cbbf7e008fa1c5fe37be480537785842"
+  },
+  "oauth.callback.incomplete": {
+    "en": "Authorization did not complete. Your saved connection is still here, so you can try again.",
+    "zh-CN": "授权未完成。你已保存的连接仍在，可以随时重试。",
+    "reviewedEnglishHash": "675b3b117cddfd821b46a6df48b54871da1df35809c16ce83ebebc71dcae5209"
+  },
+  "oauth.failure.default": {
+    "en": "Authorization did not complete. Try again when you’re ready.",
+    "zh-CN": "授权未完成。准备好后请重试。",
+    "reviewedEnglishHash": "92f5ecbe8c450f36dc7329ae637cab7b76524c2ae1cf485ae53f821fe1de0717"
+  },
+  "oauth.failure.githubInstallationRequired": {
+    "en": "You signed in, but the Paperclip for GitHub app isn’t installed on any account you can use. Install it and choose at least one repository, then try again. An organization owner may need to approve the install.",
+    "zh-CN": "你已登录，但尚未在任何可用账户上安装 Paperclip for GitHub 应用。请先安装并选择至少一个仓库，然后再试。某些组织可能需要管理员批准安装。",
+    "reviewedEnglishHash": "0e495b2727b3580d287d1bc69c383650297e29e32436fccaaf29c20d6d23c94d"
+  },
+  "oauth.failure.insufficientScope": {
+    "en": "The provider didn’t grant the access Paperclip asked for. Try again and approve every requested permission.",
+    "zh-CN": "提供方未授予 Paperclip 请求的权限。请重试并同意所有请求的权限。",
+    "reviewedEnglishHash": "44a15ee6e3d8293f29b348387925f57050e6b665d2cfaa2b809d17d5ccbeb232"
+  },
+  "oauth.failure.redirectOriginUnsupported": {
+    "en": "Sign-in returned to a different Paperclip address than the one you started from. Open Paperclip at its usual address and try again.",
+    "zh-CN": "登录回调跳转到了与你发起登录时不同的 Paperclip 地址。请在常用地址打开 Paperclip 后重试。",
+    "reviewedEnglishHash": "677ae0ad88ca11df8e2864f94e842a1920bbae71038ab208179e3fe34eb4d340"
+  },
+  "oauth.failure.sessionMismatch": {
+    "en": "Sign-in finished in a different Paperclip session. Stay signed in to Paperclip in this browser and try again.",
+    "zh-CN": "登录是在另一个 Paperclip 会话中完成的。请在当前浏览器中保持登录 Paperclip，然后重试。",
+    "reviewedEnglishHash": "1744c0a045fde5cb933d968029b05c9d2ddcd900a8b26d2c76c2010de35a9654"
+  },
+  "oauth.failure.slackMcpDisabled": {
+    "en": "Slack MCP access is disabled for this app. Ask the Slack app owner to enable Model Context Protocol under Features → Agents & AI Apps, then try again.",
+    "zh-CN": "此应用已禁用 Slack MCP 访问。请联系 Slack 应用所有者在 Features → Agents & AI Apps 中启用 Model Context Protocol，然后重试。",
+    "reviewedEnglishHash": "79fcec7f6a49fe66a2ef4a3c50cc457ae9783e1ae748d7193cf7a4e7c94bc79a"
+  },
+  "oauth.failure.stateExpired": {
+    "en": "The sign-in took too long or was already used. Try again and finish signing in within a few minutes.",
+    "zh-CN": "登录耗时过长或该请求已被使用。请重试并在几分钟内完成登录。",
+    "reviewedEnglishHash": "57d00feadd5e6aabe88c4bc492913eb8de4e109bddca347eaeba8c8bb52e9e15"
+  },
+  "oauth.failure.tokenExchangeFailed": {
+    "en": "The provider accepted your sign-in but didn’t give Paperclip access. Try again; if it keeps happening, check that your account or organization allows this app.",
+    "zh-CN": "提供方已接受你的登录，但未向 Paperclip 授予访问权限。请重试；如果持续出现，请检查你的账户或组织是否允许此应用。",
+    "reviewedEnglishHash": "6ddf27e90ca8749417d81ccf749fb1f9a0a699a49323a7b9e086cdd93448cacf"
+  },
+  "oauth.providerError.accountSelectionRequired": {
+    "en": "The provider requires you to select an account. Try connecting again.",
+    "zh-CN": "提供方要求你选择一个账户。请重新尝试连接。",
+    "reviewedEnglishHash": "9dc7cbb3366a2f8ff7f1dd80fca9512f4fc4e187ea547385e9b837a42041c6c9"
+  },
+  "oauth.providerError.consentRequired": {
+    "en": "The provider requires consent to be granted. Try connecting again.",
+    "zh-CN": "提供方要求先授予同意权限。请重新尝试连接。",
+    "reviewedEnglishHash": "d2778de4a0f8b7c4a8123dc138058065519737d5cd4e30ad057ffa2035af5abc"
+  },
+  "oauth.providerError.interactionRequired": {
+    "en": "The provider requires interactive sign-in. Try connecting again.",
+    "zh-CN": "提供方要求进行交互式登录。请重新尝试连接。",
+    "reviewedEnglishHash": "aecb689c0540ca4e1cc3206365e45684bcc5308607d820cf30d3516cf5faebd7"
+  },
+  "oauth.providerError.invalidClient": {
+    "en": "The provider rejected this OAuth app’s client credentials. Check your client ID and secret and try again.",
+    "zh-CN": "提供方拒绝了此 OAuth 应用的客户端凭据。请检查客户端 ID 和密钥后重试。",
+    "reviewedEnglishHash": "c1902bb34c45b388ae52017044aaf26f9cf7146738a87221f5eee4510116e5b9"
+  },
+  "oauth.providerError.invalidClientMetadata": {
+    "en": "The provider rejected Paperclip’s client registration details. Try again or use your own OAuth app.",
+    "zh-CN": "提供方拒绝了 Paperclip 的客户端注册信息。请重试或改用你自己的 OAuth 应用。",
+    "reviewedEnglishHash": "6c92f13697199eb6db6fe92884234845ca9203f14019e61987ba0d6402b37bae"
+  },
+  "oauth.providerError.invalidGrant": {
+    "en": "The provider rejected the authorization code. Try signing in again.",
+    "zh-CN": "提供方拒绝了授权码。请尝试重新登录。",
+    "reviewedEnglishHash": "d6c52c097e2e69d163d6455ed03536cea22e28dae8a258dc76eadf127d4cf5ba"
+  },
+  "oauth.providerError.invalidRedirectUri": {
+    "en": "The provider rejected Paperclip’s callback URL. Check that the callback URL in your OAuth app matches Paperclip and try again.",
+    "zh-CN": "提供方拒绝了 Paperclip 的回调 URL。请检查你的 OAuth 应用中的回调 URL 是否与 Paperclip 一致，然后重试。",
+    "reviewedEnglishHash": "103e9bb87ede3a3a1bad7bb5eae1b774d00a0e1fc24c636b1dea0075977b2bef"
+  },
+  "oauth.providerError.invalidRequest": {
+    "en": "The provider rejected the sign-in request. Check your OAuth app settings and try again.",
+    "zh-CN": "提供方拒绝了登录请求。请检查你的 OAuth 应用设置后重试。",
+    "reviewedEnglishHash": "37527dcb0cd4948028af659be7f9a71cdb4dc9c21c775db985903a098900f359"
+  },
+  "oauth.providerError.invalidScope": {
+    "en": "The provider rejected the requested permissions. Check your OAuth app’s configured scopes and try again.",
+    "zh-CN": "提供方拒绝了所请求的权限范围。请检查你的 OAuth 应用配置的权限范围后重试。",
+    "reviewedEnglishHash": "76e580fee187abab11b0bad80227221cece6c7a7f215b21d31f3438848b68446"
+  },
+  "oauth.providerError.loginRequired": {
+    "en": "The provider requires you to sign in first. Try connecting again.",
+    "zh-CN": "提供方要求你先登录。请重新尝试连接。",
+    "reviewedEnglishHash": "bf6989d3a9d3bf2da429647bdf989db39822602d3160bb74cc6fcaeeb1f1fa59"
+  },
+  "oauth.providerError.serverError": {
+    "en": "The provider reported an internal error. Try again shortly.",
+    "zh-CN": "提供方报告发生内部错误。请稍后重试。",
+    "reviewedEnglishHash": "5ac8bb860fa6b432f35d4b91dcb5a9dafa369e2cf016cfe102a4187cb9844c4e"
+  },
+  "oauth.providerError.temporarilyUnavailable": {
+    "en": "The provider is temporarily unavailable. Try again shortly.",
+    "zh-CN": "提供方暂时不可用。请稍后重试。",
+    "reviewedEnglishHash": "4e33729796e6563b24e2b6be8e854ffcc90ed94e1e489d64103af6da2446774a"
+  },
+  "oauth.providerError.unauthorizedClient": {
+    "en": "The provider refused to authorize this OAuth app. Check your OAuth app configuration and try again.",
+    "zh-CN": "提供方拒绝授权此 OAuth 应用。请检查你的 OAuth 应用配置后重试。",
+    "reviewedEnglishHash": "19318d77255fd03ffd07f5ec3501bd5541fd04255cc46999f398af999796830c"
+  },
+  "oauth.providerError.unsupportedGrantType": {
+    "en": "The provider does not support the OAuth grant Paperclip uses.",
+    "zh-CN": "提供方不支持 Paperclip 使用的 OAuth 授权类型。",
+    "reviewedEnglishHash": "2341a6dae9a4ce5de3af0361a8f13e4563966ecb31f73366810e911542e4e054"
+  },
+  "oauth.providerError.unsupportedResponseType": {
+    "en": "The provider does not support the OAuth sign-in flow Paperclip uses.",
+    "zh-CN": "提供方不支持 Paperclip 使用的 OAuth 登录流程。",
+    "reviewedEnglishHash": "9138d2aa4405690fd8a8d97e4ebe8055e2bac6b202e01c63978baf6e6a052206"
+  }
+}

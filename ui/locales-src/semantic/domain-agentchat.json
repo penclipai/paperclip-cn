@@ -1,0 +1,22 @@
+{
+  "agentChat.disabledPrefix": {
+    "en": "Agent Chat is disabled for this instance. An administrator can enable it in",
+    "zh-CN": "此实例已禁用智能体对话。管理员可在",
+    "reviewedEnglishHash": "3583739ddf5a3d462215f7360413dd278a18a13f417b1b3f38b409d6d146b18b"
+  },
+  "agentChat.disabledSuffix": {
+    "en": ". Your workspace preference does not change Chat availability. Existing history remains available through task links.",
+    "zh-CN": "中启用。你的工作区偏好不会影响对话功能是否可用。现有历史记录仍可通过任务链接查看。",
+    "reviewedEnglishHash": "a8c7bcb9def891ef42ce9f55cec2c4795f0307b7f74b2b25deb038064becc03f"
+  },
+  "agentChat.experimentalSettingsLink": {
+    "en": "Experimental settings",
+    "zh-CN": "实验功能设置",
+    "reviewedEnglishHash": "26c0cd933f3ca50eb1652a4d7a9e38da5aac450f41829f92935023b0e3c4362a"
+  },
+  "agentChat.working": {
+    "en": "Working…",
+    "zh-CN": "正在处理…",
+    "reviewedEnglishHash": "5474eef8d0f179c707cf418e2bbb468c77cc24edc5e9f5f4e137e85e06a8eea0"
+  }
+}

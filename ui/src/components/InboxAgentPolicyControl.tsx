@@ -14,21 +14,33 @@ import { AgentMultiSelect } from "@/components/AgentMultiSelect";
 import { Button } from "@/components/ui/button";
 import { RadioCardGroup, type RadioCardOption } from "@/components/ui/radio-card";
 
-const MODE_OPTIONS: RadioCardOption[] = [
+const MODE_OPTION_KEYS: Array<{
+  value: InboxAgentPolicyMode;
+  titleKey: string;
+  descriptionKey: string;
+  defaultTitle: string;
+  defaultDescription: string;
+}> = [
   {
     value: "open",
-    title: "Any of my agents",
-    description: "Let any agent you manage archive tasks out of your inbox.",
+    titleKey: "inboxAgentPolicy.mode.open.title",
+    descriptionKey: "inboxAgentPolicy.mode.open.description",
+    defaultTitle: "Any of my agents",
+    defaultDescription: "Let any agent you manage archive tasks out of your inbox.",
   },
   {
     value: "allowlist",
-    title: "Only chosen agents",
-    description: "Restrict inbox tidying to the agents you pick below.",
+    titleKey: "inboxAgentPolicy.mode.allowlist.title",
+    descriptionKey: "inboxAgentPolicy.mode.allowlist.description",
+    defaultTitle: "Only chosen agents",
+    defaultDescription: "Restrict inbox tidying to the agents you pick below.",
   },
   {
     value: "disabled",
-    title: "Off",
-    description: "Agents can never archive tasks from your inbox.",
+    titleKey: "inboxAgentPolicy.mode.disabled.title",
+    descriptionKey: "inboxAgentPolicy.mode.disabled.description",
+    defaultTitle: "Off",
+    defaultDescription: "Agents can never archive tasks from your inbox.",
   },
 ];
 
@@ -140,16 +152,19 @@ export function InboxAgentPolicyControl({ companyId }: { companyId: string | nul
           <h2 className="text-base font-semibold">{translateInstant("inboxAgentPolicy.title")}</h2>
         </div>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          Choose whether the agents you manage may archive tasks out of your inbox on your behalf. You can
-          undo any archive, and every agent archive is attributed in the task&apos;s properties.
+          {translateInstant("inboxAgentPolicy.description")}
         </p>
       </div>
 
       <RadioCardGroup
-        ariaLabel="Inbox agent archiving policy"
+        ariaLabel={translateInstant("inboxAgentPolicy.ariaLabel")}
         value={draft.mode}
         onValueChange={(value) => setDraft((current) => (current ? { ...current, mode: value as InboxAgentPolicyMode } : current))}
-        options={MODE_OPTIONS}
+        options={MODE_OPTION_KEYS.map<RadioCardOption>((option) => ({
+          value: option.value,
+          title: translateInstant(option.titleKey, { defaultValue: option.defaultTitle }),
+          description: translateInstant(option.descriptionKey, { defaultValue: option.defaultDescription }),
+        }))}
         className="max-w-2xl"
       />
 
@@ -166,12 +181,15 @@ export function InboxAgentPolicyControl({ companyId }: { companyId: string | nul
             }
             triggerLabel={
               selectedAgentIds.size === 0
-                ? "Select agents"
-                : `${selectedAgentIds.size} ${selectedAgentIds.size === 1 ? "agent" : "agents"} selected`
+                ? translateInstant("inboxAgentPolicy.selectAgents", { defaultValue: "Select agents" })
+                : translateInstant("inboxAgentPolicy.selectedAgents", {
+                    count: selectedAgentIds.size,
+                    defaultValue: `${selectedAgentIds.size} ${selectedAgentIds.size === 1 ? "agent" : "agents"} selected`,
+                  })
             }
             triggerFullWidth={false}
             showSelectionPreview={false}
-            emptyMessage="You don’t manage any agents yet."
+            emptyMessage={translateInstant("inboxAgentPolicy.noAgents")}
           />
         </div>
       ) : null}
@@ -192,7 +210,7 @@ export function InboxAgentPolicyControl({ companyId }: { companyId: string | nul
           onClick={() => draft && updateMutation.mutate(draft)}
         >
           {updateMutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Save className="size-4" />}
-          {updateMutation.isPending ? "Saving…" : "Save"}
+          {updateMutation.isPending ? translateInstant("Saving…") : translateInstant("Save")}
         </Button>
       </div>
     </section>

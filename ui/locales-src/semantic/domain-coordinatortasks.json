@@ -1,0 +1,62 @@
+{
+  "coordinatorTasks.detailsLoadError": {
+    "en": "Task details couldn’t load.",
+    "zh-CN": "任务详情未能加载。",
+    "reviewedEnglishHash": "2d9553be1ebf42e09881a15c15edea437443c15fdb6f915013a569d085fbaac2"
+  },
+  "coordinatorTasks.empty.noArchived": {
+    "en": "No archived tasks",
+    "zh-CN": "没有已归档任务",
+    "reviewedEnglishHash": "5cad3e05497e9abb8669acb381ee0fd46e972d28902c756c923f0dc06e4cbfaf"
+  },
+  "coordinatorTasks.empty.noMatch": {
+    "en": "No tasks match this view",
+    "zh-CN": "没有符合当前视图的任务",
+    "reviewedEnglishHash": "1a4645f40aec40a9d2eea61df92e8cd5944eb9d254d00d2b5fc2f4e9f80ff468"
+  },
+  "coordinatorTasks.empty.noNeedsDecision": {
+    "en": "No tasks need a decision.",
+    "zh-CN": "没有需要决策的任务。",
+    "reviewedEnglishHash": "149b7beba55117c7418755ae4cc2a701c646def89119bb7a96803db900b49824"
+  },
+  "coordinatorTasks.empty.noOrgTasks": {
+    "en": "No tasks in this organization",
+    "zh-CN": "此组织中暂无任务",
+    "reviewedEnglishHash": "90b552caa9f9dbb823512925448663e16c138424f12cd5107ae62608eace74d9"
+  },
+  "coordinatorTasks.loadError": {
+    "en": "Could not load tasks",
+    "zh-CN": "无法加载任务",
+    "reviewedEnglishHash": "5d18de0eabd7449eb4e2b4946f9c6c46b98b60c8baf3be3aeb0e5dca9df3f127"
+  },
+  "coordinatorTasks.loadMore": {
+    "en": "Load more tasks",
+    "zh-CN": "加载更多任务",
+    "reviewedEnglishHash": "af07ba09cbf86d4e41465da92bf3f319e3d0b4f4e47858e5172d44e41c384e9a"
+  },
+  "coordinatorTasks.loadedCount": {
+    "en": "{{count}} tasks loaded. Load more to include them in filters.",
+    "zh-CN": "已加载 {{count}} 项任务。加载更多以将其纳入筛选。",
+    "reviewedEnglishHash": "f2132aff24b33d89767210eaad5c381f6eea8cf9d714c99dfe11b2063b15510f"
+  },
+  "coordinatorTasks.loading": {
+    "en": "Loading tasks…",
+    "zh-CN": "正在加载任务…",
+    "reviewedEnglishHash": "9ae9f7d835d95a2cf1362c130da3a0ebacae4331dbb431e60e1735477591bf7b"
+  },
+  "coordinatorTasks.pendingDecisionsLoadError": {
+    "en": "Some tasks with pending decisions couldn’t load.",
+    "zh-CN": "部分有待处理决策的任务未能加载。",
+    "reviewedEnglishHash": "1030ba4e41a7fbd2bcf5cb59fb97cba9a6de2c145b82fc6db453e112f6dcc5b2"
+  },
+  "coordinatorTasks.selectOrg": {
+    "en": "Select an organization to view tasks.",
+    "zh-CN": "请选择一个组织以查看任务。",
+    "reviewedEnglishHash": "93fc0c5a9ea2237dc3be9bac02b8ee761507849e3970b00e11eecad9a1e634db"
+  },
+  "coordinatorTasks.signInForArchived": {
+    "en": "Sign in to view archived tasks.",
+    "zh-CN": "请登录以查看已归档任务。",
+    "reviewedEnglishHash": "3876b9c41bf891f9a5713badb76e90c6514f9c451f6fff1d799712a733bdd340"
+  }
+}

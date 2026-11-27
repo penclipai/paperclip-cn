@@ -89,6 +89,11 @@
     "zh-CN": "快捷键",
     "reviewedEnglishHash": "e9bef0b0f3c25e6eaf3a754817a8b4f62e1c8473cb2be3e190975926dbf72d6f"
   },
+  "Kicked off by": {
+    "en": "Kicked off by",
+    "zh-CN": "发起人",
+    "reviewedEnglishHash": "927efd2bbc6a683eb74a9f41d4f637d4bc7193b93b7071bddec965fd32eca5ef"
+  },
   "Kimi API base URL": {
     "en": "Kimi API base URL",
     "zh-CN": "Kimi API 基本 URL",

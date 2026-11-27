@@ -24,12 +24,12 @@ export function CaseListRow({
   const show = new Set(columns);
   const showWork = show.has("phase") || show.has("assignee");
   const assignee = task?.assigneeAgentId
-    ? { id: task.assigneeAgentId, name: task.assigneeAgentName ?? "Agent" }
+    ? { id: task.assigneeAgentId, name: task.assigneeAgentName ?? t("Agent") }
     : null;
   const work = task ? <>
     {show.has("phase") && caseData.phase ? <span className="text-xs text-muted-foreground">{caseData.phase}</span> : null}
     {show.has("assignee") && (assignee ? <AgentIdentity agent={assignee} size="xs" /> : <span className="text-xs text-muted-foreground">{t("routines.unassigned")}</span>)}
-  </> : <span className="text-xs text-muted-foreground">{caseData.workIssueId ? "Task unavailable" : "No task linked"}</span>;
+  </> : <span className="text-xs text-muted-foreground">{caseData.workIssueId ? t("cases.row.taskUnavailable", { defaultValue: "Task unavailable" }) : t("cases.row.noTaskLinked", { defaultValue: "No task linked" })}</span>;
   const subtitle = [show.has("identifier") ? caseData.identifier : null, show.has("type") ? caseData.caseType : null,
     show.has("project") ? projectName : null].filter(Boolean);
 
