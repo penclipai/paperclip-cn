@@ -29,6 +29,7 @@ import { AgentSelect } from "@/components/AgentMultiSelect";
 import { ToolsPageHeader, LoadingState, RelativeTime } from "./shared";
 import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 import { googleAccessRetrySummary } from "../../features/connections/googleAccessRemoval";
+import { auditTransportLabel } from "@/lib/connection-transport-label";
 
 const PAGE_SIZE = 50;
 const ALL = "__all";
@@ -285,7 +286,7 @@ function ActivityRow({
                 <DetailFact label={translateInstant("tools.audit.details.reasonCode")} value={reasonCode} mono />
                 <DetailFact label={translateInstant("tools.audit.details.actorType")} value={event.actorType ?? "—"} />
                 {runId ? <DetailFact label={translateInstant("tools.audit.details.runId")} value={runId} mono /> : null}
-                {transport ? <DetailFact label={translateInstant("tools.audit.details.transport")} value={transport} mono /> : null}
+                {transport ? <DetailFact label={translateInstant("Type")} value={auditTransportLabel(transport)} /> : null}
                 {requestMethod && endpoint ? <DetailFact label={translateInstant("tools.audit.details.httpRequest")} value={`${requestMethod} ${endpoint}`} mono /> : null}
                 {mcpMethod ? <DetailFact label={translateInstant("tools.audit.details.mcpMethod")} value={mcpMethod} mono /> : null}
                 {requestId ? <DetailFact label={translateInstant("tools.audit.details.requestId")} value={requestId} mono /> : null}

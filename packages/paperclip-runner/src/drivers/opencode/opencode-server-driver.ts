@@ -387,6 +387,7 @@ export class OpenCodeServerDriver implements HarnessDriver {
         reason: redact(String(error), [
           this.#options.environment?.OPENROUTER_API_KEY,
           this.#options.environment?.PAPERCLIP_AI_PROVIDER_KEY,
+          this.#options.environment?.PAPERCLIP_OPENROUTER_PROXY_TOKEN,
         ]),
       };
     }
@@ -2731,6 +2732,7 @@ async function startRuntime(input: {
     bridge.secret,
     providerEnvironment.OPENROUTER_API_KEY,
     providerEnvironment.PAPERCLIP_AI_PROVIDER_KEY,
+    providerEnvironment.PAPERCLIP_OPENROUTER_PROXY_TOKEN,
   ].filter((value): value is string => Boolean(value));
   input.trace?.addSensitiveValues(sensitiveValues);
   // Configured secrets must never reach OpenCode's captured tool output, its
@@ -2762,7 +2764,12 @@ async function startRuntime(input: {
   const [modelProvider, ...modelIdParts] = input.options.model.split("/");
   const providerModelId = modelIdParts.join("/");
   const providerRoute = modelProvider === "openrouter"
-    ? { baseUrl: "https://openrouter.ai/api/v1", key: providerEnvironment.OPENROUTER_API_KEY ?? "" }
+    ? providerEnvironment.PAPERCLIP_OPENROUTER_PROXY_URL
+      ? {
+          baseUrl: providerEnvironment.PAPERCLIP_OPENROUTER_PROXY_URL,
+          key: providerEnvironment.PAPERCLIP_OPENROUTER_PROXY_TOKEN ?? "",
+        }
+      : { baseUrl: "https://openrouter.ai/api/v1", key: providerEnvironment.OPENROUTER_API_KEY ?? "" }
     : modelProvider === "paperclip" && input.options.environment?.PAPERCLIP_AI_PROVIDER_URL
       ? { baseUrl: input.options.environment.PAPERCLIP_AI_PROVIDER_URL, key: input.options.environment.PAPERCLIP_AI_PROVIDER_KEY ?? "" }
       : null;

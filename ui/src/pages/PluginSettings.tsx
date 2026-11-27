@@ -174,7 +174,7 @@ export function PluginSettings() {
       },
       { label: translateInstant("Settings"), href: "/company/settings" },
       {
-        label: translateInstant("Plugins"),
+        label: translateInstant("System plugins"),
         href: "/company/settings/instance/plugins",
       },
       {

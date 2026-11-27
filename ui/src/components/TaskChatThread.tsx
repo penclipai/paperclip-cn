@@ -4,7 +4,8 @@ import {
   presentationDecisionCommentId,
   semanticProgressCommentIds,
 } from "@/lib/run-answer-visibility";
-import { imagePreparationReceiptIds } from "./task-chat/image-resources";
+import { preparationReceiptIds, runFileCardAttachments } from "./task-chat/image-resources";
+import { RunFileCardsContext } from "./task-chat/RunFileCardsContext";
 import type { ScrollingHistory } from "@/components/task-chat/TaskMessageScroller";
 import { TaskChatShimmerScope } from "@/components/task-chat/TaskChatShimmer";
 import { translateInstant } from "@/i18n";
@@ -198,6 +199,14 @@ import { safeNavigableUrl } from "@/lib/safe-url";
 
 const EMPTY_BROWSERS: TaskBrowser[] = [];
 const COMPACT_RUN_LOG_READ_LIMIT_BYTES = 32_000;
+
+/** Mirrors task-interruption-presentation.ts: a swarm-route failure needs the person when Antigravity says so. */
+function swarmFailureNeedsAction(resultJson: Record<string, unknown> | null | undefined): boolean {
+  const failure = resultJson?.providerFailure;
+  if (!failure || typeof failure !== "object" || Array.isArray(failure)) return false;
+  const { provider, retryability } = failure as Record<string, unknown>;
+  return provider === "antigravity" && retryability === "requires_action";
+}
 
 function toMs(value: Date | string | null | undefined): number {
   if (!value) return 0;
@@ -1016,9 +1025,10 @@ export function TaskChatThread(props: TaskChatThreadProps) {
   // prefers the accepted semantic result so runs such as DOT-20 recover their
   // real upstream response without a data migration.
   const imageReceipts = useMemo(
-    () => imagePreparationReceiptIds(comments, attachments, workProducts),
+    () => preparationReceiptIds(comments, attachments, workProducts),
     [comments, attachments, workProducts],
   );
+  const runFileCards = useMemo(() => runFileCardAttachments(workProducts), [workProducts]);
   const projectedComments = useMemo(
     () =>
       comments.flatMap((comment) => {
@@ -2091,21 +2101,26 @@ export function TaskChatThread(props: TaskChatThreadProps) {
             : code === "native_provider_model_rejected" &&
                 source.status === "failed"
               ? "Model unavailable"
-              : code === "native_provider_approval_required" &&
+              : code === "antigravity_swarm_unavailable" &&
                   source.status === "failed"
-                ? "Approval required"
-                : code === "native_provider_usage_limit" &&
+                ? swarmFailureNeedsAction(meta?.resultJson)
+                  ? "Swarm did not start"
+                  : "Swarm did not finish"
+                : code === "native_provider_approval_required" &&
                     source.status === "failed"
-                  ? "Usage limit reached"
-                  : code === "sandbox_disk_full" && source.status === "failed"
-                    ? translateInstant("taskChat.error.diskFull", { defaultValue: "Disk full" })
-                    : source.status === "cancelled"
-                      ? "Run cancelled"
-                      : source.status === "interrupted"
-                        ? "Run interrupted"
-                        : source.status === "timed_out"
-                          ? "Run timed out"
-                          : "Run failed";
+                  ? "Approval required"
+                  : code === "native_provider_usage_limit" &&
+                      source.status === "failed"
+                    ? "Usage limit reached"
+                    : code === "sandbox_disk_full" && source.status === "failed"
+                      ? translateInstant("taskChat.error.diskFull", { defaultValue: "Disk full" })
+                      : source.status === "cancelled"
+                        ? "Run cancelled"
+                        : source.status === "interrupted"
+                          ? "Run interrupted"
+                          : source.status === "timed_out"
+                            ? "Run timed out"
+                            : "Run failed";
         const responseBoundary = sourceHasNativeResponse
           ? " after returning a final response"
           : "";
@@ -2125,18 +2140,21 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                             defaultValue: 'The provider rejected the model "{{model}}".',
                           })
                         : meta?.error || "The provider rejected the selected model."} Choose a supported model or clear the task's model override, then retry.`
-                    : code === "native_provider_usage_limit" &&
-                        source.status === "failed"
-                      ? "The model provider has reached its current usage limit. Try again after the limit resets."
-                      : code === "sandbox_disk_full" && source.status === "failed"
-                        ? translateInstant("taskChat.error.diskFullDetail", {
-                            defaultValue: "The agent filled the disk of its computer, so the run stopped. Ask the agent to use less disk space, then retry.",
-                          })
-                        : code === "provider_frame_too_large"
-                          ? "Provider output exceeded the safe limit."
-                          : source.status === "timed_out"
-                            ? `The runner timed out${responseBoundary} (${code}).`
-                            : `The runner stopped${responseBoundary} (${code}).`;
+                    : code === "antigravity_swarm_unavailable" && source.status === "failed"
+                      // The swarm route's own plain sentence; never the code.
+                      ? meta?.error?.trim() || "Swarm did not start, and nothing was changed. Send /swarm again to try once more."
+                      : code === "native_provider_usage_limit" &&
+                          source.status === "failed"
+                        ? "The model provider has reached its current usage limit. Try again after the limit resets."
+                        : code === "sandbox_disk_full" && source.status === "failed"
+                          ? translateInstant("taskChat.error.diskFullDetail", {
+                              defaultValue: "The agent filled the disk of its computer, so the run stopped. Ask the agent to use less disk space, then retry.",
+                            })
+                          : code === "provider_frame_too_large"
+                            ? "Provider output exceeded the safe limit."
+                            : source.status === "timed_out"
+                              ? `The runner timed out${responseBoundary} (${code}).`
+                              : `The runner stopped${responseBoundary} (${code}).`;
         const id = `${source.id}:failure`;
         const runAgent = meta?.agentId
           ? agentMap?.get(meta.agentId)
@@ -2169,9 +2187,16 @@ export function TaskChatThread(props: TaskChatThreadProps) {
               tone: source.status === "cancelled" ? "neutral" : "error",
               label,
               detail,
+              // A /swarm the route refused for something the person must change (another model,
+              // a planning run) has no Retry; one that ran and failed (no result, helpers timed
+              // out) keeps it. The same rule as the server's task interruption state.
               retryable:
                 code !== "native_session_cleanup_quarantined" &&
-                !diskFullBesideInterruption,
+                !diskFullBesideInterruption &&
+                !(
+                  code === "antigravity_swarm_unavailable" &&
+                  swarmFailureNeedsAction(meta?.resultJson)
+                ),
               ...(credentialAccess
                 ? { credentialAccess, retryable: false }
                 : {}),
@@ -4105,6 +4130,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                           ) : null}
                         </div>
                       ) : (
+                        <RunFileCardsContext.Provider value={runFileCards}>
                         <TaskChatThreadView
                           items={threadItems}
                           scrollingHistory={scrollingHistory}
@@ -4322,6 +4348,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                           contentKey={`${autoFollowContentKey}:${historyRevealed}`}
                           className={isMobile ? undefined : "pt-3"}
                         />
+                        </RunFileCardsContext.Provider>
                       )}
                     </>
                   ) : null}

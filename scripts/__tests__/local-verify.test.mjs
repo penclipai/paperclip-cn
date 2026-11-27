@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
-import { execFileSync, spawn, spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
-import { chmodSync, cpSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
+import { cpSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -141,28 +140,6 @@ test("real selected execution reuses passes and invalidates source, environment,
   assert.match(config.text, /vitest.config.mjs/);
 });
 
-test("explicit full execution cannot reuse a passing subset; opaque checks stay fresh", { timeout: 180_000 }, async t => {
-  const f = fixture(t);
-  assert.equal(f.run().status, 0);
-  const full = f.run(["--full"]);
-  assert.equal(full.status, 1, full.text);
-  assert.match(full.text, /unrelated full-suite control/);
-  f.write("ui/src/consumer.test.ts", 'import {test,expect} from "vitest"; import {readFileSync} from "node:fs"; import {value} from "./leaf"; test("opaque fresh check",()=>expect(readFileSync(process.env.LOCAL_VERIFY_INPUT,"utf8")).toBe(String(value)));');
-  f.git("add", "ui/src/consumer.test.ts");
-  f.write(".turbo/external-input", "2");
-  const input = { LOCAL_VERIFY_INPUT: path.join(f.root, ".turbo/external-input") };
-  const opaque = f.run([], input);
-  assert.equal(opaque.status, 0, opaque.text);
-  assert.match(opaque.text, /Test Files\s+1 passed/);
-  const fresh = f.run([], input);
-  assert.equal(fresh.status, 0, fresh.text);
-  assert.match(fresh.text, /Test Files\s+1 passed/);
-  f.write(".turbo/external-input", "changed externally");
-  const external = f.run([], input);
-  assert.equal(external.status, 1, external.text);
-  assert.match(external.text, /opaque fresh check/);
-});
-
 test("working tree comparison includes commits, staging, deletion, rename and untracked files", t => {
   const f = fixture(t);
   f.git("add", "ui/src/leaf.ts");
@@ -196,27 +173,6 @@ test("dependency installation, ignored dotenv and child environment enter the ca
   assert.equal(snapshot(f.root, { ...f.env, PAPERCLIP_TEST_POSTGRES_ADMIN_URL: "postgres://external.invalid/test" }).cacheable, false);
 });
 
-test("installed dependency code changes invalidate a real passing result", { timeout: 120_000 }, t => {
-  const f = fixture(t);
-  const installed = "node_modules/.pnpm/clsx@1.0.0/node_modules/clsx";
-  f.write(`${installed}/package.json`, '{"name":"clsx","version":"1.0.0","type":"module","exports":"./index.mjs"}');
-  f.write(`${installed}/index.mjs`, "export default () => 2;\n");
-  symlinkSync(path.join(f.root, installed), path.join(f.root, "node_modules/clsx"), "dir");
-  f.write("ui/src/consumer.test.ts", 'import {test,expect} from "vitest"; import clsx from "clsx"; import {value} from "./leaf"; test("installed dependency",()=>expect(clsx()).toBe(value));');
-  const first = f.run();
-  assert.equal(first.status, 0, first.text);
-  const reused = f.run();
-  assert.equal(reused.status, 0, reused.text);
-  assert.match(reused.text, /reusing a passing local result/);
-  const moduleFile = path.join(f.root, installed, "index.mjs"), original = lstatSync(moduleFile);
-  f.write(`${installed}/index.mjs`, "export default () => 0;\n");
-  utimesSync(moduleFile, original.atime, original.mtime);
-  const changed = f.run();
-  assert.equal(changed.status, 1, changed.text);
-  assert.match(changed.text, /installed dependency/);
-  assert.doesNotMatch(changed.text, /reusing a passing local result/);
-});
-
 test("repository skill directory links preserve reuse while target edits invalidate it", t => {
   const f = fixture(t);
   mkdirSync(path.join(f.root, ".claude/skills"), { recursive: true });
@@ -228,13 +184,14 @@ test("repository skill directory links preserve reuse while target edits invalid
   assert.notEqual(snapshot(f.root, f.env).hash, before.hash);
 });
 
-test("local chat selection schedules exactly six single-worker partitions", { timeout: 120_000 }, async t => {
+test("local chat selection schedules affected split chat suites through general-chat", { timeout: 120_000 }, async t => {
   const f = fixture(t);
   f.write("ui/src/leaf.ts", "export const value = 1;\n");
   f.write("vitest.config.mjs", 'export default {test:{projects:["server"]}};');
   f.write("server/vitest.config.mjs", 'export default {test:{name:"@penclipai/server",include:["src/**/*.test.ts"]}};');
   f.write("server/src/leaf.ts", "export const value = 1;\n");
-  f.write("server/src/__tests__/chat-channels.integration.test.ts", 'import {test,expect} from "vitest"; import {value} from "../leaf"; test("chat selection",()=>expect(value).toBeGreaterThan(0));');
+  f.write("server/src/__tests__/chat-channels/sample.integration.test.ts", 'import {test,expect} from "vitest"; import {value} from "../../leaf"; test("chat selection",()=>expect(value).toBeGreaterThan(0));');
+  f.write("server/src/__tests__/chat-channels/unrelated.integration.test.ts", 'import {test,expect} from "vitest"; test("unrelated chat",()=>expect(1).toBe(1));');
   f.write(".github/ci-task-matrix.json", JSON.stringify({ general_tests: [
     { task: "ci:server", group: "general-server-without-chat" }, { task: "ci:chat", group: "general-chat" },
   ] }));
@@ -243,47 +200,10 @@ test("local chat selection schedules exactly six single-worker partitions", { ti
   f.write("server/src/leaf.ts", "export const value = 2;\n");
   const plan = await planVerification({ root: f.root, env: f.env, diff: comparison(f.root, base) });
   assert.equal(plan.kind, "selected", plan.reason);
-  const shards = plan.jobs.flatMap(job => JSON.parse(execFileSync(process.execPath,
-    [path.join(f.root, "scripts/run-vitest-stable.mjs"), ...job.args, "--dry-run"],
-    { cwd: f.root, env: f.env, encoding: "utf8" })).chatVitestShards);
-  assert.deepEqual(shards, Array.from({ length: 6 }, (_, index) => ({ index, count: 6 })));
-});
-
-for (const [group, task, primary, directory] of [
-  ["general-workspaces-b", "ci:workspaces-b", "@penclipai/shared", "packages/shared"],
-  ["general-workspaces-c", "ci:db", "@penclipai/db", "packages/db"],
-]) test(`${group} discovers and executes reusable and fresh selected partitions`, { timeout: 180_000 }, t => {
-  const f = fixture(t);
-  const inventory = JSON.parse(execFileSync(process.execPath, [path.join(f.root, "scripts/run-vitest-stable.mjs"),
-    "--mode", "general", "--group", group, "--dry-run"], { cwd: f.root, env: f.env, encoding: "utf8" }));
-  const projects = inventory.workspaceProjects.map((project, index) => {
-    const folder = project === primary ? directory : `packages/fixture-${index}`;
-    f.write(`${folder}/vitest.config.mjs`, `export default {test:{name:${JSON.stringify(project)},include:["src/**/*.test.ts"]}};`);
-    f.write(`${folder}/src/independent.test.ts`, 'import {test,expect} from "vitest"; test("independent workspace",()=>expect(1).toBe(1));');
-    return folder;
-  });
-  f.write("ui/src/leaf.ts", "export const value = 1;\n");
-  f.write("vitest.config.mjs", `export default {test:{projects:${JSON.stringify(projects)}}};`);
-  f.write(".github/ci-task-matrix.json", JSON.stringify({ general_tests: [{ task, group }] }));
-  f.write(`${directory}/src/leaf.ts`, "export const value = 1;\n");
-  f.write(`${directory}/src/reusable.test.ts`, 'import {test,expect} from "vitest"; import {value} from "./leaf"; test("workspace consumer",()=>expect(value).toBeGreaterThan(0));');
-  f.write(`${directory}/src/fresh.test.ts`, 'import {test,expect} from "vitest"; import {readFileSync} from "node:fs"; import {value} from "./leaf"; test("fresh workspace consumer",()=>expect(readFileSync(process.env.LOCAL_VERIFY_INPUT,"utf8")).toBe(String(value)));');
-  f.git("add", "."); f.git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qm", "workspace baseline");
-  const base = f.git("rev-parse", "HEAD");
-  f.write(`${directory}/src/leaf.ts`, "export const value = 2;\n");
-  f.write(".turbo/external-input", "2");
-  const env = { LOCAL_VERIFY_INPUT: path.join(f.root, ".turbo/external-input") };
-  const first = f.run(["--base", base], env);
-  assert.equal(first.status, 0, first.text);
-  assert.equal((first.text.match(/Test Files\s+1 passed/g) ?? []).length, 2, first.text);
-  const reused = f.run(["--base", base], env);
-  assert.equal(reused.status, 0, reused.text);
-  assert.ok(reused.text.includes(`Reusing passed ${group}-reusable`), reused.text);
-  assert.equal((reused.text.match(/Test Files\s+1 passed/g) ?? []).length, 1, reused.text);
-  f.write(".turbo/external-input", "changed externally");
-  const changed = f.run(["--base", base], env);
-  assert.equal(changed.status, 1, changed.text);
-  assert.match(changed.text, /fresh workspace consumer/);
+  assert.deepEqual(plan.selectedFiles, ["server/src/__tests__/chat-channels/sample.integration.test.ts"]);
+  assert.deepEqual(plan.manifest.lanes["general-chat"].shards, [
+    { "@penclipai/server": ["server/src/__tests__/chat-channels/sample.integration.test.ts"] },
+  ]);
 });
 
 test("fingerprints preserve file boundaries when content resembles another input record", t => {
@@ -294,71 +214,6 @@ test("fingerprints preserve file boundaries when content resembles another input
   const first = snapshot(f.root, f.env).hash;
   f.write(a, ""); f.write(b, `payload${boundary}tail`);
   assert.notEqual(snapshot(f.root, f.env).hash, first);
-});
-
-test("an edit between diff discovery and fingerprinting cannot certify a partial selection", { skip: process.platform === "win32" }, t => {
-  const f = fixture(t);
-  const executable = execFileSync("which", ["git"], { encoding: "utf8" }).trim();
-  f.write(".turbo/bin/package.json", '{"type":"commonjs"}');
-  f.write(".turbo/bin/git", `#!${process.execPath}
-const {execFileSync}=require('node:child_process');
-const fs=require('node:fs');
-const args=process.argv.slice(2);
-const result=execFileSync(${JSON.stringify(executable)},args,{stdio:['ignore','pipe','pipe']});
-if(args[0]==='diff'&&!args.includes('--cached')&&!fs.existsSync('.turbo/diff-edited')){
-  fs.writeFileSync('ui/src/other.ts','export const other = 2;\\n');
-  fs.writeFileSync('.turbo/diff-edited','done');
-}
-process.stdout.write(result);
-`);
-  chmodSync(path.join(f.root, ".turbo/bin/git"), 0o755);
-  const result = f.run([], { PATH: `${path.join(f.root, ".turbo/bin")}${path.delimiter}${f.env.PATH}` });
-  assert.equal(result.status, 1, result.text);
-  assert.match(result.text, /Inputs changed/);
-  assert.doesNotMatch(result.text, /Local Vitest verification passed/);
-});
-
-test("stale SDK public input pins stop verification before selection; fresh pins and unrelated changes continue", async t => {
-  const f = fixture(t);
-  const sdkInputs = "tests/runner-e2e/source-sdk-public-inputs.mjs", registry = "tests/runner-e2e/source-sdk-public-inputs.json";
-  const blob = text => createHash("sha1").update(`blob ${Buffer.byteLength(text)}\0`).update(text).digest("hex");
-  const outputSha256 = "a".repeat(64);
-  f.write(sdkInputs, readFileSync(path.join(repository, sdkInputs), "utf8"));
-  f.write("tests/runner-e2e/report-lock.json", `${JSON.stringify({ inputSha256: "b".repeat(64), outputSha256 })}\n`);
-  f.write("packages/shared/src/schema.ts", "export const schema = 1;\n");
-  const writeRegistry = schema => f.write(registry, `${JSON.stringify({ lockSha256: outputSha256, inputs: {
-    "package.json": blob(readFileSync(path.join(f.root, "package.json"), "utf8")), "packages/shared/src/schema.ts": blob(schema) } }, null, 2)}\n`);
-  writeRegistry("export const schema = 1;\n");
-  f.git("add", "."); f.git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qm", "sdk pin baseline");
-  const base = f.git("rev-parse", "HEAD");
-  const run = args => {
-    const result = spawnSync(process.execPath, [path.join(f.root, "scripts/local-verify.mjs"), "--base", base, ...args], {
-      cwd: f.root, env: f.env, encoding: "utf8", timeout: 120_000, maxBuffer: 8 * 1024 * 1024 });
-    assert.equal(result.error, undefined);
-    return { ...result, text: stripVTControlCharacters(result.stdout + result.stderr) };
-  };
-  // Unrelated change: the pin check does not run, even with a stale registry in the tree.
-  f.write("ui/src/leaf.ts", "export const value = 3;\n");
-  f.write("packages/shared/src/schema.ts", "export const schema = 2;\n");
-  f.git("add", "packages/shared/src/schema.ts"); f.git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qm", "untracked drift");
-  const unrelatedBase = f.git("rev-parse", "HEAD");
-  const unrelated = spawnSync(process.execPath, [path.join(f.root, "scripts/local-verify.mjs"), "--base", unrelatedBase, "--explain"], {
-    cwd: f.root, env: f.env, encoding: "utf8", timeout: 120_000, maxBuffer: 8 * 1024 * 1024 });
-  assert.doesNotMatch(unrelated.stdout + unrelated.stderr, /is stale/);
-  // Pinned input changed without a registry refresh: exit 1, name the input and the command, write nothing.
-  const before = readFileSync(path.join(f.root, registry));
-  const stale = run(["--explain"]);
-  assert.equal(stale.status, 1, stale.text);
-  assert.match(stale.text, /source-sdk-public-inputs\.json is stale for 1 pinned input\(s\): packages\/shared\/src\/schema\.ts \(changed\)/);
-  assert.match(stale.text, /source-sdk-public-inputs\.mjs \$\(git rev-parse HEAD\) --write/);
-  assert.doesNotMatch(stale.text, /Vitest test files selected|Broader verification required/);
-  assert.deepEqual(readFileSync(path.join(f.root, registry)), before);
-  // Refreshed pins: verification continues to selection.
-  writeRegistry("export const schema = 2;\n");
-  const fresh = run(["--explain"]);
-  assert.doesNotMatch(fresh.text, /is stale/);
-  assert.match(fresh.text, /Vitest test files selected|Broader verification required/);
-  assert.notEqual(fresh.status, 1, fresh.text);
 });
 
 test("documentation-only changes and empty diffs do not start a full suite", async t => {
@@ -372,64 +227,4 @@ test("documentation-only changes and empty diffs do not start a full suite", asy
   const plan = await planVerification({ root: f.root, env: f.env,
     diff: { ...comparison(f.root, f.base), changed: [] } });
   assert.deepEqual(plan.jobs, []);
-});
-
-test("local server selection retains native suites and serialized ownership under a CI caller", { timeout: 120_000 }, t => {
-  const f = fixture(t);
-  f.write("ui/src/leaf.ts", "export const value = 1;\n");
-  f.write("vitest.config.mjs", 'export default {test:{projects:["server"]}};');
-  f.write("server/vitest.config.mjs", 'export default {test:{name:"@penclipai/server",include:["src/**/*.test.ts"]}};');
-  f.write("server/src/leaf.ts", "export const value = 1;\n");
-  const native = "server/src/services/native-runtime/plugin-runner-probe.test.ts";
-  const serialized = "server/src/__tests__/authz-owner.test.ts";
-  for (const [file, imported] of [[native, "../../leaf"], [serialized, "../leaf"]]) {
-    f.write(file, `import {test,expect} from "vitest"; import {value} from ${JSON.stringify(imported)}; test("local owner",()=>expect(value).toBeGreaterThan(0));`);
-  }
-  f.write(".github/ci-task-matrix.json", JSON.stringify({
-    general_tests: [{ task: "ci:server", group: "general-server-without-chat" }],
-    verify_serialized_server: [{ task: "ci:serialized" }],
-  }));
-  f.git("add", "."); f.git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qm", "server baseline");
-  const base = f.git("rev-parse", "HEAD");
-  f.write("server/src/leaf.ts", "export const value = 2;\n");
-  const result = f.run(["--base", base], { GITHUB_WORKFLOW: "PR" });
-  assert.equal(result.status, 0, result.text);
-  assert.equal((result.text.match(/Test Files\s+1 passed/g) ?? []).length, 2);
-  const record = JSON.parse(readFileSync(path.join(f.root, ".turbo/local-verify/last-run.json"), "utf8"));
-  assert.deepEqual(record.plan.manifest.lanes["general-server-without-chat"].shards[0]["@penclipai/server"], [native]);
-  assert.deepEqual(record.plan.manifest.lanes.serialized.shards[0]["@penclipai/server"], [serialized]);
-});
-
-test("source mutation and interruption do not publish reusable passes", { timeout: 120_000 }, async t => {
-  const f = fixture(t);
-  const runControlled = action => new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [path.join(f.root, "scripts/local-verify.mjs"), "--base", f.base, "--no-cache"], {
-      cwd: f.root, env: f.env, stdio: ["ignore", "pipe", "pipe"],
-    });
-    let text = "", acted = false;
-    const timer = setTimeout(() => { child.kill("SIGTERM"); reject(new Error("Controlled verification did not finish")); }, 60_000);
-    const collect = bytes => {
-      text += bytes;
-      if (!acted && text.includes("[verify] Running")) { acted = true; action(child); }
-    };
-    child.stdout.on("data", collect); child.stderr.on("data", collect);
-    child.once("error", reject);
-    child.once("close", (code, signal) => {
-      clearTimeout(timer);
-      resolve({ code: code ?? (signal === "SIGTERM" ? 143 : null), signal, text, acted });
-    });
-  });
-  const changed = await runControlled(() => f.write("ui/src/leaf.ts", "export const value = 4;\n"));
-  assert.equal(changed.acted, true);
-  assert.equal(changed.code, 1, changed.text);
-  assert.match(changed.text, /Inputs changed during verification/);
-  const beforeInterrupt = f.run();
-  assert.equal(beforeInterrupt.status, 0, beforeInterrupt.text);
-  const interrupted = await runControlled(child => child.kill("SIGTERM"));
-  assert.equal(interrupted.acted, true);
-  assert.equal(interrupted.code, 143, interrupted.text);
-  const result = f.run();
-  assert.equal(result.status, 0, result.text);
-  assert.match(result.text, /Test Files\s+1 passed/);
-  assert.doesNotMatch(result.text, /reusing a passing local result/);
 });

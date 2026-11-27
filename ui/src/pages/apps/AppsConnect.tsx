@@ -112,14 +112,15 @@ export function AppsConnect({
   }, [hasSavedComposio, toolkit, navigate]);
   const legacyCopilotLink =
     source === "github" && searchParams.get("method") === "copilot-token";
+  const legacyAntigravityLink = source === "google" || source === "google-ai";
   useEffect(() => {
-    if (!legacyCopilotLink) return;
+    if (!legacyCopilotLink && !legacyAntigravityLink) return;
     const params = new URLSearchParams(searchParams);
     params.delete("appKey");
-    params.set("source", "github-copilot");
+    params.set("source", legacyCopilotLink ? "github-copilot" : "antigravity");
     navigate(`/apps/connect?${params.toString()}`, { replace: true });
-  }, [legacyCopilotLink, searchParams, navigate]);
-  if (legacyCopilotLink) return null;
+  }, [legacyCopilotLink, legacyAntigravityLink, searchParams, navigate]);
+  if (legacyCopilotLink || legacyAntigravityLink) return null;
   if (
     reuseComposio &&
     selectedCompanyId &&

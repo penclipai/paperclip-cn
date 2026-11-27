@@ -279,7 +279,7 @@ function ClassicSidebar({ children }: { children?: ReactNode }) {
           >
             <SidebarNavItem to="/agents" label={translateInstant("Agents")} icon={Users} />
             <SidebarNavItem to="/skills" label={translateInstant("sidebar.skills")} icon={Boxes} />
-            <SidebarNavItem to="/apps" label={translateInstant("Connectors")} icon={Unplug} />
+            <SidebarNavItem to="/apps" label={translateInstant("Plugins")} icon={Unplug} />
             <SidebarNavItem to="/activity" label={translateInstant("auditFeed.title")} icon={History} />
           </SidebarSection>
         ) : null}
@@ -297,7 +297,7 @@ function ClassicSidebar({ children }: { children?: ReactNode }) {
               collapsible={{ open: organizationOpen, onOpenChange: setOrganizationOpen }}
             >
               <SidebarNavItem to="/org" label={translateInstant("sidebar.org", { defaultValue: "Org" })} icon={Network} />
-              <SidebarNavItem to="/apps" label={translateInstant("Connectors", { defaultValue: "Connectors" })} icon={Unplug} />
+              <SidebarNavItem to="/apps" label={translateInstant("Plugins")} icon={Unplug} />
               <SidebarNavItem to="/timeline" label="Timeline" icon={GanttChartSquare} />
               <SidebarNavItem to="/costs" label="Costs" icon={DollarSign} />
               <SidebarNavItem to="/activity" label="Activity" icon={History} />

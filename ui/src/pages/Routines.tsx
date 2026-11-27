@@ -702,6 +702,7 @@ export function Routines() {
   if (!selectedCompanyId) {
     return (
       <EmptyState
+        placement="upper"
         icon={Repeat}
         message={translateInstant("Select an organization to view routines.")}
       />
@@ -771,8 +772,9 @@ export function Routines() {
     );
   }
 
+  const emptyList = sortedRoutines.length === 0;
   return (
-    <div className="space-y-6">
+    <div className={cn("space-y-6", emptyList && "empty-state-page")}>
       <h1 className="sr-only">{translateInstant("Routines")}</h1>
       <RoutinesToolbar
         query={query}
@@ -845,7 +847,7 @@ export function Routines() {
           onRetry={foldersView.retry} retrying={foldersView.isFetching} />
       ) : null}
 
-      <div className={cn(showFolderRail && "flex gap-4")}>
+      <div className={cn(showFolderRail && "flex gap-4", emptyList && "flex flex-1")}>
           {showFolderRail ? (
             <FolderRail
               result={railFolderResult}
@@ -863,7 +865,7 @@ export function Routines() {
               onDelete={setDeleteFolderTarget}
             />
           ) : null}
-          <div className="min-w-0 flex-1">
+          <div className={cn("min-w-0 flex-1", emptyList && "flex flex-col")}>
           {routineViewState.groupBy === "folder" && routineFolders && !hasRoutineFolders && !foldersLoading && visibleRoutines.length > 0 ? (
             <AllUnfiledBanner
               storageKey={`paperclip:routines-folder-nudge:${selectedCompanyId ?? "none"}`}
@@ -872,33 +874,25 @@ export function Routines() {
             />
           ) : null}
           {visibleRoutines.length === 0 && !routineViewState.statuses.length ? (
-            <div className="py-12">
-              <EmptyState
-                icon={Repeat}
-                message={t("routines.noActiveRoutines", { defaultValue: "No active routines. Use New routine to define the first recurring workflow." })}
-              />
-            </div>
+            <EmptyState
+              placement="upper"
+              message={t("routines.noActiveRoutines", { defaultValue: "No active routines. Use New routine to define the first recurring workflow." })}
+              action={translateInstant("New routine")}
+              onAction={openCreateRoutine}
+            />
           ) : sortedRoutines.length === 0 ? (
-            <div className="py-12">
-              <EmptyState
-                icon={Repeat}
-                message={
-                  query.trim()
-                    ? translateInstant("routines.noSearchResults")
-                    : routineFilterKeys.some((key) => routineViewState[key].length) || folderSelection === "all"
-                      ? translateInstant("folders.noRoutinesMatch")
-                      : translateInstant("folders.empty")
-                }
-              />
-              {folderSelection !== "all" ? (
-                <div className="mt-3 flex justify-center">
-                  <Button size="sm" onClick={openCreateRoutine}>
-                    <Plus className="mr-2 h-3.5 w-3.5" />
-                    {translateInstant("folders.newRoutineHere")}
-                  </Button>
-                </div>
-              ) : null}
-            </div>
+            <EmptyState
+              placement="upper"
+              message={
+                query.trim()
+                  ? translateInstant("routines.noSearchResults")
+                  : routineFilterKeys.some((key) => routineViewState[key].length) || folderSelection === "all"
+                    ? translateInstant("folders.noRoutinesMatch")
+                    : translateInstant("folders.empty")
+              }
+              action={folderSelection !== "all" ? translateInstant("folders.newRoutineHere") : undefined}
+              onAction={openCreateRoutine}
+            />
           ) : (
             <div className="flex flex-col gap-3">
               {routineSections.map((group) => {

@@ -23,3 +23,13 @@ export function localAiLoginUnavailableReason(options: LocalAiLoginPolicyOptions
 export function supportsLocalAiLogin(options: LocalAiLoginPolicyOptions) {
   return localAiLoginUnavailableReason(options) === null;
 }
+
+/**
+ * Antigravity Google sign-in launches Paperclip's pinned, isolated
+ * `agy_acp_server.par` closure with a private per-attempt home rather than
+ * touching an ambient host CLI, so authenticated public deployments can safely
+ * relay the user's pasted loopback redirect.
+ */
+export function supportsHostedGoogleAiLogin(_options: LocalAiLoginPolicyOptions = {}) {
+  return true;
+}

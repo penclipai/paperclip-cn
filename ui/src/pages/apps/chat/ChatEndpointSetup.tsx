@@ -40,6 +40,7 @@ import {
   EyeOff,
   Hammer,
   Loader2,
+  X,
 } from "lucide-react";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { AgentCharacter } from "@/components/AgentCharacter";
@@ -149,18 +150,20 @@ export function ChatConnectionPurpose({
   provider,
   onChat,
   onTools,
+  onClose,
   slackLabels,
 }: {
   provider: ChatProvider;
   onChat: () => void;
   onTools: () => void;
+  onClose?: () => void;
   slackLabels?: string[];
 }) {
   useTranslation();
   const { setBreadcrumbs } = useBreadcrumbs();
   useEffect(() => {
     setBreadcrumbs([
-      { label: translateInstant("Connectors"), href: "/apps" },
+      { label: translateInstant("Plugins"), href: "/apps" },
       { label: translateInstant("Choose connection") },
     ]);
     return () => setBreadcrumbs([]);
@@ -177,14 +180,29 @@ export function ChatConnectionPurpose({
         availableStep={0}
         onSelect={onChat}
       />
-      <div>
-        <h1 className="text-xl font-bold">
-          {translateInstant("Choose how to connect")}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {translateInstant("What should this")} {providerNames[provider]}{" "}
-          {translateInstant("connection do?")}
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold">
+            {translateInstant("Choose how to connect")}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {translateInstant("What should this")} {providerNames[provider]}{" "}
+            {translateInstant("connection do?")}
+          </p>
+        </div>
+        {onClose ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="-mt-1 -mr-2 shrink-0 text-muted-foreground"
+            aria-label={translateInstant("Close")}
+            title={translateInstant("Close")}
+            onClick={onClose}
+          >
+            <X aria-hidden />
+          </Button>
+        ) : null}
       </div>
       <div className="grid gap-3">
         <button
@@ -278,7 +296,7 @@ function ChatSdkEndpointSetup() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: translateInstant("Connectors"), href: "/apps" },
+      { label: translateInstant("Plugins"), href: "/apps" },
       { label: translateInstant("Connect chat") },
     ]);
     return () => setBreadcrumbs([]);
@@ -752,6 +770,7 @@ function ChatSdkEndpointSetup() {
         slackLabels={slackNavigation.labels}
         onChat={() => setPurpose("chat")}
         onTools={() => navigate(toolHref)}
+        onClose={() => navigate("/apps")}
       />
     );
   }

@@ -30,7 +30,7 @@ export function AgentChannelsPanel({
   agentId: string;
 }) {
   useTranslation();
-  const { enabled, githubEnabled } = useChatConnectorsEnabled();
+  const { enabled } = useChatConnectorsEnabled();
   const query = useQuery({
     queryKey: queryKeys.chatEndpoints.list(companyId),
     queryFn: () => chatEndpointsApi.list(companyId),
@@ -38,7 +38,7 @@ export function AgentChannelsPanel({
   });
   const endpoints = (query.data ?? []).filter(
     (endpoint) =>
-      endpoint.assignedAgentId === agentId && endpoint.status !== "archived" && chatProviderVisible(endpoint.provider, enabled, githubEnabled),
+      endpoint.assignedAgentId === agentId && endpoint.status !== "archived" && chatProviderVisible(endpoint.provider, enabled),
   );
   return (
     <section className="max-w-3xl space-y-5">
@@ -60,7 +60,7 @@ export function AgentChannelsPanel({
         <div className="rounded-lg border border-dashed border-border p-5">
           <p className="text-sm font-medium">{translateInstant("No channels connected")}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {enabled || githubEnabled ? "Connect an agent identity from Connectors." : "Connect AgentMail from Connectors."}
+            Connect an agent identity from Connectors.
           </p>
           <Button asChild className="mt-3" variant="outline" size="sm">
             <Link to="/apps">{translateInstant("Open Connectors")}</Link>

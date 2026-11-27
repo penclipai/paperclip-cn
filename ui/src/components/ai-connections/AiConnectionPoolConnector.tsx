@@ -16,7 +16,7 @@ import { useToast } from "@/context/ToastContext";
 import { Link, useNavigate } from "@/lib/router";
 import { queryKeys } from "@/lib/queryKeys";
 import { AppLogo } from "@/pages/apps/AppLogo";
-import { AppDetailHeader } from "@/pages/apps/AppDetail";
+import { AppDetailHeader, ConnectionBackLink } from "@/pages/apps/AppDetail";
 import { StepHeader } from "@/features/connections/ConnectionSetupHeader";
 import { Button } from "@/components/ui/button";
 import { QueryErrorState, useQueryView } from "@/components/QueryView";
@@ -86,7 +86,7 @@ function PoolConnector({ companyId, pluginKey, connection }: { companyId: string
     }
   }, [poolsQuery.data, connection, editing, pluginKey, canManage]);
   useEffect(() => {
-    setBreadcrumbs([{ label: translateInstant("Connectors"), href: "/apps" }, { label: connection ? draft.name : translateInstant("Add a connection pool") }]);
+    setBreadcrumbs([{ label: translateInstant("Plugins"), href: "/apps" }, { label: connection ? draft.name : translateInstant("Add a connection pool") }]);
     return () => setBreadcrumbs([]);
   }, [connection, draft.name, i18n.language, setBreadcrumbs]);
   useEffect(() => {
@@ -150,7 +150,8 @@ function PoolConnector({ companyId, pluginKey, connection }: { companyId: string
     })}
     {draft.members.length === 0 && <li className="px-4 py-6 text-sm text-muted-foreground">{translateInstant("Add a connection to get started.")}</li>}
   </ol>;
-  return <div className={connection ? "space-y-6" : "mx-auto max-w-2xl"}>
+  return <div className={connection ? "mx-auto w-full max-w-3xl space-y-6" : "mx-auto max-w-2xl"}>
+    {connection ? <ConnectionBackLink label="Plugins" href="/apps" /> : null}
     {connection ? <div className="flex items-start justify-between gap-4">
       <AppDetailHeader appName={draft.name} connection={connection} logoEntry={logoEntry} brandKey={logoEntry.slug} allowRemoteLogo canRename={!disabled} status={editing?.enabled ? { label: translateInstant("companySettings.customImage.terminalStatus.connected"), tone: "connected" } : { label: translateInstant("Paused"), tone: "paused" }} actionCount={null} renaming={renaming} nameDraft={nameDraft} renamePending={disabled} onNameDraftChange={setNameDraft} onRenameStart={() => { if (!disabled) { setNameDraft(draft.name); setRenaming(true); } }} onRenameCancel={() => setRenaming(false)} onRenameSubmit={value => void save({ ...draft, name: value })} />
       <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon-sm" aria-label={translateInstant("Manage connection pool")}><MoreHorizontal className="size-4" /></Button></DropdownMenuTrigger><DropdownMenuContent className={ANALYTICS_MASK_CLASS} align="end"><DropdownMenuItem variant="destructive" disabled={busy || !canManage} onSelect={() => { setError(""); setRemoving(true); }}><Trash2 />{translateInstant("Remove connection")}</DropdownMenuItem></DropdownMenuContent></DropdownMenu>

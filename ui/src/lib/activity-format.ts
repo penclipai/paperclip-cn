@@ -176,6 +176,7 @@ const ACTIVITY_ROW_VERBS: Record<string, string> = {
   "tool_connection.grant_delegated": "activityFormat.row.tool_connection.grant_delegated",
   "tool_connection.grant_delegation_revoked": "activityFormat.row.tool_connection.grant_delegation_revoked",
   "tool_connection.content_deletion_requested": "activityFormat.row.tool_connection.content_deletion_requested",
+  "tool_connection.content_deletion_started": "started deleting stored content from",
   "tool_connection.content_deleted": "activityFormat.row.tool_connection.content_deleted",
   "issue.connection_content_deleted": "activityFormat.row.issue.connection_content_deleted",
   "issue.connection_content_deletion_incomplete": "activityFormat.row.issue.connection_content_deletion_incomplete",

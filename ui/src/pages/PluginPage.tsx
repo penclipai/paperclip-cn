@@ -122,7 +122,7 @@ export function PluginPage() {
       return;
     }
     setBreadcrumbs([
-      { label: translateInstant("Plugins"), href: "/company/settings/instance/plugins" },
+      { label: translateInstant("System plugins"), href: "/company/settings/instance/plugins" },
       { label: pageSlot.pluginDisplayName },
     ]);
   }, [pageSlot, pluginRouteSplat, setBreadcrumbs, routeSidebarActive]);

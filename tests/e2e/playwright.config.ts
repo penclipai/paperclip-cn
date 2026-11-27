@@ -65,8 +65,11 @@ if (SKIP_UI_BUILD && !fs.existsSync(UI_DIST_INDEX)) {
 // `scripts/e2e-shard.mjs` — `scripts/__tests__/e2e-shard.test.mjs` fails if
 // the two ever drift.
 export const SERIAL_SPECS = [
+  "agent-chat-projects-handoff.spec.ts",
   "agent-chat-projects.spec.ts",
+  "agent-chat-sessions-navigation.spec.ts",
   "agent-chat-sessions.spec.ts",
+  "agent-configuration-revisions.spec.ts",
   "agent-configuration.spec.ts",
   "ai-personal-connection-recovery.spec.ts",
   "cases-read-only.spec.ts",
@@ -74,6 +77,7 @@ export const SERIAL_SPECS = [
   "composer-stop.spec.ts",
   "connection-intents.spec.ts",
   "document-image-gallery.spec.ts",
+  "onboarding-resume.spec.ts",
   "onboarding.spec.ts",
   "smoke-lab-p1-p4.spec.ts",
   "smoke-lab-p5-p7.spec.ts",
@@ -141,9 +145,7 @@ const UI_BUILD_COMMAND =
   "node ui/node_modules/vite/bin/vite.js build ui --outDir ../server/ui-dist --emptyOutDir --minify false";
 const SERVER_START_COMMAND =
   "node cli/node_modules/tsx/dist/cli.mjs tests/e2e/start-e2e-server.ts";
-const WEB_SERVER_COMMAND = SKIP_UI_BUILD
-  ? SERVER_START_COMMAND
-  : `${UI_BUILD_COMMAND} && ${SERVER_START_COMMAND}`;
+const WEB_SERVER_COMMAND = SERVER_START_COMMAND;
 
 export default defineConfig({
   testDir: ".",
@@ -195,6 +197,7 @@ export default defineConfig({
     env: {
       ...process.env,
       NODE_ENV: "test",
+      PAPERCLIP_E2E_BUILD_UI: SKIP_UI_BUILD ? "0" : "1",
       PAPERCLIP_UI_DEV_MIDDLEWARE: "false",
       HEARTBEAT_SCHEDULER_INTERVAL_MS: process.env.HEARTBEAT_SCHEDULER_INTERVAL_MS ?? "10000",
       NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ""} --import=${pathToFileURL(path.resolve(import.meta.dirname, "fixtures/agent-chat-github.mjs")).href} --import=${pathToFileURL(path.resolve(import.meta.dirname, "fixtures/ai-connection-provider.mjs")).href}`,

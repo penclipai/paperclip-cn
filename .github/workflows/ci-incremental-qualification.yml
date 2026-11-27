@@ -56,7 +56,7 @@ jobs:
           const lanes = JSON.parse(readFileSync('.github/ci-task-matrix.json', 'utf8'));
           const head = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
           for (const [file, project, related] of [
-            ['ui/src/pages/Inbox.tsx', '@penclipai/ui', 'ui/src/pages/Inbox.test.tsx'],
+            ['ui/src/pages/Auth.tsx', '@penclipai/ui', 'ui/src/pages/Auth.test.tsx'],
             ['server/src/middleware/auth.ts', '@penclipai/server', 'server/src/__tests__/agent-auth-middleware.test.ts'],
             ['server/src/storage/config.test.ts', '@penclipai/server', 'server/src/storage/config.test.ts'],
           ]) {

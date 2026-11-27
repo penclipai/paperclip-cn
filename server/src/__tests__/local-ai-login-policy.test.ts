@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { localAiLoginUnavailableReason, supportsLocalAiLogin } from "../services/local-ai-login-policy.js";
+import { localAiLoginUnavailableReason, supportsHostedGoogleAiLogin, supportsLocalAiLogin } from "../services/local-ai-login-policy.js";
 describe("server-host subscription login policy", () => {
   it("permits private self-hosted instances and explicit trusted hosts", () => {
     expect(supportsLocalAiLogin({ platform: "linux", deploymentMode: "local_trusted", deploymentExposure: "private" })).toBe(true);
@@ -11,5 +11,10 @@ describe("server-host subscription login policy", () => {
     const options = { platform: "win32" as const, deploymentMode: "local_trusted" as const, deploymentExposure: "private" as const, trustedLocalStdioRuntimeHost: "trusted-host" };
     expect(supportsLocalAiLogin(options)).toBe(false);
     expect(localAiLoginUnavailableReason(options)).toBe("Server-host subscription sign-in is unavailable on Windows because Paperclip cannot safely read isolated credential files on this platform. Choose a supported sign-in environment or use an API key.");
+  });
+
+  it("permits hosted Google Antigravity sign-in even on authenticated public deployments", () => {
+    expect(supportsHostedGoogleAiLogin({ deploymentMode: "authenticated", deploymentExposure: "public", trustedLocalStdioRuntimeHost: "" })).toBe(true);
+    expect(supportsHostedGoogleAiLogin({ deploymentMode: "local_trusted", deploymentExposure: "private" })).toBe(true);
   });
 });

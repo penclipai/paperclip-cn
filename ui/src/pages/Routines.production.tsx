@@ -9,7 +9,7 @@ import { useUpdateIssueMutation } from "@/hooks/useUpdateIssueMutation";
 import { startTransition, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useSearchParams } from "@/lib/router";
-import { ChevronRight, Plus, Repeat } from "lucide-react";
+import { ChevronRight, Repeat } from "lucide-react";
 import { routinesApi } from "../api/routines";
 import { foldersApi } from "../api/folders";
 import { agentsApi } from "../api/agents";
@@ -755,6 +755,7 @@ export function Routines() {
   if (!selectedCompanyId) {
     return (
       <EmptyState
+        placement="upper"
         icon={Repeat}
         message={translateInstant("Select a company to view routines.")}
       />
@@ -767,8 +768,9 @@ export function Routines() {
     return <PageSkeleton variant="issues-list" />;
   }
 
+  const emptyList = activeTab === "routines" && sortedRoutines.length === 0;
   return (
-    <div className="space-y-6">
+    <div className={cn("space-y-6", emptyList && "empty-state-page")}>
       <h1 className="sr-only">{translateInstant("Routines")}</h1>
       <RoutinesToolbar
         showListControls={activeTab === "routines"}
@@ -852,7 +854,7 @@ export function Routines() {
       ) : null}
 
       {activeTab === "routines" ? (
-        <div className={cn(showFolderRail && "flex gap-4")}>
+        <div className={cn(showFolderRail && "flex gap-4", emptyList && "flex flex-1")}>
           {showFolderRail ? (
             <FolderRail
               result={railFolderResult}
@@ -872,7 +874,7 @@ export function Routines() {
               onDelete={setDeleteFolderTarget}
             />
           ) : null}
-          <div className="min-w-0 flex-1">
+          <div className={cn("min-w-0 flex-1", emptyList && "flex flex-col")}>
           {routineViewState.groupBy === "folder" && hasRoutineFolders ? (
             <div className="mb-3 flex flex-wrap items-center gap-2">
               {folderSelection === "all" ? (
@@ -918,35 +920,27 @@ export function Routines() {
             />
           ) : null}
           {visibleRoutines.length === 0 && !routineViewState.statuses.length ? (
-            <div className="py-12">
-              <EmptyState
-                icon={Repeat}
-                message={translateInstant("routines.noActiveRoutines")}
-              />
-            </div>
+            <EmptyState
+              placement="upper"
+              message={translateInstant("routines.noActiveRoutines")}
+              action={translateInstant("New routine")}
+              onAction={openCreateRoutine}
+            />
           ) : sortedRoutines.length === 0 ? (
-            <div className="py-12">
-              <EmptyState
-                icon={Repeat}
-                message={
-                  query.trim()
-                    ? translateInstant("routines.noRoutinesMatchSearch", {
-                        defaultValue: "No routines match your search.",
-                      })
-                    : routineFilterKeys.some(key => routineViewState[key].length) || folderSelection === "all"
-                      ? translateInstant("folders.noRoutinesMatch")
-                      : translateInstant("folders.empty")
-                }
-              />
-              {folderSelection !== "all" ? (
-                <div className="mt-3 flex justify-center">
-                  <Button size="sm" onClick={openCreateRoutine}>
-                    <Plus className="mr-2 h-3.5 w-3.5" />
-                    {translateInstant("folders.newRoutineHere")}
-                  </Button>
-                </div>
-              ) : null}
-            </div>
+            <EmptyState
+              placement="upper"
+              message={
+                query.trim()
+                  ? translateInstant("routines.noRoutinesMatchSearch", {
+                      defaultValue: "No routines match your search.",
+                    })
+                  : routineFilterKeys.some(key => routineViewState[key].length) || folderSelection === "all"
+                    ? translateInstant("folders.noRoutinesMatch")
+                    : translateInstant("folders.empty")
+              }
+              action={folderSelection !== "all" ? translateInstant("folders.newRoutineHere") : undefined}
+              onAction={openCreateRoutine}
+            />
           ) : (
             <div className="flex flex-col gap-3">
               {routineSections.map((group) => {

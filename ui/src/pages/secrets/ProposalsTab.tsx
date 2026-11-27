@@ -473,7 +473,7 @@ export function ProposalsTab({
 
   if (pending.length === 0 && decided.length === 0 && !decidedFailed) {
     return (
-      <EmptyState
+      <EmptyState placement="upper"
         icon={Inbox}
         title={translateInstant("secrets.proposals.nothingToReviewTitle", { defaultValue: "Nothing to review" })}
         message={translateInstant("secrets.proposals.nothingToReviewMessage", { defaultValue: "When an agent asks to save a secret or to use one, the request appears here." })}

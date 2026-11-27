@@ -306,6 +306,8 @@ export function InstanceExperimentalSettings() {
     experimentalQuery.data?.enableSimplifiedEnglishInteractions === true;
   const enableFirstTaskPlanProposal =
     experimentalQuery.data?.enableFirstTaskPlanProposal === true;
+  const enableCloudTrialInference =
+    experimentalQuery.data?.enableCloudTrialInference === true;
   const enableSmokeLab = experimentalQuery.data?.enableSmokeLab === true;
   const autoRestartDevServerWhenIdle =
     experimentalQuery.data?.autoRestartDevServerWhenIdle === true;
@@ -475,7 +477,7 @@ export function InstanceExperimentalSettings() {
             "Connect agents to Slack, Discord, Microsoft Teams, and Telegram conversations.",
           )}
           footnote={translateInstant(
-            "Turning this off hides experimental chat setup and connected-task controls. Existing chat connections keep running. AgentMail, GitHub review bots, and tool connectors are controlled separately.",
+            "Turning this off hides experimental chat setup and connected-task controls. Existing chat connections keep running. AgentMail, GitHub review bots, and tool connectors are unaffected.",
           )}
           checked={enableChatConnectors}
           onCheckedChange={(checked) =>
@@ -487,6 +489,21 @@ export function InstanceExperimentalSettings() {
           ariaLabel={translateInstant(
             "Toggle chat connectors experimental setting",
           )}
+        />
+
+        <ExperimentalToggleCard
+          title={translateInstant("Cloud starter inference")}
+          description={translateInstant(
+            "Lets new Cloud workspaces start their first agent right away (OpenCode / GPT-6 Luna via server proxy) before asking the user to connect a model provider.",
+          )}
+          checked={enableCloudTrialInference}
+          onCheckedChange={(checked) =>
+            toggleMutation.mutate({ enableCloudTrialInference: checked })
+          }
+          disabled={toggleMutation.isPending}
+          settingKey="enableCloudTrialInference"
+          managed={managedKeys.enableCloudTrialInference}
+          ariaLabel={translateInstant("Toggle Cloud starter inference experimental setting")}
         />
 
         <ExperimentalToggleCard
@@ -567,6 +584,22 @@ export function InstanceExperimentalSettings() {
           settingKey="enableMcpTasks"
           managed={managedKeys.enableMcpTasks}
           ariaLabel={translateInstant("instanceExperimentalSettings.mcpTasksToggle", { defaultValue: "Toggle durable app actions experimental setting" })}
+        />
+
+        <ExperimentalToggleCard
+          title={translateInstant("Google Antigravity swarm")}
+          description={translateInstant(
+            "Start a comment on a Google Antigravity agent's task with /swarm to run its native swarm: a coordinator, helpers and a checker that work together in the task folder.",
+          )}
+          footnote={translateInstant(
+            "Local computers with a Google sign-in only. Helper actions are approved automatically. Paperclip does not sandbox the helpers: their shell commands can write outside the task folder, for example in temp directories.",
+          )}
+          checked={experimentalQuery.data?.enableAntigravitySwarm === true}
+          onCheckedChange={(checked) => toggleMutation.mutate({ enableAntigravitySwarm: checked })}
+          disabled={toggleMutation.isPending}
+          settingKey="enableAntigravitySwarm"
+          managed={managedKeys.enableAntigravitySwarm}
+          ariaLabel={translateInstant("Toggle Google Antigravity swarm experimental setting")}
         />
 
         <ExperimentalToggleCard

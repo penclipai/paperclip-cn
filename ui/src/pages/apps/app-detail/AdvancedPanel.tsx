@@ -15,6 +15,7 @@ import {
   credentialConfigPath,
   getAvailableConnectionMethod,
   humanizeConnectionDisplayName,
+  isGoogleWorkspaceConnectionConfig,
 } from "@penclipai/shared";
 import { toolsApi } from "@/api/tools";
 import { Button } from "@/components/ui/button";
@@ -29,9 +30,11 @@ import { useToast } from "@/context/ToastContext";
 import { redactUrlSecrets } from "@/lib/redact-url-secrets";
 import { useAuthorizationWindow } from "@/hooks/useAuthorizationWindow";
 import { cn } from "@/lib/utils";
+import { connectionTransportLabel } from "@/lib/connection-transport-label";
 import { Link } from "@/lib/router";
 import type { AppDetailSectionProps } from "./types";
 import { RevokeGrantDialog } from "./IdentitiesSection";
+import { GOOGLE_CONTENT_DELETION_NOTICE } from "@/features/connections/googleAccessRemoval";
 import { describeError } from "@/api/errors";
 import { useGoogleWorkspaceServiceGate } from "@/features/connections/GoogleWorkspaceServices";
 
@@ -605,6 +608,7 @@ export function DangerZone({
   const methodUnavailable = connection
     ? connectionMethodUnavailable(connection, galleryEntry)
     : false;
+  const googleWorkspace = isGoogleWorkspaceConnectionConfig(connection?.config, connection?.transportConfig);
 
   return (
     <Collapsible
@@ -726,6 +730,7 @@ export function DangerZone({
                 <p className="text-xs text-muted-foreground">
                   {`Deletes credentials for ${appName} and removes agent access. Reconnecting requires a new sign-in or key.`}
                 </p>
+                {googleWorkspace ? <p className="text-xs text-muted-foreground">{GOOGLE_CONTENT_DELETION_NOTICE}</p> : null}
               </div>
               {confirming ? (
                 <div className="flex items-center gap-2">
@@ -779,7 +784,9 @@ export function DangerZone({
               onRevokeIdentity?.(revokeTarget);
               setRevokeTarget(null);
             }}
-          />
+          >
+            {googleWorkspace ? <p className="text-sm text-muted-foreground">{GOOGLE_CONTENT_DELETION_NOTICE}</p> : null}
+          </RevokeGrantDialog>
         ) : null}
       </section>
     </Collapsible>
@@ -795,10 +802,4 @@ export function connectionAddress(connection: ToolConnection): string {
   return "Not set";
 }
 
-export function connectionTransportLabel(
-  transport: ToolConnection["transport"],
-): string {
-  if (transport === "mcp_remote") return "Remote HTTP";
-  if (transport === "local_stdio") return "Local command";
-  return translateInstant("Unknown");
-}
+export { connectionTransportLabel };

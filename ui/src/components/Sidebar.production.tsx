@@ -220,7 +220,7 @@ export function Sidebar() {
 
         <SidebarSection label={translateInstant("Company")} collapsible={{ open: companyOpen, onOpenChange: setCompanyOpen }}>
           <SidebarNavItem to="/org" label={translateInstant("Org")} icon={Network} />
-          {showApps ? <SidebarNavItem to="/apps" label={translateInstant("Connectors")} icon={Unplug} /> : null}
+          {showApps ? <SidebarNavItem to="/apps" label={translateInstant("Plugins")} icon={Unplug} /> : null}
           <SidebarNavItem to="/timeline" label={translateInstant("sidebar.timeline")} icon={GanttChartSquare} />
           <SidebarNavItem to="/costs" label={translateInstant("Costs")} icon={DollarSign} />
           {/* One entry — /audit merged into the rich Activity feed (PAP-16302). */}

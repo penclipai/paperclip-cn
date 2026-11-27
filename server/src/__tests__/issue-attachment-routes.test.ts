@@ -156,7 +156,15 @@ function createStorageService(body = Buffer.from("test")): TestStorageService {
   };
 }
 
+function loadRouteModules() {
+  return Promise.all([
+    vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js"),
+    vi.importActual<typeof import("../routes/issues.js")>("../routes/issues.js"),
+  ]);
+}
+
 async function createApp(storage: StorageService, options?: { companyIds?: string[]; source?: string }) {
+  const [{ errorHandler }, { issueRoutes }] = await loadRouteModules();
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
@@ -222,7 +230,7 @@ describe("MAX_ATTACHMENT_BYTES", () => {
 });
 
 describe("issue attachment routes", () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     vi.resetModules();
     vi.doUnmock("@penclipai/shared/telemetry");
     vi.doUnmock("../telemetry.js");
@@ -233,6 +241,7 @@ describe("issue attachment routes", () => {
     vi.doUnmock("../routes/authz.js");
     vi.doUnmock("../middleware/index.js");
     registerRouteMocks();
+    await loadRouteModules();
   });
 
   beforeEach(() => {

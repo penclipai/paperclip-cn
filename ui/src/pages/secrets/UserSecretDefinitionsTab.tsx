@@ -203,7 +203,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
         ) : definitions.length === 0 &&
           !definitionsQuery.isPending &&
           definitionsView.kind !== "reconnecting" ? (
-          <EmptyState
+          <EmptyState placement="upper"
             icon={UserRound}
             message={t("secrets.noDefinitions", {
               defaultValue:
