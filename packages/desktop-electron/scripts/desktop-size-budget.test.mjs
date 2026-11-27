@@ -33,9 +33,10 @@ test("accepts every reviewed platform baseline", () => {
 });
 
 test("fails when either hard budget is exceeded and reports the delta", () => {
+  const winBaseline = DESKTOP_SIZE_BASELINES["win/x64"];
   const result = evaluateDesktopSizeBudget(auditFor({
-    installerBytes: Math.floor(585_055_249 * 1.05) + 1,
-    runtimeBytes: Math.floor(2008.67 * MIB * 1.05) + 1,
+    installerBytes: Math.floor(winBaseline.installerBytes * 1.05) + 1,
+    runtimeBytes: Math.floor(winBaseline.appRuntimeBytes * 1.05) + 1,
   }));
 
   assert.equal(result.ok, false);
