@@ -32,7 +32,7 @@ vi.mock("../../telemetry.js", () => ({
 
 vi.mock("@penclipai/shared/telemetry", async () => {
   const actual = await vi.importActual<typeof import("@penclipai/shared/telemetry")>(
-    "@paperclipai/shared/telemetry",
+    "@penclipai/shared/telemetry",
   );
   return { ...actual, trackAgentTaskCompleted: mockTrackAgentTaskCompleted };
 });

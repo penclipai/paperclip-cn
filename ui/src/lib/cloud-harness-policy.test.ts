@@ -93,7 +93,7 @@ describe("configured Cloud harness choices", () => {
         runnerProvider: "antigravity",
       })).toBe(false);
     } finally {
-      vi.doUnmock("@paperclipai/adapter-utils");
+      vi.doUnmock("@penclipai/adapter-utils");
       vi.resetModules();
     }
   });

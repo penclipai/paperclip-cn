@@ -41,7 +41,7 @@ export function buildRunnerBuildPlan({ env = process.env } = {}) {
     {
       name: "typescript-dist",
       steps: [
-        cmd("build:eval-kernel", pnpm.command, [...pnpm.argsPrefix, "--filter", "@paperclipai/paperclip-eval-kernel", "build"]),
+        cmd("build:eval-kernel", pnpm.command, [...pnpm.argsPrefix, "--filter", "@penclipai/paperclip-eval-kernel", "build"]),
         cmd("tsc:version", node, ["./node_modules/typescript/bin/tsc", "--version"]),
         cmd("tsc:tsconfig", node, ["./node_modules/typescript/bin/tsc", "-p", "tsconfig.json"]),
         cmd("tsc:surfaces", node, ["./node_modules/typescript/bin/tsc", "-p", "tsconfig.surfaces.json"]),

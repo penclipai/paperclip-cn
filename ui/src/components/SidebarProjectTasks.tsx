@@ -33,7 +33,6 @@ export function SidebarProjectTasks({ project, userId, renderRow, className, ren
     {renderRow(
       <button
         type="button"
-        aria-label={t(expanded ? "sidebar.collapseProject" : "sidebar.expandProject", { name: project.name, defaultValue: expanded ? "Collapse {{name}}" : "Expand {{name}}" })}
         aria-expanded={expanded}
         aria-controls={expanded ? contentId : undefined}
         onClick={() => setExpanded(previous => !previous)}

@@ -36,7 +36,7 @@ test("Kimi metadata CLI is self-contained and rejects incomplete assets without 
     for (const dependency of output.imports) assert.match(dependency.path, /^node:/);
   }
   const manifest = join(root, "package.json");
-  await writeFile(manifest, '{"name":"@paperclipai/paperclip-runner","type":"module"}');
+  await writeFile(manifest, '{"name":"@penclipai/paperclip-runner","type":"module"}');
   const preload = join(root, "deny-external-work.cjs");
   await writeFile(preload, `
     const assert = require("node:assert/strict");

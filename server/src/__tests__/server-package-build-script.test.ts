@@ -194,7 +194,7 @@ describe("server package build script", () => {
       step.args.includes("tsconfig.surfaces.json") && step.args.some((arg) => arg.endsWith("/tsc")),
     );
     const evalKernelBuilds = indexedSteps.filter(({ step }) =>
-      step.args.includes("@paperclipai/paperclip-eval-kernel") && step.args.includes("build"),
+      step.args.includes("@penclipai/paperclip-eval-kernel") && step.args.includes("build"),
     );
     const nestedBuildTs = indexedSteps.filter(({ step }) =>
       step.args.some((arg) => arg === "build:typescript" || (runner.scripts[arg] ?? "").includes("build:typescript")),

@@ -199,6 +199,11 @@
     "zh-CN": "待办",
     "reviewedEnglishHash": "4ff402d768211082ae1a70ae586a4c7a907c57d66467279a71283219968c04bc"
   },
+  "status.waiting": {
+    "en": "waiting",
+    "zh-CN": "等待中",
+    "reviewedEnglishHash": "80cfa3e7f28dde4df64436b652230aff28d7779116d1369c21ef2bbf37261d71"
+  },
   "status.warning": {
     "en": "Warning",
     "zh-CN": "警告",

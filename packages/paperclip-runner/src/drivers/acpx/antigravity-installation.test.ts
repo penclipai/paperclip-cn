@@ -33,7 +33,7 @@ async function layout() {
   setup.assets = join(root, "server-vendor", "provider-assets", "antigravity");
   const pack = join(root, "provider-pack");
   await mkdir(pack);
-  await writeFile(join(pack, "package.json"), JSON.stringify({ name: "@paperclipai/paperclip-runner" }));
+  await writeFile(join(pack, "package.json"), JSON.stringify({ name: "@penclipai/paperclip-runner" }));
   return { root, pack, packed: (key: string) => join(pack, "provider-assets", "antigravity", key) };
 }
 

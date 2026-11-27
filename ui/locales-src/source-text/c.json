@@ -2019,6 +2019,11 @@
     "zh-CN": "连接您的 Slack 账户",
     "reviewedEnglishHash": "afd67dc63f4e0d1182e26f14bc42628db6b29a599e7489ac5cf314196cfb441f"
   },
+  "Connect your account": {
+    "en": "Connect your account",
+    "zh-CN": "连接你的账户",
+    "reviewedEnglishHash": "24fa20ced6ccfef755466a9799aa9c59afcfa77d98d11c7bec42a27e5bc4d03e"
+  },
   "Connect your assistant to Paperclip": {
     "en": "Connect your assistant to Paperclip",
     "zh-CN": "将您的助手连接到 Paperclip",

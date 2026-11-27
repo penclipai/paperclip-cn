@@ -444,6 +444,11 @@
     "zh-CN": "重新连接",
     "reviewedEnglishHash": "bf8a9eab9e7e141bfb81f0ca9244a5f68f476ed0b57f03538410417298169d18"
   },
+  "Reconnect GitHub": {
+    "en": "Reconnect GitHub",
+    "zh-CN": "重新连接 GitHub",
+    "reviewedEnglishHash": "aa7b6cd19325162ef430478eeee8a81fc42839fd101bf36f486d5b7df1ed53f8"
+  },
   "Reconnect account": {
     "en": "Reconnect account",
     "zh-CN": "重新连接账户",

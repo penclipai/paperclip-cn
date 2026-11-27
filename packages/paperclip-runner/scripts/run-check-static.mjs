@@ -32,7 +32,7 @@ export function buildStaticCheckPlan() {
       name: "eval-kernel",
       mode: "serial",
       steps: [
-        cmd("check:eval-kernel", pnpm, ["--filter", "@paperclipai/paperclip-eval-kernel", "test"]),
+        cmd("check:eval-kernel", pnpm, ["--filter", "@penclipai/paperclip-eval-kernel", "test"]),
       ],
     },
     {
@@ -76,7 +76,7 @@ export function buildStaticCheckPlan() {
         {
           name: "plugin-sdk-deps",
           steps: [
-            cmd("plugin-sdk:ensure-build-deps", pnpm, ["--filter", "@paperclipai/plugin-sdk", "ensure-build-deps"]),
+            cmd("plugin-sdk:ensure-build-deps", pnpm, ["--filter", "@penclipai/plugin-sdk", "ensure-build-deps"]),
           ],
         },
       ],

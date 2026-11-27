@@ -39,7 +39,7 @@ test("planApiAuthority targets the server Vitest project and enforces integratio
   assert.equal(full.buildCommands.length, 2);
   assert.deepEqual(full.vitestCommand.args, API_AUTHORITY_VITEST_ARGS);
   assert.ok(full.vitestCommand.args.includes("--project"));
-  assert.ok(full.vitestCommand.args.includes("@paperclipai/server"));
+  assert.ok(full.vitestCommand.args.includes("@penclipai/server"));
   assert.ok(full.vitestCommand.args.includes("server/src/services/native-runtime/runner-api.integration.test.ts"));
   assert.equal(full.vitestCommand.env.PAPERCLIP_REQUIRE_RUNNER_API_INTEGRATION, "1");
 
@@ -57,7 +57,7 @@ test("buildStaticCheckPlan preserves every static check with race-free parallel 
   const allSteps = phases.flatMap((phase) =>
     phase.steps ?? phase.chains.flatMap((chain) => chain.steps),
   );
-  const evalKernelSteps = allSteps.filter((step) => step.args.includes("@paperclipai/paperclip-eval-kernel"));
+  const evalKernelSteps = allSteps.filter((step) => step.args.includes("@penclipai/paperclip-eval-kernel"));
   assert.equal(evalKernelSteps.length, 1);
 
   const buildPhase = phases.find((phase) => phase.name === "disjoint-builds");

@@ -19,7 +19,7 @@ test("installed Kimi setup is self-contained, rejects corrupt assets and cancels
   t.after(() => rm(root, { recursive: true, force: true }));
   const pkg = join(root, "package"), cli = join(pkg, "dist/vendor/paperclip-runner/cli");
   await mkdir(cli, { recursive: true });
-  await writeFile(join(pkg, "package.json"), '{"name":"@paperclipai/server","type":"module"}');
+  await writeFile(join(pkg, "package.json"), '{"name":"@penclipai/server","type":"module"}');
   await writeFile(join(pkg, "dist/index.js"), 'throw Error("server must not start");');
   await writeFile(join(cli, "acpx-runtime-sidecar.cjs"), "// installed layout fixture");
   const entry = join(cli, "provision-kimi.cjs");
@@ -44,7 +44,7 @@ test("installed Kimi setup is self-contained, rejects corrupt assets and cancels
   assert.ifError(child.error); assert.equal(child.status, 1); assert.match(child.stderr, /Kimi setup failed/);
   assert.doesNotMatch(child.stderr + child.stdout, /UNEXPECTED_NETWORK_OR_CHILD|sensitive-canary/);
   assert.deepEqual(await readdir(parent), [target]);
-  assert.equal(JSON.parse(await readFile(join(pkg, "package.json"), "utf8")).name, "@paperclipai/server");
+  assert.equal(JSON.parse(await readFile(join(pkg, "package.json"), "utf8")).name, "@penclipai/server");
   await rm(join(parent, target), { recursive: true });
   const ready = join(root, "download-ready"), aborted = join(root, "download-aborted");
   const preload = join(root, "pending-download.cjs");
@@ -77,7 +77,7 @@ test("fresh archived installed provisioner downloads the exact closure, reuses i
   t.after(() => rm(root, { recursive: true, force: true }));
   const packed = join(root, "packed"), pkg = join(packed, "package"), cli = join(pkg, "dist/vendor/paperclip-runner/cli");
   await mkdir(cli, { recursive: true });
-  await writeFile(join(pkg, "package.json"), '{"name":"@paperclipai/server","type":"module"}');
+  await writeFile(join(pkg, "package.json"), '{"name":"@penclipai/server","type":"module"}');
   await writeFile(join(pkg, "dist/index.js"), 'throw Error("server must not start");');
   await writeFile(join(cli, "acpx-runtime-sidecar.cjs"), "// installed layout fixture");
   await bundleKimiProvisioner({ outputRoot: cli });

@@ -137,7 +137,7 @@ it("resolves explicit providerPackageRoot for bundled server runtimes and Antigr
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT", undefined);
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", undefined);
   const pack = await root();
-  await writeFile(join(pack, "package.json"), JSON.stringify({ name: "@paperclipai/paperclip-runner" }));
+  await writeFile(join(pack, "package.json"), JSON.stringify({ name: "@penclipai/paperclip-runner" }));
   await mkdir(join(pack, "provider-assets/antigravity/linux-x64"), { recursive: true });
   expect(resolveRunnerProviderAssetsRoot("file:///app/server/dist-runtime/index.mjs", "antigravity", { providerPackageRoot: pack }))
     .toBe(join(pack, "provider-assets/antigravity"));

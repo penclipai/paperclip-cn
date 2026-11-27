@@ -160,6 +160,8 @@ function registerModuleMocks() {
   // test can declare an adapter disabled without writing to the real
   // ~/.paperclip/adapter-settings.json.
   vi.doMock("../services/adapter-plugin-store.js", () => ({
+    getPausedAdapterOverrides: () => [],
+    setAdapterOverridePaused: () => false,
     getDisabledAdapterTypes: mockAdapterPluginStore.getDisabledAdapterTypes,
     isAdapterDisabled: (type: string) =>
       mockAdapterPluginStore.getDisabledAdapterTypes().includes(type),
