@@ -385,9 +385,9 @@
     "reviewedEnglishHash": "661ff40a07e037bbd5f7d4ec97a4df1503096ca910e7c9e2d7a4e9abd4e4e1a0"
   },
   "issueChat.removeAttachmentAria": {
-    "en": "Remove {{filename}}",
-    "zh-CN": "移除 {{filename}}",
-    "reviewedEnglishHash": "fd2fbc8b1eb17b32d4d2265d96e08c979f8af1bee462f1a0755a34d49789eb19"
+    "en": "Remove {{name}}",
+    "zh-CN": "移除 {{name}}",
+    "reviewedEnglishHash": "43e1269ac88aba53770f74a888e94434ed456cafba03b1bd4bd40350f31befb0"
   },
   "issueChat.rendererErrorBody": {
     "en": "Showing a safe fallback transcript instead of crashing the task page.",
@@ -403,6 +403,11 @@
     "en": "Reply",
     "zh-CN": "回复",
     "reviewedEnglishHash": "c253f451bdd56431ff15f638498d0003c36aabd5b07e5d21aaa7f1391410747c"
+  },
+  "issueChat.retryAttachmentAria": {
+    "en": "Retry {{name}}",
+    "zh-CN": "重试 {{name}}",
+    "reviewedEnglishHash": "65174dd1f084baf5c8f9d849df08994012955d51f823544c11b965301d7d43e9"
   },
   "issueChat.run": {
     "en": "run",

@@ -37,11 +37,11 @@ function LauncherContent({
   emptyMessage,
   panel,
 }: Pick<SidePanelLauncherProps, "sections" | "onSelect" | "placeholder" | "emptyMessage"> & { panel: boolean }) {
-  useTranslation();
+  const { t } = useTranslation();
   return (
     <Command className={cn(panel && "border border-border shadow-sm")}>
       <CommandInput placeholder={placeholder} aria-label={placeholder} />
-      <CommandList className={cn(panel && "max-h-none flex-1")}>
+      <CommandList className={cn(panel && "max-h-none flex-1")} aria-label={t("sidePanel.suggestionsAria", { defaultValue: "Suggestions" })}>
         <CommandEmpty>{emptyMessage}</CommandEmpty>
         {sections.map((section, sectionIndex) => (
           <div key={section.id}>
@@ -95,12 +95,13 @@ export function SidePanelLauncher({
   trigger,
   open: controlledOpen,
   onOpenChange,
-  title = "Open a side panel tab",
-  description = "Choose a view or resource to open.",
-  placeholder = "Search tabs and resources…",
-  emptyMessage = "No matching tabs or resources.",
+  title = translateInstant("sidePanel.openTabTitle", { defaultValue: "Open a side panel tab" }),
+  description = translateInstant("sidePanel.openTabDescription", { defaultValue: "Choose a view or resource to open." }),
+  placeholder = translateInstant("sidePanel.searchPlaceholder", { defaultValue: "Search tabs and resources…" }),
+  emptyMessage = translateInstant("sidePanel.emptyMessage", { defaultValue: "No matching tabs or resources." }),
   className,
 }: SidePanelLauncherProps) {
+  useTranslation();
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const open = controlledOpen ?? uncontrolledOpen;
   const setOpen = onOpenChange ?? setUncontrolledOpen;

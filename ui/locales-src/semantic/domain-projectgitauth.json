@@ -1,0 +1,47 @@
+{
+  "projectGitAuth.authorizeProject": {
+    "en": "Authorize project",
+    "zh-CN": "授权项目",
+    "reviewedEnglishHash": "af3b7f80b6b6c81ff9a763d0e4128c904a0dbdd49cf2b50dc90fc09d0c5d8c5b"
+  },
+  "projectGitAuth.authorizedLogin": {
+    "en": "Authorized: {{login}}",
+    "zh-CN": "已授权：{{login}}",
+    "reviewedEnglishHash": "ba2ce597e953c15d093fabbf9e2d3b1ab30db137f8c36a0ca4ad695db8451964"
+  },
+  "projectGitAuth.description": {
+    "en": "Allow this project’s workspace provider to use your GitHub Connector for repository provisioning and maintenance until revoked. This shares the Connector credential with the provider using its existing GitHub permissions. Project repository editors can add repositories covered by this connection. Manage repository access in the GitHub connection. Task runs continue to use their own identity.",
+    "zh-CN": "允许此项目的工作区提供程序使用您的 GitHub 连接器进行仓库置备与维护，直至撤销为止。这会将该连接器凭据按现有 GitHub 权限共享给提供程序。项目仓库编辑者可添加此连接覆盖的仓库；请在 GitHub 连接中管理仓库访问权限。任务运行将继续使用各自的身份。",
+    "reviewedEnglishHash": "de40d6c989f07c4b0f22826765e050edf9f35ef3c91975e78913d3e065e24b55"
+  },
+  "projectGitAuth.emptyOptionsHint": {
+    "en": "Connect your GitHub account and install the Connector for this company to authorize it.",
+    "zh-CN": "请先连接您的 GitHub 账号并为此组织安装连接器，然后再进行授权。",
+    "reviewedEnglishHash": "8016048927d009489765ee77178880eee5844cfe0bbf4af7cfb2c387437a3d65"
+  },
+  "projectGitAuth.revokeAuthorization": {
+    "en": "Revoke authorization",
+    "zh-CN": "撤销授权",
+    "reviewedEnglishHash": "4205f49073dcb3e0f1c7fc4c71b7ae47987ed4580f4f43f246cb7c7d565d8085"
+  },
+  "projectGitAuth.selectAriaLabel": {
+    "en": "Your GitHub authorization",
+    "zh-CN": "您的 GitHub 授权",
+    "reviewedEnglishHash": "5f7ee3ca4a488cdb65c032a63ef45e4866828cfa3905afd86647e9ea9dea328d"
+  },
+  "projectGitAuth.selectPlaceholder": {
+    "en": "Select your GitHub account",
+    "zh-CN": "选择您的 GitHub 账号",
+    "reviewedEnglishHash": "050221ab6b6cc46f8ca8413c6a7c8628beea302ef930a1ccaa60b78f8364c473"
+  },
+  "projectGitAuth.title": {
+    "en": "Background GitHub authorization",
+    "zh-CN": "后台 GitHub 授权",
+    "reviewedEnglishHash": "6ac61feb1ea7e20a1d41f61e819dad92e1b708cb3882ba6ed6c0f77d31bb4195"
+  },
+  "projectGitAuth.unavailableGrant": {
+    "en": "selected grant (unavailable or owned by another member)",
+    "zh-CN": "所选授权（不可用或归其他成员所有）",
+    "reviewedEnglishHash": "f1a68b7e2a0b06570c971941e3755ff04d5909406c872a799e4e251c8b426b96"
+  }
+}

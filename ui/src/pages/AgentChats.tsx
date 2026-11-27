@@ -16,6 +16,7 @@ import {
   useRecentAgentChats,
 } from "@/lib/recent-agent-chats";
 import { Link, useNavigate } from "@/lib/router";
+import { displayAgentRole } from "@/lib/agent-role";
 import { agentRouteRef } from "@/lib/utils";
 
 export function AgentChats() {
@@ -145,14 +146,14 @@ function AgentChatsContent({
   if (!enabled)
     return (
       <p className="text-sm text-muted-foreground">
-        Agent Chat is off for this instance. An administrator can enable it in{" "}
+        {translateInstant("agentChats.disabledPrefix", { defaultValue: "Agent Chat is off for this instance. An administrator can enable it in" })}{" "}
         <Link
           className="underline underline-offset-4"
           to="/company/settings/instance/experimental#experimental-enableAgentChat"
         >
-          Experimental settings
+          {translateInstant("agentChat.experimentalSettingsLink", { defaultValue: "Experimental settings" })}
         </Link>
-        . Your workspace preference does not change Chat availability.
+        {translateInstant("agentChats.disabledSuffix", { defaultValue: ". Your workspace preference does not change Chat availability." })}
       </p>
     );
   if (!companyId)
@@ -219,7 +220,7 @@ function AgentChatsContent({
                   setOpenError(
                     error instanceof Error
                       ? error.message
-                      : "Couldn’t open chat. Try again.",
+                      : translateInstant("agentChats.openFailed", { defaultValue: "Couldn’t open chat. Try again." }),
                   );
                 } finally {
                   setOpeningId(null);
@@ -235,7 +236,7 @@ function AgentChatsContent({
                 <span className="text-xs text-muted-foreground">
                   {openingId === agent.id
                     ? translateInstant("Opening chat…")
-                    : (agent.title ?? agent.role)}
+                    : (agent.title ?? displayAgentRole(agent.role))}
                 </span>
               </span>
             </button>

@@ -66,19 +66,19 @@ type InboxScopeFilters = {
   onClear: () => void;
 };
 
-const INBOX_CATEGORY_OPTIONS: ReadonlyArray<[InboxCategoryFilter, string]> = [
-  ["everything", "All categories"],
-  ["issues_i_touched", "My recent tasks"],
-  ["join_requests", "Join requests"],
-  ["approvals", "Approvals"],
-  ["failed_runs", "Failed runs"],
-  ["alerts", "Alerts"],
+const INBOX_CATEGORY_OPTIONS: ReadonlyArray<[InboxCategoryFilter, () => string]> = [
+  ["everything", () => translateInstant("inbox.category.all", { defaultValue: "All categories" })],
+  ["issues_i_touched", () => translateInstant("inbox.category.recent", { defaultValue: "My recent tasks" })],
+  ["join_requests", () => translateInstant("inbox.category.joinRequests", { defaultValue: "Join requests" })],
+  ["approvals", () => translateInstant("inbox.category.approvals", { defaultValue: "Approvals" })],
+  ["failed_runs", () => translateInstant("inbox.category.failedRuns", { defaultValue: "Failed runs" })],
+  ["alerts", () => translateInstant("inbox.category.alerts", { defaultValue: "Alerts" })],
 ];
 
-const INBOX_APPROVAL_STATUS_OPTIONS: ReadonlyArray<[InboxApprovalFilter, string]> = [
-  ["all", "All approval statuses"],
-  ["actionable", "Needs action"],
-  ["resolved", "Resolved"],
+const INBOX_APPROVAL_STATUS_OPTIONS: ReadonlyArray<[InboxApprovalFilter, () => string]> = [
+  ["all", () => translateInstant("inbox.approvalStatus.all", { defaultValue: "All approval statuses" })],
+  ["actionable", () => translateInstant("inbox.approvalStatus.actionable", { defaultValue: "Needs action" })],
+  ["resolved", () => translateInstant("inbox.approvalStatus.resolved", { defaultValue: "Resolved" })],
 ];
 
 const SEARCHABLE_FILTER_THRESHOLD = 6;
@@ -92,14 +92,16 @@ function FilterOptionSearch({
   onChange: (value: string) => void;
   label: string;
 }) {
+  const { t } = useTranslation();
+  const target = label.toLowerCase();
   return (
     <div className="relative">
       <Search className="pointer-events-none absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
       <Input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder={`Search ${label.toLowerCase()}...`}
-        aria-label={`Search ${label.toLowerCase()}`}
+        placeholder={t("issueFilters.searchGroupPlaceholder", { target, defaultValue: `Search ${target}...` })}
+        aria-label={t("issueFilters.searchGroupAria", { target, defaultValue: `Search ${target}` })}
         className="h-8 pl-7 text-xs"
       />
     </div>
@@ -240,7 +242,7 @@ export function IssueFiltersPopover({
                 <div className="space-y-1" data-filter-options="inbox-category">
                   <span className="text-xs text-muted-foreground">{translateInstant("Category")}</span>
                   <div className="space-y-0.5">
-                    {INBOX_CATEGORY_OPTIONS.map(([value, label]) => {
+                    {INBOX_CATEGORY_OPTIONS.map(([value, getLabel]) => {
                       const selected = inboxScopeFilters.category === value;
                       return (
                         <button
@@ -255,7 +257,7 @@ export function IssueFiltersPopover({
                           )}
                           onClick={() => inboxScopeFilters.onCategoryChange(value)}
                         >
-                          <span>{label}</span>
+                          <span>{getLabel()}</span>
                           {selected ? <Check className="h-3.5 w-3.5" /> : null}
                         </button>
                       );
@@ -267,7 +269,7 @@ export function IssueFiltersPopover({
                   <div className="space-y-1" data-filter-options="inbox-approval-status">
                     <span className="text-xs text-muted-foreground">{translateInstant("Approval status")}</span>
                     <div className="space-y-0.5">
-                      {INBOX_APPROVAL_STATUS_OPTIONS.map(([value, label]) => {
+                      {INBOX_APPROVAL_STATUS_OPTIONS.map(([value, getLabel]) => {
                         const selected = inboxScopeFilters.approvalStatus === value;
                         return (
                           <button
@@ -282,7 +284,7 @@ export function IssueFiltersPopover({
                             )}
                             onClick={() => inboxScopeFilters.onApprovalStatusChange(value)}
                           >
-                            <span>{label}</span>
+                            <span>{getLabel()}</span>
                             {selected ? <Check className="h-3.5 w-3.5" /> : null}
                           </button>
                         );
@@ -320,7 +322,7 @@ export function IssueFiltersPopover({
           </div>
 
           <div className="space-y-1.5">
-            <span className="text-xs text-muted-foreground">Updated</span>
+            <span className="text-xs text-muted-foreground">{translateInstant("Updated")}</span>
             <div className="flex flex-wrap gap-1.5" data-filter-options="updated">
               {issueUpdatedWithinOptions.map((option) => {
                 const isActive = (state.updatedWithin ?? null) === option.value;
@@ -433,7 +435,7 @@ export function IssueFiltersPopover({
                             type="button"
                             className="rounded-full p-0.5 hover:bg-accent"
                             onClick={() => onChange({ creators: state.creators.filter((value) => value !== creator.id) })}
-                            aria-label={`Remove creator ${creator.label}`}
+                            aria-label={translateInstant("issueFilters.removeCreatorAria", { name: creator.label, defaultValue: `Remove creator ${creator.label}` })}
                           >
                             <X className="h-3 w-3" />
                           </button>
@@ -566,7 +568,7 @@ export function IssueFiltersPopover({
                       checked={state.showAgentCreatedTasks}
                       onCheckedChange={(checked) => onChange({ showAgentCreatedTasks: checked === true })}
                     />
-                    <span className="text-sm">Show agent-created tasks</span>
+                    <span className="text-sm">{translateInstant("issueFilters.showAgentCreatedTasks", { defaultValue: "Show agent-created tasks" })}</span>
                   </label>
                 ) : null}
                 {enableRoutineTasksFilter ? <label className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-accent/50">
@@ -574,7 +576,7 @@ export function IssueFiltersPopover({
                     checked={state.routineTasksOnly === true}
                     onCheckedChange={(checked) => onChange({ routineTasksOnly: checked === true })}
                   />
-                  <span className="text-sm">Routine tasks</span>
+                  <span className="text-sm">{translateInstant("issueFilters.routineTasks", { defaultValue: "Routine tasks" })}</span>
                 </label> : null}
               </div> : null}
             </div>

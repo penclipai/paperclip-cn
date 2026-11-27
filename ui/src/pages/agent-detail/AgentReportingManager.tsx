@@ -1,4 +1,5 @@
 import { Pencil, UserRound } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Agent } from "@penclipai/shared";
 import { agentsApi } from "@/api/agents";
@@ -27,6 +28,7 @@ export function invalidManagerIds(agentId: string, agents: Agent[]): string[] {
 }
 
 export function AgentReportingManager({ agent }: { agent: Agent }) {
+  const { t } = useTranslation();
   const client = useQueryClient();
   const directory = useQuery({
     queryKey: queryKeys.agents.list(agent.companyId),
@@ -41,7 +43,7 @@ export function AgentReportingManager({ agent }: { agent: Agent }) {
   const manager = agents.find((candidate) => candidate.id === agent.reportsTo);
   const disabled = !directory.data || directoryView.kind === "error" || update.isPending;
   return <div className="flex flex-col gap-1.5 px-(--agent-detail-module-inset) py-1.5 text-sm">
-    <span className="text-muted-foreground">Reports to:</span>
+    <span className="text-muted-foreground">{t("agentDetail.profile.reportsTo", { defaultValue: "Reports to:" })}</span>
     <div className="flex items-center gap-1.5">
       {manager ? <Link to={agentDetailHref(agentRouteRef(manager))} className={`${agentIdentityChipClass} no-underline`}>
         <AgentIdentityChipContent agent={manager} />
@@ -52,9 +54,9 @@ export function AgentReportingManager({ agent }: { agent: Agent }) {
         onChange={(id) => update.mutate(id)}
         disabled={disabled}
         disabledAgentIds={invalidManagerIds(agent.id, agents)}
-        trigger={<button type="button" disabled={disabled} aria-label={manager ? "Change manager" : "Choose manager"}
+        trigger={<button type="button" disabled={disabled} aria-label={manager ? t("agentDetail.profile.changeManager", { defaultValue: "Change manager" }) : t("agentDetail.profile.chooseManager", { defaultValue: "Choose manager" })}
           className={`${manager ? "agent-identity-chip inline-flex size-7 shrink-0 items-center justify-center rounded-md hover:bg-accent hover:text-foreground transition-colors" : agentIdentityChipClass} disabled:cursor-not-allowed disabled:opacity-50`}>
-          {manager ? <Pencil className="size-3.5" aria-hidden /> : <><UserRound className="size-5 text-muted-foreground" aria-hidden /><span>{agent.reportsTo ? "Manager unavailable" : "No manager"}</span></>}
+          {manager ? <Pencil className="size-3.5" aria-hidden /> : <><UserRound className="size-5 text-muted-foreground" aria-hidden /><span>{agent.reportsTo ? t("agentDetail.profile.managerUnavailable", { defaultValue: "Manager unavailable" }) : t("agentDetail.profile.noManager", { defaultValue: "No manager" })}</span></>}
         </button>}
       />
     </div>

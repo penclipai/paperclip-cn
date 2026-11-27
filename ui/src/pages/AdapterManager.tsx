@@ -294,7 +294,16 @@ export function AdapterManager() {
       setIsLocalPath(false);
       pushToast({
         title: translateInstant("Adapter installed"),
-        body: `Type "${result.type}" registered successfully.${result.version ? ` (v${result.version})` : ""}`,
+        body: result.version
+          ? translateInstant("adapters.toast.registeredWithVersion", {
+              type: result.type,
+              version: result.version,
+              defaultValue: `Type "${result.type}" registered successfully. (v${result.version})`,
+            })
+          : translateInstant("adapters.toast.registered", {
+              type: result.type,
+              defaultValue: `Type "${result.type}" registered successfully.`,
+            }),
         tone: "success",
       });
     },
@@ -347,7 +356,16 @@ export function AdapterManager() {
       invalidateConfigSchemaCache(result.type);
       pushToast({
         title: translateInstant("Adapter reloaded"),
-        body: `Type "${result.type}" reloaded.${result.version ? ` (v${result.version})` : ""}`,
+        body: result.version
+          ? translateInstant("adapters.toast.reloadedWithVersion", {
+              type: result.type,
+              version: result.version,
+              defaultValue: `Type "${result.type}" reloaded. (v${result.version})`,
+            })
+          : translateInstant("adapters.toast.reloaded", {
+              type: result.type,
+              defaultValue: `Type "${result.type}" reloaded.`,
+            }),
         tone: "success",
       });
     },
@@ -364,7 +382,16 @@ export function AdapterManager() {
       invalidateConfigSchemaCache(result.type);
       pushToast({
         title: translateInstant("Adapter reinstalled"),
-        body: `Type "${result.type}" updated from npm.${result.version ? ` (v${result.version})` : ""}`,
+        body: result.version
+          ? translateInstant("adapters.toast.reinstalledWithVersion", {
+              type: result.type,
+              version: result.version,
+              defaultValue: `Type "${result.type}" updated from npm. (v${result.version})`,
+            })
+          : translateInstant("adapters.toast.reinstalled", {
+              type: result.type,
+              defaultValue: `Type "${result.type}" updated from npm.`,
+            }),
         tone: "success",
       });
     },
@@ -405,7 +432,7 @@ export function AdapterManager() {
           <Cpu className="h-6 w-6 text-muted-foreground" />
           <h1 className="text-xl font-semibold">{translateInstant("Adapters")}</h1>
           <Badge variant="outline" className="text-amber-600 border-amber-400">
-            Alpha
+            {translateInstant("adapters.alphaBadge", { defaultValue: "Alpha" })}
           </Badge>
         </div>
 
@@ -567,9 +594,9 @@ export function AdapterManager() {
                   isToggling={isBuiltinOverride ? overrideMutation.isPending : toggleMutation.isPending}
                   isReloading={reloadMutation.isPending}
                   isReinstalling={reinstallMutation.isPending}
-                  toggleTitleDisabled={isBuiltinOverride ? "Pause external override" : undefined}
-                  toggleTitleEnabled={isBuiltinOverride ? "Resume external override" : undefined}
-                  disabledBadgeLabel={isBuiltinOverride ? "Override paused" : undefined}
+                  toggleTitleDisabled={isBuiltinOverride ? translateInstant("adapters.override.pause", { defaultValue: "Pause external override" }) : undefined}
+                  toggleTitleEnabled={isBuiltinOverride ? translateInstant("adapters.override.resume", { defaultValue: "Resume external override" }) : undefined}
+                  disabledBadgeLabel={isBuiltinOverride ? translateInstant("adapters.override.paused", { defaultValue: "Override paused" }) : undefined}
                 />
               );
             })}

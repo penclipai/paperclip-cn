@@ -3224,8 +3224,9 @@ function OnboardingWizardInner({
 
                     {adapterRegistryLoaded && recommendedAdapters.length === 0 && (
                       <p role="status" className="text-sm text-muted-foreground">
-                        Claude and Codex are unavailable on this instance. Ask an administrator to enable one,
-                        or exit setup and choose New Agent on the Agents page to use another provider.
+                        {translateInstant("onboarding.connect.noRecommendedAdapters", {
+                          defaultValue: "Claude and Codex are unavailable on this instance. Ask an administrator to enable one, or exit setup and choose New Agent on the Agents page to use another provider.",
+                        })}
                       </p>
                     )}
 
@@ -3314,7 +3315,7 @@ function OnboardingWizardInner({
                         }} />}
                         {!selectedApiKey && !hasGatewaySelection && !connectionModels && <OnboardingCardField
                           label={translateInstant("API key")}
-                          description={managedProvider ? `This will be your default ${CONNECT_SOURCE_NAMES[adapterType] ?? managedProvider} account.` : undefined}
+                          description={managedProvider ? translateInstant("onboarding.connect.defaultProviderAccount", { provider: CONNECT_SOURCE_NAMES[adapterType] ?? managedProvider, defaultValue: "This will be your default {{provider}} account." }) : undefined}
                           placeholder={translateInstant("Enter API key here")}
                           masked
                           // The card is the answer to the tile just pressed, so

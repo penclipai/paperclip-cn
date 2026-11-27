@@ -205,7 +205,7 @@ describe("crashPoint armed by the environment", { timeout: 60_000 }, () => {
       const hit = (label: string) => `try { crashPoint(${JSON.stringify(first)}, { fail: () => new Error("lock held") }); process.stdout.write("${label}-ok\\n"); }`
         + ` catch (error) { process.stdout.write("${label}-" + error.message + "\\n"); }`;
       const source = [
-        `const { crashPoint } = await import(${JSON.stringify(path.join(import.meta.dirname, "crash-points.ts"))});`,
+        `const { crashPoint } = await import(${JSON.stringify(pathToFileURL(path.join(import.meta.dirname, "crash-points.ts")).href)});`,
         `const { writeFileSync } = await import("node:fs");`,
         `writeFileSync(${JSON.stringify(control)}, "t1 ${first}:2 fail\\n");`,
         hit("one"), hit("two"), hit("three"),

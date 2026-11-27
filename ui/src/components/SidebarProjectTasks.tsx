@@ -1,4 +1,5 @@
 import { useId, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Folder, FolderOpen } from "lucide-react";
 import type { Issue, Project } from "@penclipai/shared";
@@ -17,6 +18,7 @@ export function SidebarProjectTasks({ project, userId, renderRow, className, ren
   className?: string;
   renderTask?: (task: Issue) => ReactNode;
 }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const contentId = useId();
   const { data: tasks, isPending, error } = useQuery({
@@ -31,6 +33,7 @@ export function SidebarProjectTasks({ project, userId, renderRow, className, ren
     {renderRow(
       <button
         type="button"
+        aria-label={t(expanded ? "sidebar.collapseProject" : "sidebar.expandProject", { name: project.name, defaultValue: expanded ? "Collapse {{name}}" : "Expand {{name}}" })}
         aria-expanded={expanded}
         aria-controls={expanded ? contentId : undefined}
         onClick={() => setExpanded(previous => !previous)}
@@ -41,11 +44,11 @@ export function SidebarProjectTasks({ project, userId, renderRow, className, ren
       </button>
     )}
     {expanded && <div id={contentId} className="design-sidebar-primary ms-2">
-      {isPending ? <p className="px-3 py-2 text-xs text-muted-foreground" role="status">Loading tasks…</p>
-        : error ? <p className="px-3 py-2 text-xs text-muted-foreground" role="alert">Couldn’t load tasks.</p>
+      {isPending ? <p className="px-3 py-2 text-xs text-muted-foreground" role="status">{t("Loading tasks…", { defaultValue: "Loading tasks…" })}</p>
+        : error ? <p className="px-3 py-2 text-xs text-muted-foreground" role="alert">{t("sidebar.couldNotLoadTasks", { defaultValue: "Couldn’t load tasks." })}</p>
           : tasks?.length ? tasks.map(task => <div key={task.id}>{renderTask ? renderTask(task)
             : <RecentTaskNavItem className="design-sidebar-item" task={task} label={task.title} iconNode={<StatusIcon {...taskStatusIconProps(task)} />} />}</div>)
-            : <p className="px-3 py-2 text-xs text-muted-foreground">No tasks yet.</p>}
+            : <p className="px-3 py-2 text-xs text-muted-foreground">{t("sidebar.noTasksYet", { defaultValue: "No tasks yet." })}</p>}
     </div>}
   </div>;
 }

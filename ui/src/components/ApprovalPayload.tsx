@@ -5,6 +5,8 @@ import { MarkdownBody } from "./MarkdownBody";
 import { formatCents } from "../lib/utils";
 import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 import { cn } from "@/lib/utils";
+import { getAdapterLabel } from "../adapters/adapter-display-registry";
+import { roleLabels } from "./agent-config-primitives";
 
 export const typeLabel: Record<string, string> = {
   hire_agent: "Hire Agent",
@@ -92,13 +94,17 @@ function SkillList({ values }: { values: unknown }) {
 
 export function HireAgentPayload({ payload }: { payload: Record<string, unknown> }) {
   useTranslation();
+  const roleKey = typeof payload.role === "string" ? payload.role : null;
+  const roleValue = roleKey
+    ? translateInstant(`agentRole.${roleKey}`, { defaultValue: roleLabels[roleKey] ?? roleKey })
+    : payload.role;
   return (
     <div className="mt-3 space-y-1.5 text-sm">
       <div className="flex items-center gap-2">
         <span className="text-muted-foreground w-20 sm:w-24 shrink-0 text-xs">{translateInstant("Name")}</span>
         <span className="font-medium">{String(payload.name ?? "—")}</span>
       </div>
-      <PayloadField label={translateInstant("Role")} value={payload.role} />
+      <PayloadField label={translateInstant("Role")} value={roleValue} />
       <PayloadField label={translateInstant("Title")} value={payload.title} />
       <PayloadField label={translateInstant("Icon")} value={payload.icon} />
       {!!payload.capabilities && (
@@ -111,7 +117,7 @@ export function HireAgentPayload({ payload }: { payload: Record<string, unknown>
         <div className="flex items-center gap-2">
           <span className="text-muted-foreground w-20 sm:w-24 shrink-0 text-xs">{translateInstant("Adapter")}</span>
           <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">
-            {String(payload.adapterType)}
+            {getAdapterLabel(String(payload.adapterType))}
           </span>
         </div>
       )}
@@ -144,11 +150,23 @@ export function BudgetOverridePayload({ payload }: { payload: Record<string, unk
   useTranslation();
   const budgetAmount = typeof payload.budgetAmount === "number" ? payload.budgetAmount : null;
   const observedAmount = typeof payload.observedAmount === "number" ? payload.observedAmount : null;
+  const scopeType = typeof payload.scopeType === "string" ? payload.scopeType : null;
+  const scopeValue = payload.scopeName ?? (scopeType
+    ? translateInstant(`approvals.budgetScope.${scopeType}`, { defaultValue: scopeType })
+    : null);
+  const windowKind = typeof payload.windowKind === "string" ? payload.windowKind : null;
+  const windowValue = windowKind
+    ? translateInstant(`approvals.budgetWindow.${windowKind}`, { defaultValue: windowKind })
+    : payload.windowKind;
+  const metric = typeof payload.metric === "string" ? payload.metric : null;
+  const metricValue = metric
+    ? translateInstant(`approvals.budgetMetric.${metric}`, { defaultValue: metric })
+    : payload.metric;
   return (
     <div className="mt-3 space-y-1.5 text-sm">
-      <PayloadField label={translateInstant("Scope")} value={payload.scopeName ?? payload.scopeType} />
-      <PayloadField label={translateInstant("Window")} value={payload.windowKind} />
-      <PayloadField label={translateInstant("Metric")} value={payload.metric} />
+      <PayloadField label={translateInstant("Scope")} value={scopeValue} />
+      <PayloadField label={translateInstant("Window")} value={windowValue} />
+      <PayloadField label={translateInstant("Metric")} value={metricValue} />
       {(budgetAmount !== null || observedAmount !== null) ? (
         <div className="rounded-md bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
           {translateInstant("Limit")}{" "}{budgetAmount !== null ? formatCents(budgetAmount) : "—"} {translateInstant("· Observed")}{" "}{observedAmount !== null ? formatCents(observedAmount) : "—"}

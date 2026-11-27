@@ -9,9 +9,34 @@
     "zh-CN": "关闭 {{name}} 标签页",
     "reviewedEnglishHash": "dcdd2d9c132a50ad36ed5c9cfd037d24361daf047c147bd9531847ba65f8a7a2"
   },
+  "sidePanel.emptyMessage": {
+    "en": "No matching tabs or resources.",
+    "zh-CN": "没有匹配的标签页或资源。",
+    "reviewedEnglishHash": "de04bc42e40057c22da5d21e351d1171ecda0492d587b6ccc8d995a4f83f0792"
+  },
   "sidePanel.label": {
     "en": "Side panel",
     "zh-CN": "侧边面板",
     "reviewedEnglishHash": "c28cdd98645b370f1a327d22a201b3620530d6550c2b7dc94f5ca92307aa2b2f"
+  },
+  "sidePanel.openTabDescription": {
+    "en": "Choose a view or resource to open.",
+    "zh-CN": "选择要打开的视图或资源。",
+    "reviewedEnglishHash": "210dbbe11bffce43b36f4fa68c485ff0a0bd8f08b3ecab9a68cbcaddb1aad6a8"
+  },
+  "sidePanel.openTabTitle": {
+    "en": "Open a side panel tab",
+    "zh-CN": "打开侧边栏标签页",
+    "reviewedEnglishHash": "995d1f304f2f1a111f9f93a9fe5982b396620e93616d4a785f48dd39dd5c42f6"
+  },
+  "sidePanel.searchPlaceholder": {
+    "en": "Search tabs and resources…",
+    "zh-CN": "搜索标签页和资源…",
+    "reviewedEnglishHash": "06311a8538b971d5bc180b4dd84bb65cccb37bc02bf8743c211d2dc6ad846e92"
+  },
+  "sidePanel.suggestionsAria": {
+    "en": "Suggestions",
+    "zh-CN": "建议选项",
+    "reviewedEnglishHash": "16c1d601fc66950402ca8d54257acea0f5d21be1e00b9eb99224e436da66c950"
   }
 }

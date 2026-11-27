@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import {
   BarChart3,
   Bot,
@@ -14,6 +15,7 @@ import {
   Plus,
   type LucideIcon,
 } from "lucide-react";
+import { translateInstant } from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AppLogo } from "./AppLogo";
@@ -70,6 +72,7 @@ export function PluginTile({
   /** Replaces the brand logo for an entry that is not a catalog app. */
   icon?: ReactNode;
 }) {
+  const { t } = useTranslation();
   const installed = state !== "available";
   return (
     <div
@@ -101,8 +104,8 @@ export function PluginTile({
               installed && "opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100",
             )}
             disabled={action.disabled}
-            title={action.title ?? `${action.label} ${name}`}
-            aria-label={`${action.label} ${name}`}
+            title={action.title ?? t("apps.plugins.actionTitle", { action: action.label, name, defaultValue: `${action.label} ${name}` })}
+            aria-label={t("apps.plugins.actionTitle", { action: action.label, name, defaultValue: `${action.label} ${name}` })}
             onClick={action.onSelect}
           >
             <Plus aria-hidden />
@@ -119,6 +122,7 @@ export const PLUGIN_GRID = "grid gap-3 sm:grid-cols-2 xl:grid-cols-3";
 
 /** A titled block of plugin tiles. A category block also shows how many plugins it holds and links to all of them. */
 export function PluginShelf({ id, title, count, onSeeAll, children }: { id: string; title: string; count?: number; onSeeAll?: () => void; children: ReactNode }) {
+  const { t } = useTranslation();
   return (
     <section id={id} aria-labelledby={`${id}-title`} className="flex scroll-mt-6 flex-col gap-3">
       <div className="flex min-h-8 items-center justify-between gap-4">
@@ -127,8 +131,8 @@ export function PluginShelf({ id, title, count, onSeeAll, children }: { id: stri
           {count === undefined ? null : <span className="font-normal text-muted-foreground tabular-nums"> ({count.toLocaleString()})</span>}
         </h2>
         {onSeeAll ? (
-          <Button type="button" variant="ghost" size="sm" className="-mr-3 h-8 text-muted-foreground" aria-label={`See all ${title}`} onClick={onSeeAll}>
-            See all
+          <Button type="button" variant="ghost" size="sm" className="-mr-3 h-8 text-muted-foreground" aria-label={t("apps.plugins.seeAllAria", { title, defaultValue: `See all ${title}` })} onClick={onSeeAll}>
+            {t("apps.plugins.seeAll", { defaultValue: "See all" })}
           </Button>
         ) : null}
       </div>
@@ -141,15 +145,15 @@ export const PLUGIN_CATEGORY_ORDER = ["productivity", "developer", "communicatio
 export type PluginCategoryId = (typeof PLUGIN_CATEGORY_ORDER)[number];
 
 export const PLUGIN_CATEGORIES: Record<PluginCategoryId, { label: string; icon: LucideIcon }> = {
-  productivity: { label: "Productivity", icon: SquareCheck },
-  developer: { label: "Developer tools", icon: Code },
-  communication: { label: "Communication", icon: MessageCircle },
-  ai: { label: "AI models & agents", icon: Bot },
-  data: { label: "Data", icon: Database },
-  analytics: { label: "Analytics", icon: BarChart3 },
-  content: { label: "Content", icon: FileText },
-  commerce: { label: "Commerce", icon: ShoppingBag },
-  other: { label: "Other", icon: LayoutGrid },
+  productivity: { get label() { return translateInstant("apps.plugins.categories.productivity", { defaultValue: "Productivity" }); }, icon: SquareCheck },
+  developer: { get label() { return translateInstant("apps.plugins.categories.developer", { defaultValue: "Developer tools" }); }, icon: Code },
+  communication: { get label() { return translateInstant("apps.plugins.categories.communication", { defaultValue: "Communication" }); }, icon: MessageCircle },
+  ai: { get label() { return translateInstant("apps.plugins.categories.ai", { defaultValue: "AI models & agents" }); }, icon: Bot },
+  data: { get label() { return translateInstant("apps.plugins.categories.data", { defaultValue: "Data" }); }, icon: Database },
+  analytics: { get label() { return translateInstant("apps.plugins.categories.analytics", { defaultValue: "Analytics" }); }, icon: BarChart3 },
+  content: { get label() { return translateInstant("apps.plugins.categories.content", { defaultValue: "Content" }); }, icon: FileText },
+  commerce: { get label() { return translateInstant("apps.plugins.categories.commerce", { defaultValue: "Commerce" }); }, icon: ShoppingBag },
+  other: { get label() { return translateInstant("Other"); }, icon: LayoutGrid },
 };
 
 export const pluginCategoryId = (categories: readonly string[] | undefined): PluginCategoryId => {
@@ -163,11 +167,12 @@ export const isPluginCategoryId = (value: string | undefined): value is PluginCa
 
 /** List of the categories that have plugins; each opens that category's own page. */
 export function PluginCategories({ categories, onOpen }: { categories: PluginCategoryId[]; onOpen: (id: PluginCategoryId) => void }) {
+  const { t } = useTranslation();
   if (categories.length === 0) return null;
   return (
     <nav aria-labelledby="plugins-categories-title" className="flex flex-col gap-3">
       <h2 id="plugins-categories-title" className="text-base font-semibold text-foreground">
-        Categories
+        {t("Categories")}
       </h2>
       <ul className="-mx-2 grid gap-x-6 sm:grid-cols-2 lg:grid-cols-4">
         {categories.map((id) => {

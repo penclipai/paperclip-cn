@@ -69,6 +69,26 @@
     "zh-CN": "无法保存收件箱智能体策略。",
     "reviewedEnglishHash": "0cb3feff96ee1bb78852639cc49819e597c51b3acd297d2c60a2a42080554ebd"
   },
+  "inboxAgentPolicy.selectAgents": {
+    "en": "Select agents",
+    "zh-CN": "选择智能体",
+    "reviewedEnglishHash": "9c2f5e9fd3f263f46910861080aed311ebc54f8d5657a8d07d906238d7b7e6fa"
+  },
+  "inboxAgentPolicy.selectedAgents": {
+    "en": "{{count}} agents selected",
+    "zh-CN": "已选择 {{count}} 个智能体",
+    "reviewedEnglishHash": "c9492cfd3567f66e7e9b1a8ab3acb8e543beafd9b3440e52eb73a20f85a5beff"
+  },
+  "inboxAgentPolicy.selectedAgents_one": {
+    "en": "{{count}} agent selected",
+    "zh-CN": "已选择 {{count}} 个智能体",
+    "reviewedEnglishHash": "2367236e778cb45a2260b9da463100cad9484031e8b03072d484ccb98f29d139"
+  },
+  "inboxAgentPolicy.selectedAgents_other": {
+    "en": "{{count}} agents selected",
+    "zh-CN": "已选择 {{count}} 个智能体",
+    "reviewedEnglishHash": "c9492cfd3567f66e7e9b1a8ab3acb8e543beafd9b3440e52eb73a20f85a5beff"
+  },
   "inboxAgentPolicy.title": {
     "en": "Let agents tidy my inbox",
     "zh-CN": "让智能体整理我的收件箱",

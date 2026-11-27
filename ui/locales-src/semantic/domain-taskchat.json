@@ -69,10 +69,20 @@
     "zh-CN": "，",
     "reviewedEnglishHash": "0a07f659461970d8d8dcefe4fff96a1745599810dc7d47391e95c803b7b2072c"
   },
+  "taskChat.blockedWithReason": {
+    "en": "Blocked: {{reason}}",
+    "zh-CN": "已阻塞：{{reason}}",
+    "reviewedEnglishHash": "6a35ad51e64d3a4da7fabfc29fef3b9f2980ddc297491e43facb88eca5055574"
+  },
   "taskChat.blocker.nowRunning": {
     "en": "Now running",
     "zh-CN": "正在运行",
     "reviewedEnglishHash": "44cdf35701cdac026f9b24306b9b9ad70bb9c45413aba514cec6fa79fd6f54c6"
+  },
+  "taskChat.collapseActivityAria": {
+    "en": "Collapse {{detail}}",
+    "zh-CN": "折叠 {{detail}}",
+    "reviewedEnglishHash": "dd7e831d2ac61d41585c085cdcdf54351c73e19bcfa27eed1826b9103375d9eb"
   },
   "taskChat.composer.modeDescription.ask": {
     "en": "Answer questions only, no changes",
@@ -108,6 +118,11 @@
     "en": "Continued after steering ·",
     "zh-CN": "引导后继续 ·",
     "reviewedEnglishHash": "d964b95eda2602c2a68fb7b80293eefb83b4cb4a326388fdac8839f7d2d04760"
+  },
+  "taskChat.copyFailed": {
+    "en": "Couldn’t copy message",
+    "zh-CN": "复制消息失败",
+    "reviewedEnglishHash": "41fff2fdba95e1a286e9eb3668f02d99ac484525a609813fa7802282e3676962"
   },
   "taskChat.durableInput.proposeAutomation": {
     "en": "Proposed automation",
@@ -149,6 +164,16 @@
     "zh-CN": "提供方拒绝了模型“{{model}}”。",
     "reviewedEnglishHash": "74dd8aa9da8c8ed43b9532a646269341570fe54781ad46e5f69744dc89436277"
   },
+  "taskChat.expandActivityAria": {
+    "en": "Expand {{detail}}",
+    "zh-CN": "展开 {{detail}}",
+    "reviewedEnglishHash": "1fa79e2c075d681f3e1da2b317970548aec7b8bcf2b1c1ac18fae67f5daf2e71"
+  },
+  "taskChat.filesReadAria": {
+    "en": "Files read",
+    "zh-CN": "已读取文件",
+    "reviewedEnglishHash": "83480f5656275bfff67ea3790da1c07f947a848b0e1e721f417b0b83b8d00e86"
+  },
   "taskChat.forDuration": {
     "en": "for {{duration}}",
     "zh-CN": "用时 {{duration}}",
@@ -159,10 +184,110 @@
     "zh-CN": "无法加载更早的消息。",
     "reviewedEnglishHash": "11aa16c5ba93b4f791773fb28eaa791bd289f40d81fb98003843432df6169536"
   },
+  "taskChat.imageFallback": {
+    "en": "image {{index}}",
+    "zh-CN": "图片 {{index}}",
+    "reviewedEnglishHash": "4ee0abd8b60716d4f94a8bfbe842251165562d811955295626a9fa0d293602e5"
+  },
   "taskChat.interaction.unansweredQuestion": {
     "en": "Unanswered question",
     "zh-CN": "待回答问题",
     "reviewedEnglishHash": "a36c3c6b4b6b799623b5131974e7e2e14c6cb95e7382f8bb72ccc981b4f87d1b"
+  },
+  "taskChat.interrupted.afterFinalResponse": {
+    "en": " after returning a final response",
+    "zh-CN": "（在返回最终回复之后）",
+    "reviewedEnglishHash": "e9a6e88ee82719d7fb33a95052a4fe56168a60a27ed3115acf0b87786d57ca9c"
+  },
+  "taskChat.interrupted.approvalRequired": {
+    "en": "Approval required",
+    "zh-CN": "需要审批",
+    "reviewedEnglishHash": "ef677f59f01b2a51731f0cb0af349d7fa718b787d4cc8db79d7f3cc306e97869"
+  },
+  "taskChat.interrupted.approvalRequiredDetail": {
+    "en": "This operation requires approval, but this runner has no interactive approval handler. Review the operation and update the agent's permission setting before retrying.",
+    "zh-CN": "此操作需要审批，但当前运行器没有交互式审批处理器。请检查该操作并更新智能体权限设置后再重试。",
+    "reviewedEnglishHash": "30893d78d66914135ec36cf3ed1e52898fc6ed445d3d6512b745d5743797e351"
+  },
+  "taskChat.interrupted.cancelledDetail": {
+    "en": "The run was cancelled{{boundary}}.",
+    "zh-CN": "运行已取消{{boundary}}。",
+    "reviewedEnglishHash": "24c11eff7e2928fbb65e1891c3ec8b797950891c40948415cec5ebb86e7243fd"
+  },
+  "taskChat.interrupted.frameTooLargeDetail": {
+    "en": "Provider output exceeded the safe limit.",
+    "zh-CN": "服务方输出超出了安全限制。",
+    "reviewedEnglishHash": "d2978bf261dc89b9cd25926863aba5b1ff6d177052d444d0303067507dfc40df"
+  },
+  "taskChat.interrupted.interruptedDetail": {
+    "en": "The run was interrupted{{boundary}}.",
+    "zh-CN": "运行已中断{{boundary}}。",
+    "reviewedEnglishHash": "17792b4d5ae327fb17e834389f0749ab57e76e09bb575bc20d1a3f0e3c28d6aa"
+  },
+  "taskChat.interrupted.modelRejectedDetail": {
+    "en": "{{reason}} Choose a supported model or clear the task's model override, then retry.",
+    "zh-CN": "{{reason}} 请选择受支持的模型或清除任务的模型覆盖设置，然后重试。",
+    "reviewedEnglishHash": "46a0ebbe86784d5606390d3166b5a2335f64d2363fe8014abbacf172a4efe9b9"
+  },
+  "taskChat.interrupted.modelRejectedFallback": {
+    "en": "The provider rejected the selected model.",
+    "zh-CN": "服务方拒绝了所选模型。",
+    "reviewedEnglishHash": "fa0c54f6e90701ec124d2bba4422a6d91ac9db0c197021f3d1692dcd323c5878"
+  },
+  "taskChat.interrupted.modelUnavailable": {
+    "en": "Model unavailable",
+    "zh-CN": "模型不可用",
+    "reviewedEnglishHash": "10bf737619e5e135ebccd185a0f63839a85143265fbeee62b92aea4680087a9f"
+  },
+  "taskChat.interrupted.runCancelled": {
+    "en": "Run cancelled",
+    "zh-CN": "运行已取消",
+    "reviewedEnglishHash": "2d34c9f19f5402b3cea5939062e28fe738ed9c8470cdfee78f84ef9c8f0c937c"
+  },
+  "taskChat.interrupted.runFailed": {
+    "en": "Run failed",
+    "zh-CN": "运行失败",
+    "reviewedEnglishHash": "97fddf2d43e8dfc8e31d22f8ba3957b67b9109306346435f0172ba7439e4658a"
+  },
+  "taskChat.interrupted.runInterrupted": {
+    "en": "Run interrupted",
+    "zh-CN": "运行已中断",
+    "reviewedEnglishHash": "6d527bebbeb51b1586027677a6d1121c2c166da5899a144f7c61060fc4925f6c"
+  },
+  "taskChat.interrupted.runTimedOut": {
+    "en": "Run timed out",
+    "zh-CN": "运行超时",
+    "reviewedEnglishHash": "7b73d2f741cdb3ab8f598f5bda33b43fcfff05aebb159f2ba046eabc9f50938e"
+  },
+  "taskChat.interrupted.runtimeMissing": {
+    "en": "Runtime missing",
+    "zh-CN": "缺少运行时",
+    "reviewedEnglishHash": "7649ce735499884d48ec4eca9f52c8a1821dd353744090fab6ec617fa3a65a71"
+  },
+  "taskChat.interrupted.runtimeMissingDetail": {
+    "en": "The selected provider runtime is missing a required package. Reinstall or rebuild Paperclip with its bundled provider dependencies, restart the server, then test the agent's runtime before retrying.",
+    "zh-CN": "所选服务方运行时缺少必需的依赖包。请重新安装或构建包含内置依赖的 Paperclip，重启服务端并测试智能体运行时后再重试。",
+    "reviewedEnglishHash": "6421fd8595d3e8a253708dc5a59b1445c63dab73c6aa7e5e0a6f9b14767af3ee"
+  },
+  "taskChat.interrupted.stoppedDetail": {
+    "en": "The runner stopped{{boundary}} ({{code}}).",
+    "zh-CN": "运行器已停止{{boundary}}（{{code}}）。",
+    "reviewedEnglishHash": "f19b71e75479ab5f3fa10d3b3faf7dd35d0f0d76d521192049560009c5d1a953"
+  },
+  "taskChat.interrupted.timedOutDetail": {
+    "en": "The runner timed out{{boundary}} ({{code}}).",
+    "zh-CN": "运行器已超时{{boundary}}（{{code}}）。",
+    "reviewedEnglishHash": "9aec5a583103defe5a98252b6ca8bc212f392d211798f1e476ec7ffff8ac4671"
+  },
+  "taskChat.interrupted.usageLimitDetail": {
+    "en": "The model provider has reached its current usage limit. Try again after the limit resets.",
+    "zh-CN": "模型服务商已达到当前用量限制。请在额度重置后再试。",
+    "reviewedEnglishHash": "14acaa2d8b2b5ff5927daf4ebcde8897da959334326ee86f42c6b0d7e3894759"
+  },
+  "taskChat.interrupted.usageLimitReached": {
+    "en": "Usage limit reached",
+    "zh-CN": "已达用量限制",
+    "reviewedEnglishHash": "0e17661d8ed1301336701670113f303b05a4883aec6faeee1c84ede804fd8bdd"
   },
   "taskChat.live.calledTools_one": {
     "en": "called {{count}} tool",
@@ -184,10 +309,25 @@
     "zh-CN": "运行了 {{count}} 条命令",
     "reviewedEnglishHash": "b2900611f4e71543021c2526bf4e1f4df9180a5b585aaeebbe8b545c06960dc4"
   },
+  "taskChat.noMessagesYet": {
+    "en": "No messages yet.",
+    "zh-CN": "暂无消息。",
+    "reviewedEnglishHash": "f0d5968f615ed7ab11fdf8f17586cfaeb2845eee5757459e804b4e9d663a3588"
+  },
   "taskChat.open": {
     "en": "Open",
     "zh-CN": "打开",
     "reviewedEnglishHash": "ed077f3d8125d60dca1979c7133601bd187d47c73ed9975028f677e49e709942"
+  },
+  "taskChat.openAttachmentAria": {
+    "en": "Open {{name}}",
+    "zh-CN": "打开 {{name}}",
+    "reviewedEnglishHash": "e0f8c156c3df563d698eb036605a0db336b9a9778cfec39a8a77130c5cf0c60a"
+  },
+  "taskChat.openMoreScreenshotsAria": {
+    "en": "Open {{count}} more screenshots",
+    "zh-CN": "再打开 {{count}} 张截图",
+    "reviewedEnglishHash": "a3c314b3cfeb65cb52a9b0fba4459d6002aa52e454e77c167b691533a6741552"
   },
   "taskChat.plan.inSidebar": {
     "en": " in the sidebar",
@@ -229,6 +369,26 @@
     "zh-CN": "必填",
     "reviewedEnglishHash": "4850b174b713d88cfc63de107830d5388929020e78abc91fc19bba7a6821625f"
   },
+  "taskChat.readFilesCount_one": {
+    "en": "Read {{count}} file",
+    "zh-CN": "已读取 {{count}} 个文件",
+    "reviewedEnglishHash": "25b779edd7dab39dfa3c3fbe7e56f4f0fa655c1e1db4d8b6ff3d7e32e3ca4e11"
+  },
+  "taskChat.readFilesCount_other": {
+    "en": "Read {{count}} files",
+    "zh-CN": "已读取 {{count}} 个文件",
+    "reviewedEnglishHash": "979752f5e6406d5e211c1b992247aa8aecc3858e519fe3220372106542bb45a2"
+  },
+  "taskChat.sessionStart.detail": {
+    "en": "Earlier messages and files are still available.",
+    "zh-CN": "先前的消息和文件仍可查看。",
+    "reviewedEnglishHash": "094c37d4a37e10750f7bb3f4c73a889d384c544b08a39c7cc869ae4b2057f8b1"
+  },
+  "taskChat.sessionStart.label": {
+    "en": "New session",
+    "zh-CN": "新会话",
+    "reviewedEnglishHash": "cffdba22adf299e8fc6f937ef63ca4352ca9db3022d4634004c0a9bd10aa0dfe"
+  },
   "taskChat.showFewer": {
     "en": "Show fewer",
     "zh-CN": "收起部分内容",
@@ -238,6 +398,26 @@
     "en": "Stopped",
     "zh-CN": "已停止",
     "reviewedEnglishHash": "1a4f630ac1b69fd00728fa8a672ded71d0eae8516cb23e78f94529113399b79b"
+  },
+  "taskChat.swarmDidNotFinish": {
+    "en": "Swarm did not finish",
+    "zh-CN": "Swarm 未能完成",
+    "reviewedEnglishHash": "24118551669e14ef2025299a402427a1f715a499e67da88a0facf2eb39e5ac96"
+  },
+  "taskChat.swarmDidNotStart": {
+    "en": "Swarm did not start",
+    "zh-CN": "Swarm 未能启动",
+    "reviewedEnglishHash": "3edbeeb827d34369dd90e4661798b6e237a1f7377405543e115b50b0bd2cff43"
+  },
+  "taskChat.swarmDidNotStartDetail": {
+    "en": "Swarm did not start, and nothing was changed. Send /swarm again to try once more.",
+    "zh-CN": "Swarm 未能启动，且未做任何更改。请再次发送 /swarm 重试。",
+    "reviewedEnglishHash": "d2258ed9e8080270c48e3d7c53a963f2ddc7d7657b8f12f7f2c6116ceda88c27"
+  },
+  "taskChat.thought": {
+    "en": "Thought",
+    "zh-CN": "已思考",
+    "reviewedEnglishHash": "deb04a0d6701070379c7abf5d14e0f0c7afbc74a5be15398fc336168268d3c04"
   },
   "taskChat.tool.changed": {
     "en": "Changed",

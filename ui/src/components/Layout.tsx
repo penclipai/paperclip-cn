@@ -325,8 +325,8 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
     });
     if (bounce) {
       pushToast?.({
-        title: `${matchedCompany.name} is archived`,
-        body: `Switched to ${bounce.name}.`,
+        title: t("layout.companyArchivedTitle", { name: matchedCompany.name, defaultValue: "{{name}} is archived" }),
+        body: t("layout.companyArchivedBody", { name: bounce.name, defaultValue: "Switched to {{name}}." }),
         tone: "info",
         dedupeKey: `archived-company-bounce:${matchedCompany.id}`,
       });

@@ -1,0 +1,377 @@
+{
+  "skillSources.alreadyImported": {
+    "en": "Already imported",
+    "zh-CN": "已导入",
+    "reviewedEnglishHash": "e47fafe0a1c6f8d6b5c641c5d9cc7ca61e66a1c50bbc3b619c8ff5912444bfa8"
+  },
+  "skillSources.autoUpdatesPaused": {
+    "en": "Automatic updates paused",
+    "zh-CN": "自动更新已暂停",
+    "reviewedEnglishHash": "5e708eebe7117fbb8cb96ce9dc4f163f6f232528eadeaa6093796e638ffb96ad"
+  },
+  "skillSources.automaticUpdates": {
+    "en": "Automatic updates",
+    "zh-CN": "自动更新",
+    "reviewedEnglishHash": "147b1b68c744476973be8ceb0d0e819752458929939743fee1b9085af464d92f"
+  },
+  "skillSources.breadcrumb": {
+    "en": "Sources",
+    "zh-CN": "来源",
+    "reviewedEnglishHash": "caf85b0888d78f1f83771a07b25c3d30fa1210242f2fae6e5ae5d9a686602800"
+  },
+  "skillSources.cancelScan": {
+    "en": "Cancel scan",
+    "zh-CN": "取消扫描",
+    "reviewedEnglishHash": "298360e0b166f75d0587811ed8a49fcc9fdb6d3ba896c506d2816a8450337ef9"
+  },
+  "skillSources.chooseConnection": {
+    "en": "Choose connection",
+    "zh-CN": "选择连接",
+    "reviewedEnglishHash": "e9bd8aedc06c97c84266164acb8b7123347b197d14bbe887dda0b758c0e81c1a"
+  },
+  "skillSources.chooseNewBranch": {
+    "en": "Choose a new branch",
+    "zh-CN": "选择新分支",
+    "reviewedEnglishHash": "b5eff3d07930784fadb2e943f6547c03a1c819c44b09666b5be39568e8cd6c22"
+  },
+  "skillSources.connectGithubAccount": {
+    "en": "Connect a GitHub account",
+    "zh-CN": "连接 GitHub 账户",
+    "reviewedEnglishHash": "536e9ab0acd3b3e3a77e3615a836e3269056c15958aa42306bc9fa05dfb31c89"
+  },
+  "skillSources.defaultBranch": {
+    "en": "Default branch",
+    "zh-CN": "默认分支",
+    "reviewedEnglishHash": "411aa61aea55ac6586ddf27a30aa7594dd3853a5a35b228083d757a612a5786a"
+  },
+  "skillSources.deleteSkillsDesc": {
+    "en": "Remove them from the library. Detach skills used by agents first.",
+    "zh-CN": "从技能库中移除。请先解除智能体对这些技能的关联。",
+    "reviewedEnglishHash": "e58737b9284884f531f50ba768e67f60a440ad50f9a43f4c5a521ca3f2443994"
+  },
+  "skillSources.deleteSkillsTitle": {
+    "en": "Delete skills",
+    "zh-CN": "删除技能",
+    "reviewedEnglishHash": "0b9ed5c5bb8506505a9b7039c9bf36334e952ca4432bc501c53a0450b2fc604d"
+  },
+  "skillSources.disconnectSource": {
+    "en": "Disconnect source",
+    "zh-CN": "断开来源",
+    "reviewedEnglishHash": "6c2f0d9f0d652de352e19e4d012d8ce8a47f9c21bde2e8aca27606fc16ce1cce"
+  },
+  "skillSources.disconnectTitle": {
+    "en": "Disconnect {{name}}?",
+    "zh-CN": "断开 {{name}}？",
+    "reviewedEnglishHash": "c1a7d9b038d496a4eb15c916a834946d3117b0c42c7be83cc44ebe702db79ec2"
+  },
+  "skillSources.disconnected": {
+    "en": "Disconnected",
+    "zh-CN": "已断开",
+    "reviewedEnglishHash": "04dfac3671b494ad53fcd152f7a14511bfb35747278aad8ce254a0d6e4ba4718"
+  },
+  "skillSources.empty": {
+    "en": "this company",
+    "zh-CN": "此组织",
+    "reviewedEnglishHash": "2a63de74eed7f851e33208da158dd6d1e53814133bde6f8a266b446f4031e120"
+  },
+  "skillSources.findSkills": {
+    "en": "Find skills",
+    "zh-CN": "查找技能",
+    "reviewedEnglishHash": "c19511954968bbde7d30e6915e486f90aec753c289665990c52a3385b7dd137a"
+  },
+  "skillSources.importProjectSkills": {
+    "en": "Import project skills",
+    "zh-CN": "导入项目技能",
+    "reviewedEnglishHash": "474cdb4b4d03295a66960ee7ac6310acd00a744fcc660635e6e837405fbdb980"
+  },
+  "skillSources.importRemainingProjectSkills": {
+    "en": "Import remaining project skills",
+    "zh-CN": "导入其余项目技能",
+    "reviewedEnglishHash": "94924954cc3d76ab96672bd3906d7e25a7afea56446ff9a3c64877de60e0e140"
+  },
+  "skillSources.importRepository": {
+    "en": "Import repository",
+    "zh-CN": "导入仓库",
+    "reviewedEnglishHash": "1c0931f99e69cef6052e7d89d19ed9eb660f58ff996358f8c680708f41e1588c"
+  },
+  "skillSources.importSkills_one": {
+    "en": "Import {{count}} skill",
+    "zh-CN": "导入 {{count}} 个技能",
+    "reviewedEnglishHash": "515a7d93c05b7a58d03e8f8d4696a86ed7e98d6e89ba145eddb3ccb6e7a6ffc0"
+  },
+  "skillSources.importSkills_other": {
+    "en": "Import {{count}} skills",
+    "zh-CN": "导入 {{count}} 个技能",
+    "reviewedEnglishHash": "9fccbc87855b79cb7bb13277942f4ce216f2dd8e8861190444981b403b5e083c"
+  },
+  "skillSources.importedSkillsAria": {
+    "en": "Imported skills",
+    "zh-CN": "已导入的技能",
+    "reviewedEnglishHash": "ad178228f89b98f19e7a810e2c01cb5c3b4fa4ec555dc24f5b0fef3ce2a00632"
+  },
+  "skillSources.importingSkills": {
+    "en": "Importing skills…",
+    "zh-CN": "正在导入技能…",
+    "reviewedEnglishHash": "ada75279ac14001fda6944d498674b8911d88ccec56c5f6443d43d4980b6a47b"
+  },
+  "skillSources.installedFromSourceAria": {
+    "en": "Installed skills from {{name}}",
+    "zh-CN": "从 {{name}} 安装的技能",
+    "reviewedEnglishHash": "766de174abd475ba17ebf9e32e93db6417d1dbebc2cc6f6c60825d37b3be0895"
+  },
+  "skillSources.keepCopiesDesc": {
+    "en": "Move them to My Skills. Assigned agents keep using them.",
+    "zh-CN": "将其移动到“我的技能”。已分配的智能体将继续使用这些技能。",
+    "reviewedEnglishHash": "b3f448c43048a21332b6dca82227954cd30c8a116c38ad18787eba67055c84c7"
+  },
+  "skillSources.keepCopiesProjectsDesc": {
+    "en": "Move them to My Skills, keeping project access restrictions. Assigned agents keep using them.",
+    "zh-CN": "将其移动到“我的技能”，并保留项目访问限制。已分配的智能体将继续使用这些技能。",
+    "reviewedEnglishHash": "facd0c0022307e03ce6787192de85fc2cf074ab53ccd4d8fdb1bf2c198fdb0e4"
+  },
+  "skillSources.keepCopiesTitle": {
+    "en": "Keep editable copies",
+    "zh-CN": "保留可编辑副本",
+    "reviewedEnglishHash": "aa5333134f9d531c2e1230aee4daffbda9fbab3d8454b8781e89a3e58d3fb55c"
+  },
+  "skillSources.lastAttemptAgo": {
+    "en": "Last attempt {{time}}",
+    "zh-CN": "上次尝试 {{time}}",
+    "reviewedEnglishHash": "29de6a652cea7914df80126aab2234c3145c91e8d1df13ec7e15958e315bccaa"
+  },
+  "skillSources.loadReposFailed": {
+    "en": "Could not load GitHub repositories.",
+    "zh-CN": "无法加载 GitHub 仓库列表。",
+    "reviewedEnglishHash": "621211c123185f683c97cd706b497b76016681de94be63ced76d631e422f8ec5"
+  },
+  "skillSources.loading": {
+    "en": "Loading sources…",
+    "zh-CN": "正在加载来源…",
+    "reviewedEnglishHash": "2e594bee1d1f10737020ea719aea9536b4d3238ebe2eb7bd5529e02205068407"
+  },
+  "skillSources.manageGithubConnection": {
+    "en": "Manage GitHub connection",
+    "zh-CN": "管理 GitHub 连接",
+    "reviewedEnglishHash": "2fcc6eb619373179a642bf2a75bcecbc20ad27cbd300a19bdd351cedc73ec809"
+  },
+  "skillSources.moreActionsAria": {
+    "en": "More source actions",
+    "zh-CN": "更多来源操作",
+    "reviewedEnglishHash": "f3b507d169c817699bc0b612eb68262fd812a0a2f9e9339bde9e40ca94512a0c"
+  },
+  "skillSources.moreForSourceAria": {
+    "en": "More actions for {{name}}",
+    "zh-CN": "{{name}} 的更多操作",
+    "reviewedEnglishHash": "db7ed5728eb0fd1b546762eff54577d054a4409b5b1394f07dbf8d667b7c1bd6"
+  },
+  "skillSources.newSkill": {
+    "en": "New skill",
+    "zh-CN": "新建技能",
+    "reviewedEnglishHash": "9bf06a86c934b7de42a4b6afbda51b543723dd4d4b8dc747ee32cacd58281195"
+  },
+  "skillSources.newSkillsAutoImported": {
+    "en": "New skills will be imported automatically.",
+    "zh-CN": "新技能将自动导入。",
+    "reviewedEnglishHash": "7c65fbac48e99a4c82231901c074e6fede0b68de91bae8751529d849a90035f0"
+  },
+  "skillSources.newSkillsAvailable_one": {
+    "en": "{{count}} new skill available",
+    "zh-CN": "有 {{count}} 个新技能可用",
+    "reviewedEnglishHash": "69e40c30e48fb4a76507004af58dc131e533784137fb95547100e35dbb6ce4d9"
+  },
+  "skillSources.newSkillsAvailable_other": {
+    "en": "{{count}} new skills available",
+    "zh-CN": "有 {{count}} 个新技能可用",
+    "reviewedEnglishHash": "cd37416c1e61c0db51a65902acc288f90fb63493215ab4543cf6472012c18e9b"
+  },
+  "skillSources.noSkillsFoundYet": {
+    "en": "No skills found yet.",
+    "zh-CN": "暂未发现技能。",
+    "reviewedEnglishHash": "4340dff6e9df1a52998ff45047c0fbf94b6a345adfb3e024229f9e31993e3dd0"
+  },
+  "skillSources.projectAccess": {
+    "en": "Project access",
+    "zh-CN": "项目权限",
+    "reviewedEnglishHash": "379e0962ac4e007f79016c8129e08e690b4dc8888ffa7b91c08511103158cc85"
+  },
+  "skillSources.projectRepo.aria": {
+    "en": "Skills from {{name}}",
+    "zh-CN": "来自 {{name}} 的技能",
+    "reviewedEnglishHash": "48c981f675f9dc14534a270c6a439e2f68208aca8f966d4f4e98a853f22cfe5e"
+  },
+  "skillSources.projectRepo.checkingRepo": {
+    "en": "Checking repository for skills… This can take a few minutes for large repositories.",
+    "zh-CN": "正在检查仓库中的技能… 对于大型仓库，这可能需要几分钟。",
+    "reviewedEnglishHash": "aa7487e64de0e09df0a9a5360e6d8bec8727a00a54927a93fecc028e6a91d576"
+  },
+  "skillSources.projectRepo.importQueued": {
+    "en": "Import queued. Skills will appear here when ready.",
+    "zh-CN": "导入已排队，就绪后技能将显示在此处。",
+    "reviewedEnglishHash": "82e6c8db794ca799c5f74e43e9895005b5525d07db9f8d92ae2d993f1b997b42"
+  },
+  "skillSources.projectRepo.importRemaining": {
+    "en": "Import remaining skills",
+    "zh-CN": "导入其余技能",
+    "reviewedEnglishHash": "72600ba580de0333bd4ead9c0d2550875233508acf5084e919e95d0cf231d35f"
+  },
+  "skillSources.projectRepo.importSkills": {
+    "en": "Import skills",
+    "zh-CN": "导入技能",
+    "reviewedEnglishHash": "8206b47584beb633ca16cccc6710ae6b1c34763d9ab2da90345fc7314d151b27"
+  },
+  "skillSources.projectRepo.importing": {
+    "en": "Importing…",
+    "zh-CN": "正在导入…",
+    "reviewedEnglishHash": "c01c4324f1fa14fc76957936626e11a5150c24e748dbd08cc46848dfcbe37d00"
+  },
+  "skillSources.projectRepo.retryImport": {
+    "en": "Retry import",
+    "zh-CN": "重试导入",
+    "reviewedEnglishHash": "0bc65fbb23dc7c54f79155aeb49ef02268b02b5a5fb050b3c938df137a95178c"
+  },
+  "skillSources.projectRepo.startingImport": {
+    "en": "Starting import…",
+    "zh-CN": "正在开始导入…",
+    "reviewedEnglishHash": "d4840ced34ff37d48ffab273c0ec8e36377f8a480d41c10eb3e27cdd24fe0199"
+  },
+  "skillSources.projectReposAria": {
+    "en": "Project repositories",
+    "zh-CN": "项目仓库",
+    "reviewedEnglishHash": "e3b18a73dd75f288e55631a069a5fa728e64b999306199ac15ad32b4d75e28a9"
+  },
+  "skillSources.refreshing": {
+    "en": "Refreshing…",
+    "zh-CN": "正在刷新…",
+    "reviewedEnglishHash": "1c0def7be0607b966b89e4974da38090472d8ada625f5b4c89f25b09d39683bd"
+  },
+  "skillSources.reloadSource": {
+    "en": "Reload source",
+    "zh-CN": "重新加载来源",
+    "reviewedEnglishHash": "3ee48400e4fa2c4c2490f281a10872f045d5b905fe3d58c8671552a1090fc42b"
+  },
+  "skillSources.removeDescriptionCount_one": {
+    "en": "Remove this repository from Sources. What should happen to its {{count}} imported skill?",
+    "zh-CN": "从来源中移除此仓库。其已导入的 {{count}} 个技能应如何处理？",
+    "reviewedEnglishHash": "bc3c14a9e58a37dd51596ef807d460ff3793886933764c6c8b56f1b9428ff630"
+  },
+  "skillSources.removeDescriptionCount_other": {
+    "en": "Remove this repository from Sources. What should happen to its {{count}} imported skills?",
+    "zh-CN": "从来源中移除此仓库。其已导入的 {{count}} 个技能应如何处理？",
+    "reviewedEnglishHash": "ed66fe06599eeaa97fae31b5fff280d6b926f0834ab4594fc0ee7a131dd26ece"
+  },
+  "skillSources.removeDescriptionEmpty": {
+    "en": "Remove this repository from Sources.",
+    "zh-CN": "从来源中移除此仓库。",
+    "reviewedEnglishHash": "1713f1bfe43d7ef42f1acd5cec6ee681e17e5158843ecbf9961d405c25c4f090"
+  },
+  "skillSources.removeSource": {
+    "en": "Remove source",
+    "zh-CN": "移除来源",
+    "reviewedEnglishHash": "f5529618037049d162016e0903088f1f0c2f63884e43e1b11654755727e33868"
+  },
+  "skillSources.removeTitle": {
+    "en": "Remove {{name}}?",
+    "zh-CN": "移除 {{name}}？",
+    "reviewedEnglishHash": "b2d2d74574bb6ac11335cf66442109e4dab6429c0383ee75d668003eee5b1510"
+  },
+  "skillSources.removedCopyKept": {
+    "en": "Removed from source · installed copy kept",
+    "zh-CN": "已从来源移除 · 保留已安装副本",
+    "reviewedEnglishHash": "4d1457caa604aaeb08f28e101e2f87e1beaf8934dd576684a03728a0789b38d1"
+  },
+  "skillSources.removedCopyRetained": {
+    "en": "Removed from source · installed copy retained",
+    "zh-CN": "已从来源移除 · 保留已安装副本",
+    "reviewedEnglishHash": "5421ec67c7eb9e4e71db07ea3b823c01cfc400230620c2b1fde78f75e496716a"
+  },
+  "skillSources.removing": {
+    "en": "Removing…",
+    "zh-CN": "正在移除…",
+    "reviewedEnglishHash": "d4b09919ec929f15c19802296a06e97a0d0862e29e23c453d638fc0c3b87c641"
+  },
+  "skillSources.repoCount_one": {
+    "en": "{{count}} repository",
+    "zh-CN": "{{count}} 个仓库",
+    "reviewedEnglishHash": "2ac719a7e503ce04cd2eb94f3f74e656d626f7d99ec82ee0e107c43fc806054e"
+  },
+  "skillSources.repoCount_other": {
+    "en": "{{count}} repositories",
+    "zh-CN": "{{count}} 个仓库",
+    "reviewedEnglishHash": "2c4d884a22588837dc9502d03b1d0a99c0e6ed9bcdedb2822c434d84805a0497"
+  },
+  "skillSources.retryProjectImport": {
+    "en": "Retry project import",
+    "zh-CN": "重试项目导入",
+    "reviewedEnglishHash": "128146aaa9b5fe4b156a9530adb3cc41f5b0277a41df7b4a10b3a687c6fb066b"
+  },
+  "skillSources.reviewSource": {
+    "en": "Review source",
+    "zh-CN": "审阅来源",
+    "reviewedEnglishHash": "41d342bd8d1457916aac2242d17a04227a1a140370404cb4b135c169361a7a42"
+  },
+  "skillSources.saveSelection": {
+    "en": "Save selection",
+    "zh-CN": "保存选择",
+    "reviewedEnglishHash": "dd183ea631fd603ef155ccefa8c668eb159619acf9fa42f1054e7bbd2f42fe52"
+  },
+  "skillSources.scanning": {
+    "en": "Scanning…",
+    "zh-CN": "正在扫描…",
+    "reviewedEnglishHash": "38d96da6e8b253d22c8974b69006a281bcacbdfa26420d89b9534dc1dfb5ac17"
+  },
+  "skillSources.selectSkills": {
+    "en": "Select skills",
+    "zh-CN": "选择技能",
+    "reviewedEnglishHash": "4ead1ce6abe57f80a2328938280f35b7ba93439011d8879fa0ccb929a2c2673a"
+  },
+  "skillSources.someReposFailed": {
+    "en": "Some GitHub connections could not load repositories.",
+    "zh-CN": "部分 GitHub 连接无法加载仓库。",
+    "reviewedEnglishHash": "374edb80efcf68fb13d57af6725c026b90dea423d5b6eeaa0a2522ec0b56c7c1"
+  },
+  "skillSources.subtitle": {
+    "en": "Skills from your repositories stay up to date automatically.",
+    "zh-CN": "来自你的仓库的技能会自动保持最新。",
+    "reviewedEnglishHash": "e96f0b29bc3463e8bb456c5a9f25008494e414d729e28d3ae6c051de239b2b05"
+  },
+  "skillSources.thisCompany": {
+    "en": "this company",
+    "zh-CN": "此组织",
+    "reviewedEnglishHash": "2a63de74eed7f851e33208da158dd6d1e53814133bde6f8a266b446f4031e120"
+  },
+  "skillSources.title": {
+    "en": "Skill sources",
+    "zh-CN": "技能来源",
+    "reviewedEnglishHash": "77df4166472a01304c9871cab77d475566559d9ff675e15a4750c66f84721b38"
+  },
+  "skillSources.trackingStopped": {
+    "en": "Repository tracking stopped · installed skills kept",
+    "zh-CN": "已停止跟踪仓库 · 保留已安装技能",
+    "reviewedEnglishHash": "d00c0c40f78ba8baf29f2592655b498f34ab304af6acfe8404d0bfc4d81f84b9"
+  },
+  "skillSources.uncheckedStayInstalled": {
+    "en": "Unchecked skills stay installed.",
+    "zh-CN": "未勾选的技能将继续保留为已安装状态。",
+    "reviewedEnglishHash": "b12529c507097496fc367071dd99e03893a96588794c1df6b772fec042328919"
+  },
+  "skillSources.updateProjectRepo": {
+    "en": "Update {{name}} repository",
+    "zh-CN": "更新 {{name}} 仓库",
+    "reviewedEnglishHash": "14787ec2d3b3baf8d2dafd50664bb8eff5049cb04c3e25e7c50bd753f452274b"
+  },
+  "skillSources.updatedAgo": {
+    "en": "Updated {{time}}",
+    "zh-CN": "更新于 {{time}}",
+    "reviewedEnglishHash": "6379f4b4efb9b0a5342283ad3b0d99edf9df796e29d5791b24e14999ac127e78"
+  },
+  "skillSources.viewFiles_one": {
+    "en": "View {{count}} file",
+    "zh-CN": "查看 {{count}} 个文件",
+    "reviewedEnglishHash": "4eeaa52576fa35cd91137f0d3ccd99831f97a21f9a618edb71ba915298f50a3b"
+  },
+  "skillSources.viewFiles_other": {
+    "en": "View {{count}} files",
+    "zh-CN": "查看 {{count}} 个文件",
+    "reviewedEnglishHash": "0eedd63d3f769f08d6000e087912ceb58a3b9f73641a3e15c68e99aa761105a2"
+  }
+}

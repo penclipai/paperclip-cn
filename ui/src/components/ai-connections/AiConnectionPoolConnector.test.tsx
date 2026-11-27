@@ -17,7 +17,10 @@ vi.mock("@/context/BreadcrumbContext", () => ({ useBreadcrumbs: () => ({ setBrea
 vi.mock("@/context/ToastContext", () => ({ useToast: () => ({ pushToast: vi.fn() }) }));
 vi.mock("@/lib/router", () => ({ Link: (props: ComponentProps<"a">) => <a {...props} />, useNavigate: () => vi.fn() }));
 vi.mock("@/pages/apps/AppLogo", () => ({ AppLogo: () => null }));
-vi.mock("@/pages/apps/AppDetail", () => ({ AppDetailHeader: ({ appName }: { appName: string }) => <div data-testid="pool-name">{appName}</div> }));
+vi.mock("@/pages/apps/AppDetail", () => ({
+  AppDetailHeader: ({ appName }: { appName: string }) => <div data-testid="pool-name">{appName}</div>,
+  ConnectionBackLink: () => null,
+}));
 vi.mock("@/features/connections/ConnectionSetupHeader", () => ({ StepHeader: ({ title, subtitle, labels }: { title: string; subtitle: string; labels: string[] }) => <header><h1>{title}</h1><p>{subtitle}</p><span>{labels.join("/")}</span></header> }));
 vi.mock("./AiConnectionUsagePanel", () => ({ AiConnectionUsagePanel: () => null }));
 
@@ -71,7 +74,7 @@ it("localizes wizard steps and actions in place while retaining raw account name
   expect(container.textContent).toContain("返回");
   expect(container.textContent).toContain("Raw Account Ω");
   expect(container.querySelector('[aria-label="将 Raw Account Ω 上移"]')).not.toBeNull();
-  expect(api.setBreadcrumbs).toHaveBeenLastCalledWith([{ label: "连接器", href: "/apps" }, { label: "添加连接池" }]);
+  expect(api.setBreadcrumbs).toHaveBeenLastCalledWith([{ label: "插件", href: "/apps" }, { label: "添加连接池" }]);
   const back = Array.from(container.querySelectorAll("button")).find(button => button.textContent === "返回")!;
   await act(async () => back.click());
   expect(container.textContent).toContain("取消");

@@ -9,6 +9,11 @@
     "zh-CN": "全部词元",
     "reviewedEnglishHash": "da0e808b9adae1273afeaab5bfcfed530ad84fd0a3388573c367c11306738522"
   },
+  "userProfile.billedThrough": {
+    "en": "Billed through {{provider}}",
+    "zh-CN": "通过 {{provider}} 计费",
+    "reviewedEnglishHash": "34c58ab6bab93787246d46195e0da2cf5b338b734b9ba0910bacd184ffdeae4d"
+  },
   "userProfile.chartPointTitle": {
     "en": "{{date}}: {{tokens}} tokens, {{completed}} completed",
     "zh-CN": "{{date}}：{{tokens}} 个词元，完成 {{completed}} 个",
@@ -44,10 +49,30 @@
     "zh-CN": "已创建 {{count}} 个",
     "reviewedEnglishHash": "5b3d5086c642286315f0a93a0c57605301135ed8f89238d7bf56428e27099ae2"
   },
+  "userProfile.joinedDate": {
+    "en": "joined {{date}}",
+    "zh-CN": "{{date}} 加入",
+    "reviewedEnglishHash": "a9a0893fc8abeeea069291a33719c7a6a2f92df22692aa981a5d3321fd8b2eb0"
+  },
+  "userProfile.noIssueLinkedTokens": {
+    "en": "No issue-linked token usage yet.",
+    "zh-CN": "暂无关联任务的词元用量。",
+    "reviewedEnglishHash": "e106075a8a100042c0a6f1cd739943d26ac0875610b1a53f6acb3b0a964b2fc3"
+  },
+  "userProfile.noProviderUsage": {
+    "en": "No provider usage attributed yet.",
+    "zh-CN": "暂无归因的提供方用量。",
+    "reviewedEnglishHash": "69048d87de898b243a2221a637aad744c9314ec5e70d39397812ad457dddf1a1"
+  },
   "userProfile.openAssigned": {
     "en": "Open assigned",
     "zh-CN": "打开的已分配项",
     "reviewedEnglishHash": "224314b3dfe198ea2a24c5900a9edd1e121b5c0d05f4ced9522f8d3ea98e8341"
+  },
+  "userProfile.openTasks": {
+    "en": "Open",
+    "zh-CN": "未关闭",
+    "reviewedEnglishHash": "ed077f3d8125d60dca1979c7133601bd187d47c73ed9975028f677e49e709942"
   },
   "userProfile.sevenDayActions": {
     "en": "7-day actions",
@@ -59,6 +84,11 @@
     "zh-CN": "已花费 {{amount}}",
     "reviewedEnglishHash": "4c23cff8c6ef4a04a314baad154a96a7e9cae2fa46c80b2b9733d79497597529"
   },
+  "userProfile.taskLinkedUsage": {
+    "en": "Task-linked usage",
+    "zh-CN": "任务关联用量",
+    "reviewedEnglishHash": "1242da6249e504a29f3f15e6576eabde108abf09aaca8bdc542c3e17906be597"
+  },
   "userProfile.tokensPerDay": {
     "en": "tokens / day",
     "zh-CN": "每日词元",
@@ -68,5 +98,20 @@
     "en": "Touched",
     "zh-CN": "已触达",
     "reviewedEnglishHash": "7f672050a6cbefc3ff5759cffdf3fe659d64f0d0fea621772db52b6991d065bc"
+  },
+  "userProfile.window.all": {
+    "en": "ALL TIME",
+    "zh-CN": "全部时间",
+    "reviewedEnglishHash": "848198c44f0e8d5fe24b5ff6003cb32f9cf3e8b185f95f4311e38f3fd4d0f1a9"
+  },
+  "userProfile.window.last30": {
+    "en": "LAST 30 DAYS",
+    "zh-CN": "过去 30 天",
+    "reviewedEnglishHash": "96800a8ab945cdca70de65491711e12c274c2400095b3f9d1c19a9bf56489d7e"
+  },
+  "userProfile.window.last7": {
+    "en": "LAST 7 DAYS",
+    "zh-CN": "过去 7 天",
+    "reviewedEnglishHash": "5eb7caf5dbd357b5cc7f2b5135fac4a6e4379ca956e5d324c31cdaed5ca27306"
   }
 }

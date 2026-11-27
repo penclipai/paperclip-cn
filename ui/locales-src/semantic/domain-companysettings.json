@@ -4,6 +4,11 @@
     "zh-CN": "添加环境",
     "reviewedEnglishHash": "dcbe4c44d66b3f6e6b6b7347e1f63a8cfa80257e6ebf9246208714389d0bdf8d"
   },
+  "companySettings.appearance.logoHint": {
+    "en": "Upload a PNG, JPEG, WEBP, GIF, or SVG logo image.",
+    "zh-CN": "上传 PNG、JPEG、WEBP、GIF 或 SVG 格式的徽标图片。",
+    "reviewedEnglishHash": "fd8a49c56c55e970d4a95dd8295b0411991423863d383f2d5ede6ba960e45ce9"
+  },
   "companySettings.archiveConfirm": {
     "en": "Archive company \"{{name}}\"? It will be hidden from the sidebar.",
     "zh-CN": "确认归档公司“{{name}}”吗？归档后它将从侧边栏中隐藏。",
@@ -624,6 +629,16 @@
     "zh-CN": "保存环境失败",
     "reviewedEnglishHash": "40eb0c9afcc9341f19c6ea42312a065d979aee0fb012ab617e82a5c16a660069"
   },
+  "companySettings.general.descriptionHint": {
+    "en": "Optional description shown in the organization profile.",
+    "zh-CN": "显示在组织资料中的可选描述。",
+    "reviewedEnglishHash": "1053d046fa5068431a27a79373a99000fe959f76dc6f4abdeb143d630ddd6f21"
+  },
+  "companySettings.general.nameHint": {
+    "en": "The display name for your organization.",
+    "zh-CN": "组织的显示名称。",
+    "reviewedEnglishHash": "51280e67f5c36c5104907288046702b382f185ac2a59ea8432159907e7ccb576"
+  },
   "companySettings.governance.cap": {
     "en": "Cap",
     "zh-CN": "上限",
@@ -688,6 +703,11 @@
     "en": "Company default",
     "zh-CN": "公司默认",
     "reviewedEnglishHash": "a906ce99232e33c3f9c2837ca80125922ac212f9ee31d1401da8ca79cbc3ba2b"
+  },
+  "companySettings.hiring.approvalHint": {
+    "en": "New agent hires stay pending until approved by board.",
+    "zh-CN": "新招募的智能体将保持待审批状态，直到获得董事会批准。",
+    "reviewedEnglishHash": "67728aa69055ee8393fc142b092a47d340e2d52f73b7f0fe138a3692ea9f649c"
   },
   "companySettings.host": {
     "en": "Host",

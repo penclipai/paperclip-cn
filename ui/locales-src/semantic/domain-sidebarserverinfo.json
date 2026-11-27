@@ -74,6 +74,11 @@
     "zh-CN": "服务器",
     "reviewedEnglishHash": "aef7de28d52977f1b5cd0fecfdc151717610adf41e0aa33b4d9f7522a43337ef"
   },
+  "sidebarServerInfo.sourceBuild": {
+    "en": "Source build",
+    "zh-CN": "源码构建",
+    "reviewedEnglishHash": "2163563fe3b31a039016ae8b0da1f3e3021c1fc3615cd3d84e8ee0cb3c607f84"
+  },
   "sidebarServerInfo.unavailable": {
     "en": "Unavailable",
     "zh-CN": "不可用",

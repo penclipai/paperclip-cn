@@ -670,13 +670,13 @@ export function ConnectionSetupFlow(props: ConnectionSetupFlowProps = {}) {
   const existingView = useQueryView(existing);
   const provider = source || existing.data?.config?.sourceTemplateKey;
   const method = searchParams.get("method") || existing.data?.config?.connectionMethodKey;
-  if (lookup && (existingView.kind === "loading" || existingView.kind === "reconnecting")) return <p className="p-6 text-sm text-muted-foreground">Loading connection…</p>;
-  if (lookup && existingView.kind === "error") return <div role="alert" className="space-y-3 p-6"><p>Could not load this connection. Your saved access and credentials have not changed.</p><Button variant="outline" onClick={() => void existing.refetch()}>{translateInstant("Try again", { defaultValue: "Try again" })}</Button></div>;
+  if (lookup && (existingView.kind === "loading" || existingView.kind === "reconnecting")) return <p className="p-6 text-sm text-muted-foreground">{translateInstant("connectionUi.setup.loadingConnection", { defaultValue: "Loading connection…" })}</p>;
+  if (lookup && existingView.kind === "error") return <div role="alert" className="space-y-3 p-6"><p>{translateInstant("connectionUi.setup.couldNotLoadConnection", { defaultValue: "Could not load this connection. Your saved access and credentials have not changed." })}</p><Button variant="outline" onClick={() => void existing.refetch()}>{translateInstant("Try again", { defaultValue: "Try again" })}</Button></div>;
   if (gatedDefinitions.length) {
     if (!availability.loaded) return <p role="status" className="p-6 text-sm text-muted-foreground">{translateInstant("Loading connection settings…", { defaultValue: "Loading connection settings…" })}</p>;
-    if (availability.failed) return <p role="alert" className="p-6 text-destructive text-sm">Could not load connector availability. Refresh to try again.</p>;
+    if (availability.failed) return <p role="alert" className="p-6 text-destructive text-sm">{translateInstant("connectionUi.setup.couldNotLoadAvailability", { defaultValue: "Could not load connector availability. Refresh to try again." })}</p>;
     const disabled = gatedDefinitions.find(app => !availability.enabled(app));
-    if (disabled) return <p role="status" className="p-6 text-sm text-muted-foreground">{disabled.name} is not available on this instance.</p>;
+    if (disabled) return <p role="status" className="p-6 text-sm text-muted-foreground">{translateInstant("connectionUi.setup.connectorUnavailableOnInstance", { name: disabled.name, defaultValue: `${disabled.name} is not available on this instance.` })}</p>;
   }
   if (isMemoryConnectorId(provider) && !(existing.data && existing.data.status !== "draft" && existing.data.config?.sourceTemplateKey === provider)) {
     if (!memory.loaded) return <p className="p-6 text-sm text-muted-foreground">{translateInstant("Loading connection settings…")}</p>;
@@ -2902,7 +2902,7 @@ function StandardConnectionSetupFlow({
           settingsValid={additionalSettingsValid && instructionsValid && !dedicatedAgentMissing}
           entry={entry}
           selfHostedGoogleApp={!cloudInstance && Boolean(getConnectableAppDefinition(entry.slug)?.methods.some(isCloudOnlyConnectionMethod))}
-          error={connectMutation.error ? describeError(connectMutation.error).body : oauthError}
+          error={connectMutation.error ? describeError(connectMutation.error).body : renderOAuthError(oauthError)}
           authorizationUrl={oauthPhase === "error" ? authorizationFallbackUrl : null}
           onOpenAuthorization={openAuthorizationTab}
           values={credentials}
@@ -4414,7 +4414,7 @@ export function AccessStepContent({
               <p className="mt-2 text-sm text-muted-foreground">{translateInstant("This agent uses this GitHub account for everyone’s work, instead of the person giving instructions.")}</p>
             ) : null}
             {identityLoading ? (
-              <div className="mt-4 grid gap-2 sm:grid-cols-2" aria-label="Loading connection identity">
+              <div className="mt-4 grid gap-2 sm:grid-cols-2" aria-label={translateInstant("connectionUi.setup.loadingIdentity", { defaultValue: "Loading connection identity" })}>
                 <Skeleton className="h-20 w-full rounded-md" />
                 <Skeleton className="h-20 w-full rounded-md" />
               </div>

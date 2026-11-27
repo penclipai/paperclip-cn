@@ -1,4 +1,6 @@
 import { useSyncExternalStore } from "react";
+import { useTranslation } from "react-i18next";
+import { getCurrentLocale, translateInstant } from "@/i18n";
 
 const listeners = new Set<() => void>();
 let now = Date.now();
@@ -21,17 +23,27 @@ export function coordinatorRelativeLabel(value: string | Date, clock: number) {
   const timestamp = new Date(value).getTime();
   if (!Number.isFinite(timestamp)) return null;
   const elapsed = Math.max(0, clock - timestamp);
-  if (elapsed < 60_000) return "Just now";
-  if (elapsed < 3_600_000) return `${Math.floor(elapsed / 60_000)}m ago`;
-  if (elapsed < 86_400_000) return `${Math.floor(elapsed / 3_600_000)}h ago`;
-  if (elapsed < 604_800_000) return `${Math.floor(elapsed / 86_400_000)}d ago`;
-  return new Date(value).toLocaleDateString(undefined, { month: "short", day: "numeric", ...(new Date(value).getFullYear() !== new Date(clock).getFullYear() ? { year: "numeric" as const } : {}) });
+  if (elapsed < 60_000) return translateInstant("coordinator.relativeTime.justNow", { defaultValue: "Just now" });
+  if (elapsed < 3_600_000) {
+    const count = Math.floor(elapsed / 60_000);
+    return translateInstant("coordinator.relativeTime.minutesAgo", { count, defaultValue: `${count}m ago` });
+  }
+  if (elapsed < 86_400_000) {
+    const count = Math.floor(elapsed / 3_600_000);
+    return translateInstant("coordinator.relativeTime.hoursAgo", { count, defaultValue: `${count}h ago` });
+  }
+  if (elapsed < 604_800_000) {
+    const count = Math.floor(elapsed / 86_400_000);
+    return translateInstant("coordinator.relativeTime.daysAgo", { count, defaultValue: `${count}d ago` });
+  }
+  return new Date(value).toLocaleDateString(getCurrentLocale(), { month: "short", day: "numeric", ...(new Date(value).getFullYear() !== new Date(clock).getFullYear() ? { year: "numeric" as const } : {}) });
 }
 export function CoordinatorRelativeTime({ value, className }: { value: string | Date; className?: string }) {
+  useTranslation();
   const clock = useCoordinatorRelativeClock();
   const label = coordinatorRelativeLabel(value, clock);
   if (!label) return null;
   const date = new Date(value);
-  const exact = date.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "long" });
+  const exact = date.toLocaleString(getCurrentLocale(), { dateStyle: "medium", timeStyle: "long" });
   return <time dateTime={date.toISOString()} title={exact} aria-label={exact} tabIndex={0} className={className}>{label}</time>;
 }

@@ -54,7 +54,7 @@ export function AppsSidebar() {
           className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
         >
           <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{selectedCompany?.name ?? "Company"}</span>
+          <span className="truncate">{selectedCompany?.name ?? translateInstant("Company")}</span>
         </Link>
         <div className="flex items-center gap-2 px-2 py-1">
           <AppWindow className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -66,7 +66,7 @@ export function AppsSidebar() {
         <div className="px-3 pb-1 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
           {translateInstant("Connectors")}</div>
         <div className="flex flex-col gap-0.5">
-          <SidebarNavItem to="/apps" label="All plugins" icon={Store} end />
+          <SidebarNavItem to="/apps" label={translateInstant("apps.sidebar.allPlugins", { defaultValue: "All plugins" })} icon={Store} end />
         </div>
         <div className="px-3 pb-1 pt-4 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
           {translateInstant("apps.sidebar.developer")}</div>
@@ -78,7 +78,7 @@ export function AppsSidebar() {
             <SidebarNavItem
               key={tab.key}
               to={advancedTabHref(tab.key)}
-              label={tab.label}
+              label={translateInstant(`tools.tabs.${tab.key === "smoke-lab" ? "smokeLab" : tab.key}`, { defaultValue: tab.label })}
               icon={tab.icon}
               end
             />

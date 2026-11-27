@@ -220,7 +220,7 @@ export function PluginSettings() {
     return <Navigate to="/company/settings/instance/plugins" replace />;
   }
 
-  const displayStatus = plugin.status;
+  const displayStatus = translateInstant(`pluginManager.status.${plugin.status}`, { defaultValue: plugin.status });
   const statusVariant =
     plugin.status === "ready"
       ? "default"
@@ -228,7 +228,7 @@ export function PluginSettings() {
         ? "destructive"
         : "secondary";
   const pluginDescription =
-    plugin.manifestJson.description || "No description provided.";
+    plugin.manifestJson.description || translateInstant("pluginSettings.noDescription", { defaultValue: "No description provided." });
   const pluginCapabilities = plugin.manifestJson.capabilities ?? [];
   const environmentDrivers = plugin.manifestJson.environmentDrivers ?? [];
   const localFolderDeclarations = plugin.manifestJson.localFolders ?? [];
@@ -323,7 +323,7 @@ export function PluginSettings() {
                             variant="outline"
                             className="capitalize"
                           >
-                            {category}
+                            {translateInstant(`pluginSettings.categories.${category.toLowerCase()}`, { defaultValue: category })}
                           </Badge>
                         ))
                       ) : (

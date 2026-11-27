@@ -1,0 +1,27 @@
+{
+  "humanRole.admin": {
+    "en": "Admin",
+    "zh-CN": "管理员",
+    "reviewedEnglishHash": "c1c224b03cd9bc7b6a86d77f5dace40191766c485cd55dc48caf9ac873335d6f"
+  },
+  "humanRole.member": {
+    "en": "Member",
+    "zh-CN": "成员",
+    "reviewedEnglishHash": "7c968fb71f50e335442b35062a35620a508bbd0bd3ee7888deff2490636a5311"
+  },
+  "humanRole.operator": {
+    "en": "Operator",
+    "zh-CN": "操作员",
+    "reviewedEnglishHash": "291101a07fe980e93b900ae85c9eb824f9e7e93d0d754be7440b9386b615cad7"
+  },
+  "humanRole.owner": {
+    "en": "Owner",
+    "zh-CN": "所有者",
+    "reviewedEnglishHash": "4b1b8aa3608a26da451ae0630d75b60ab1bc2dd229c41a80838fc7993e835c46"
+  },
+  "humanRole.viewer": {
+    "en": "Viewer",
+    "zh-CN": "只读成员",
+    "reviewedEnglishHash": "678bfa6af48b17cde7e32964ff2a268394373b68af81109ce7c42fc1dff25a02"
+  }
+}

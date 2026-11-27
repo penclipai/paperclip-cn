@@ -712,7 +712,7 @@ export function TaskChatComposer({
     antigravitySwarmAvailable(modelAgents?.get(assigneeValue.slice(6)), swarmSetting, pendingMode) &&
     Boolean(parseSwarmCommand(body)?.request);
   const selectedAssignee = reassignOptions?.find((o) => o.id === assigneeValue);
-  const assigneeLabel = selectedAssignee?.label ?? "Unassigned";
+  const assigneeLabel = selectedAssignee?.label ?? t("Unassigned", { defaultValue: "Unassigned" });
   const assigneeName =
     selectedAssignee == null
       ? t("taskChatComposer.defaultAgentName", { defaultValue: "the agent" })
@@ -735,16 +735,16 @@ export function TaskChatComposer({
     id: "action:goal",
     kind: "action",
     command: "goal",
-    name: "Goal",
+    name: t("Goal", { defaultValue: "Goal" }),
     description:
       !runnerGoalCapability || runnerGoalCapability.verified === false
-        ? "Support will be verified when the session starts."
-        : "Pursue work across turns.",
+        ? t("taskChatComposer.command.goalVerifyLater", { defaultValue: "Support will be verified when the session starts." })
+        : t("taskChatComposer.command.goalDescription", { defaultValue: "Pursue work across turns." }),
     aliases: ["goal", "pursue", "continue"],
     disabled: goalUnavailable && runnerGoalCapability !== null,
     disabledReason:
       runnerGoalCapability?.reason ??
-      "Session goals are unsupported by this agent.",
+      t("taskChatComposer.command.goalUnsupported", { defaultValue: "Session goals are unsupported by this agent." }),
   };
 
   function updatePendingAssignee(value: string | null) {
@@ -1465,7 +1465,7 @@ export function TaskChatComposer({
       setTakeoverError(
         cause instanceof Error
           ? cause.message
-          : "This request could not be skipped.",
+          : t("taskChatComposer.takeoverSkipFailed", { defaultValue: "This request could not be skipped." }),
       );
     });
   }
@@ -1566,7 +1566,7 @@ export function TaskChatComposer({
                 size="icon-xs"
                 variant="ghost"
                 className="text-muted-foreground hover:text-foreground"
-                aria-label={`Dismiss ${takeover.label}`}
+                aria-label={t("taskChatComposer.dismissLabel", { label: takeover.label, defaultValue: "Dismiss {{label}}" })}
                 disabled={takeoverBusy}
                 onClick={takeover.onDismiss}
               >
@@ -1672,7 +1672,7 @@ export function TaskChatComposer({
           >
             <CircleHelp className="h-4 w-4 shrink-0" aria-hidden />
             <span className="min-w-0 flex-1 truncate">
-              {pendingTakeover?.label ?? takeover?.label ?? "Pending input"}
+              {pendingTakeover?.label ?? takeover?.label ?? t("taskChatComposer.pendingInput", { defaultValue: "Pending input" })}
             </span>
             <span className="shrink-0 font-medium">
               {pendingTakeover?.count ?? takeover?.pendingCount ?? 1}{" "}
@@ -1740,7 +1740,7 @@ export function TaskChatComposer({
                       id: "action:new",
                       kind: "action",
                       command: "new",
-                      name: "New session",
+                      name: t("taskChatComposer.command.newSessionName", { defaultValue: "New session" }),
                       description: translateInstant(
                         "Start fresh context here, preserving conversation history.",
                       ),
@@ -1784,7 +1784,7 @@ export function TaskChatComposer({
               variant="ghost"
               size="icon-xs"
               className="shrink-0 text-muted-foreground"
-              aria-label="Dismiss"
+              aria-label={t("Dismiss", { defaultValue: "Dismiss" })}
               data-testid="task-chat-composer-error-dismiss"
               onClick={() => setActionError(null)}
             >
@@ -1793,7 +1793,7 @@ export function TaskChatComposer({
           </div>
         ) : showSwarmHint ? (
           <p className="px-1 text-xs text-muted-foreground" data-testid="task-chat-swarm-hint">
-            Sends as a swarm: helpers work on this together in the task folder.
+            {t("taskChatComposer.swarmHint", { defaultValue: "Sends as a swarm: helpers work on this together in the task folder." })}
           </p>
         ) : null}
 
@@ -1833,14 +1833,14 @@ export function TaskChatComposer({
                       {attachment.status === "uploading"
                         ? t("artifactUpload.uploading")
                         : attachment.status === "error"
-                          ? (attachment.error ?? "Upload failed")
+                          ? (attachment.error ?? t("Upload failed", { defaultValue: "Upload failed" }))
                           : [kind.label, sizeLabel].filter(Boolean).join(" · ")}
                     </AttachmentDescription>
                   </AttachmentContent>
                   <AttachmentActions>
                     {attachment.status === "error" && attachment.file ? (
                       <AttachmentAction
-                        aria-label={`Retry ${attachment.name}`}
+                        aria-label={t("taskChatComposer.retryAttachment", { name: attachment.name, defaultValue: "Retry {{name}}" })}
                         disabled={!!uncertainSubmission}
                         onClick={() => retryUpload(attachment)}
                       >
@@ -1848,7 +1848,7 @@ export function TaskChatComposer({
                       </AttachmentAction>
                     ) : null}
                     <AttachmentAction
-                      aria-label={`Remove ${attachment.name}`}
+                      aria-label={t("taskChatComposer.removeAttachment", { name: attachment.name, defaultValue: "Remove {{name}}" })}
                       disabled={!!uncertainSubmission}
                       onClick={() =>
                         setAttachments((prev) =>
@@ -1919,8 +1919,8 @@ export function TaskChatComposer({
             {queuedEdit ? (
               <span className="px-1 text-xs font-medium text-muted-foreground">
                 {queuedEdit.stale
-                  ? "Queued message changed"
-                  : "Editing queued message"}
+                  ? t("taskChatComposer.queuedMessageChanged", { defaultValue: "Queued message changed" })
+                  : t("taskChatComposer.editingQueuedMessage", { defaultValue: "Editing queued message" })}
               </span>
             ) : (
               <ComposerModeChip
@@ -1973,9 +1973,9 @@ export function TaskChatComposer({
                 value={assigneeValue}
                 options={reassignOptions ?? []}
                 placeholder={translateInstant("Assignee")}
-                mobileTitle="Select assignee"
-                noneLabel="No assignee"
-                searchPlaceholder="Search assignees…"
+                mobileTitle={t("Select assignee", { defaultValue: "Select assignee" })}
+                noneLabel={t("No assignee", { defaultValue: "No assignee" })}
+                searchPlaceholder={t("Search assignees…", { defaultValue: "Search assignees…" })}
                 emptyMessage={translateInstant("No matches.")}
                 onChange={updatePendingAssignee}
                 disabled={disabled}
@@ -2055,8 +2055,12 @@ export function TaskChatComposer({
                     : uploadPending
                       ? t("Waiting for upload to finish")
                       : uploadFailed
-                        ? "Remove the failed attachment to send"
-                        : `${creation?.submitLabel ?? "Send"} (${submitKey === "mod-enter" ? "⌘/Ctrl+Enter" : "Enter"})`
+                        ? t("Remove the failed attachment to send", { defaultValue: "Remove the failed attachment to send" })
+                        : t("taskChatComposer.sendTitle", {
+                            label: creation?.submitLabel ?? t("Send", { defaultValue: "Send" }),
+                            shortcut: submitKey === "mod-enter" ? "⌘/Ctrl+Enter" : "Enter",
+                            defaultValue: "{{label}} ({{shortcut}})",
+                          })
               }
               aria-label={
                 showStop

@@ -1,7 +1,9 @@
 import { useId, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { ToolCatalogEntry, ToolConnection } from "@penclipai/shared";
+import { translateInstant } from "@/i18n";
 import { toolsApi } from "@/api/tools";
 import { describeError } from "@/api/errors";
 import { QueryErrorState } from "@/components/QueryView";
@@ -24,7 +26,16 @@ import { useConnectionPermissionSave } from "./app-detail/useConnectionPermissio
 export type ActionPolicy = "allowed" | "ask" | "off";
 
 const POLICY_ORDER: ActionPolicy[] = ["allowed", "ask", "off"];
-const POLICY_LABEL: Record<ActionPolicy, string> = { allowed: "Allowed", ask: "Ask first", off: "Off" };
+function policyLabel(policy: ActionPolicy): string {
+  switch (policy) {
+    case "allowed":
+      return translateInstant("apps.plugins.permissions.allowed", { defaultValue: "Allowed" });
+    case "ask":
+      return translateInstant("apps.detail.permissions.askFirst", { defaultValue: "Ask first" });
+    case "off":
+      return translateInstant("Off");
+  }
+}
 const TONE: Record<ActionPolicy | "custom", string> = {
   allowed: "text-foreground",
   ask: "text-(--status-task-icon-todo)",
@@ -45,7 +56,7 @@ export function groupPolicy(ids: readonly string[], enabledIds: ReadonlySet<stri
 }
 
 function PolicyMenu({ value, label, disabled, onChange }: { value: ActionPolicy | "custom"; label: string; disabled: boolean; onChange: (next: ActionPolicy) => void }) {
-  const text = value === "custom" ? "Custom" : POLICY_LABEL[value];
+  const text = value === "custom" ? translateInstant("Custom") : policyLabel(value);
   if (disabled) return <span className={cn("shrink-0 text-sm", TONE[value])}>{text}</span>;
   return (
     <DropdownMenu>
@@ -59,7 +70,7 @@ function PolicyMenu({ value, label, disabled, onChange }: { value: ActionPolicy 
         <DropdownMenuRadioGroup value={value} onValueChange={(next) => onChange(next as ActionPolicy)}>
           {POLICY_ORDER.map((policy) => (
             <DropdownMenuRadioItem key={policy} value={policy}>
-              {POLICY_LABEL[policy]}
+              {policyLabel(policy)}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>
@@ -70,6 +81,7 @@ function PolicyMenu({ value, label, disabled, onChange }: { value: ActionPolicy 
 
 function ActionBlock({
   title,
+  groupAllLabel,
   entries,
   enabledIds,
   askFirstIds,
@@ -77,6 +89,7 @@ function ActionBlock({
   onChange,
 }: {
   title: string;
+  groupAllLabel: string;
   entries: ToolCatalogEntry[];
   enabledIds: ReadonlySet<string>;
   askFirstIds: ReadonlySet<string>;
@@ -101,7 +114,7 @@ function ActionBlock({
           {title}
           <span className="font-normal text-muted-foreground tabular-nums">{entries.length}</span>
         </button>
-        <PolicyMenu value={groupPolicy(ids, enabledIds, askFirstIds)} label={`All ${title.toLowerCase()}`} disabled={disabled} onChange={(next) => onChange(ids, next)} />
+        <PolicyMenu value={groupPolicy(ids, enabledIds, askFirstIds)} label={groupAllLabel} disabled={disabled} onChange={(next) => onChange(ids, next)} />
       </div>
       <ul id={region} hidden={!open} className="flex flex-col pb-2">
         {entries.map((entry) => {
@@ -178,8 +191,8 @@ function ConnectionPermissions({ companyId, connection }: { companyId: string; c
     );
   }
   const loaded = queries.every((query) => query.data !== undefined);
-  if (!loaded) return <p className={NOTE}>Loading actions…</p>;
-  if (reads.length + writes.length === 0) return <p className={NOTE}>This account hasn’t listed any actions yet.</p>;
+  if (!loaded) return <p className={NOTE}>{translateInstant("apps.plugins.permissions.loadingActions", { defaultValue: "Loading actions…" })}</p>;
+  if (reads.length + writes.length === 0) return <p className={NOTE}>{translateInstant("apps.plugins.permissions.noActions", { defaultValue: "This account hasn’t listed any actions yet." })}</p>;
 
   // After a failed refresh the values on screen may be out of date, and a save replaces what is stored,
   // so changes wait until every read succeeds again.
@@ -191,19 +204,19 @@ function ConnectionPermissions({ companyId, connection }: { companyId: string; c
   };
   return (
     <>
-      {reads.length > 0 ? <ActionBlock title="Reads" entries={reads} enabledIds={enabledIds} askFirstIds={askFirstIds} disabled={!canConfigure || pending} onChange={change} /> : null}
-      {writes.length > 0 ? <ActionBlock title="Writes" entries={writes} enabledIds={enabledIds} askFirstIds={askFirstIds} disabled={!canConfigure || pending} onChange={change} /> : null}
+      {reads.length > 0 ? <ActionBlock title={translateInstant("apps.plugins.permissions.reads", { defaultValue: "Reads" })} groupAllLabel={translateInstant("apps.plugins.permissions.allReads", { defaultValue: "All reads" })} entries={reads} enabledIds={enabledIds} askFirstIds={askFirstIds} disabled={!canConfigure || pending} onChange={change} /> : null}
+      {writes.length > 0 ? <ActionBlock title={translateInstant("apps.plugins.permissions.writes", { defaultValue: "Writes" })} groupAllLabel={translateInstant("apps.plugins.permissions.allWrites", { defaultValue: "All writes" })} entries={writes} enabledIds={enabledIds} askFirstIds={askFirstIds} disabled={!canConfigure || pending} onChange={change} /> : null}
       {stale.length > 0 ? (
         <p role="status" className="flex flex-wrap items-center gap-x-2 px-4 text-sm text-muted-foreground">
-          Couldn’t refresh these permissions, so changes are paused.
+          {translateInstant("apps.plugins.permissions.refreshPaused", { defaultValue: "Couldn’t refresh these permissions, so changes are paused." })}
           <Button type="button" variant="link" size="sm" className="h-auto p-0" disabled={stale.some((query) => query.isFetching)} onClick={() => stale.forEach((query) => void query.refetch())}>
-            Try again
+            {translateInstant("Try again", { defaultValue: "Try again" })}
           </Button>
         </p>
       ) : null}
       {saveError ? (
         <p role="alert" className="px-4 text-sm text-destructive">
-          Couldn’t save that. {saveError}
+          {translateInstant("apps.plugins.permissions.saveFailed", { error: saveError, defaultValue: `Couldn’t save that. ${saveError}` })}
         </p>
       ) : null}
     </>
@@ -227,6 +240,7 @@ export function PluginPermissions({
   accountName: (connection: ToolConnection) => string;
   onNavigate: (href: string) => void;
 }) {
+  const { t } = useTranslation();
   const tools = connections.filter((connection) => connection.connectionPurpose !== "ai");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = tools.find((connection) => connection.id === selectedId) ?? tools[0];
@@ -235,12 +249,12 @@ export function PluginPermissions({
     <section aria-labelledby="plugin-permissions-title" className="flex flex-col gap-2">
       <div className="flex min-h-8 items-center justify-between gap-4 px-4">
         <h2 id="plugin-permissions-title" className="text-sm text-muted-foreground">
-          Tool permissions
+          {t("apps.plugins.permissions.title", { defaultValue: "Tool permissions" })}
         </h2>
         {tools.length > 1 ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" variant="ghost" size="sm" className="-mr-2 h-8 max-w-64 text-muted-foreground" aria-label={`Account: ${accountName(selected)}`}>
+              <Button type="button" variant="ghost" size="sm" className="-mr-2 h-8 max-w-64 text-muted-foreground" aria-label={t("apps.plugins.permissions.accountAria", { name: accountName(selected), defaultValue: `Account: ${accountName(selected)}` })}>
                 <span className="truncate">{accountName(selected)}</span>
                 <ChevronDown aria-hidden />
               </Button>
@@ -259,9 +273,9 @@ export function PluginPermissions({
       </div>
       <ConnectionPermissions key={selected.id} companyId={companyId} connection={selected} />
       <p className="px-4 text-xs text-muted-foreground">
-        Ask first sends the action to Review before it runs.{" "}
+        {t("apps.plugins.permissions.askFirstNote", { defaultValue: "Ask first sends the action to Review before it runs." })}{" "}
         <button type="button" className="underline underline-offset-2 hover:text-foreground" onClick={() => onNavigate(`/apps/${selected.id}/permissions`)}>
-          Agent access and more settings
+          {t("apps.plugins.permissions.agentAccessMoreSettings", { defaultValue: "Agent access and more settings" })}
         </button>
       </p>
     </section>

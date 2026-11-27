@@ -79,6 +79,11 @@
     "zh-CN": "查看 Slack 应用清单",
     "reviewedEnglishHash": "d0918c4c7d0100877ff5f54287b13358d2219987fd9e2ed051a3da0dea46c06e"
   },
+  "View access": {
+    "en": "View access",
+    "zh-CN": "查看权限",
+    "reviewedEnglishHash": "f5462009cf42d4826caf466f921cc0a7e357f6b7d7686c261d137f85fe6a905d"
+  },
   "View activity": {
     "en": "View activity",
     "zh-CN": "查看活动",
@@ -188,6 +193,11 @@
     "en": "View saved plan",
     "zh-CN": "查看保存的计划",
     "reviewedEnglishHash": "33ea4b19991f3e69d62e53091ff7d27304cf19a7ed560ffb5c25b5b1c98213c0"
+  },
+  "View task": {
+    "en": "View task",
+    "zh-CN": "查看任务",
+    "reviewedEnglishHash": "01444a2b442a7b78a02322d766595c25b6cc5b135f7ff8462bd2484fd863e487"
   },
   "View toggle": {
     "en": "View toggle",

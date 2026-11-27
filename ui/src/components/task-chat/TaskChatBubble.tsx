@@ -400,7 +400,7 @@ function TaskChatBubbleContent({
                   key={ref.url}
                   type="button"
                   className="group aspect-video min-w-0 overflow-hidden rounded-md bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  aria-label={`Open ${ref.name || `image ${index + 1}`}`}
+                  aria-label={translateInstant("taskChat.openAttachmentAria", { name: ref.name || translateInstant("taskChat.imageFallback", { index: index + 1, defaultValue: `image ${index + 1}` }), defaultValue: `Open ${ref.name || `image ${index + 1}`}` })}
                   onClick={() => openImage(ref.url)}
                 >
                   <img
@@ -415,7 +415,7 @@ function TaskChatBubbleContent({
               <button
                 type="button"
                 className="aspect-video min-w-0 rounded-md bg-muted text-sm font-semibold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label={`Open ${imageRefs.length - 3} more screenshots`}
+                aria-label={translateInstant("taskChat.openMoreScreenshotsAria", { count: imageRefs.length - 3, defaultValue: `Open ${imageRefs.length - 3} more screenshots` })}
                 onClick={() => openImage(imageRefs[3].url)}
               >
                 +{imageRefs.length - 3}
@@ -468,7 +468,7 @@ function TaskChatBubbleContent({
                     </AttachmentDescription>
                   </AttachmentContent>
                   <AttachmentTrigger
-                    aria-label={`Open ${ref.name}`}
+                    aria-label={translateInstant("taskChat.openAttachmentAria", { name: ref.name, defaultValue: `Open ${ref.name}` })}
                     onClick={video ? () => openImage(ref.url) : undefined}
                     render={
                       video ? (

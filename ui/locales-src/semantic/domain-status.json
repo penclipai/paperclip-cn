@@ -89,10 +89,25 @@
     "zh-CN": "审核中",
     "reviewedEnglishHash": "2677214a9268a5476279e6c6259f054939e93f628ada8ea178a256294faa0713"
   },
+  "status.in_progress": {
+    "en": "In progress",
+    "zh-CN": "进行中",
+    "reviewedEnglishHash": "c1f88e9d6c4145cf0530ae020155384d5688d70ed82a07a35d783bbc4b32238c"
+  },
+  "status.in_review": {
+    "en": "In review",
+    "zh-CN": "审核中",
+    "reviewedEnglishHash": "c39059141ced2ea71d38d312b6bdaa6da1da299820b4021169382a2e54f57672"
+  },
   "status.invalidOrgChain": {
     "en": "Invalid reporting chain",
     "zh-CN": "报告链无效",
     "reviewedEnglishHash": "bf9c6d9dc8a902fc2e58f3e4ca9c5c63b48f9fb5fd1fcbe7a2bddd592f85af1b"
+  },
+  "status.monitoring": {
+    "en": "Monitoring",
+    "zh-CN": "监测中",
+    "reviewedEnglishHash": "1dc83f605edf0ae29b9e25c0b6b233972528a78394d5f362b8cbdead1ff75eca"
   },
   "status.passed": {
     "en": "Passed",
@@ -188,10 +203,5 @@
     "en": "Warning",
     "zh-CN": "警告",
     "reviewedEnglishHash": "e981ddae45d8f4ca53f1ccbe613ad254a041dacf65a06026099a6302d332113b"
-  },
-  "status.monitoring": {
-    "en": "Monitoring",
-    "zh-CN": "监测中",
-    "reviewedEnglishHash": "1dc83f605edf0ae29b9e25c0b6b233972528a78394d5f362b8cbdead1ff75eca"
   }
 }

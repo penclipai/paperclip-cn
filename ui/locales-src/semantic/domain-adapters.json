@@ -1,0 +1,52 @@
+{
+  "adapters.alphaBadge": {
+    "en": "Alpha",
+    "zh-CN": "内测版",
+    "reviewedEnglishHash": "b1a96dd646bccaa24cef7a3db22a6f995f05658f4f1c3272913e258c03e6fb24"
+  },
+  "adapters.override.pause": {
+    "en": "Pause external override",
+    "zh-CN": "暂停外部覆盖",
+    "reviewedEnglishHash": "dfdd3c203377a167afc9923f8155a971fdcfc3be68ffc7c77aa30cbabb928ee7"
+  },
+  "adapters.override.paused": {
+    "en": "Override paused",
+    "zh-CN": "已暂停覆盖",
+    "reviewedEnglishHash": "63bd03a04146273f57c7b4bf4a5c9606de356565e8a0155b274f250ec99c8b67"
+  },
+  "adapters.override.resume": {
+    "en": "Resume external override",
+    "zh-CN": "恢复外部覆盖",
+    "reviewedEnglishHash": "07a97edf567392619e0f6a752026c4aa373e1f7bf44eb71ef8a51a512985c6ef"
+  },
+  "adapters.toast.registered": {
+    "en": "Type \"{{type}}\" registered successfully.",
+    "zh-CN": "已成功注册类型“{{type}}”。",
+    "reviewedEnglishHash": "34c61dd9311b0592236a38fc88da1ee611bb06d7d49bbb5f92debd0bffd77a77"
+  },
+  "adapters.toast.registeredWithVersion": {
+    "en": "Type \"{{type}}\" registered successfully. (v{{version}})",
+    "zh-CN": "已成功注册类型“{{type}}”（v{{version}}）。",
+    "reviewedEnglishHash": "576c338f8fd80200e07b02170ae48a77a97b24331f28a224106fc4b6ec5ed2b5"
+  },
+  "adapters.toast.reinstalled": {
+    "en": "Type \"{{type}}\" updated from npm.",
+    "zh-CN": "已从 npm 更新类型“{{type}}”。",
+    "reviewedEnglishHash": "87a2139d082a776258b9ab4351b7422f6a90e72baeac0c72981da90e9dd71aae"
+  },
+  "adapters.toast.reinstalledWithVersion": {
+    "en": "Type \"{{type}}\" updated from npm. (v{{version}})",
+    "zh-CN": "已从 npm 更新类型“{{type}}”（v{{version}}）。",
+    "reviewedEnglishHash": "8637fd853287936df458eebc45c8f80a10185b098b6fb2d98af6c92923116fd9"
+  },
+  "adapters.toast.reloaded": {
+    "en": "Type \"{{type}}\" reloaded.",
+    "zh-CN": "已重新加载类型“{{type}}”。",
+    "reviewedEnglishHash": "dd699f02cad4e370071b259f1a79939afc2cf9b67297464c0af1d3ba5f94ba4d"
+  },
+  "adapters.toast.reloadedWithVersion": {
+    "en": "Type \"{{type}}\" reloaded. (v{{version}})",
+    "zh-CN": "已重新加载类型“{{type}}”（v{{version}}）。",
+    "reviewedEnglishHash": "ef17f5a3750737fb7412eefc55b66360d6b639f106111680f7b668e699503d8f"
+  }
+}

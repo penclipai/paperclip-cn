@@ -230,10 +230,11 @@ function resolveActorLabel(args: {
   }
   if (userId) {
     return (
-      formatAssigneeUserLabel(userId, currentUserId, userLabelMap) ?? "Board"
+      formatAssigneeUserLabel(userId, currentUserId, userLabelMap) ??
+      translateInstant("Board")
     );
   }
-  return "Unknown";
+  return translateInstant("Unknown");
 }
 
 /**
@@ -441,7 +442,7 @@ function planStatusClasses(
           shell: "border-2 border-amber-500/70 bg-transparent",
           badge:
             "border-amber-500/60 bg-amber-500/10 text-amber-900 dark:bg-amber-500/15 dark:text-amber-100",
-          label: "Approved — agent resume failed",
+          label: translateInstant("issueThreadInteraction.status.approvedResumeFailed", { defaultValue: "Approved — agent resume failed" }),
           Icon: AlertTriangle,
         };
       }
@@ -449,7 +450,7 @@ function planStatusClasses(
         shell: "border-2 border-green-500/80 bg-transparent",
         badge:
           "border-green-500/60 bg-green-500/10 text-green-900 dark:bg-green-500/15 dark:text-green-100",
-        label: "Approved",
+        label: translateInstant("Approved"),
         Icon: CheckCircle2,
       };
     case "rejected":
@@ -458,7 +459,9 @@ function planStatusClasses(
         shell: "border-2 border-red-500/80 bg-transparent",
         badge:
           "border-red-500/60 bg-red-500/10 text-red-900 dark:bg-red-500/15 dark:text-red-100",
-        label: outcome === "withdrawn" ? "Withdrawn" : "Changes requested",
+        label: outcome === "withdrawn"
+          ? translateInstant("Withdrawn", { defaultValue: "Withdrawn" })
+          : translateInstant("issueThreadInteraction.status.changesRequested", { defaultValue: "Changes requested" }),
         Icon: XCircle,
       };
     case "failed":
@@ -810,7 +813,7 @@ function TaskTreeNode({
                   onCheckedChange={(checked) =>
                     onToggleSelection?.(node, checked === true)
                   }
-                  aria-label={`Include ${node.task.title}`}
+                  aria-label={translateInstant("issueThreadInteraction.includeTaskAria", { title: node.task.title, defaultValue: `Include ${node.task.title}` })}
                   className="mt-0.5"
                 />
               ) : null}
@@ -1077,7 +1080,7 @@ function SuggestTasksCard({
     return (
       <div className="space-y-4">
         <DecisionPanel>
-          <div role="group" aria-label="Suggested tasks" className="flex flex-col gap-2">
+          <div role="group" aria-label={translateInstant("issueThreadInteraction.suggestedTasksAria", { defaultValue: "Suggested tasks" })} className="flex flex-col gap-2">
             {rows.map(({ node, depth }) => {
               const task = node.task;
               const owner = task.assigneeAgentId || task.assigneeUserId
@@ -1090,7 +1093,7 @@ function SuggestTasksCard({
                     checked={selectedClientKeys.has(task.clientKey)}
                     onCheckedChange={(checked) => handleToggleSelection(node, checked === true)}
                     disabled={working !== null}
-                    aria-label={`Include ${task.title}`}
+                    aria-label={translateInstant("issueThreadInteraction.includeTaskAria", { title: task.title, defaultValue: `Include ${task.title}` })}
                     className="mt-0.5"
                   />
                   <span className="flex min-w-0 flex-col gap-0.5">
@@ -2210,14 +2213,14 @@ function ToolActionResolution({
     }
   }
   const labels = {
-    pending: "Waiting for approval",
-    waiting_connection: "Approved · Sign-in needed",
-    running: "Approved · Running…",
-    executed: "Succeeded",
-    failed: "Execution failed",
-    declined: "Declined",
-    expired: "Expired",
-    cancelled: "Cancelled",
+    pending: translateInstant("issueThreadInteraction.toolAction.waitingForApproval", { defaultValue: "Waiting for approval" }),
+    waiting_connection: translateInstant("issueThreadInteraction.toolAction.approvedSignInNeeded", { defaultValue: "Approved · Sign-in needed" }),
+    running: translateInstant("issueThreadInteraction.toolAction.approvedRunning", { defaultValue: "Approved · Running…" }),
+    executed: translateInstant("issueThreadInteraction.toolAction.succeeded", { defaultValue: "Succeeded" }),
+    failed: translateInstant("issueThreadInteraction.toolAction.failed", { defaultValue: "Execution failed" }),
+    declined: translateInstant("issueThreadInteraction.toolAction.declined", { defaultValue: "Declined" }),
+    expired: translateInstant("Expired", { defaultValue: "Expired" }),
+    cancelled: translateInstant("Cancelled", { defaultValue: "Cancelled" }),
   };
   const Icon =
     state === "running"
@@ -2268,23 +2271,23 @@ function ToolActionResolution({
             className="size-4 shrink-0 text-destructive"
             aria-hidden="true"
           />
-          GitHub access needed
+          {translateInstant("issueThreadInteraction.github.accessNeededTitle", { defaultValue: "GitHub access needed" })}
         </p>
         <p>
-          This GitHub connection cannot access the requested account or
-          repository. Check the connected account and Paperclip’s repository
-          access, then ask the agent to continue.
+          {translateInstant("issueThreadInteraction.github.accessNeededBody", {
+            defaultValue: "This GitHub connection cannot access the requested account or repository. Check the connected account and Paperclip’s repository access, then ask the agent to continue.",
+          })}
         </p>
         {connectionId ? (
           <Button asChild size="sm" variant="outline">
             <Link to={appTabHref(connectionId, "permissions")}>
-              Manage GitHub access
+              {translateInstant("Manage GitHub access")}
             </Link>
           </Button>
         ) : null}
         {detail ? (
           <details className="text-xs text-muted-foreground">
-            <summary className="cursor-pointer">Error details</summary>
+            <summary className="cursor-pointer">{translateInstant("Error details", { defaultValue: "Error details" })}</summary>
             <p className="mt-2 break-words">{detail}</p>
           </details>
         ) : null}
@@ -2294,17 +2297,17 @@ function ToolActionResolution({
   if (state === "failed" && result?.errorCode === "github_app_installation_suspended") {
     const connectionId = interaction.payload.toolAction?.connectionId;
     return <div role="alert" className="space-y-2 rounded-lg bg-destructive/10 p-3 text-sm text-foreground">
-      <p className="flex items-center gap-2 font-medium"><AlertTriangle className="size-4 shrink-0 text-destructive" aria-hidden="true" />GitHub App installation suspended</p>
-      <p>The Paperclip GitHub App installation for this account or organization is suspended. Ask an administrator to unsuspend it on GitHub, refresh access on the Permissions page, then ask the agent to continue.</p>
+      <p className="flex items-center gap-2 font-medium"><AlertTriangle className="size-4 shrink-0 text-destructive" aria-hidden="true" />{translateInstant("issueThreadInteraction.github.appSuspendedTitle", { defaultValue: "GitHub App installation suspended" })}</p>
+      <p>{translateInstant("issueThreadInteraction.github.appSuspendedBody", { defaultValue: "The Paperclip GitHub App installation for this account or organization is suspended. Ask an administrator to unsuspend it on GitHub, refresh access on the Permissions page, then ask the agent to continue." })}</p>
       {connectionId ? <Button asChild size="sm" variant="outline"><Link to={appTabHref(connectionId, "permissions")}>{translateInstant("Manage GitHub access")}</Link></Button> : null}
-      {detail ? <details className="text-xs text-muted-foreground"><summary className="cursor-pointer">Error details</summary><p className="mt-2 break-words">{detail}</p></details> : null}
+      {detail ? <details className="text-xs text-muted-foreground"><summary className="cursor-pointer">{translateInstant("Error details", { defaultValue: "Error details" })}</summary><p className="mt-2 break-words">{detail}</p></details> : null}
     </div>;
   }
   if (state === "failed" && result?.errorCode === "github_repo_outside_app_installations") {
     return <div role="alert" className="space-y-2 rounded-lg bg-destructive/10 p-3 text-sm text-foreground">
-      <p className="flex items-center gap-2 font-medium"><AlertTriangle className="size-4 shrink-0 text-destructive" aria-hidden="true" />Repository outside GitHub App access</p>
-      <p>The Paperclip GitHub App is not installed on this repository’s organization or account, so refreshing access cannot grant write permission here. Post on GitHub directly, use a personal access token connection, or have an administrator of that organization install the Paperclip GitHub App.</p>
-      {detail ? <details className="text-xs text-muted-foreground"><summary className="cursor-pointer">Error details</summary><p className="mt-2 break-words">{detail}</p></details> : null}
+      <p className="flex items-center gap-2 font-medium"><AlertTriangle className="size-4 shrink-0 text-destructive" aria-hidden="true" />{translateInstant("issueThreadInteraction.github.repoOutsideAppTitle", { defaultValue: "Repository outside GitHub App access" })}</p>
+      <p>{translateInstant("issueThreadInteraction.github.repoOutsideAppBody", { defaultValue: "The Paperclip GitHub App is not installed on this repository’s organization or account, so refreshing access cannot grant write permission here. Post on GitHub directly, use a personal access token connection, or have an administrator of that organization install the Paperclip GitHub App." })}</p>
+      {detail ? <details className="text-xs text-muted-foreground"><summary className="cursor-pointer">{translateInstant("Error details", { defaultValue: "Error details" })}</summary><p className="mt-2 break-words">{detail}</p></details> : null}
     </div>;
   }
   const status = (
@@ -2317,7 +2320,7 @@ function ToolActionResolution({
         )}
       />
       {labels[state]}
-      {result?.rememberedAction ? " · Always allowed" : ""}
+      {result?.rememberedAction ? translateInstant("issueThreadInteraction.alwaysAllowedSuffix", { defaultValue: " · Always allowed" }) : ""}
     </>
   );
   return (
@@ -4181,7 +4184,7 @@ function RequestCheckboxConfirmationCard({
           {interaction.payload.detailsMarkdown ? (
             <DecisionPanelMarkdown markdown={interaction.payload.detailsMarkdown} lead={false} externalReferences={externalReferences} />
           ) : null}
-          <div role="group" aria-label="Selectable options" className="flex max-h-80 flex-col gap-2 overflow-y-auto">
+          <div role="group" aria-label={translateInstant("issueThreadInteraction.selectableOptionsAria", { defaultValue: "Selectable options" })} className="flex max-h-80 flex-col gap-2 overflow-y-auto">
             {options.map((option) => {
               const checked = selectedOptionIds.has(option.id);
               const disabled = working !== null || (!checked && atMax);
@@ -4353,17 +4356,17 @@ function RequestCheckboxConfirmationCard({
 
 // --- Per-item verdicts (C3) ---------------------------------------------
 
-const VERDICT_LABEL: Record<RequestItemVerdictValue, string> = {
-  approve: "Approve",
-  reject: "Reject",
-  defer: "Defer",
+const VERDICT_LABEL: Record<RequestItemVerdictValue, () => string> = {
+  approve: () => translateInstant("issueThreadInteraction.verdict.approve", { defaultValue: "Approve" }),
+  reject: () => translateInstant("issueThreadInteraction.verdict.reject", { defaultValue: "Reject" }),
+  defer: () => translateInstant("issueThreadInteraction.verdict.defer", { defaultValue: "Defer" }),
 };
 
 /** Present-tense past-participle label for a resolved verdict chip. */
-const VERDICT_RESOLVED_LABEL: Record<RequestItemVerdictValue, string> = {
-  approve: "Approved",
-  reject: "Rejected",
-  defer: "Deferred",
+const VERDICT_RESOLVED_LABEL: Record<RequestItemVerdictValue, () => string> = {
+  approve: () => translateInstant("Approved"),
+  reject: () => translateInstant("Rejected"),
+  defer: () => translateInstant("Deferred"),
 };
 
 function verdictChipClasses(verdict: RequestItemVerdictValue) {
@@ -4396,7 +4399,7 @@ function VerdictConsequenceChip({
       )}
     >
       <Icon className="h-3.5 w-3.5" aria-hidden />
-      {VERDICT_RESOLVED_LABEL[verdict]}
+      {VERDICT_RESOLVED_LABEL[verdict]()}
     </span>
   );
 }
@@ -4479,7 +4482,7 @@ function ItemVerdictSegmentedControl({
             variant={variant}
             disabled={disabled}
             aria-pressed={active}
-            aria-label={`${VERDICT_LABEL[verdict]} this item`}
+            aria-label={translateInstant("issueThreadInteraction.verdict.itemActionAria", { action: VERDICT_LABEL[verdict](), defaultValue: `${VERDICT_LABEL[verdict]()} this item` })}
             className={compact ? undefined : "min-h-11 min-w-24"}
             onClick={() => onSelect(verdict)}
             data-verdict={verdict}
@@ -4487,7 +4490,7 @@ function ItemVerdictSegmentedControl({
             data-active={active}
           >
             <Icon className="h-4 w-4" aria-hidden />
-            {VERDICT_LABEL[verdict]}
+            {VERDICT_LABEL[verdict]()}
           </Button>
         );
       })}
@@ -4709,7 +4712,7 @@ function RequestItemVerdictsCard({
                       />
                       {attempted && invalidDraftIds.has(item.id) ? (
                         <span className="text-xs text-destructive">
-                          {translateInstant("issueThreadInteraction.verdict.reasonRequired", { action: VERDICT_LABEL[draft.verdict].toLowerCase() })}
+                          {translateInstant("issueThreadInteraction.verdict.reasonRequired", { action: VERDICT_LABEL[draft.verdict]().toLowerCase() })}
                         </span>
                       ) : null}
                     </div>
@@ -4913,7 +4916,7 @@ function RequestItemVerdictsCard({
                   {attempted && invalidDraftIds.has(item.id) ? (
                     <p className="text-xs text-destructive">
                       {translateInstant("A reason is required to")}{" "}
-                      {VERDICT_LABEL[draft.verdict].toLowerCase()}{" "}
+                      {VERDICT_LABEL[draft.verdict]().toLowerCase()}{" "}
                       {translateInstant("issueThreadInteraction.thisItem")}
                     </p>
                   ) : null}
@@ -5017,7 +5020,11 @@ function VerdictProgressBadge({
         aria-valuemin={0}
         aria-valuemax={progress.total}
         aria-valuenow={progress.decided}
-        aria-label={`${progress.decided} of ${progress.total} decided`}
+        aria-label={translateInstant("issueThreadInteraction.verdict.progressAria", {
+          decided: progress.decided,
+          total: progress.total,
+          defaultValue: `${progress.decided} of ${progress.total} decided`,
+        })}
       >
         <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
           <div

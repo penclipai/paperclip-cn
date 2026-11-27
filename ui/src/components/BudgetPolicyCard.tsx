@@ -211,7 +211,7 @@ export function BudgetPolicyCard({
         <div className="flex items-start justify-between gap-6">
           <div>
             <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">
-              {summary.scopeType}
+              {translateInstant(`budgetPolicy.scope.${summary.scopeType}`, { defaultValue: summary.scopeType })}
             </div>
             <div className="mt-2 text-xl font-semibold">{summary.scopeName}</div>
             <div className="mt-2 text-sm text-muted-foreground">{windowLabel(summary.windowKind)}</div>
@@ -249,7 +249,7 @@ export function BudgetPolicyCard({
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">
-              {summary.scopeType}
+              {translateInstant(`budgetPolicy.scope.${summary.scopeType}`, { defaultValue: summary.scopeType })}
             </div>
             <CardTitle className="mt-1 text-base">{summary.scopeName}</CardTitle>
             <CardDescription className="mt-1">{windowLabel(summary.windowKind)}</CardDescription>

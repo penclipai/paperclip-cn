@@ -460,7 +460,7 @@ export function ProviderSubscriptionCard({
   return (
     <OnboardingLoginCard
       loading={loading}
-      instruction={failure ? (failure === "expired" ? "This sign-in expired" : "Sign-in didn’t finish") : (
+      instruction={failure ? (failure === "expired" ? t("adapterLogin.signInExpired", { defaultValue: "This sign-in expired" }) : t("adapterLogin.signInDidntFinish", { defaultValue: "Sign-in didn’t finish" })) : (
         <>
           <a
             href={authorizationUrl}
@@ -475,11 +475,11 @@ export function ProviderSubscriptionCard({
           >
             {translateInstant("Sign in to")}{" "}{providerName}
           </a>
-          {mode === "hosted_redirect" ? " then paste the redirect URL below"
-            : mode === "browser_redirect" ? " then return here"
+          {mode === "hosted_redirect" ? ` ${t("adapterLogin.instruction.hostedRedirect", { defaultValue: "then paste the redirect URL below" })}`
+            : mode === "browser_redirect" ? ` ${t("adapterLogin.instruction.browserRedirect", { defaultValue: "then return here" })}`
             : mode === "submitted_code"
-            ? " then come back and enter authorization code"
-            : " by providing the authorization code below"}
+            ? ` ${t("adapterLogin.instruction.submittedCode", { defaultValue: "then come back and enter authorization code" })}`
+            : ` ${t("adapterLogin.instruction.displayedCode", { defaultValue: "by providing the authorization code below" })}`}
         </>
       )}
     >
@@ -503,7 +503,7 @@ export function ProviderApiKeyCard({
   useTranslation();
   return (
     <OnboardingLoginCard
-      instruction={`Provide your ${providerName} API key to connect`}
+      instruction={translateInstant("adapterLogin.provideApiKey", { providerName, defaultValue: "Provide your {{providerName}} API key to connect" })}
     >
       <OnboardingCardField {...field} label={translateInstant("API key")} masked />
     </OnboardingLoginCard>
@@ -577,7 +577,7 @@ export function LocalProviderLoginInstructions({ adapterType, login, hostedRedir
     {ready ? <>
       <p role="status" className={cn("flex items-center gap-2 text-foreground", ANALYTICS_MASK_CLASS)}><Check className="size-4 shrink-0 text-(--status-task-icon-done)" />{login?.accountLabel ?? provider} {translateInstant("is signed in. Click Connect to use this account.")}</p>
       {!showCommand && <button type="button" className="underline underline-offset-4" onClick={() => browserLogin ? login?.retry() : setShowCommand(true)}>{translateInstant("Use a different account")}</button>}
-    </> : !browserLogin && <p>{isolated ? `Sign in to ${provider} for this connection on the machine running Paperclip. Your existing terminal login stays separate.` : `Connect uses your local ${provider} account on the machine running Paperclip.`}</p>}
+    </> : !browserLogin && <p>{isolated ? translateInstant("adapterLogin.localIsolated", { provider, defaultValue: "Sign in to {{provider}} for this connection on the machine running Paperclip. Your existing terminal login stays separate." }) : translateInstant("adapterLogin.localShared", { provider, defaultValue: "Connect uses your local {{provider}} account on the machine running Paperclip." })}</p>}
     {awaitingBrowserSignIn && <p role="status">{translateInstant("Preparing browser sign-in…")}</p>}
     {(submitting || codeSubmitted) && !ready && !login?.error && <p role="status">{translateInstant("adapterLogin.finishingSignIn", { defaultValue: "Finishing sign-in…" })}</p>}
     {browserLogin && !ready && !submitting && !codeSubmitted && !login?.error && login?.authorizationUrl && <ProviderSubscriptionCard
@@ -597,12 +597,16 @@ export function LocalProviderLoginInstructions({ adapterType, login, hostedRedir
       </div> : hostedGoogleRedirect ? <div className="flex flex-col gap-2">
         <p className="px-2 text-xs text-muted-foreground">
           {optionalHostedGoogleRedirect
-            ? <>Finish signing in in the Antigravity browser window, then return here. If your browser is on another machine and the <code className="font-mono">127.0.0.1</code> redirect page won’t load, copy the full URL from your address bar and paste it below.</>
-            : <>After signing in to Antigravity, your browser will redirect to a <code className="font-mono">127.0.0.1</code> page that won’t load. Copy the full URL from your browser’s address bar and paste it below.</>}
+            ? translateInstant("adapterLogin.antigravityOptionalRedirectHelp", {
+                defaultValue: "Finish signing in in the Antigravity browser window, then return here. If your browser is on another machine and the 127.0.0.1 redirect page won’t load, copy the full URL from your address bar and paste it below.",
+              })
+            : translateInstant("adapterLogin.antigravityRedirectHelp", {
+                defaultValue: "After signing in to Antigravity, your browser will redirect to a 127.0.0.1 page that won’t load. Copy the full URL from your browser’s address bar and paste it below.",
+              })}
         </p>
         <OnboardingCardField
-          label="Antigravity redirect URL"
-          placeholder="Paste http://127.0.0.1:... URL here"
+          label={translateInstant("adapterLogin.antigravityRedirectUrlLabel", { defaultValue: "Antigravity redirect URL" })}
+          placeholder={translateInstant("adapterLogin.antigravityRedirectUrlPlaceholder", { defaultValue: "Paste http://127.0.0.1:... URL here" })}
           className={cn(ANALYTICS_MASK_CLASS, ANALYTICS_NO_CAPTURE_CLASS)}
           value={browserCode}
           onChange={(value) => {
@@ -613,9 +617,9 @@ export function LocalProviderLoginInstructions({ adapterType, login, hostedRedir
           onSubmit={() => void submitBrowserCode()}
           disabled={submitting}
         />
-        <Button type="button" disabled={!browserCode.trim() || submitting} onClick={() => void submitBrowserCode()}>Submit redirect URL</Button>
+        <Button type="button" disabled={!browserCode.trim() || submitting} onClick={() => void submitBrowserCode()}>{translateInstant("adapterLogin.submitRedirectUrl", { defaultValue: "Submit redirect URL" })}</Button>
         {submitError && <p role="alert" className="px-2 text-xs text-destructive">{submitError}</p>}
-      </div> : adapterType === "antigravity_runtime" ? <p>{translateInstant("adapterLogin.finishGoogleSignIn")}</p> : <OnboardingLoginCodeRow code={login.code ?? ""} />}
+      </div> : adapterType === "antigravity_runtime" ? <p>{translateInstant("adapterLogin.finishAntigravitySignIn", { defaultValue: "Finish signing in in the Antigravity browser window, then return here." })}</p> : <OnboardingLoginCodeRow code={login.code ?? ""} />}
     </ProviderSubscriptionCard>}
     {!browserLogin && (!ready || showCommand) && !login?.error && <>
       <p>{translateInstant("Run this in a terminal on that machine and finish signing in in your browser. We’ll check automatically when you return.")}</p>
@@ -625,6 +629,6 @@ export function LocalProviderLoginInstructions({ adapterType, login, hostedRedir
       </div>}
     </>}
     {login?.error && <p role="alert">{login.error}</p>}
-    {login && !login.preparing && !ready && !awaitingBrowserSignIn && (isolated || login.error) && <button type="button" className="underline underline-offset-4" onClick={login.retry}>{isolated ? "Start sign-in again" : "Check again"}</button>}
+    {login && !login.preparing && !ready && !awaitingBrowserSignIn && (isolated || login.error) && <button type="button" className="underline underline-offset-4" onClick={login.retry}>{isolated ? translateInstant("adapterLogin.startSignInAgain", { defaultValue: "Start sign-in again" }) : translateInstant("adapterLogin.checkAgain", { defaultValue: "Check again" })}</button>}
   </div>;
 }

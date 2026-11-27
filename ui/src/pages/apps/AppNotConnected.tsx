@@ -264,26 +264,26 @@ function ConnectionCallout({
   reconnectUnavailableMessage: string;
   onConnect: () => void;
 }) {
-  useTranslation();
+  const { t } = useTranslation();
   return (
     <section className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border px-4 py-3">
       <div>
         <h2 className="text-sm font-semibold text-foreground">
-          {previousConnection ? translateInstant("Needs attention") : translateInstant("apps.notConnected.notConnected")}
+          {previousConnection ? t("Needs attention") : t("apps.notConnected.notConnected")}
         </h2>
         <p className="mt-0.5 text-sm text-muted-foreground">
           {previousConnection
             ? previousConnection.authKind === "oauth"
-              ? `Sign in to ${applicationName} again to restore access.`
-              : `Add a working ${applicationName} key to restore access.`
-            : `Connect ${applicationName} so agents can use it.`}
+              ? t("apps.notConnected.signInAgain", { name: applicationName, defaultValue: `Sign in to ${applicationName} again to restore access.` })
+              : t("apps.notConnected.addWorkingKey", { name: applicationName, defaultValue: `Add a working ${applicationName} key to restore access.` })
+            : t("apps.notConnected.connectSoAgentsCanUse", { name: applicationName, defaultValue: `Connect ${applicationName} so agents can use it.` })}
         </p>
         {previousConnection && !canReconnect ? (
           <p className="mt-1 text-sm text-muted-foreground">{reconnectUnavailableMessage}</p>
         ) : null}
       </div>
       {!previousConnection || canReconnect ? (
-        <Button onClick={onConnect}>{previousConnection ? translateInstant("apps.notConnected.reconnect") : translateInstant("Connect")}</Button>
+        <Button onClick={onConnect}>{previousConnection ? t("apps.notConnected.reconnect") : t("Connect")}</Button>
       ) : null}
     </section>
   );

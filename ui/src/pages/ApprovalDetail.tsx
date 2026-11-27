@@ -396,7 +396,9 @@ export function ApprovalDetail() {
                 onClick={() => {
                   if (
                     !window.confirm(
-                      "Delete this disapproved agent? This cannot be undone.",
+                      translateInstant("approvals.confirmDeleteDisapprovedAgent", {
+                        defaultValue: "Delete this disapproved agent? This cannot be undone.",
+                      }),
                     )
                   )
                     return;
@@ -463,7 +465,7 @@ export function ApprovalDetail() {
             disabled={!commentBody.trim() || addCommentMutation.isPending}
           >
             {addCommentMutation.isPending
-              ? "Posting…"
+              ? translateInstant("Posting…", { defaultValue: "Posting…" })
               : translateInstant("Post comment")}
           </Button>
         </div>

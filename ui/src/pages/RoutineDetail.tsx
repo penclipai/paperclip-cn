@@ -37,7 +37,7 @@ import {
   syncRoutineSchedule,
 } from "@/components/routine-page/routine-form";
 import { resolveRoutineAddress, routinePath, type RoutineView } from "@/components/routine-page/routine-routes";
-import { routineAutomationState } from "@/components/routine-page/routine-summary";
+import { displayBuiltInRoutineTitle, routineAutomationState } from "@/components/routine-page/routine-summary";
 import { useRoutineFormOptions } from "@/components/routine-page/useRoutineFormOptions";
 import { useRoutineWebhookDialog } from "@/components/routine-page/useRoutineWebhookDialog";
 import { RoutineAuditActivity } from "@/pages/audit/RoutineAuditActivity";
@@ -402,7 +402,7 @@ function RoutineDetailPage({ companyId, routineId, view }: { companyId: string; 
     [detailKey, queryClient, refreshRoutine],
   );
 
-  const routineTitle = routine?.title;
+  const routineTitle = routine ? displayBuiltInRoutineTitle(routine) : undefined;
   useEffect(() => {
     if (!routineTitle) return;
     setBreadcrumbs(
@@ -520,8 +520,9 @@ function RoutineDetailPage({ companyId, routineId, view }: { companyId: string; 
   ];
   const webhooks = routine.triggers.filter((trigger) => trigger.kind === "webhook");
   const routineActive = routineAutomationState(routine) === "active";
+  const routineDisplayName = displayBuiltInRoutineTitle(routine);
   const webhookDialog = (
-    <RoutineWebhookDialog {...webhook.dialogProps} routineTitle={routine.title} routineActive={routineActive} />
+    <RoutineWebhookDialog {...webhook.dialogProps} routineTitle={routineDisplayName} routineActive={routineActive} />
   );
   const descriptionDocument = routine.descriptionDocument;
 
@@ -549,7 +550,7 @@ function RoutineDetailPage({ companyId, routineId, view }: { companyId: string; 
         hasMoreHistory={Boolean(historyQuery.hasNextPage)}
         loadingMoreHistory={historyQuery.isFetchingNextPage}
         onLoadMoreHistory={() => void historyQuery.fetchNextPage()}
-        historyLinkState={createIssueDetailLocationState(routine.title, routinePath(routine.id), "issues")}
+        historyLinkState={createIssueDetailLocationState(routineDisplayName, routinePath(routine.id), "issues")}
         skippedRunCount={routine.recentRuns.filter((run) => run.status === "coalesced").length}
         instructionCommentCount={openCommentCount}
         onOpenInstructionComments={() => setCommentsOpen(true)}
@@ -596,7 +597,7 @@ function RoutineDetailPage({ companyId, routineId, view }: { companyId: string; 
       />
     ) : (
       <RoutineSubpage
-        routineTitle={routine.title}
+        routineTitle={routineDisplayName}
         title={view === "history" ? translateInstant("routineDetail.versionHistory") : translateInstant("Audit log")}
         onBack={() => navigate(routinePath(routine.id))}
       >
@@ -677,7 +678,7 @@ function RoutineDetailPage({ companyId, routineId, view }: { companyId: string; 
         open={runOpen}
         onOpenChange={setRunOpen}
         companyId={routine.companyId}
-        routineName={routine.title}
+        routineName={routineDisplayName}
         agents={options.allAgents}
         projects={options.allProjects}
         defaultProjectId={routine.projectId}

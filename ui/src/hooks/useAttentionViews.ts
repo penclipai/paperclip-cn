@@ -1,6 +1,8 @@
 import { useCallback, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AttentionCloseMode, AttentionItem, AttentionFeedView, AttentionReceipt } from "@penclipai/shared";
+import { translateInstant } from "@/i18n";
+import { formatDateTime } from "@/lib/utils";
 import { accessApi } from "@/api/access";
 import { attentionApi } from "@/api/attention";
 import { inboxDismissalsApi } from "@/api/inboxDismissals";
@@ -83,14 +85,16 @@ export function useClaimAttentionItem(companyId: string | null | undefined) {
     mutationFn: (item: AttentionItem) => attentionApi.claim(companyId!, item.sourceKind, item.subject.id),
     onSuccess: (_result, item) => {
       toasts?.pushToast({
-        title: "Claimed",
-        body: item.subject.title ? `${item.subject.title} is now in For you.` : "The card is now in For you.",
+        title: translateInstant("decisions.toast.claimed", { defaultValue: "Claimed" }),
+        body: item.subject.title
+          ? translateInstant("decisions.toast.claimedItemBody", { title: item.subject.title, defaultValue: `${item.subject.title} is now in For you.` })
+          : translateInstant("decisions.toast.claimedBody", { defaultValue: "The card is now in For you." }),
         tone: "success",
       });
     },
     onError: (error) => {
       toasts?.pushToast({
-        title: "Could not claim this card",
+        title: translateInstant("decisions.toast.claimError", { defaultValue: "Could not claim this card" }),
         body: error instanceof Error ? error.message : undefined,
         tone: "error",
       });
@@ -112,7 +116,7 @@ export function useDismissAttentionReceipt(companyId: string | null | undefined)
     mutationFn: (receipt: AttentionReceipt) => inboxDismissalsApi.dismiss(companyId!, receipt.dismissalKey),
     onError: (error) => {
       toasts?.pushToast({
-        title: "Could not dismiss this receipt",
+        title: translateInstant("decisions.toast.dismissReceiptError", { defaultValue: "Could not dismiss this receipt" }),
         body: error instanceof Error ? error.message : undefined,
         tone: "error",
       });
@@ -140,10 +144,10 @@ export interface AttentionWithdrawAllResult {
   failed: AttentionItem[];
 }
 
-const CLOSE_TOAST_TITLE: Record<AttentionCloseMode, string> = {
-  withdraw: "Request withdrawn",
-  archive: "Archived for you",
-  snooze: "Snoozed for you",
+const CLOSE_TOAST_TITLE: Record<AttentionCloseMode, () => string> = {
+  withdraw: () => translateInstant("decisions.toast.withdrawn", { defaultValue: "Request withdrawn" }),
+  archive: () => translateInstant("decisions.toast.archivedForYou", { defaultValue: "Archived for you" }),
+  snooze: () => translateInstant("decisions.toast.snoozedForYou", { defaultValue: "Snoozed for you" }),
 };
 
 /**
@@ -196,13 +200,13 @@ export function useAttentionCloseActions(
       onRestored?.(item);
       toasts?.pushToast({
         id: `attention-restore-${item.id}`,
-        title: "Restored",
+        title: translateInstant("decisions.toast.restored", { defaultValue: "Restored" }),
         body: item.subject.title ?? undefined,
         tone: "info",
       });
     } catch (error) {
       restored = false;
-      toasts?.pushToast({ title: "Could not restore this card", body: errorBody(error), tone: "error" });
+      toasts?.pushToast({ title: translateInstant("decisions.toast.restoreError", { defaultValue: "Could not restore this card" }), body: errorBody(error), tone: "error" });
     }
     invalidate();
     return restored;
@@ -222,18 +226,20 @@ export function useAttentionCloseActions(
       toasts?.pushToast({
         id: `attention-close-${item.id}`,
         dedupeKey: `attention-close-${item.dismissalKey}`,
-        title: CLOSE_TOAST_TITLE[mode],
+        title: CLOSE_TOAST_TITLE[mode](),
         body: mode === "snooze" && result.until
-          ? `Back ${new Date(result.until).toLocaleString()}.`
+          ? translateInstant("decisions.toast.snoozeUntilBody", { time: formatDateTime(result.until), defaultValue: `Back ${formatDateTime(result.until)}.` })
           : item.subject.title ?? undefined,
         tone: mode === "withdraw" ? "success" : "info",
-        ...(mode === "withdraw" ? {} : { ttlMs: 8000, action: { label: "Undo", onClick: () => void restore(item) } }),
+        ...(mode === "withdraw" ? {} : { ttlMs: 8000, action: { label: translateInstant("whatNeedsMe.toast.undo", { defaultValue: "Undo" }), onClick: () => void restore(item) } }),
       });
     },
     onError: (error, { item, mode }) => {
       onCloseFailed?.(item, mode);
       toasts?.pushToast({
-        title: mode === "withdraw" ? "Could not withdraw this request" : "Could not hide this card",
+        title: mode === "withdraw"
+          ? translateInstant("decisions.toast.withdrawError", { defaultValue: "Could not withdraw this request" })
+          : translateInstant("decisions.toast.hideError", { defaultValue: "Could not hide this card" }),
         body: errorBody(error),
         tone: "error",
       });
@@ -246,13 +252,13 @@ export function useAttentionCloseActions(
       attentionApi.transfer(companyId!, item.sourceKind, item.subject.id, { userId, reason: reason?.trim() || undefined }),
     onSuccess: (_result, { item, userId }) => {
       toasts?.pushToast({
-        title: `Transferred to @${attentionUserLabel(userId, userLabelMap)}`,
+        title: translateInstant("decisions.toast.transferredTo", { name: attentionUserLabel(userId, userLabelMap), defaultValue: `Transferred to @${attentionUserLabel(userId, userLabelMap)}` }),
         body: item.subject.title ?? undefined,
         tone: "success",
       });
     },
     onError: (error) => {
-      toasts?.pushToast({ title: "Could not transfer this card", body: errorBody(error), tone: "error" });
+      toasts?.pushToast({ title: translateInstant("decisions.toast.transferError", { defaultValue: "Could not transfer this card" }), body: errorBody(error), tone: "error" });
     },
     onSettled: (_result, _error, { item }) => {
       invalidate();
@@ -285,11 +291,11 @@ export function useAttentionCloseActions(
       invalidate();
     }
     const notes = [
-      result.alreadyClosed.length ? `${result.alreadyClosed.length} already answered by someone else.` : null,
-      result.failed.length ? `${result.failed.length} could not be withdrawn.` : null,
+      result.alreadyClosed.length ? translateInstant("decisions.toast.withdrawAllAlreadyClosed", { count: result.alreadyClosed.length, defaultValue: `${result.alreadyClosed.length} already answered by someone else.` }) : null,
+      result.failed.length ? translateInstant("decisions.toast.withdrawAllFailed", { count: result.failed.length, defaultValue: `${result.failed.length} could not be withdrawn.` }) : null,
     ].filter(Boolean).join(" ");
     toasts?.pushToast({
-      title: result.withdrawn.length === 1 ? "Withdrew 1 stale request" : `Withdrew ${result.withdrawn.length} stale requests`,
+      title: translateInstant("decisions.toast.withdrewStale", { count: result.withdrawn.length, defaultValue: result.withdrawn.length === 1 ? "Withdrew 1 stale request" : `Withdrew ${result.withdrawn.length} stale requests` }),
       body: notes || undefined,
       tone: result.failed.length ? "error" : "success",
     });

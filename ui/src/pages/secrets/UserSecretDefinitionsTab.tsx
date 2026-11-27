@@ -163,7 +163,9 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
     },
     onError: (err) =>
       pushToast({
-        title: "Could not remove definition",
+        title: t("secrets.toast.couldNotRemoveDefinition", {
+          defaultValue: "Could not remove definition",
+        }),
         body: describeError(err).body,
         tone: "error",
       }),

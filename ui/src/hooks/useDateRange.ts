@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { translateInstant } from "@/i18n";
 
 export type DatePreset = "mtd" | "7d" | "30d" | "ytd" | "all" | "custom";
 
 export const PRESET_LABELS: Record<DatePreset, string> = {
-  mtd: "Month to Date",
-  "7d": "7 Days",
-  "30d": "30 Days",
-  ytd: "Year to Date",
-  all: "All Time",
-  custom: "Custom",
+  get mtd() { return translateInstant("costs.dateRange.mtd", { defaultValue: "Month to Date" }); },
+  get "7d"() { return translateInstant("costs.dateRange.7d", { defaultValue: "7 Days" }); },
+  get "30d"() { return translateInstant("costs.dateRange.30d", { defaultValue: "30 Days" }); },
+  get ytd() { return translateInstant("costs.dateRange.ytd", { defaultValue: "Year to Date" }); },
+  get all() { return translateInstant("costs.dateRange.all", { defaultValue: "All Time" }); },
+  get custom() { return translateInstant("costs.dateRange.custom", { defaultValue: "Custom" }); },
 };
 
 export const PRESET_KEYS: DatePreset[] = ["mtd", "7d", "30d", "ytd", "all", "custom"];

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowUpRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { toolsApi } from "@/api/tools";
@@ -11,6 +12,7 @@ import { AppLogo } from "../apps/AppLogo";
 const SHOWN_LOGOS = 3;
 
 export function AgentAllowedConnectors({ agentId, companyId }: { agentId: string; companyId: string }) {
+  const { t } = useTranslation();
   const effective = useQuery({
     queryKey: queryKeys.tools.effectiveProfilesForAgent(companyId, agentId),
     queryFn: () => toolsApi.getEffectiveProfilesForAgent(companyId, agentId),
@@ -40,13 +42,16 @@ export function AgentAllowedConnectors({ agentId, companyId }: { agentId: string
   const loading = effective.isLoading || connections.isLoading || applications.isLoading;
   const failed = effective.error || connections.error || applications.error;
 
+  const allowedConnectorsLabel = t("agentDetail.permissions.allowedConnectors", { defaultValue: "Allowed connectors" });
+  const manageConnectorsLabel = t("agentDetail.permissions.manageConnectors", { defaultValue: "Manage connectors" });
+
   return (
     <AgentPanel
-      title="Allowed connectors"
-      aria-label="Allowed connectors"
+      title={allowedConnectorsLabel}
+      aria-label={allowedConnectorsLabel}
       action={
         <Button variant="ghost" size="icon-xs" asChild>
-          <Link to="/apps?source=installed" aria-label="Manage connectors" title="Manage connectors">
+          <Link to="/apps?source=installed" aria-label={manageConnectorsLabel} title={manageConnectorsLabel}>
             <ArrowUpRight className="size-4" />
           </Link>
         </Button>
@@ -54,13 +59,13 @@ export function AgentAllowedConnectors({ agentId, companyId }: { agentId: string
     >
       <div className="flex min-w-0 flex-1 flex-col justify-center px-(--agent-detail-module-inset) pb-(--agent-detail-module-inset)">
         {loading ? (
-          <p role="status" className="text-xs text-muted-foreground">Resolving access…</p>
+          <p role="status" className="text-xs text-muted-foreground">{t("agentDetail.permissions.resolvingAccess", { defaultValue: "Resolving access…" })}</p>
         ) : failed ? (
-          <p role="alert" className="text-xs text-destructive">Couldn’t load this agent’s connectors.</p>
+          <p role="alert" className="text-xs text-destructive">{t("agentDetail.permissions.loadConnectorsFailed", { defaultValue: "Couldn’t load this agent’s connectors." })}</p>
         ) : apps.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No connectors are allowed yet.</p>
+          <p className="text-xs text-muted-foreground">{t("agentDetail.permissions.noConnectorsAllowed", { defaultValue: "No connectors are allowed yet." })}</p>
         ) : (
-          <ul aria-label="Connectors" className="flex max-h-(--agent-detail-logo-rows-h) flex-wrap gap-3 overflow-hidden">
+          <ul aria-label={t("Connectors", { defaultValue: "Connectors" })} className="flex max-h-(--agent-detail-logo-rows-h) flex-wrap gap-3 overflow-hidden">
             {apps.slice(0, SHOWN_LOGOS).map((app) => (
               <li key={app.id} className="flex shrink-0" title={app.name}>
                 <AppLogo name={app.name} brandKey={app.key} size={24} compact />

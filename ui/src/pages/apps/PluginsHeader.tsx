@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "@/lib/router";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,10 +19,16 @@ const STACKED_LOGOS = 4;
 
 /** Opens Reviews. When requests are waiting it shows the plugins they come from and how many there are. */
 function ReviewButton() {
+  const { t } = useTranslation();
   const { count, apps } = useReviewQueue();
   return (
     <Button asChild variant="ghost" className="h-9 shrink-0 gap-3 px-2 pr-3 text-muted-foreground">
-      <Link to="/apps/review" aria-label={count > 0 ? `${count} to review, open Reviews` : "Open Reviews"}>
+      <Link
+        to="/apps/review"
+        aria-label={count > 0
+          ? t("apps.plugins.header.countToReviewAria", { count, defaultValue: "{{count}} to review, open Reviews" })
+          : t("apps.plugins.header.openReviews", { defaultValue: "Open Reviews" })}
+      >
         {count > 0 ? (
           <>
             {apps.length > 0 ? (
@@ -32,11 +39,11 @@ function ReviewButton() {
               </span>
             ) : null}
             <span className="inline-flex h-6 items-center rounded-md bg-(--status-task-todo)/15 px-2 text-xs font-normal text-(--status-task-icon-todo) tabular-nums">
-              {count} to review
+              {t("apps.plugins.header.countToReview", { count, defaultValue: "{{count}} to review" })}
             </span>
           </>
         ) : (
-          <span className="pl-1">Reviews</span>
+          <span className="pl-1">{t("apps.plugins.header.reviews", { defaultValue: "Reviews" })}</span>
         )}
         <ChevronRight className="size-4" aria-hidden />
       </Link>
@@ -46,12 +53,13 @@ function ReviewButton() {
 
 /** Page header for the Plugins marketplace: title, the Review shortcut, and the Add menu for bringing your own. */
 export function PluginsHeader({ options, onNavigate }: { options: PluginsAddOption[]; onNavigate: (href: string) => void }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
       <div className="flex min-w-0 flex-col gap-1">
-        <p className="text-2xl leading-8 font-semibold tracking-tight text-foreground">Plugins</p>
+        <p className="text-2xl leading-8 font-semibold tracking-tight text-foreground">{t("Plugins")}</p>
         <p className="text-sm leading-5 text-muted-foreground">
-          Connect the apps your agents work in. Some come with skills you can add along the way.
+          {t("apps.plugins.header.subtitle", { defaultValue: "Connect the apps your agents work in. Some come with skills you can add along the way." })}
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-2">
@@ -60,7 +68,7 @@ export function PluginsHeader({ options, onNavigate }: { options: PluginsAddOpti
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button type="button" className="h-9 shrink-0 px-4">
-                Add
+                {t("Add")}
                 <ChevronDown className="size-4" aria-hidden />
               </Button>
             </DropdownMenuTrigger>

@@ -530,7 +530,9 @@ describeEmbeddedPostgres("chat channels: github retry and recovery", () => {
 
   it.each(["reconnected", "snapshot_newer_input"] as const)(
     "admits current GitHub task Retry without replaying obsolete input: %s", async kind => {
-      const f = await currentGitHubTaskRetryFixture(kind.includes("newer_input"));
+      const f = await currentGitHubTaskRetryFixture(kind.includes("newer_input"), 1, {
+        terminationAuthority: kind === "reconnected" && process.platform === "win32" ? "remote" : "local",
+      });
       const { pending, originalDelivery } = f;
       try {
         const companyId = f.fixture.companyId, issueId = f.issue.id;

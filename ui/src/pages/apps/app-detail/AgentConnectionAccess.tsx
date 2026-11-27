@@ -80,7 +80,9 @@ export function AgentConnectionAccess({ connectionId, profiles, policies, catalo
             <span className="text-sm font-medium">{agent?.name ?? translateInstant("Agent")}</span>
           </div>
           {canManage && <Button variant="outline" size="sm" disabled={pending !== null} onClick={() => void remove(profile.id)}>
-            {pending === profile.id ? "Removing…" : "Remove grant"}
+            {pending === profile.id
+              ? translateInstant("Removing…")
+              : translateInstant("apps.detail.agentAccess.removeGrant", { defaultValue: "Remove grant" })}
           </Button>}
         </div>
         <ul className="space-y-2">
@@ -88,7 +90,11 @@ export function AgentConnectionAccess({ connectionId, profiles, policies, catalo
             const askFirst = approvalKeys.has(`${agentId}:${tool.id}`);
             return <li key={tool.id} className="flex items-center justify-between gap-4 text-sm">
               <span className="min-w-0 break-all">{actionLabel(tool)}</span>
-              <span className="shrink-0 text-muted-foreground">{askFirst ? "Ask first" : "Allowed"}</span>
+              <span className="shrink-0 text-muted-foreground">
+                {askFirst
+                  ? translateInstant("apps.detail.permissions.askFirst", { defaultValue: "Ask first" })
+                  : translateInstant("apps.plugins.permissions.allowed", { defaultValue: "Allowed" })}
+              </span>
             </li>;
           })}
         </ul>

@@ -25,6 +25,7 @@ import {
 import { queryKeys } from "@/lib/queryKeys";
 import { Link, useSearchParams } from "@/lib/router";
 import { relativeTime } from "@/lib/utils";
+import { translateStatusLabel } from "@/lib/i18n-labels";
 
 const ALL = "__all";
 const RUN_LIMIT = 200;
@@ -54,12 +55,39 @@ function runDuration(run: HeartbeatRun) {
   return `${minutes}m ${seconds % 60}s`;
 }
 
+const KNOWN_RUN_SOURCES = new Set([
+  "on_demand",
+  "timer",
+  "assignment",
+  "automation",
+  "routine",
+  "webhook",
+  "comment",
+  "approval",
+  "schedule",
+]);
+
 function readableSource(source: string) {
+  if (KNOWN_RUN_SOURCES.has(source)) {
+    return translateInstant(`runs.source.${source}`, { defaultValue: source.replaceAll("_", " ") });
+  }
   return source.replaceAll("_", " ");
 }
 
+function readableSourceRun(source: string) {
+  if (KNOWN_RUN_SOURCES.has(source)) {
+    return translateInstant(`runs.sourceRun.${source}`, {
+      defaultValue: `${source.replaceAll("_", " ")} run`,
+    });
+  }
+  return translateInstant("runs.sourceRunFallback", {
+    source: readableSource(source),
+    defaultValue: `${readableSource(source)} run`,
+  });
+}
+
 function routineRunTitle(run: RoutineRunSummary) {
-  return run.linkedIssue?.title ?? run.trigger?.label ?? "Routine run";
+  return run.linkedIssue?.title ?? run.trigger?.label ?? translateInstant("Routine run");
 }
 
 function RoutineScopedRuns({
@@ -156,8 +184,10 @@ function RoutineScopedRuns({
         })}
       </ul>
       <p className="text-xs text-muted-foreground">
-        {translateInstant("Showing the")} {RUN_LIMIT}{" "}
-        {translateInstant("most recent routine runs.")}
+        {translateInstant("runs.showingRecentRoutine", {
+          count: RUN_LIMIT,
+          defaultValue: `Showing the ${RUN_LIMIT} most recent routine runs.`,
+        })}
       </p>
     </div>
   );
@@ -175,6 +205,7 @@ export function AuditRuns({
   lockedAgentId?: string;
   hideHeader?: boolean;
 }) {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const agentId = lockedAgentId ?? searchParams.get("agentId") ?? ALL;
   const status = searchParams.get("runStatus") ?? ALL;
@@ -266,7 +297,7 @@ export function AuditRuns({
       <div
         data-canonical-toolbar="audit-runs"
         role="toolbar"
-        aria-label="Audit filters"
+        aria-label={translateInstant("Audit filters", { defaultValue: "Audit filters" })}
         className="flex flex-wrap items-end gap-3 border-y border-border py-3"
       >
         {lockedAgentId ? null : (
@@ -311,7 +342,7 @@ export function AuditRuns({
               </SelectItem>
               {statuses.map((value) => (
                 <SelectItem key={value} value={value}>
-                  {readableSource(value)}
+                  {translateStatusLabel(t, value)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -370,7 +401,7 @@ export function AuditRuns({
                       <StatusBadge status={run.status} />
                     </div>
                     <p className="mt-1 truncate text-sm text-muted-foreground">
-                      {summary ?? `${readableSource(run.invocationSource)} run`}
+                      {summary ?? readableSourceRun(run.invocationSource)}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground sm:justify-end">
@@ -390,8 +421,10 @@ export function AuditRuns({
       )}
 
       <p className="text-xs text-muted-foreground">
-        {translateInstant("Showing the")} {RUN_LIMIT}{" "}
-        {translateInstant("most recent runs.")}
+        {translateInstant("runs.showingRecent", {
+          count: RUN_LIMIT,
+          defaultValue: `Showing the ${RUN_LIMIT} most recent runs.`,
+        })}
       </p>
     </div>
   );

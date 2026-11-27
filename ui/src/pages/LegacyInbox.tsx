@@ -2866,8 +2866,8 @@ export function Inbox() {
                               variant="ghost"
                               size="icon-xs"
                               className="-mr-2 text-muted-foreground"
-                              title={`New task in ${group.label}`}
-                              aria-label={`New task in ${group.label}`}
+                              title={translateInstant("issuesList.newTaskInGroup", { group: group.label, defaultValue: `New task in ${group.label}` })}
+                              aria-label={translateInstant("issuesList.newTaskInGroup", { group: group.label, defaultValue: `New task in ${group.label}` })}
                               onClick={(event) => {
                                 event.stopPropagation();
                                 openCreateIssueForGroup(group);

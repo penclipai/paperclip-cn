@@ -21,7 +21,7 @@
   },
   "1. Name": {
     "en": "1. Name",
-    "zh-CN": "1. 姓名",
+    "zh-CN": "1. 名称",
     "reviewedEnglishHash": "6dce9cbb76b5bf6ce23f789f876c719c3025e631ab1ffd33ad9a88a5c5bddac9"
   },
   "NPM Package": {
@@ -258,6 +258,11 @@
     "en": "New secret here",
     "zh-CN": "在此新建密钥",
     "reviewedEnglishHash": "9681c8fedd53f83f29d6427a113e79e166998542d13399549d3778fab7581e1f"
+  },
+  "New task": {
+    "en": "New task",
+    "zh-CN": "新建任务",
+    "reviewedEnglishHash": "3e992276b2298a1fb8035727de54620ff01bbcfc451133124145633b2c8f8475"
   },
   "New tasks default to isolated checkout": {
     "en": "New tasks default to isolated checkout",
@@ -1339,6 +1344,11 @@
     "zh-CN": "还没有子任务。",
     "reviewedEnglishHash": "17d17d5bca7d27e78866fa923e503cfb4a423e2c83f9889a6c322bc41aa8ca3d"
   },
+  "No system plugins installed": {
+    "en": "No system plugins installed",
+    "zh-CN": "尚未安装系统插件",
+    "reviewedEnglishHash": "18c4609d0ae722106d5aed8f68e7c9bd78121d2adf445f16063036326da0763c"
+  },
   "No target conflicts detected for this preview.": {
     "en": "No target conflicts detected for this preview.",
     "zh-CN": "此预览未检测到目标冲突。",
@@ -1529,6 +1539,11 @@
     "zh-CN": "未安排",
     "reviewedEnglishHash": "b3e24789bf8dc89bfbf7652e09b94488310916306db5db24ac24bf19c87e8768"
   },
+  "Not set": {
+    "en": "Not set",
+    "zh-CN": "未设置",
+    "reviewedEnglishHash": "4895f73177ab5d67c30c183a49d2477e014a2ef69b65150762d17e877f4f5b95"
+  },
   "Not verified": {
     "en": "Not verified",
     "zh-CN": "未验证",
@@ -1538,6 +1553,11 @@
     "en": "Note",
     "zh-CN": "备注",
     "reviewedEnglishHash": "d8da2c49df39d91df7ecd199b92da7bf264f026242ccc69b08daeadfe587c45b"
+  },
+  "Nothing is waiting on you.": {
+    "en": "Nothing is waiting on you.",
+    "zh-CN": "暂无待你处理的事项。",
+    "reviewedEnglishHash": "966f3dee73a2e757af698bb05587dd8d9e223a645b9f14aa8a3da03e60468d12"
   },
   "Nothing live to pause — no agent run is in flight or queued. This records a hold so new work won't start until you resume.": {
     "en": "Nothing live to pause — no agent run is in flight or queued. This records a hold so new work won't start until you resume.",

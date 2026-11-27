@@ -137,38 +137,37 @@ function describeSchedule(cron: string): string {
         defaultValue: `Every hour at :${minute.padStart(2, "0")}`,
       });
     case "every_day":
-      return `${translateInstant("Every day", { defaultValue: "Every day" })} ${translateInstant("scheduleDescription.atTime", {
+      return translateInstant("scheduleDescription.everyDayAt", {
         time: timeStr,
-        defaultValue: `at ${timeStr}`,
-      })}`;
+        defaultValue: `Every day at ${timeStr}`,
+      });
     case "weekdays":
-      return `${translateInstant("scheduleEditor.quick.weekdays", { defaultValue: "Weekdays" })} ${translateInstant("scheduleDescription.atTime", {
+      return translateInstant("scheduleDescription.weekdaysAt", {
         time: timeStr,
-        defaultValue: `at ${timeStr}`,
-      })}`;
+        defaultValue: `Weekdays at ${timeStr}`,
+      });
     case "weekly": {
       const dayInfo = DAYS_OF_WEEK.find((d) => d.value === dayOfWeek);
       const day = dayInfo ? translateInstant(dayInfo.labelKey, { defaultValue: dayInfo.defaultLabel }) : dayOfWeek;
-      return `${translateInstant("scheduleDescription.everyNamedDay", {
+      return translateInstant("scheduleDescription.everyNamedDayAt", {
         day,
-        defaultValue: `Every ${day}`,
-      })} ${translateInstant("scheduleDescription.atTime", {
         time: timeStr,
-        defaultValue: `at ${timeStr}`,
-      })}`;
+        defaultValue: `Every ${day} at ${timeStr}`,
+      });
     }
-    case "monthly":
-      return `${translateInstant("scheduleDescription.onDayOfMonth", {
-        day: translateInstant("scheduleDescription.dayOfMonthOrdinal", {
-          count: Number(dayOfMonth),
-          ordinal: `${dayOfMonth}${ordinalSuffix(Number(dayOfMonth))}`,
-          defaultValue: `${dayOfMonth}${ordinalSuffix(Number(dayOfMonth))}`,
-        }),
-        defaultValue: `Monthly on the ${dayOfMonth}${ordinalSuffix(Number(dayOfMonth))}`,
-      })} ${translateInstant("scheduleDescription.atTime", {
+    case "monthly": {
+      const ordinal = translateInstant("scheduleDescription.dayOfMonthOrdinal", {
+        count: Number(dayOfMonth),
+        ordinal: `${dayOfMonth}${ordinalSuffix(Number(dayOfMonth))}`,
+        defaultValue: `${dayOfMonth}${ordinalSuffix(Number(dayOfMonth))}`,
+      });
+      return translateInstant("scheduleDescription.monthlyOnAt", {
+        day: dayOfMonth,
+        ordinal,
         time: timeStr,
-        defaultValue: `at ${timeStr}`,
-      })}`;
+        defaultValue: `Monthly on the ${ordinal} at ${timeStr}`,
+      });
+    }
     case "custom":
       return cron || translateInstant("scheduleEditor.noScheduleSet", { defaultValue: "No schedule set" });
   }

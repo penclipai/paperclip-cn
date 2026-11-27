@@ -1,0 +1,212 @@
+{
+  "routineWebhook.authHeaderValue": {
+    "en": "Authorization header value",
+    "zh-CN": "Authorization 请求头值",
+    "reviewedEnglishHash": "39a91b3db30e7a700e4b20379da4ed881ce68d5caa5d3592a43cf9d2bafabb49"
+  },
+  "routineWebhook.copySecretOnce": {
+    "en": "Copy it now. It’s hidden after you close this.",
+    "zh-CN": "请立即复制。关闭此窗口后将不再显示。",
+    "reviewedEnglishHash": "288e4607dc1f2e7f66bcb4f57ff987f27d9476a191c07541636a0805bc9c674f"
+  },
+  "routineWebhook.createWebhook": {
+    "en": "Create webhook",
+    "zh-CN": "创建 Webhook",
+    "reviewedEnglishHash": "4a2b33ad2c1fb9391e384dbc9d52bd35eb114884401e1828711b88187d789488"
+  },
+  "routineWebhook.finishTesting": {
+    "en": "Finish testing",
+    "zh-CN": "结束测试",
+    "reviewedEnglishHash": "2a4bf43a9eb66e3bcc4094975b5953e88ebf81b933b67d1aa64ebc5e39344a47"
+  },
+  "routineWebhook.finishWithoutTesting": {
+    "en": "Finish without testing",
+    "zh-CN": "跳过测试并完成",
+    "reviewedEnglishHash": "dea48d11a2fa0a9dedc8c61c61e4e093db2cb866d5cb246b5d43ed9f1274ac99"
+  },
+  "routineWebhook.genericTitle": {
+    "en": "Webhook",
+    "zh-CN": "Webhook",
+    "reviewedEnglishHash": "4814f62c108d82de42a65c515d56fc220b7fe8521510fd128919664daaa167bb"
+  },
+  "routineWebhook.githubTitle": {
+    "en": "GitHub webhook",
+    "zh-CN": "GitHub Webhook",
+    "reviewedEnglishHash": "62487aeb41d3310b174e8dcb48d13bfd2515268d1a133afee9e8ee07db522c3d"
+  },
+  "routineWebhook.health.receiving": {
+    "en": "Receiving events",
+    "zh-CN": "正在接收事件",
+    "reviewedEnglishHash": "3ce60aee3c9667fd6a8a069ab905ed30e3f7e6b5efad3969c21418ba9e4e8fbc"
+  },
+  "routineWebhook.health.rejected": {
+    "en": "Key rejected",
+    "zh-CN": "密钥被拒绝",
+    "reviewedEnglishHash": "3957a5be966bb54128917f92596ff52cb378438a20c1fb02381bc684eb3d3e66"
+  },
+  "routineWebhook.health.setup": {
+    "en": "Setup unfinished",
+    "zh-CN": "配置未完成",
+    "reviewedEnglishHash": "9761a1db0d16b284e8a422293946eef0e3014521e7d7fa9947d001e8c783f8b1"
+  },
+  "routineWebhook.health.testing": {
+    "en": "Testing · events don’t run",
+    "zh-CN": "测试中 · 事件不会触发运行",
+    "reviewedEnglishHash": "970fe45d1532c4787cf8ef541a6933eba0d75ee180d88d7f222830bd32e72435"
+  },
+  "routineWebhook.health.waiting": {
+    "en": "Waiting for the first event",
+    "zh-CN": "等待首个事件",
+    "reviewedEnglishHash": "6c0e83238b1e9737b39846245cc92cba6423f4a74a44c5ec60da4676ef1a1856"
+  },
+  "routineWebhook.hmacInstructions": {
+    "en": "Sign the timestamp, a period, and the exact JSON body with HMAC-SHA256. Send X-Paperclip-Timestamp and X-Paperclip-Signature: sha256=<signature>.",
+    "zh-CN": "使用 HMAC-SHA256 对时间戳、英文句点（.）以及完整的 JSON 请求体进行签名，并在请求头中发送 X-Paperclip-Timestamp 与 X-Paperclip-Signature: sha256=<signature>。",
+    "reviewedEnglishHash": "e88a8ed8b57569860c773f4ce741f9c6f5bdb8cf6d4779573bb063f6de9df853"
+  },
+  "routineWebhook.noKeyNote": {
+    "en": "This webhook has no key. Its URL is the shared secret, so keep it private.",
+    "zh-CN": "此 Webhook 未设置密钥，其 URL 即为共享机密，请妥善保管。",
+    "reviewedEnglishHash": "c7f05e4f3bf72af7b6eeb264947dd8c7037ce4374abaf7e2992db3444cf815ab"
+  },
+  "routineWebhook.payloadUrl": {
+    "en": "Payload URL",
+    "zh-CN": "Payload URL",
+    "reviewedEnglishHash": "1de5cdcfa7cac062ed5c471718c7ad4d4dcc22552bf584eaa87d8cfc2b91b290"
+  },
+  "routineWebhook.replaceKey": {
+    "en": "Replace key",
+    "zh-CN": "更换密钥",
+    "reviewedEnglishHash": "548dca59aca6ba0f15b29f2420e804245da35b09b8d53add2b2a61e7609b3bec"
+  },
+  "routineWebhook.secretHidden": {
+    "en": "The secret key is hidden.",
+    "zh-CN": "密钥已隐藏。",
+    "reviewedEnglishHash": "e27dfe1b2433a35743e497783a8edc974297239e2f876a3bf94eaa922bb73261"
+  },
+  "routineWebhook.secretKey": {
+    "en": "Secret key",
+    "zh-CN": "密钥",
+    "reviewedEnglishHash": "f47a99ebcf29c1db68e6bbe4906b0d064e289efa65a2796c57edd354f14f6605"
+  },
+  "routineWebhook.sender.custom": {
+    "en": "Another app or script",
+    "zh-CN": "其他应用或脚本",
+    "reviewedEnglishHash": "3368721465f9495b12cbe5c775ce10fc1e6052844782d8b9abd15f983562e24b"
+  },
+  "routineWebhook.sender.github": {
+    "en": "GitHub",
+    "zh-CN": "GitHub",
+    "reviewedEnglishHash": "f911e414cf6bdfc595532ab166b5ba0f63d73c021452fcdacbda363dda6ad8fb"
+  },
+  "routineWebhook.startWhenHappens": {
+    "en": "Start this routine when something happens in another app.",
+    "zh-CN": "当其他应用中发生事件时启动此例行任务。",
+    "reviewedEnglishHash": "b686a10d5a74e4a51a5abb6c00118111ff2151b8ce5cf18279343693947784f7"
+  },
+  "routineWebhook.startsWhenAnotherApp": {
+    "en": "Starts “{{routineTitle}}” when another app sends an event.",
+    "zh-CN": "当其他应用发送事件时启动“{{routineTitle}}”。",
+    "reviewedEnglishHash": "e1944b931e13a2bd18502fd5f0b223a61e657f5251b7cec7f44b498533f2feee"
+  },
+  "routineWebhook.startsWhenGithub": {
+    "en": "Starts “{{routineTitle}}” when GitHub sends an event.",
+    "zh-CN": "当 GitHub 发送事件时启动“{{routineTitle}}”。",
+    "reviewedEnglishHash": "8ee0305b44f10d769b1c94333ec5354dc66b746d2801919f860f21a67ac595aa"
+  },
+  "routineWebhook.status.ignoredWhilePaused.detail": {
+    "en": "Turn the routine on to start it from this webhook. Until then the sending app gets an error.",
+    "zh-CN": "请开启此例行任务以通过该 Webhook 启动；在此之前，发送方应用会收到错误。",
+    "reviewedEnglishHash": "9160c6337034bb5de79875257559159c452740079fefc0cd226c825f671d6b7b"
+  },
+  "routineWebhook.status.ignoredWhilePaused.title": {
+    "en": "Ignoring events while the routine is paused",
+    "zh-CN": "例行任务已暂停，正在忽略事件",
+    "reviewedEnglishHash": "913c0b810b9b2d2c11e57d68de07a430744b134bfd2ce5c85cceb3859adbb401"
+  },
+  "routineWebhook.status.paused.detail": {
+    "en": "Events are ignored until you resume this webhook.",
+    "zh-CN": "恢复此 Webhook 前，事件将被忽略。",
+    "reviewedEnglishHash": "5b0117ccb39ea38fcead22928f8667c1e6191a39ff6d38c5b5ff3490fe27375a"
+  },
+  "routineWebhook.status.receiving.detail": {
+    "en": "Each event starts this routine.",
+    "zh-CN": "每条事件都会启动此例行任务。",
+    "reviewedEnglishHash": "9b8c87e2d3d626f00220deba129428cd2a956ae2173e7f632842b3005c4fc9d7"
+  },
+  "routineWebhook.status.rejected.detail": {
+    "en": "The key didn’t match. Replace the key, then paste the new one into your app.",
+    "zh-CN": "密钥不匹配。请更换密钥，并将新密钥粘贴到你的应用中。",
+    "reviewedEnglishHash": "4a5ddf9e5613f234f2d0d0cac5f630e8dfcc7ca916b8623dacfc383be2944c1e"
+  },
+  "routineWebhook.status.rejected.title": {
+    "en": "The last event was rejected",
+    "zh-CN": "上一条事件被拒绝",
+    "reviewedEnglishHash": "fd48e20f5184e0f35f2ba7c55f825650a632ed990e435d226b9ec77c00fd74e7"
+  },
+  "routineWebhook.status.setup.detail": {
+    "en": "Send one from your app. Test events never start the routine.",
+    "zh-CN": "请从你的应用发送一条测试事件；测试事件不会启动此例行任务。",
+    "reviewedEnglishHash": "219c25bb296c360c289f25df0f47972ef343f5fb62d7a9673aedb0e9c16837a6"
+  },
+  "routineWebhook.status.setup.title": {
+    "en": "Waiting for a test event",
+    "zh-CN": "等待测试事件",
+    "reviewedEnglishHash": "9110facaae7151df62fe8b8946dc5908788e5b5d00be850f08700c743e2837de"
+  },
+  "routineWebhook.status.setupTesting.detail": {
+    "en": "Send one from your app. It won’t start the routine. Real events are ignored until you finish testing.",
+    "zh-CN": "请从你的应用发送一条事件；它不会启动此例行任务。在结束测试前，真实事件将被忽略。",
+    "reviewedEnglishHash": "9548bce6279b2f10e3736889b55126b8b716f22fd3b58c7ae8f57cb05cbecd7e"
+  },
+  "routineWebhook.status.testReceived.detail": {
+    "en": "The connection works. No task was created.",
+    "zh-CN": "连接正常，未创建任何任务。",
+    "reviewedEnglishHash": "a4fbecbc0ec9d1f706b2b72aee687ddd28a3a4d6daac46f81ac78b9e0e184607"
+  },
+  "routineWebhook.status.testReceived.title": {
+    "en": "Test event received",
+    "zh-CN": "已收到测试事件",
+    "reviewedEnglishHash": "edbe8cac27304ed56cb2ed138c04961c92d5179f32bf5ddc8431d2646850fde0"
+  },
+  "routineWebhook.status.testing.detail": {
+    "en": "Send an event from your app. It won’t start the routine. Real events are ignored until you finish testing.",
+    "zh-CN": "请从你的应用发送一条事件；它不会启动此例行任务。在结束测试前，真实事件将被忽略。",
+    "reviewedEnglishHash": "915986cb79c113e767f5bec9a205dbce8be294262e9d242012129ef6d74f46db"
+  },
+  "routineWebhook.status.testing.title": {
+    "en": "Testing",
+    "zh-CN": "测试中",
+    "reviewedEnglishHash": "e806a291cfc3e61f83b98d344ee57e3e8933cccece4fb45e1481f1f560e70eb1"
+  },
+  "routineWebhook.status.waiting.detail": {
+    "en": "The next event starts this routine.",
+    "zh-CN": "下一条事件将启动此例行任务。",
+    "reviewedEnglishHash": "35460fddddd1c94f90aaebdccc18ba062c45bcabe27f4064d75b5da223494c2a"
+  },
+  "routineWebhook.status.waiting.title": {
+    "en": "Ready",
+    "zh-CN": "已就绪",
+    "reviewedEnglishHash": "5fa7aac5375c5815787fba3f49559f9b45b14023147ce0652803387974144e5f"
+  },
+  "routineWebhook.testWebhook": {
+    "en": "Test webhook",
+    "zh-CN": "测试 Webhook",
+    "reviewedEnglishHash": "333e8368ac5c9300487e77ee630bd0be2ff7c71c8ce39560b7b0932e4a32f148"
+  },
+  "routineWebhook.testingNoTasks": {
+    "en": "Testing. No tasks are created.",
+    "zh-CN": "正在测试，不会创建任务。",
+    "reviewedEnglishHash": "985697ab42db2c6500bdaa2f1795523361819739efde5cab8dd287c4258ebec1"
+  },
+  "routineWebhook.webhookUrl": {
+    "en": "Webhook URL",
+    "zh-CN": "Webhook URL",
+    "reviewedEnglishHash": "84805a7574a82052bdd5b3b98119cfd838d04036ec4bd3d667a95698e7097ad6"
+  },
+  "routineWebhook.whatsSending": {
+    "en": "What’s sending the webhook?",
+    "zh-CN": "由什么服务发送 Webhook？",
+    "reviewedEnglishHash": "850bfd5b6f327d6101440126eedca82ec0e5fcfadeaa308a29d94c708c9a6eee"
+  }
+}

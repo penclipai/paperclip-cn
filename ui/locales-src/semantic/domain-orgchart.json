@@ -4,6 +4,31 @@
     "zh-CN": "智能体",
     "reviewedEnglishHash": "11b39c93777e8f1f3983bdba7c72b22fe68cfea20c677e9de53e17cb7dbfb19f"
   },
+  "orgChart.controls.ariaLabel": {
+    "en": "Org chart controls",
+    "zh-CN": "组织架构图控制",
+    "reviewedEnglishHash": "4ae3c974237e44d6df90e4869ad20af292c7aa3fb094c59b1bf807d916f0acf9"
+  },
+  "orgChart.controls.camera": {
+    "en": "Chart camera",
+    "zh-CN": "画布视角",
+    "reviewedEnglishHash": "61388e2a0b291a41aa5af8449aa1833249c280d00be589f95a8164e78208180e"
+  },
+  "orgChart.controls.fitToScreen": {
+    "en": "Fit chart to screen",
+    "zh-CN": "缩放至适应屏幕",
+    "reviewedEnglishHash": "3dc2e33313f5cf3c3169383689c218d7884a1aadff00569021dc4a6e0cc10a4d"
+  },
+  "orgChart.controls.zoomIn": {
+    "en": "Zoom in",
+    "zh-CN": "放大",
+    "reviewedEnglishHash": "0e47f09a748fa1321dbaee5c8983f8e8f2880b1212956fb4f21ae9d60b88a8b2"
+  },
+  "orgChart.controls.zoomOut": {
+    "en": "Zoom out",
+    "zh-CN": "缩小",
+    "reviewedEnglishHash": "bc7b631a689b45ca5c51923515d31eb3597b2d9b129d88d0dbee066ee5c35453"
+  },
   "orgChart.empty": {
     "en": "No agents in the organization. Create agents to build your org chart.",
     "zh-CN": "组织里还没有智能体。先创建一些智能体，再来查看组织结构。",

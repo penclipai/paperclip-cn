@@ -44,7 +44,7 @@ function firstNonEmptyLine(value: string | null | undefined): string | null {
 }
 
 function getPluginErrorSummary(plugin: PluginRecord): string {
-  return firstNonEmptyLine(plugin.lastError) ?? "Plugin entered an error state without a stored error message.";
+  return firstNonEmptyLine(plugin.lastError) ?? translateInstant("pluginManager.noStoredError", { defaultValue: "Plugin entered an error state without a stored error message." });
 }
 
 function isExperimentalPluginIdentity(input: {
@@ -318,7 +318,7 @@ export function PluginManager() {
                             variant={installedPlugin.status === "ready" ? "default" : "secondary"}
                             className={installedPlugin.status === "ready" ? "bg-green-600 hover:bg-green-700" : ""}
                           >
-                            {installedPlugin.status}
+                            {translateInstant(`pluginManager.status.${installedPlugin.status}`, { defaultValue: installedPlugin.status })}
                           </Badge>
                         ) : (
                           <Badge variant="secondary">{translateInstant("Not installed")}</Badge>
@@ -466,7 +466,7 @@ export function PluginManager() {
                             plugin.status === "ready" ? "bg-green-600 hover:bg-green-700" : ""
                           )}
                         >
-                          {plugin.status}
+                          {translateInstant(`pluginManager.status.${plugin.status}`, { defaultValue: plugin.status })}
                         </Badge>
                         <Button
                           variant="outline"

@@ -131,7 +131,7 @@
   },
   "issueProperties.boardUsers": {
     "en": "Board users",
-    "zh-CN": "董事会用户",
+    "zh-CN": "董事会成员",
     "reviewedEnglishHash": "bc0c0606939cb8f8005bd81104600f76b8584e0568589d2790048d8d308df928"
   },
   "issueProperties.branch": {
@@ -159,6 +159,11 @@
     "zh-CN": "清除适配器选项",
     "reviewedEnglishHash": "9a262cb359fa6f2052688aab1949e96c015e83dc02f6a8d625e759de0a12e053"
   },
+  "issueProperties.closeTabAria": {
+    "en": "Close {{label}} tab",
+    "zh-CN": "关闭{{label}}标签页",
+    "reviewedEnglishHash": "2f8343816292d3d4c472180e318f655d8b8aa60b0687ca013d505a22f0808ff4"
+  },
   "issueProperties.completed": {
     "en": "Completed",
     "zh-CN": "完成于",
@@ -168,6 +173,11 @@
     "en": "Configure watchdog",
     "zh-CN": "配置看护",
     "reviewedEnglishHash": "24ca6eff5c44761ecf8e80005a17e5cfafede41de0deca36d432e0ced9bd5e22"
+  },
+  "issueProperties.copyToClipboardAria": {
+    "en": "Copy {{value}} to clipboard",
+    "zh-CN": "复制 {{value}} 到剪贴板",
+    "reviewedEnglishHash": "c5652f20fa13eeab8e382f821f827e49bfdb8f1c69a6d21c59343e7325afb515"
   },
   "issueProperties.copyValueToClipboard": {
     "en": "Copy {{value}} to clipboard",
@@ -298,6 +308,11 @@
     "en": "Last triggered",
     "zh-CN": "上次触发",
     "reviewedEnglishHash": "4876b1e2e866153f45b506f9a3085e763ec8298bd045d85645874c085f3d871b"
+  },
+  "issueProperties.loadingUsageLimit": {
+    "en": "Loading usage limit",
+    "zh-CN": "正在加载用量限制",
+    "reviewedEnglishHash": "d41225da1c514b260ab445f776d4b6a9767fc8ecbe9e9eeaad639decc2c8b361"
   },
   "issueProperties.modelLane": {
     "en": "Model lane",
@@ -511,7 +526,7 @@
   },
   "issueProperties.plans.empty": {
     "en": "No plan yet. The plan document, accepted plans, and their revisions will appear here.",
-    "zh-CN": "暂无计划。计划文档、已接受计划及其修订将在此显示。",
+    "zh-CN": "暂无方案。方案文档、已采纳的方案及其修订记录将显示在此处。",
     "reviewedEnglishHash": "4bafe14d5cb71e63385a89abe676d0e17782205da0756d755ef40bcb5fa56413"
   },
   "issueProperties.plans.loading": {
@@ -531,7 +546,7 @@
   },
   "issueProperties.plans.revisionUpdated": {
     "en": "Revision {{revision}} · updated {{updatedAt}}",
-    "zh-CN": "修订 {{revision}} · 更新于 {{updatedAt}}",
+    "zh-CN": "第 {{revision}} 版 · 更新于 {{updatedAt}}",
     "reviewedEnglishHash": "de791a615b2638fef70a194e13a3b20bcbc864de6ff05171b542aebe968b8f73"
   },
   "issueProperties.primaryModel": {
@@ -543,6 +558,11 @@
     "en": "Properties",
     "zh-CN": "属性",
     "reviewedEnglishHash": "ae43692b2a310b8ed2443d2b7d2a3e4cf0b6d73115badd72831b3d22381f235f"
+  },
+  "issueProperties.recheckPlaceholder": {
+    "en": "What should the agent re-check?",
+    "zh-CN": "智能体应重新检查什么？",
+    "reviewedEnglishHash": "ade0821de91bcb2328f0ab9ab7fe4a3bbb9c9e8f1df0f50e07c555218a100876"
   },
   "issueProperties.references": {
     "en": "References",
@@ -646,7 +666,7 @@
   },
   "issueProperties.searchReviewers": {
     "en": "Search reviewers...",
-    "zh-CN": "搜索复查人...",
+    "zh-CN": "搜索审核人...",
     "reviewedEnglishHash": "1cd864330ccf4fae2e655d9fceb679cc337c2ab9529d03b23200c13727286e21"
   },
   "issueProperties.searchTasks": {
@@ -728,6 +748,11 @@
     "en": "Updated",
     "zh-CN": "更新于",
     "reviewedEnglishHash": "3a5ecca188c0579c00ee24cf3cab21bd02c15a06f7a70cc8e0a8ff2381dcbbfd"
+  },
+  "issueProperties.usageLimit": {
+    "en": "Usage limit",
+    "zh-CN": "用量限制",
+    "reviewedEnglishHash": "2d16305196cf7f3ede463bde76ddd4840a97d0ea42dbf419e1409de0cfa5197a"
   },
   "issueProperties.usesCheapProfile": {
     "en": "· uses the agent's configured cheap profile",

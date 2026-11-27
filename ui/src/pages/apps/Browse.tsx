@@ -207,9 +207,24 @@ export const CATALOG_PAGE_SIZE = 50;
 
 /** Hand-picked for the "New and noteworthy" shelf; the catalog has no added-on date to sort by. */
 const PLUGIN_ADD_OPTIONS: PluginsAddOption[] = [
-  { id: "mcp", title: "MCP server URL", description: "A custom or self-hosted MCP server.", href: "/apps/byo" },
-  { id: "config", title: "Paste a config", description: "Connect from an existing setup snippet.", href: "/apps/advanced/paste-config" },
-  { id: "assistant", title: "Assistant connection", description: "Use Paperclip from Codex, Claude or OpenCode.", href: "/apps/assistant-connection" },
+  {
+    id: "mcp",
+    get title() { return translateInstant("apps.plugins.addOptions.mcp.title", { defaultValue: "MCP server URL" }); },
+    get description() { return translateInstant("apps.plugins.addOptions.mcp.description", { defaultValue: "A custom or self-hosted MCP server." }); },
+    href: "/apps/byo",
+  },
+  {
+    id: "config",
+    get title() { return translateInstant("apps.plugins.addOptions.config.title", { defaultValue: "Paste a config" }); },
+    get description() { return translateInstant("apps.plugins.addOptions.config.description", { defaultValue: "Connect from an existing setup snippet." }); },
+    href: "/apps/advanced/paste-config",
+  },
+  {
+    id: "assistant",
+    get title() { return translateInstant("apps.plugins.addOptions.assistant.title", { defaultValue: "Assistant connection" }); },
+    get description() { return translateInstant("apps.plugins.addOptions.assistant.description", { defaultValue: "Use Paperclip from Codex, Claude or OpenCode." }); },
+    href: "/apps/assistant-connection",
+  },
 ];
 
 /** How many plugins a category block shows on the browse page before "See all". */
@@ -319,26 +334,48 @@ function additionalConnectionHref(
   return `${path}?${params.toString()}`;
 }
 
+function localizeConnectionError(message: string | null | undefined): string | null {
+  if (!message) return null;
+  switch (message) {
+    case "Remote MCP connection requires config.url":
+      return translateInstant("apps.connectionError.mcpRemoteUrlMissing", { defaultValue: message });
+    case "Remote MCP connection URL is invalid":
+      return translateInstant("apps.connectionError.mcpRemoteUrlInvalid", { defaultValue: message });
+    case "Remote MCP connection URL must use http or https":
+      return translateInstant("apps.connectionError.mcpRemoteUrlScheme", { defaultValue: message });
+    case "Remote MCP connection URL cannot target private or reserved network addresses":
+    case "Remote MCP connection URL cannot resolve to private or reserved network addresses":
+      return translateInstant("apps.connectionError.mcpRemotePrivateEndpoint", { defaultValue: message });
+    case "Remote MCP connection hostname could not be resolved":
+    case "Remote MCP connection hostname did not resolve":
+      return translateInstant("apps.connectionError.mcpRemoteDnsFailed", { defaultValue: message });
+    case "Remote MCP connection resolved to an address that was not approved":
+      return translateInstant("apps.connectionError.mcpRemoteUnapprovedIp", { defaultValue: message });
+    default:
+      return message;
+  }
+}
+
 function connectionState(connection: ToolConnection): ConnectionState {
   if (isRetiredComposioConnection(connection)) {
     return {
       kind: "attention",
-      label: "Retired",
+      label: translateInstant("apps.connectionState.retired", { defaultValue: "Retired" }),
       message: RETIRED_COMPOSIO_MESSAGE,
     };
   }
   if (connection.status === "draft") {
     return {
       kind: "draft",
-      label: "Setup incomplete",
-      message: "Finish setup before agents can use this account.",
+      label: translateInstant("apps.connectionState.setupIncomplete", { defaultValue: "Setup incomplete" }),
+      message: translateInstant("apps.connectionState.finishSetupMessage", { defaultValue: "Finish setup before agents can use this account." }),
     };
   }
   if (connection.enabled === false || connection.status === "disabled") {
     return {
       kind: "paused",
       label: translateInstant("Paused"),
-      message: "Agents can’t use this account right now.",
+      message: translateInstant("apps.connectionState.pausedMessage", { defaultValue: "Agents can’t use this account right now." }),
     };
   }
   if (
@@ -351,11 +388,11 @@ function connectionState(connection: ToolConnection): ConnectionState {
       kind: "attention",
       label: translateInstant("Needs attention"),
       message:
-        connection.healthMessage ??
-        connection.lastError ??
+        localizeConnectionError(connection.healthMessage) ??
+        localizeConnectionError(connection.lastError) ??
         (connection.authKind === "oauth"
-          ? "Sign in again to restore access."
-          : "Replace the credential to restore access."),
+          ? translateInstant("Sign in again to restore access.")
+          : translateInstant("apps.connectionState.replaceCredentialMessage", { defaultValue: "Replace the credential to restore access." })),
     };
   }
   return {
@@ -475,9 +512,11 @@ export function pluginTileState(row: ConnectorRowModel, connectionById?: Readonl
 
 /** Why a chat connection is asking for the user, or null when it is fine. */
 export function chatEndpointAttention(endpoint: Pick<ChatEndpoint, "status" | "setup">): string | null {
-  if (endpoint.status === "revoked") return "Access revoked";
-  if (endpoint.status === "attention") return "Needs attention";
-  return chatEndpointNeedsSetup(endpoint as ChatEndpoint) ? "Setup not finished" : null;
+  if (endpoint.status === "revoked") return translateInstant("apps.chatEndpoint.accessRevoked", { defaultValue: "Access revoked" });
+  if (endpoint.status === "attention") return translateInstant("Needs attention");
+  return chatEndpointNeedsSetup(endpoint as ChatEndpoint)
+    ? translateInstant("apps.chatEndpoint.setupNotFinished", { defaultValue: "Setup not finished" })
+    : null;
 }
 
 function connectorAction(
@@ -530,7 +569,7 @@ function connectorAction(
       href: null,
       title:
         row.entry.availability.reason ??
-        "This connector is unavailable on this instance.",
+        translateInstant("apps.connector.unavailableOnInstance", { defaultValue: "This connector is unavailable on this instance." }),
     };
   }
   if (chatHref) return { label: translateInstant("Connect"), href: chatHref };
@@ -1036,7 +1075,7 @@ export function Browse({
         description:
           !chatProviderVisible(slug, chatConnectorsEnabled) && chatProviderForSlug(slug)
             ? appCopyFor(slug).tagline
-            : appDefinitionDescription(entry),
+            : appCopyFor(slug, appDefinitionDescription(entry)).tagline,
         brandKey: slug,
         logoUrl: appDefinitionLogoUrl(entry),
         darkLogoUrl: appDefinitionDarkLogoUrl(entry),
@@ -1726,7 +1765,7 @@ export function Browse({
               </Button>
               <PluginPageHeader
                 name={openRow.name}
-                kind={`Connector · ${PLUGIN_CATEGORIES[rowCategory(openRow)].label}`}
+                kind={translateInstant("apps.plugins.connectorKind", { category: PLUGIN_CATEGORIES[rowCategory(openRow)].label, defaultValue: `Connector · ${PLUGIN_CATEGORIES[rowCategory(openRow)].label}` })}
                 description={openRow.description}
                 brandKey={openRow.brandKey}
                 logoUrl={openRow.logoUrl}
@@ -1763,13 +1802,13 @@ export function Browse({
           </div>
         ) : pluginKey ? (
           <div className="flex flex-col items-start gap-3 rounded-2xl bg-muted/50 px-4 py-6 text-sm text-muted-foreground">
-            <p>This plugin isn’t in the catalog anymore.</p>
-            <Button variant="outline" size="sm" onClick={() => navigate("/apps")}>Back to Plugins</Button>
+            <p>{translateInstant("apps.plugins.notInCatalog", { defaultValue: "This plugin isn’t in the catalog anymore." })}</p>
+            <Button variant="outline" size="sm" onClick={() => navigate("/apps")}>{translateInstant("apps.plugins.backToPlugins", { defaultValue: "Back to Plugins" })}</Button>
           </div>
         ) : marketplace ? (
-          <div className={cn("flex flex-col gap-10", ANALYTICS_MASK_CLASS)} role="list" aria-label="Connector list">
-            {featuredRows.length > 0 ? <PluginShelf id="plugins-most-used" title="Most used">{featuredRows.map(renderTile)}</PluginShelf> : null}
-            {noteworthyRows.length > 0 ? <PluginShelf id="plugins-noteworthy" title="New and noteworthy">{noteworthyRows.map(renderTile)}</PluginShelf> : null}
+          <div className={cn("flex flex-col gap-10", ANALYTICS_MASK_CLASS)} role="list" aria-label={translateInstant("Connector list")}>
+            {featuredRows.length > 0 ? <PluginShelf id="plugins-most-used" title={translateInstant("apps.plugins.mostUsed", { defaultValue: "Most used" })}>{featuredRows.map(renderTile)}</PluginShelf> : null}
+            {noteworthyRows.length > 0 ? <PluginShelf id="plugins-noteworthy" title={translateInstant("apps.plugins.newAndNoteworthy", { defaultValue: "New and noteworthy" })}>{noteworthyRows.map(renderTile)}</PluginShelf> : null}
             {categoryGroups.map((group) => (
               group.rows.length > 0 ? <PluginShelf key={group.id} id={pluginCategorySectionId(group.id)} title={PLUGIN_CATEGORIES[group.id].label} count={group.total}
                 onSeeAll={group.total > group.rows.length ? () => openCategory(group.id) : undefined}>{group.rows.map(renderTile)}</PluginShelf> : null
@@ -1777,7 +1816,7 @@ export function Browse({
             <PluginCategories categories={categoryGroups.map((group) => group.id)} onOpen={openCategory} />
           </div>
         ) : (
-          <div className={cn("flex flex-col gap-3", ANALYTICS_MASK_CLASS)} role="list" aria-label="Connector list">
+          <div className={cn("flex flex-col gap-3", ANALYTICS_MASK_CLASS)} role="list" aria-label={translateInstant("Connector list")}>
             <div className={PLUGIN_GRID}>
               {showAssistantConnection && !categoryId ? <AssistantConnectionTile onNavigate={navigate} /> : null}
               {paginatedRows.map(renderTile)}
@@ -1819,7 +1858,7 @@ export function Browse({
                 catalogTop.current?.scrollIntoView?.({ block: "start" });
               }}
             >
-              {translateInstant("Previous")}
+              {translateInstant("connectionUi.catalog.pagination.previous", { defaultValue: "Previous" })}
             </Button>
             <span className="text-xs text-muted-foreground">
               {translateInstant("connectionUi.catalog.pagination.page", {
@@ -1837,7 +1876,7 @@ export function Browse({
                 catalogTop.current?.scrollIntoView?.({ block: "start" });
               }}
             >
-              {translateInstant("Next")}
+              {translateInstant("connectionUi.catalog.pagination.next", { defaultValue: "Next" })}
             </Button>
           </div>
         </nav>
@@ -2489,7 +2528,7 @@ function ConnectionAccountRow({
         <>
           {details}
           {account?.isDefault && account.status !== "connected" && (
-            <p className="text-xs text-destructive">Default unavailable</p>
+            <p className="text-xs text-destructive">{translateInstant("apps.aiAccount.defaultUnavailable", { defaultValue: "Default unavailable" })}</p>
           )}
           {discovery?.discovery.message ||
           discovery?.sync.status === "error" ? (
@@ -2499,7 +2538,7 @@ function ConnectionAccountRow({
           ) : null}
         </>
       }
-      openLabel={`Open ${accountName} permissions`}
+      openLabel={translateInstant("apps.account.openPermissions", { name: accountName, defaultValue: `Open ${accountName} permissions` })}
       onOpen={() => onNavigate(`/apps/${connection.id}/permissions`)}
     >
       {setupEnabled &&
@@ -2519,7 +2558,7 @@ function ConnectionAccountRow({
             : translateInstant("apps.connect.install.finish")}
         </Button>
       ) : state.kind === "draft" ? null : (
-        <Button type="button" size="sm" variant="ghost" className="text-muted-foreground" aria-label={`${accountName} settings`} onClick={() => onNavigate(`/apps/${connection.id}/permissions`)}>
+        <Button type="button" size="sm" variant="ghost" className="text-muted-foreground" aria-label={translateInstant("apps.account.settingsAria", { name: accountName, defaultValue: `${accountName} settings` })} onClick={() => onNavigate(`/apps/${connection.id}/permissions`)}>
           {translateInstant("Settings")}
           <ChevronRight aria-hidden />
         </Button>
@@ -2562,8 +2601,8 @@ function ConnectionAccountRow({
           {row.slug === "arcade" && onConfigureArcade ? (
             <DropdownMenuItem onSelect={onConfigureArcade}>
               {discovery?.discovery.availability === "setup_required"
-                ? "Set up account sync"
-                : "Account sync settings"}
+                ? translateInstant("apps.arcade.setupAccountSync", { defaultValue: "Set up account sync" })
+                : translateInstant("apps.arcade.accountSyncSettings", { defaultValue: "Account sync settings" })}
             </DropdownMenuItem>
           ) : null}
           {row.slug === "executor" && onConfigureExecutor ? (

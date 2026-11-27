@@ -2487,7 +2487,7 @@ export function Secrets() {
               <EmptyState placement="upper"
                 icon={KeyRound}
                 title={translateInstant("secrets.emptyTitle", { defaultValue: "No secrets yet" })}
-                message={translateInstant("secrets.emptyMessage", { defaultValue: "Add an API key or token once,\nthen choose which agents can use it." })}
+                message={translateInstant("secrets.emptyMessage", { defaultValue: "Add an API key or token once, then choose which agents can use it." })}
                 action={translateInstant("secrets.newSecret")}
                 onAction={openCreateSecret}
               />

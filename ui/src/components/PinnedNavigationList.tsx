@@ -1,4 +1,5 @@
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -19,9 +20,10 @@ export function SortablePinnedRow({ id, label, disabled = false, className, hand
   id: string; label: string; disabled?: boolean; handleClassName: string; handleIconClassName: string;
   children: ReactNode | ((handle: ReactNode) => ReactNode);
 }) {
+  const { t } = useTranslation();
   const sortable = useSortable({ id, disabled, transition: null });
   const handle = !disabled && <button ref={sortable.setActivatorNodeRef} type="button" {...sortable.attributes} {...sortable.listeners}
-    aria-label={`Reorder pinned ${label}`} title={`Drag to reorder ${label}`}
+    aria-label={t("pinnedNavigation.reorderAria", { label, defaultValue: "Reorder pinned {{label}}" })} title={t("pinnedNavigation.reorderTitle", { label, defaultValue: "Drag to reorder {{label}}" })}
     className={cn("absolute top-1/2 flex -translate-y-1/2 touch-none cursor-grab items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity active:cursor-grabbing hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:opacity-100", handleClassName)}>
     <GripVertical aria-hidden className={handleIconClassName} />
   </button>;
@@ -33,10 +35,12 @@ export function SortablePinnedRow({ id, label, disabled = false, className, hand
 }
 
 function PinnedItem({ item, userId, onUnpin }: { item: PinnedNavigationItem; userId?: string | null; onUnpin: (key: string) => void }) {
+  const { t } = useTranslation();
   const rowClassName = "design-sidebar-item design-sidebar-pinned-item";
+  const unpinLabel = t("pinnedNavigation.unpin", { label: item.label, defaultValue: "Unpin {{label}}" });
   const row = (primary: ReactNode, handle: ReactNode) => <div className="design-sidebar-pinned-row relative">
     {primary}
-    <button type="button" aria-label={`Unpin ${item.label}`} title={`Unpin ${item.label}`}
+    <button type="button" aria-label={unpinLabel} title={unpinLabel}
       onMouseDown={event => event.stopPropagation()} onClick={() => onUnpin(item.key)}
       className="absolute right-10 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-sidebar-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:opacity-100"><PinOff className="size-3.5" /></button>
     {handle}

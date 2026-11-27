@@ -19,6 +19,31 @@
     "zh-CN": "根任务",
     "reviewedEnglishHash": "9cfea50f623a4b5055f5c85cf3b3b4dc1c73f6c2c41599789e5305833e09451a"
   },
+  "trustPreset.boundarySummary.count": {
+    "en": "{{count}} boundaries",
+    "zh-CN": "{{count}} 个边界",
+    "reviewedEnglishHash": "84ef03e0a2fafe8ec91f712d61a5b92b2ec9c4c832ac5d013fd8036fecb42f5b"
+  },
+  "trustPreset.boundarySummary.issue": {
+    "en": "Issue {{id}}",
+    "zh-CN": "任务 {{id}}",
+    "reviewedEnglishHash": "52253f682b267594472f4f4c48dfdf6bc529a86216ea96228cfaf34906b79ea1"
+  },
+  "trustPreset.boundarySummary.none": {
+    "en": "No boundary selected",
+    "zh-CN": "未选择边界",
+    "reviewedEnglishHash": "e6b8ccbd5178f9494f57ccf9b5f4a9595c6ceee8541aacf35e67558d2dae4352"
+  },
+  "trustPreset.boundarySummary.project": {
+    "en": "Project {{id}}",
+    "zh-CN": "项目 {{id}}",
+    "reviewedEnglishHash": "5ae7e208c19838b4161f4ed3d6d67755006e6790765257cfd9e9535702974ce3"
+  },
+  "trustPreset.boundarySummary.rootIssue": {
+    "en": "Root issue {{id}}",
+    "zh-CN": "根任务 {{id}}",
+    "reviewedEnglishHash": "9188ae0cd9af463396e89fadf5b5e42d59edde6f236eb00a3c50ea7bd65ed9eb"
+  },
   "trustPreset.boundaryType": {
     "en": "Boundary type",
     "zh-CN": "边界类型",
@@ -44,6 +69,11 @@
     "zh-CN": "此智能体只能读取和修改分配的审阅边界内的工作。原始输出会被隔离，直到可信审阅者提升它。",
     "reviewedEnglishHash": "56237f23ae761c4be2c354934895dbe85c8cb9dcbc8d9dc63a3d1cabc3ac2da2"
   },
+  "trustPreset.containmentActiveDescription": {
+    "en": "This agent can only read and mutate work inside its assigned review boundary. Raw output is quarantined from higher-trust agents until a trusted reviewer promotes it.",
+    "zh-CN": "此智能体只能在指定审阅边界内读取和修改工作内容。原始输出会与高信任度智能体隔离，直到受信任的审阅者将其提升。",
+    "reviewedEnglishHash": "56237f23ae761c4be2c354934895dbe85c8cb9dcbc8d9dc63a3d1cabc3ac2da2"
+  },
   "trustPreset.containmentNotConfigured": {
     "en": "Containment not configured",
     "zh-CN": "未配置隔离",
@@ -53,6 +83,16 @@
     "en": "This agent is set to low-trust review, but no project, root issue, or issue scope is set in the core policy. Add a scope before this agent can run without denial.",
     "zh-CN": "此智能体已设为低信任审阅，但核心策略中没有设置项目、根任务或任务范围。请先添加范围，否则智能体运行会被拒绝。",
     "reviewedEnglishHash": "271713474e9a1437cf18a03d664995f145df946b693e13fc6b15f373eed1f5d8"
+  },
+  "trustPreset.containmentNotConfiguredDescription": {
+    "en": "This agent is set to low-trust review, but no project, root issue, or issue scope is set in the core policy. Add a scope before this agent can run without denial.",
+    "zh-CN": "此智能体已设为低信任度审阅，但核心策略中尚未设置项目、根任务或任务范围。请先添加范围，否则此智能体运行时将被拒绝。",
+    "reviewedEnglishHash": "271713474e9a1437cf18a03d664995f145df946b693e13fc6b15f373eed1f5d8"
+  },
+  "trustPreset.description.lowTrustReview": {
+    "en": "Contained for hostile or untrusted input. Narrow Paperclip API, quarantined output. Use for PR review and external-content triage.",
+    "zh-CN": "面向不可信或潜在恶意输入的隔离模式。仅开放受限 Paperclip API，并隔离输出结果。适用于 PR 审阅与外部内容分诊。",
+    "reviewedEnglishHash": "51307be25b13ecf0daa8eb06e8d48f9c61c8e2ab830c8cf05bdaf822211dca43"
   },
   "trustPreset.description.low_trust_review": {
     "en": "Restrict this agent to one review boundary and quarantine raw output until promoted.",
@@ -73,6 +113,16 @@
     "en": "Get Paperclip EE.",
     "zh-CN": "获取 Paperclip EE。",
     "reviewedEnglishHash": "601f5e6e4a14fdf99c97d6df6eff555a3bcfa572bbfdd531b4482a4f3db0fe6f"
+  },
+  "trustPreset.label.lowTrustReview": {
+    "en": "Low-trust review",
+    "zh-CN": "低信任度审阅",
+    "reviewedEnglishHash": "30699d583989db1417a3919e499288adba00b49ccd555a92a5c416e9f089433c"
+  },
+  "trustPreset.label.standard": {
+    "en": "Standard",
+    "zh-CN": "标准",
+    "reviewedEnglishHash": "ef6691545d2c5523efed00424407cb261aeb0037d165ca5792f7f8bac3381362"
   },
   "trustPreset.managedByEeApi": {
     "en": "Managed by EE/API",
@@ -124,6 +174,11 @@
     "zh-CN": "已保留自定义高级策略字段",
     "reviewedEnglishHash": "eee5ceae9d931bbbd9ea114d80f218f05d8ca37ef91acda797f46ab9a63c3244"
   },
+  "trustPreset.policy.customEePreserved": {
+    "en": "Custom advanced policy fields preserved",
+    "zh-CN": "已保留自定义高级策略字段",
+    "reviewedEnglishHash": "eee5ceae9d931bbbd9ea114d80f218f05d8ca37ef91acda797f46ab9a63c3244"
+  },
   "trustPreset.policy.eeFields": {
     "en": "EE fields",
     "zh-CN": "EE 字段",
@@ -143,6 +198,11 @@
     "en": "Preset",
     "zh-CN": "预设",
     "reviewedEnglishHash": "7252e7ce008587e1180459d95c2536df954971d6c51e6ac753518a6fe15da563"
+  },
+  "trustPreset.policy.presetValue": {
+    "en": "Low-trust review v1",
+    "zh-CN": "低信任度审阅 v1",
+    "reviewedEnglishHash": "2b3809e84d99d93b84e7a39f35c6c12f47cc7b334c0725b2328a6384364421b7"
   },
   "trustPreset.policy.projects": {
     "en": "Projects",
@@ -164,6 +224,11 @@
     "zh-CN": "原始输出",
     "reviewedEnglishHash": "f3dbf20a278c48dfb8c680fdbbe0b77caf26972151b8afa27de53823e19ba8bd"
   },
+  "trustPreset.policy.rawOutputQuarantined": {
+    "en": "Quarantined from higher-trust agents",
+    "zh-CN": "已与高信任度智能体隔离",
+    "reviewedEnglishHash": "1668be9d0bfd763320da476549eaf08241bd6b8c06d8762bd1f542940f2e60e5"
+  },
   "trustPreset.policy.rootIssue": {
     "en": "Root issue",
     "zh-CN": "根任务",
@@ -183,6 +248,16 @@
     "en": "Select boundary",
     "zh-CN": "选择边界",
     "reviewedEnglishHash": "5009d4136aa5b5192d6bc5eba233fb1f0491491ed03e5d8a30cc4778364beeae"
+  },
+  "trustPreset.source.lowTrust": {
+    "en": "Low-trust source",
+    "zh-CN": "低信任来源",
+    "reviewedEnglishHash": "717ed76db04ee6a9a4aa0dab72c06b40168b860bd750cc234ffa3273a1075d4f"
+  },
+  "trustPreset.source.promoted": {
+    "en": "Promoted from low-trust",
+    "zh-CN": "已从低信任提升",
+    "reviewedEnglishHash": "12077ee8a4b734f52c894c1f8e5531968157f168f693414491e9c23bc5ec1072"
   },
   "trustPreset.title": {
     "en": "Trust",

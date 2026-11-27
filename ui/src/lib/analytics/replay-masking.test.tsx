@@ -156,7 +156,7 @@ const MASKED_SURFACES: Array<{ file: string; content: string }> = [
   { file: "components/AttentionObligationEvidence.tsx", content: "{attentionEvidenceLabel(item, entry)}" },
   { file: "components/coordinator/NeedsYouCardKit.tsx", content: "{children}</p>" },
   { file: "components/coordinator/NeedsYouCardParts.tsx", content: "{receipt.reason}" },
-  { file: "components/coordinator/CoordinatorDecisionReceipt.tsx", content: "Reason: {item.reason}" },
+  { file: "components/coordinator/CoordinatorDecisionReceipt.tsx", content: 't("decisions.receipt.reason", { reason: item.reason' },
   { file: "components/coordinator/CoordinatorDecisionReceipt.tsx", content: "{decisionHistoryHeadline(item, userLabelMap)}" },
   { file: "components/coordinator/CoordinatorNeedsYou.tsx", content: "<h2>{title}</h2>" },
   { file: "components/DecisionCard.tsx", content: "{option.description}" },

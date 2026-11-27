@@ -208,7 +208,7 @@ function ClassicWhatNeedsMe() {
 
   useEffect(() => {
     setBreadcrumbs([{ label: translateInstant("whatNeedsMe.title") }]);
-  }, [setBreadcrumbs]);
+  }, [setBreadcrumbs, i18n.language]);
 
   // Re-hydrate per-company preferences when the company changes.
   useEffect(() => {
@@ -1015,7 +1015,8 @@ export function DecisionBundleHeader({
     <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 rounded-sm border-l-2 border-violet-500/60 bg-violet-500/5 px-3 py-1.5 text-xs">
       <span className="font-semibold text-violet-800 dark:text-violet-200">
         {agentName ?? translateInstant("whatNeedsMe.bundle.agent")}{" "}
-        {translateInstant("whatNeedsMe.proposed")} {count} {noun}
+        {translateInstant("whatNeedsMe.proposed")}{" "}
+        {translateInstant("whatNeedsMe.decisionCount", { count, defaultValue: `${count} ${count === 1 ? "decision" : "decisions"}` })}
       </span>
       {originIssue && (originIssue.identifier || originIssue.title) && (
         <span className="text-muted-foreground">

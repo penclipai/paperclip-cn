@@ -151,14 +151,14 @@ function findIssuesScrollContainer(element: HTMLElement | null): HTMLElement | n
 }
 const boardIssueStatuses = [...ISSUE_STATUSES, "monitoring"] as const;
 const issueStatusLabels: Record<IssueDisplayStatus, string> = {
-  backlog: "Backlog",
-  todo: "Todo",
-  in_progress: "In progress",
-  monitoring: "Monitoring",
-  in_review: "In review",
-  done: "Done",
-  blocked: "Blocked",
-  cancelled: "Cancelled",
+  get backlog() { return translateInstant("status.backlog", { defaultValue: "Backlog" }); },
+  get todo() { return translateInstant("status.todo", { defaultValue: "Todo" }); },
+  get in_progress() { return translateInstant("status.in_progress", { defaultValue: "In progress" }); },
+  get monitoring() { return translateInstant("status.monitoring", { defaultValue: "Monitoring" }); },
+  get in_review() { return translateInstant("status.in_review", { defaultValue: "In review" }); },
+  get done() { return translateInstant("status.done", { defaultValue: "Done" }); },
+  get blocked() { return translateInstant("status.blocked", { defaultValue: "Blocked" }); },
+  get cancelled() { return translateInstant("status.cancelled", { defaultValue: "Cancelled" }); },
 };
 const progressSegmentClasses: Record<IssueDisplayStatus, string> = {
   backlog: "bg-muted-foreground/40",
@@ -652,11 +652,7 @@ function SubIssueProgressSummaryStrip({
               <>
                 <span
                   className="text-muted-foreground tabular-nums"
-                  title={`${costSummary.runCount.toLocaleString()} run${
-                    costSummary.runCount === 1 ? "" : "s"
-                  } across ${costSummary.issueCount} sub-task${
-                    costSummary.issueCount === 1 ? "" : "s"
-                  }`}
+                  title={translateInstant("issuesList.runsAcrossSubtasksTitle", { runCount: costSummary.runCount, formattedRunCount: costSummary.runCount.toLocaleString(), issueCount: costSummary.issueCount, defaultValue: `${costSummary.runCount.toLocaleString()} run${costSummary.runCount === 1 ? "" : "s"} across ${costSummary.issueCount} sub-task${costSummary.issueCount === 1 ? "" : "s"}` })}
                 >
                   {formatTokens(totalTokens)} {translateInstant("issuesList.tokens", { defaultValue: "tokens" })}
                 </span>
@@ -668,7 +664,7 @@ function SubIssueProgressSummaryStrip({
           </div>
           <div
             role="progressbar"
-            aria-label="Sub-tasks completion progress"
+            aria-label={translateInstant("issuesList.subtasksProgressAria", { defaultValue: "Sub-tasks completion progress" })}
             aria-valuemin={0}
             aria-valuenow={summary.doneCount}
             aria-valuemax={summary.totalCount}
@@ -690,7 +686,7 @@ function SubIssueProgressSummaryStrip({
           {target && targetIssue ? (
             <>
               <div className="text-xs font-medium text-muted-foreground">
-                {target.kind === "next" ? "Next up" : "Waiting on blockers"}
+                {target.kind === "next" ? translateInstant("issuesList.nextUp", { defaultValue: "Next up" }) : translateInstant("issuesList.waitingOnBlockers", { defaultValue: "Waiting on blockers" })}
               </div>
               <Link
                 to={createIssueDetailPath(targetPathId)}
@@ -705,11 +701,11 @@ function SubIssueProgressSummaryStrip({
               </Link>
             </>
           ) : summary.totalCount === 0 ? (
-            <div className="text-sm font-medium text-foreground">No active sub-tasks</div>
+            <div className="text-sm font-medium text-foreground">{translateInstant("issuesList.noActiveSubtasks", { defaultValue: "No active sub-tasks" })}</div>
           ) : summary.doneCount === summary.totalCount ? (
-            <div className="text-sm font-medium text-foreground">All sub-tasks done</div>
+            <div className="text-sm font-medium text-foreground">{translateInstant("issuesList.allSubtasksDone", { defaultValue: "All sub-tasks done" })}</div>
           ) : (
-            <div className="text-sm font-medium text-foreground">No actionable sub-tasks</div>
+            <div className="text-sm font-medium text-foreground">{translateInstant("issuesList.noActionableSubtasks", { defaultValue: "No actionable sub-tasks" })}</div>
           )}
         </div>
       </div>
@@ -1284,8 +1280,8 @@ function StreamlinedIssuesList({
     return sortIssues(filteredByControls, viewState, issue => {
       const parent = issue.parentId ? byId.get(issue.parentId) : null;
       return {
-        createdBy: issue.createdByAgentId ? agentName(issue.createdByAgentId) ?? "Unknown agent" : companyUserLabelMap.get(issue.createdByUserId ?? "") ?? "Board",
-        assignee: issue.assigneeAgentId ? agentName(issue.assigneeAgentId) ?? "Unknown agent" : companyUserLabelMap.get(issue.assigneeUserId ?? "") ?? null,
+        createdBy: issue.createdByAgentId ? agentName(issue.createdByAgentId) ?? translateInstant("Unknown agent") : companyUserLabelMap.get(issue.createdByUserId ?? "") ?? translateInstant("Board"),
+        assignee: issue.assigneeAgentId ? agentName(issue.assigneeAgentId) ?? translateInstant("Unknown agent") : companyUserLabelMap.get(issue.assigneeUserId ?? "") ?? null,
         project: projectById.get(issue.projectId ?? "")?.name,
         parentTask: parent ? `${parent.identifier} ${parent.title}` : null,
         updated: issueUpdatedTime(issue),
@@ -1825,8 +1821,8 @@ function StreamlinedIssuesList({
     viewState.groupBy,
   ]);
 
-  const createActionLabel = createIssueLabel ? `Create ${createIssueLabel}` : "Create Task";
-  const createButtonLabel = createIssueLabel ? `New ${createIssueLabel}` : "New Task";
+  const createActionLabel = createIssueLabel ? translateInstant("issuesList.createLabeled", { label: createIssueLabel, defaultValue: `Create ${createIssueLabel}` }) : translateInstant("issuesList.createTask", { defaultValue: "Create Task" });
+  const createButtonLabel = createIssueLabel ? translateInstant("issuesList.newLabeled", { label: createIssueLabel, defaultValue: `New ${createIssueLabel}` }) : translateInstant("sidebar.newTask");
   const openCreateIssueDialog = useCallback((group?: { key: string; items: Issue[] }) => {
     openNewIssue(newIssueDefaults(group));
   }, [newIssueDefaults, openNewIssue]);
@@ -2218,8 +2214,8 @@ function StreamlinedIssuesList({
                     variant="ghost"
                     size="icon-xs"
                     className="-mr-2 text-muted-foreground"
-                    title={`New task in ${group.label}`}
-                    aria-label={`New task in ${group.label}`}
+                    title={translateInstant("issuesList.newTaskInGroup", { group: group.label, defaultValue: `New task in ${group.label}` })}
+                    aria-label={translateInstant("issuesList.newTaskInGroup", { group: group.label, defaultValue: `New task in ${group.label}` })}
                     onClick={() => openCreateIssueDialog(group)}
                   >
                     <Plus className="h-3 w-3" />
@@ -2356,8 +2352,8 @@ function StreamlinedIssuesList({
                             {hasChildren && !isExpanded ? (
                               <span className="ml-1.5 text-xs text-muted-foreground">
                                 {enableAgentCreatedVisibilityFilter
-                                  ? "(sub-tasks)"
-                                  : `(${totalDescendants} sub-task${totalDescendants !== 1 ? "s" : ""})`}
+                                  ? translateInstant("issuesList.subtasksParenthetical", { defaultValue: "(sub-tasks)" })
+                                  : translateInstant("issuesList.subtasksCountParenthetical", { count: totalDescendants, defaultValue: `(${totalDescendants} sub-task${totalDescendants !== 1 ? "s" : ""})` })}
                               </span>
                             ) : null}
                             {issueBadge ? (
@@ -2395,7 +2391,7 @@ function StreamlinedIssuesList({
                               type="button"
                               data-slot="icon-button"
                               className="inline-flex h-4 w-4 shrink-0 items-center justify-center"
-                              aria-label={isExpanded ? "Collapse sub-tasks" : "Expand sub-tasks"}
+                              aria-label={isExpanded ? translateInstant("issuesList.collapseSubtasksAria", { defaultValue: "Collapse sub-tasks" }) : translateInstant("issuesList.expandSubtasksAria", { defaultValue: "Expand sub-tasks" })}
                               onClick={toggleCollapse}
                             >
                               <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")} />

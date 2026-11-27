@@ -2689,13 +2689,13 @@ export function RunsTab({
   const selection = useSelectedHeartbeatRun(sorted, effectiveRunId, companyId, agentId);
   const selectedRun = selection.run;
   if (selectedRunId && !selectedRun) {
-    if (selection.loading) return <p className="text-sm text-muted-foreground">Loading run…</p>;
+    if (selection.loading) return <p className="text-sm text-muted-foreground">{translateInstant("Loading run…", { defaultValue: "Loading run…" })}</p>;
     return <div role="alert">
-      <p className="text-sm text-destructive">{selection.error instanceof Error ? selection.error.message : "This run is unavailable for this agent."}</p>
-      {selection.error && <Button variant="outline" onClick={() => { void selection.retry(); }}>Try again</Button>}
+      <p className="text-sm text-destructive">{selection.error instanceof Error ? selection.error.message : translateInstant("agentDetail.runUnavailable", { defaultValue: "This run is unavailable for this agent." })}</p>
+      {selection.error && <Button variant="outline" onClick={() => { void selection.retry(); }}>{translateInstant("Try again", { defaultValue: "Try again" })}</Button>}
     </div>;
   }
-  if (runs.length === 0 && !selectedRun) return <p className="text-sm text-muted-foreground">No runs yet.</p>;
+  if (runs.length === 0 && !selectedRun) return <p className="text-sm text-muted-foreground">{translateInstant("No runs yet.", { defaultValue: "No runs yet." })}</p>;
 
   // Mobile: show either run list OR run detail with back button
   if (isMobile) {
@@ -2772,7 +2772,11 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
     const entry = userDirectory?.users.find(
       (candidate) => candidate.principalId === run.responsibleUserId,
     );
-    return entry?.user?.name ?? entry?.user?.email ?? null;
+    const rawName = entry?.user?.name ?? entry?.user?.email ?? null;
+    if (rawName === "Board" || (!rawName && run.responsibleUserId === "local-board")) {
+      return translateInstant("Board");
+    }
+    return rawName;
   }, [run.responsibleUserId, userDirectory]);
   const responsibleDenialCode = isResponsibleUserDenialCode(run.errorCode) ? run.errorCode : null;
   const [sessionOpen, setSessionOpen] = useState(false);

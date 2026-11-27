@@ -185,7 +185,7 @@ export function IdentitiesSection({
         <h2 className={GROUP_LABEL}>{translateInstant("GitHub identity")}</h2>
         <p className="px-4 text-sm text-muted-foreground">{translateInstant("This agent uses this GitHub account for everyone’s work, instead of the person giving instructions.")}</p>
         <IdentityRow
-          title={github ? <span className={ANALYTICS_MASK_CLASS}>@{github.login}</span> : "Dedicated GitHub account"}
+          title={github ? <span className={ANALYTICS_MASK_CLASS}>@{github.login}</span> : translateInstant("apps.detail.identities.dedicatedGithubAccount", { defaultValue: "Dedicated GitHub account" })}
           status={agentGrant?.status ?? null}
           detail={dedicatedAgent ? (
             <Link
@@ -194,7 +194,7 @@ export function IdentitiesSection({
             >
               {translateInstant("Used only by")}{" "}{dedicatedAgent.name}
             </Link>
-          ) : "Dedicated to one agent"}
+          ) : translateInstant("apps.detail.identities.dedicatedToOneAgent", { defaultValue: "Dedicated to one agent" })}
           actions={!agentGrant && dedicatedAgent && capabilities?.canConfigure ? (
             <Button size="sm" disabled={connectPending} onClick={() => onConnectAgent(dedicatedAgent.id)}>
               {connectPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
@@ -240,7 +240,7 @@ export function IdentitiesSection({
               id="personal-identity"
               title={translateInstant("Personal account")}
               status={null}
-              detail="Personal identity"
+              detail={translateInstant("apps.detail.identities.personalIdentity", { defaultValue: "Personal identity" })}
               actions={capabilities?.canConnectAsCurrentUser ? (
                   <Button size="sm" disabled={connectPending} onClick={onConnectAsMe}>
                     {connectPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
@@ -260,7 +260,7 @@ export function IdentitiesSection({
             <IdentityRow
               title={translateInstant("Organization account")}
               status={null}
-              detail="Organization identity"
+              detail={translateInstant("apps.detail.identities.organizationIdentity", { defaultValue: "Organization identity" })}
               actions={capabilities?.canCreateOrganizationGrant ? (
                   <Button size="sm" disabled={connectPending} onClick={onConnectOrganization}>
                     {translateInstant("Connect organization identity")}</Button>
@@ -304,13 +304,16 @@ function GitHubConnectionSummary({
       ? github.installationUrl
       : null;
   const repositoryWarning = github.repositorySelection === "all"
-    ? "All current and future repositories"
+    ? translateInstant("apps.detail.identities.allRepos", { defaultValue: "All current and future repositories" })
     : github.repositorySelection === "mixed"
-      ? "Mixed access; scope varies by installation"
+      ? translateInstant("apps.detail.identities.mixedRepos", { defaultValue: "Mixed access; scope varies by installation" })
       : null;
   const repositorySummary = github.repositorySelection === "none"
-    ? "No repositories selected"
-    : `${github.repositoryCount} selected ${github.repositoryCount === 1 ? "repository" : "repositories"}`;
+    ? translateInstant("apps.detail.identities.noReposSelected", { defaultValue: "No repositories selected" })
+    : translateInstant("apps.detail.identities.selectedReposCount", {
+        count: github.repositoryCount,
+        defaultValue: `${github.repositoryCount} selected ${github.repositoryCount === 1 ? "repository" : "repositories"}`,
+      });
   return (
     <div className="divide-y divide-border overflow-hidden rounded-2xl bg-muted/50">
       <div className="flex min-h-11 items-center justify-between gap-4 px-4 py-2">

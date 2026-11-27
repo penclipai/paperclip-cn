@@ -1,0 +1,22 @@
+{
+  "projectsToolbar.ariaLabel": {
+    "en": "Projects controls",
+    "zh-CN": "项目列表控件",
+    "reviewedEnglishHash": "4296794037b5649aad34180832b646751904e8a9a399cdd9a587bb6b096f11b0"
+  },
+  "projectsToolbar.searchLabel": {
+    "en": "Search projects",
+    "zh-CN": "搜索项目",
+    "reviewedEnglishHash": "9e079c7df9f105b9a364bed88b0f1f1dac4bef7d87b5b677b07a3714d9ac0ae4"
+  },
+  "projectsToolbar.searchPlaceholder": {
+    "en": "Search projects…",
+    "zh-CN": "搜索项目…",
+    "reviewedEnglishHash": "b0c5facf52179471c893e28468a0ea2512c511442e71c2e97a4662e0b1d3483b"
+  },
+  "projectsToolbar.sortBy": {
+    "en": "Sort: {{label}}",
+    "zh-CN": "排序：{{label}}",
+    "reviewedEnglishHash": "123d8ad9107fdd748c401812ea416c73d5f6ee371092eacd2fd8c7ffeec65a88"
+  }
+}

@@ -900,7 +900,7 @@ function SkillCard({
         <div className="min-w-0 flex-1">
           <div className="truncate font-mono text-sm font-medium text-foreground">{card.name}</div>
           <div className="truncate text-xs text-muted-foreground">
-            {translateInstant("by")}{" "}{card.author}{card.version ? ` · ${card.version}` : ""}
+            {translateInstant("by")}{" "}{card.author === "Paperclip bundled" ? translateInstant("companySkills.paperclipBundled") : card.author}{card.version ? ` · ${card.version}` : ""}
           </div>
           {badgeFolder !== undefined ? (
             <div className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
@@ -1162,13 +1162,21 @@ export function DiscoveryGrid({
   const { i18n } = useTranslation();
   const installedView = tab === "installed";
   const authoredView = collectionView === "authored";
-  const viewTitle = authoredView ? "My Skills" : installedView ? "Installed skills" : "Discover skills";
-  const viewDescription = authoredView
-    ? "Skills you can open, edit and test in Studio."
+  const viewTitle = authoredView
+    ? translateInstant("folders.mySkills")
     : installedView
-    ? translateInstant("Skills available to this organization.")
-    : translateInstant("Browse skills from every available source.");
-  const searchLabel = authoredView ? "Search my skills" : installedView ? "Search installed skills" : "Search discoverable skills";
+      ? translateInstant("Installed skills", { defaultValue: "Installed skills" })
+      : translateInstant("Discover skills", { defaultValue: "Discover skills" });
+  const viewDescription = authoredView
+    ? translateInstant("companySkills.authoredDescription", { defaultValue: "Skills you can open, edit and test in Studio." })
+    : installedView
+      ? translateInstant("Skills available to this organization.")
+      : translateInstant("Browse skills from every available source.");
+  const searchLabel = authoredView
+    ? translateInstant("companySkills.searchMySkills", { defaultValue: "Search my skills" })
+    : installedView
+      ? translateInstant("Search installed skills", { defaultValue: "Search installed skills" })
+      : translateInstant("companySkills.searchDiscoverableSkills", { defaultValue: "Search discoverable skills" });
   // Source filter (github / skills.sh / local / …) lives in the grid so it
   // narrows whatever the parent already filtered by tab/category/search (PAP-10907 E).
   const [sourceBadgeFilter, setSourceBadgeFilter] = useState<string>("all");
@@ -1356,10 +1364,12 @@ export function DiscoveryGrid({
                 message={
                   totalCount === 0
                     ? installedView
-                      ? authoredView ? "No skills yet. Create a skill to start working in Studio." : "No installed skills yet. Discover a skill or create one."
-                      : "No skills are available to discover yet."
+                      ? authoredView
+                        ? translateInstant("companySkills.emptyAuthored", { defaultValue: "No skills yet. Create a skill to start working in Studio." })
+                        : translateInstant("companySkills.emptyInstalled", { defaultValue: "No installed skills yet. Discover a skill or create one." })
+                      : translateInstant("companySkills.emptyDiscoverable", { defaultValue: "No skills are available to discover yet." })
                     : search || activeCategory || sourceFilterActive
-                      ? "No skills match your filters."
+                      ? translateInstant("companySkills.noMatchingSkills", { defaultValue: "No skills match your filters." })
                       : translateInstant("companySkills.discoveryEmptyTab")
                 }
               />
@@ -1609,7 +1619,7 @@ function NewSkillWizard({
                 >
                   <span className="block font-medium">{scope === "company" ? translateInstant("Organization") : translateInstant("companySkills.private")}</span>
                   <span className="mt-1 block text-xs text-muted-foreground">
-                    {scope === "company" ? "Visible inside this organization." : translateInstant("skillStudio.create.scopePrivateDescription")}
+                    {scope === "company" ? translateInstant("skillStudio.create.scopeCompanyDescription", { defaultValue: "Visible inside this organization." }) : translateInstant("skillStudio.create.scopePrivateDescription")}
                   </span>
                 </button>
               ))}

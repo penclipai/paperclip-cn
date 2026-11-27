@@ -34,6 +34,21 @@
     "zh-CN": "审批状态",
     "reviewedEnglishHash": "5a66175a2ba3931a1b078892ef7eed48697cb573a51486317e36a4209d8d68e6"
   },
+  "inbox.approvalStatus.actionable": {
+    "en": "Needs action",
+    "zh-CN": "待处理",
+    "reviewedEnglishHash": "e382d466c25613b68d82a7438e14c7615d0785cb283d0c051c0a486b4628abea"
+  },
+  "inbox.approvalStatus.all": {
+    "en": "All approval statuses",
+    "zh-CN": "全部审批状态",
+    "reviewedEnglishHash": "eadb0e28eb2711236996b1c2b19e85720d5d30a08eeb8484b66df23c951952d8"
+  },
+  "inbox.approvalStatus.resolved": {
+    "en": "Resolved",
+    "zh-CN": "已处理",
+    "reviewedEnglishHash": "5be3c2c8354e1eb924b03a3dcc7fa4172e9aa0f4917b46b44fcc7daf8835d7a7"
+  },
   "inbox.approvals": {
     "en": "Approvals",
     "zh-CN": "审批",
@@ -58,6 +73,36 @@
     "en": "Category",
     "zh-CN": "分类",
     "reviewedEnglishHash": "292c06f0045a45d044be282b132b7055ae224e18e02b523a451d8ea96fadfd24"
+  },
+  "inbox.category.alerts": {
+    "en": "Alerts",
+    "zh-CN": "告警",
+    "reviewedEnglishHash": "f62e9267d196c761f503dbffb17b9a52c4134de48b9959754c4bd78a9ad053b8"
+  },
+  "inbox.category.all": {
+    "en": "All categories",
+    "zh-CN": "全部分类",
+    "reviewedEnglishHash": "9d5097a837102a179a2d08a921a260c5058495e78469c3f1bad37a1b4bf59053"
+  },
+  "inbox.category.approvals": {
+    "en": "Approvals",
+    "zh-CN": "审批",
+    "reviewedEnglishHash": "2bfc3471571e5c008cb26bd839b0d4cbcb1132fc9d6c8206bb595fa26e83a45b"
+  },
+  "inbox.category.failedRuns": {
+    "en": "Failed runs",
+    "zh-CN": "失败运行",
+    "reviewedEnglishHash": "24afc952b6cc94759fc61339a5514b871b6adf51dd0716ded6fad2a22fc84a30"
+  },
+  "inbox.category.joinRequests": {
+    "en": "Join requests",
+    "zh-CN": "加入申请",
+    "reviewedEnglishHash": "a1321fc27dc597a57ccbc6dc1e94fdf27668528d297d22c30dc7e15c5431d7bd"
+  },
+  "inbox.category.recent": {
+    "en": "My recent tasks",
+    "zh-CN": "我最近的任务",
+    "reviewedEnglishHash": "0b598c2cf848fccdef14ab9150b212ca1e062fd36a664a6d58741a12b799fcd2"
   },
   "inbox.chooseColumns": {
     "en": "Choose which inbox columns stay visible",
@@ -163,6 +208,16 @@
     "en": "Failed to undo inbox archive",
     "zh-CN": "撤销收件箱归档失败",
     "reviewedEnglishHash": "f52fe16f6a79e73b0354b9ed699b5206b758708a381de0e6297dd5c5c034b505"
+  },
+  "inbox.filterFeedback.activeStatuses": {
+    "en": "Active statuses — open tasks, whether or not an agent is running.",
+    "zh-CN": "活跃状态 — 未关闭的任务，无论是否有智能体正在运行。",
+    "reviewedEnglishHash": "74d3d2859f7dc9a918713f0c8bc56b54c0999d96cb7ec3c54869fa6d128ab350"
+  },
+  "inbox.filterFeedback.liveOnly": {
+    "en": "Live runs only — tasks currently connected to an agent run.",
+    "zh-CN": "仅限实时运行 — 当前关联正在执行的智能体运行的任务。",
+    "reviewedEnglishHash": "5511c53d88d7b87a65294cd841b75f5540b35a9521c4f99ee7210a8419e3b174"
   },
   "inbox.fromIp": {
     "en": "from IP",
@@ -279,6 +334,11 @@
     "zh-CN": "其他结果",
     "reviewedEnglishHash": "d2fcaa7d025063fa94debdf913053a7f2e87de006ca0c73bf330979d87c1828c"
   },
+  "inbox.partialLoadNotice": {
+    "en": "Some inbox items couldn’t load. Showing available items.",
+    "zh-CN": "部分收件箱项目未能加载，当前显示可用项目。",
+    "reviewedEnglishHash": "35eb8fe2fdd96170d58dad322b2281d68cb78cb6149cf2f8fedfef3620be7b0c"
+  },
   "inbox.reject": {
     "en": "Reject",
     "zh-CN": "拒绝",
@@ -309,6 +369,11 @@
     "zh-CN": "重试",
     "reviewedEnglishHash": "942087cc2d41e01304b7195558d093d10c72af8e838c7556d6a02d471ee71852"
   },
+  "inbox.retryMissingItems": {
+    "en": "Retry missing items",
+    "zh-CN": "重试加载缺失项目",
+    "reviewedEnglishHash": "e0369d69eb0378caea39b0ff32883fa3587b892f6803f0658117bf185461c8c1"
+  },
   "inbox.retrySkipped": {
     "en": "Retry was skipped.",
     "zh-CN": "未执行重试。",
@@ -319,6 +384,11 @@
     "zh-CN": "正在重试…",
     "reviewedEnglishHash": "a16c8b1c95956fbabce3ed5506c7e1b4a2d10c86f7adfc7ae084f2d3df9f5174"
   },
+  "inbox.searchGenericPlaceholder": {
+    "en": "Search {{surface}}…",
+    "zh-CN": "搜索{{surface}}…",
+    "reviewedEnglishHash": "10edf7bde6accc76f351076b67b7054a61ccadbd6c1ef8061bc514641c4692bc"
+  },
   "inbox.searchPlaceholder": {
     "en": "Search inbox…",
     "zh-CN": "搜索收件箱…",
@@ -328,6 +398,16 @@
     "en": "Select a company to view inbox.",
     "zh-CN": "请先选择公司以查看收件箱。",
     "reviewedEnglishHash": "593895d9d781983a840e58535503133d1a9eac465e464cc82be3f55df03044d6"
+  },
+  "inbox.selectOrg": {
+    "en": "Select an organization to view inbox.",
+    "zh-CN": "请选择一个组织以查看收件箱。",
+    "reviewedEnglishHash": "b389056406d3dd75411c2ba8ea9c348ffe9a83a64e224709bb77c1ea3ba687f9"
+  },
+  "inbox.selectOrgGeneric": {
+    "en": "Select an organization to view {{surface}}.",
+    "zh-CN": "请选择一个组织以查看{{surface}}。",
+    "reviewedEnglishHash": "8d8630e10486206e8c4cabafbfb7a7f34714947a1dac0bd658adbbfc8bddc646"
   },
   "inbox.sort": {
     "en": "Sort",

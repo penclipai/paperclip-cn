@@ -36,36 +36,54 @@ const providers = [
   {
     id: "openai",
     name: "OpenAI",
+    descriptionKey: "connectionUi.providerSetup.providers.openai.description",
     description: "ChatGPT subscription or API key",
   },
   {
     id: "anthropic",
     name: "Anthropic",
+    descriptionKey: "connectionUi.providerSetup.providers.anthropic.description",
     description: "Claude subscription or API key",
   },
-  { id: "google", name: "Antigravity", description: "Antigravity sign-in or Gemini API key" },
-  { id: "xai", name: "xAI", description: "Grok subscription or API key" },
+  {
+    id: "google",
+    name: "Antigravity",
+    descriptionKey: "connectionUi.providerSetup.providers.google.description",
+    description: "Antigravity sign-in or Gemini API key",
+  },
+  {
+    id: "xai",
+    name: "xAI",
+    descriptionKey: "connectionUi.providerSetup.providers.xai.description",
+    description: "Grok subscription or API key",
+  },
   {
     id: "openrouter",
     name: "OpenRouter",
+    descriptionKey: "connectionUi.providerSetup.providers.openrouter.description",
     description: "Models through one API key",
     advanced: true,
   },
   {
     id: "bedrock",
     name: "Amazon Bedrock",
+    descriptionKey: "connectionUi.providerSetup.providers.bedrock.description",
     description: "Bedrock API key and AWS region",
     advanced: true,
   },
   {
     id: "gateway",
+    nameKey: "connectionUi.providerSetup.providers.gateway.name",
     name: "Custom gateway",
+    descriptionKey: "connectionUi.providerSetup.providers.gateway.description",
     description: "Emissary or another compatible endpoint",
     advanced: true,
   },
   {
     id: "local",
+    nameKey: "connectionUi.providerSetup.providers.local.name",
     name: "Local endpoint",
+    descriptionKey: "connectionUi.providerSetup.providers.local.description",
     description: "A model server in the agent’s environment",
     advanced: true,
   },
@@ -147,7 +165,16 @@ export function AiProviderSetup({
     queryFn: () => agentsApi.list(companyId),
   });
   const agentsView = useQueryView(agents);
-  const label = providerLabel ?? providers.find((p) => p.id === provider)?.name ?? (provider === "github" ? "GitHub Copilot" : "provider");
+  const selectedProvider = providers.find((p) => p.id === provider);
+  const label =
+    providerLabel ??
+    (selectedProvider
+      ? "nameKey" in selectedProvider
+        ? translateInstant(selectedProvider.nameKey, { defaultValue: selectedProvider.name })
+        : selectedProvider.name
+      : provider === "github"
+        ? "GitHub Copilot"
+        : translateInstant("connectionUi.providerSetup.genericProvider", { defaultValue: "provider" }));
   const advanced = reconnect ? Boolean(reconnect.routing) : ["openrouter", "bedrock", "gateway", "local"].includes(provider ?? "");
   const nativeProvider: AiProvider =
     provider === "bedrock"
@@ -229,6 +256,8 @@ export function AiProviderSetup({
         .filter((p) => Boolean("advanced" in p && p.advanced) === advancedOnly)
         .map((p) => ({
           ...p,
+          name: "nameKey" in p ? translateInstant(p.nameKey, { defaultValue: p.name }) : p.name,
+          description: translateInstant(p.descriptionKey, { defaultValue: p.description }),
           icon:
             p.id === "gateway" || p.id === "local" ? (
               <span className="flex size-9 items-center justify-center rounded-lg bg-muted">
@@ -291,8 +320,10 @@ export function AiProviderSetup({
         <div className="space-y-2">
           <h2 className="text-xl font-semibold">
             {step === "provider"
-              ? "Connect a model provider"
-              : `${reconnect ? "Reconnect" : "Connect"} ${label}`}
+              ? translateInstant("connectionUi.providerSetup.connectTitle", { defaultValue: "Connect a model provider" })
+              : reconnect
+                ? translateInstant("connectionUi.providerSetup.reconnectProvider", { provider: label, defaultValue: "Reconnect {{provider}}" })
+                : translateInstant("connectionUi.providerSetup.connectProvider", { provider: label, defaultValue: "Connect {{provider}}" })}
           </h2>
         </div>
       )}
@@ -402,8 +433,8 @@ export function AiProviderSetup({
                 <SelectContent className={ANALYTICS_MASK_CLASS}>
                   <SelectItem value="bearer">
                     {provider === "bedrock"
-                      ? "Bedrock API key"
-                      : "Bearer token"}
+                      ? translateInstant("connectionUi.providerSetup.auth.bedrockApiKey", { defaultValue: "Bedrock API key" })
+                      : translateInstant("connectionUi.providerSetup.auth.bearerToken", { defaultValue: "Bearer token" })}
                   </SelectItem>
                   {provider !== "bedrock" && (
                     <>
@@ -437,7 +468,7 @@ export function AiProviderSetup({
           {save.error && (
             <p role="alert" className="text-sm text-destructive">
               {save.error instanceof Error && save.error.name === "ZodError"
-                ? "Check the URL, API format, and authentication fields."
+                ? translateInstant("connectionUi.providerSetup.invalidFields", { defaultValue: "Check the URL, API format, and authentication fields." })
                 : describeError(save.error).body}
             </p>
           )}

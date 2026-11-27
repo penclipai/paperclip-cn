@@ -639,6 +639,11 @@
     "zh-CN": "重放窗口（秒）",
     "reviewedEnglishHash": "88c7ec0cb4218eda4971a995ff82400829aa190bca88296da05e38fd705ff4db"
   },
+  "routineDetail.resume": {
+    "en": "Resume",
+    "zh-CN": "恢复",
+    "reviewedEnglishHash": "d640c7421da066618a39daf4266da5f61f66a9b1afcd626481b831a17064965d"
+  },
   "routineDetail.rotateSecret": {
     "en": "Rotate secret",
     "zh-CN": "轮换密钥",
@@ -688,6 +693,11 @@
     "en": "Save trigger",
     "zh-CN": "保存触发器",
     "reviewedEnglishHash": "7ad121c939a8909f6dac283604060dbbdf4d4f736799e2193a6caed2ff32bfb9"
+  },
+  "routineDetail.schedule": {
+    "en": "Schedule",
+    "zh-CN": "定时计划",
+    "reviewedEnglishHash": "f4830a1dae2980447c716bd4b5779b7013575ef09f70ef4731457218792487b3"
   },
   "routineDetail.secretsApplyPrefix": {
     "en": "Routine secrets apply to every task this routine creates. They override matching keys in project and agent env.",

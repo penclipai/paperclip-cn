@@ -54,6 +54,11 @@
     "zh-CN": "自动共享已投票的 AI 输出。",
     "reviewedEnglishHash": "af8b81ffe6bec52b50ab96fa5f93112ec2637db5ec937099716e4cef78918889"
   },
+  "instanceGeneralSettings.feedbackSharingBothUnset": {
+    "en": "Unset and \"prompt\" both mean no default has been chosen yet.",
+    "zh-CN": "未设置与 \"prompt\" 均表示尚未选择默认选项。",
+    "reviewedEnglishHash": "958b811eb6a7fb65278d56007e5f49785d2fa795cd9edcaeea9f76de98cbd2ed"
+  },
   "instanceGeneralSettings.feedbackSharingDescription": {
     "en": "Control whether thumbs up and thumbs down votes can send the voted AI output to Paperclip Labs. Votes are always saved locally.",
     "zh-CN": "控制点赞和点踩时，相关 AI 输出是否可以发送给 Paperclip Labs。投票结果始终会保存在本地。",
@@ -68,6 +73,11 @@
     "en": "No default is saved yet. The next thumbs up or thumbs down choice will ask once and then save the answer here.",
     "zh-CN": "当前还没有保存默认选择。下一次点赞或点踩时会询问一次，并把结果保存到这里。",
     "reviewedEnglishHash": "c5be824192ff30a898f930c1e3c388b7b6d0540c1d3fea1eb1369a6c47f26b5a"
+  },
+  "instanceGeneralSettings.feedbackSharingPromptPeriod": {
+    "en": ". ",
+    "zh-CN": "。",
+    "reviewedEnglishHash": "8dccf256f6d5783e62bba717ef04a6cfcea41d9befffa5ade55235e0b6a0eeb0"
   },
   "instanceGeneralSettings.feedbackSharingRetestExplanation": {
     "en": "Unset and \"prompt\" both mean no default has been chosen yet.",
@@ -178,5 +188,45 @@
     "en": "Use Simplified Chinese when a run starts without an explicit request locale.",
     "zh-CN": "当一次运行在没有显式请求语言时，默认使用简体中文。",
     "reviewedEnglishHash": "d600112d614a8a05eaa50fbea52e1b56cbc90441ebeb90c323cd5db48cb5f6cf"
+  },
+  "instanceGeneralSettings.subtitle": {
+    "en": "Configure instance-wide preferences.",
+    "zh-CN": "配置实例级全局偏好设置。",
+    "reviewedEnglishHash": "96f76fb8281a7d68ea38cfa9bc28e0c3dcdc4f611e6f7ad0ccbecf9f97913431"
+  },
+  "instanceGeneralSettings.subtitleWithTopics": {
+    "en": "Configure instance-wide preferences including {{topics}}.",
+    "zh-CN": "配置实例级全局偏好设置，包括{{topics}}。",
+    "reviewedEnglishHash": "70bb4c2873cbc39716ddfb22c7aa7f85ed22722fd16b5e1cd5dd3532d8d62ed7"
+  },
+  "instanceGeneralSettings.topic.backupRetention": {
+    "en": "backup retention",
+    "zh-CN": "备份保留",
+    "reviewedEnglishHash": "f4b23441e72fb749bd673dd96db7640ca624095c768b054f6ed222f86677e36e"
+  },
+  "instanceGeneralSettings.topic.dataSharing": {
+    "en": "data sharing",
+    "zh-CN": "数据共享",
+    "reviewedEnglishHash": "480c14d55c2e7f1cec4b7bea72575fe7bb2406c426244f90c1c1d68a0c87bb7f"
+  },
+  "instanceGeneralSettings.topic.logDisplay": {
+    "en": "log display",
+    "zh-CN": "日志显示",
+    "reviewedEnglishHash": "fb36ded0a0ac9ab4d72eced08cc3866b2de18e39491394ca0436afdc1a74d82a"
+  },
+  "instanceGeneralSettings.topicLastJoiner": {
+    "en": ", and ",
+    "zh-CN": "和",
+    "reviewedEnglishHash": "0a63e3f63f232f0c18f3bfe678607aad0b9f7ac6c73e037f74c79c0b2ba103f8"
+  },
+  "instanceGeneralSettings.topicPairJoiner": {
+    "en": " and ",
+    "zh-CN": "和",
+    "reviewedEnglishHash": "e3ee915a8e8c7aa02d2fced443314522b20824abd2535d5959c41dc8ab8a09e4"
+  },
+  "instanceGeneralSettings.topicSeparator": {
+    "en": ", ",
+    "zh-CN": "、",
+    "reviewedEnglishHash": "0a07f659461970d8d8dcefe4fff96a1745599810dc7d47391e95c803b7b2072c"
   }
 }

@@ -1104,7 +1104,9 @@ export function AppDetailHeader({
           <StatusBadge status={status} />
           {connection.config?.provider !== "agentmail" && actionCount !== null && (
             <span className="tabular-nums">
-              {actionCount} {actionCount === 1 ? translateInstant("runTranscript.toolDecision.action") : "actions"} {translateInstant("apps.detail.available")}
+              {actionCount} {actionCount === 1
+                ? translateInstant("runTranscript.toolDecision.action")
+                : translateInstant("apps.detail.actionsPlural", { defaultValue: "actions" })} {translateInstant("apps.detail.available")}
             </span>
           )}
           {hint ? <span>{hint}</span> : null}
@@ -1120,7 +1122,7 @@ export function AppDetailHeader({
 export function ConnectionBackLink({ label, href }: { label: string; href: string }) {
   return (
     <Button asChild variant="ghost" size="sm" className="-ml-3 h-8 self-start text-muted-foreground">
-      <Link to={href} aria-label={`Back to ${label}`}>
+      <Link to={href} aria-label={translateInstant("apps.detail.backToLabel", { label, defaultValue: `Back to ${label}` })}>
         <ArrowLeft aria-hidden />
         {label}
       </Link>
@@ -1139,7 +1141,7 @@ function ConnectionTabs({ connectionId, active }: { connectionId: string; active
   });
   const waiting = (counts.data?.pendingActionRequestCount ?? 0) + ((counts.data?.quarantinedCatalogEntryCount ?? 0) > 0 ? 1 : 0);
   return (
-    <nav aria-label="Connection sections" className="flex items-center gap-1">
+    <nav aria-label={translateInstant("apps.detail.connectionSectionsAria", { defaultValue: "Connection sections" })} className="flex items-center gap-1">
       {APP_TABS.map((tab) => (
         <Link
           key={tab.key}
@@ -1150,11 +1152,11 @@ function ConnectionTabs({ connectionId, active }: { connectionId: string; active
             tab.key === active ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
           )}
         >
-          {tab.label}
+          {translateInstant(tab.labelKey)}
           {tab.key === "review" && waiting > 0 ? (
             <span className="inline-flex h-5 items-center rounded-md bg-(--status-task-todo)/15 px-1.5 text-xs font-normal text-(--status-task-icon-todo) tabular-nums">
               {waiting}
-              <span className="sr-only"> needing review</span>
+              <span className="sr-only"> {translateInstant("apps.detail.needingReview", { defaultValue: "needing review" })}</span>
             </span>
           ) : null}
         </Link>
@@ -1172,7 +1174,7 @@ function ToolsLoading({ mcpActions = false }: { mcpActions?: boolean }) {
     >
       <Loader2 className="h-4 w-4 animate-spin" />
       {mcpActions
-        ? "Loading MCP actions, this may take a minute."
+        ? translateInstant("apps.detail.loadingMcpActions", { defaultValue: "Loading MCP actions, this may take a minute." })
         : translateInstant("tools.profiles.tools.loading")}
     </div>
   );
@@ -1218,7 +1220,7 @@ function statusFor(connection: ToolConnection): StatusInfo {
   ) {
     return { label: translateInstant("Needs attention"), tone: "attention" };
   }
-  return { label: "Connected", tone: "connected" };
+  return { label: translateInstant("companySettings.customImage.terminalStatus.connected", { defaultValue: "Connected" }), tone: "connected" };
 }
 
 function StatusBadge({ status }: { status: StatusInfo }) {

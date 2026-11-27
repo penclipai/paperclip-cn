@@ -78,12 +78,12 @@ const ISSUE_UPDATED_WINDOW_MS: Record<Exclude<IssueUpdatedWithin, "custom">, num
 
 /** Same words as the Search page's "Updated within" filter, plus 3 days. */
 export const issueUpdatedWithinOptions: ReadonlyArray<{ value: IssueUpdatedWithin | null; label: string }> = [
-  { value: null, label: "Any time" },
-  { value: "24h", label: "Last 24 hours" },
-  { value: "3d", label: "Last 3 days" },
-  { value: "7d", label: "Last 7 days" },
-  { value: "30d", label: "Last 30 days" },
-  { value: "custom", label: "Custom range" },
+  { value: null, get label() { return translateInstant("issueFilters.updatedWithin.anyTime", { defaultValue: "Any time" }); } },
+  { value: "24h", get label() { return translateInstant("issueFilters.updatedWithin.last24Hours", { defaultValue: "Last 24 hours" }); } },
+  { value: "3d", get label() { return translateInstant("issueFilters.updatedWithin.last3Days", { defaultValue: "Last 3 days" }); } },
+  { value: "7d", get label() { return translateInstant("issueFilters.updatedWithin.last7Days", { defaultValue: "Last 7 days" }); } },
+  { value: "30d", get label() { return translateInstant("issueFilters.updatedWithin.last30Days", { defaultValue: "Last 30 days" }); } },
+  { value: "custom", get label() { return translateInstant("issueFilters.updatedWithin.customRange", { defaultValue: "Custom range" }); } },
 ];
 
 const ISSUE_UPDATED_WITHIN_VALUES = new Set<string>(["24h", "3d", "7d", "30d", "custom"]);
@@ -243,7 +243,24 @@ export const issueQuickFilterPresets = [
   { get label() { return translateInstant("issueFilters.quick.done", { defaultValue: "Done" }); }, statuses: ["done", "cancelled"] },
 ];
 
+const ISSUE_FILTER_LABEL_KEYS: Record<string, { key: string; defaultValue: string }> = {
+  in_progress: { key: "status.inProgress", defaultValue: "In Progress" },
+  monitoring: { key: "status.monitoring", defaultValue: "Monitoring" },
+  todo: { key: "status.todo", defaultValue: "Todo" },
+  backlog: { key: "status.backlog", defaultValue: "Backlog" },
+  in_review: { key: "status.inReview", defaultValue: "In Review" },
+  blocked: { key: "status.blocked", defaultValue: "Blocked" },
+  done: { key: "status.done", defaultValue: "Done" },
+  cancelled: { key: "status.cancelled", defaultValue: "Cancelled" },
+  critical: { key: "issueFilters.priority.critical", defaultValue: "Critical" },
+  high: { key: "issueFilters.priority.high", defaultValue: "High" },
+  medium: { key: "issueFilters.priority.medium", defaultValue: "Medium" },
+  low: { key: "issueFilters.priority.low", defaultValue: "Low" },
+};
+
 export function issueFilterLabel(value: string): string {
+  const entry = ISSUE_FILTER_LABEL_KEYS[value];
+  if (entry) return translateInstant(entry.key, { defaultValue: entry.defaultValue });
   return value.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 }
 

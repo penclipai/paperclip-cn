@@ -1,0 +1,22 @@
+{
+  "fastResponses.configureLink": {
+    "en": "Configure fast response",
+    "zh-CN": "配置快速响应",
+    "reviewedEnglishHash": "0213c40197ec74747e73415c02fd9df86bff3e29be60a28b5d61246ad51437aa"
+  },
+  "fastResponses.emptyInPeriod": {
+    "en": "No fast responses in this period.",
+    "zh-CN": "该时间段内暂无快速响应。",
+    "reviewedEnglishHash": "ec54a70a3828482e4c92b7b92e5eedd6e6673d5435f41dd9e9808c6ab5c0d473"
+  },
+  "fastResponses.enableExperimentalLink": {
+    "en": "Enable experimental fast responses",
+    "zh-CN": "启用实验性快速响应",
+    "reviewedEnglishHash": "9be2d155f914fadec739cabd316e0cf6ac9a1bd4569f236f88f30c2684e57fb4"
+  },
+  "fastResponses.tableAria": {
+    "en": "Fast responses",
+    "zh-CN": "快速响应",
+    "reviewedEnglishHash": "ddef68c517c7a2159931afef82bda6b9cd47f42373b071903431554e5d85b5ff"
+  }
+}

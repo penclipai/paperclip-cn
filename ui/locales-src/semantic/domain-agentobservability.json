@@ -1,0 +1,257 @@
+{
+  "agentObservability.addHeader": {
+    "en": "Add header",
+    "zh-CN": "添加请求头",
+    "reviewedEnglishHash": "1192c90dd4972a397a06f9c38f4e92db3a8a1101d284fbc3a95efcef84e2b900"
+  },
+  "agentObservability.apiKey": {
+    "en": "API key",
+    "zh-CN": "API 密钥",
+    "reviewedEnglishHash": "16f0ee47f993d6270c9059450473eea493ca8ae037f8877782ae2bc176f24d18"
+  },
+  "agentObservability.apiKeyConfigured": {
+    "en": "API key configured",
+    "zh-CN": "API 密钥已配置",
+    "reviewedEnglishHash": "73449404d84574bdf863e912317f1e20c9c7baada05c3e04f4cfbfd5caa6cf9e"
+  },
+  "agentObservability.capture.assistantResponses": {
+    "en": "Assistant responses",
+    "zh-CN": "助手响应",
+    "reviewedEnglishHash": "441bc642393f42576724f2847d0ab9b8367f8bf3374bbfa6365e3edd663f9001"
+  },
+  "agentObservability.capture.toolContent": {
+    "en": "Tool output and content",
+    "zh-CN": "工具输出与内容",
+    "reviewedEnglishHash": "bc91e29f279f670154b63ed2a4c33ddd98cc85e69c1ca367f7ba63678ca94437"
+  },
+  "agentObservability.capture.toolDetails": {
+    "en": "Additional tool details (Claude Code)",
+    "zh-CN": "附加工具详情（Claude Code）",
+    "reviewedEnglishHash": "e33d57941a67f65114a5de72ca290a7d3dd1feaf1061baef3961e300d2e2fe1f"
+  },
+  "agentObservability.capture.userPrompts": {
+    "en": "User prompts",
+    "zh-CN": "用户提示词",
+    "reviewedEnglishHash": "218ee0bc346e3a3a257dbda4aa7cef3637430e28ce591d7e1a9dbefcd0cf2e5c"
+  },
+  "agentObservability.conflictError": {
+    "en": "Another administrator changed these settings. Reload the saved settings to continue.",
+    "zh-CN": "另一位管理员已更改这些设置。请重新加载已保存的设置以继续。",
+    "reviewedEnglishHash": "f11812727aa9fa3172246ec7a3c836beb0fdb6a7879f79010f0a51c56501ed5a"
+  },
+  "agentObservability.contentCapture": {
+    "en": "Content capture",
+    "zh-CN": "内容采集",
+    "reviewedEnglishHash": "3d5b30d08123735293ade2e17b381775a190d7e1b1d62452b515643d0e3537c3"
+  },
+  "agentObservability.contentCaptureHint": {
+    "en": "Native limits apply. Exported records can contain task content, including prompts and tool output. A collector can forward records to multiple services.",
+    "zh-CN": "适用原生限制。导出的记录可能包含任务内容（含提示词和工具输出）。收集器可将记录转发至多个服务。",
+    "reviewedEnglishHash": "3e399d01ff5a5ac611f6232fb55e6467aa89d7ed8a78cb9730e9a7898787a39a"
+  },
+  "agentObservability.credentialsHint": {
+    "en": "The agent harness receives these credentials. Use a key limited to telemetry ingestion.",
+    "zh-CN": "智能体运行环境会接收这些凭据。请使用仅限遥测写入权限的密钥。",
+    "reviewedEnglishHash": "9c8b751417d141b0bd594de86eefb427df3862aaffb611f3f35c1bb9e3bbb48e"
+  },
+  "agentObservability.description": {
+    "en": "Send Codex, Claude Code and native OpenCode execution data to your observability service.",
+    "zh-CN": "将 Codex、Claude Code 和原生 OpenCode 的执行数据发送到你的可观测性服务。",
+    "reviewedEnglishHash": "dab6469f43a1a5bb0b520b41368b3ef6a9d8bd9739a108c8f7475686c86a4477"
+  },
+  "agentObservability.destination": {
+    "en": "Destination",
+    "zh-CN": "目标平台",
+    "reviewedEnglishHash": "293d404a500f5f9a149916d810ff4f4231bd5d6ecd25eb0f55a867e2095eca48"
+  },
+  "agentObservability.disableExport": {
+    "en": "Disable export",
+    "zh-CN": "禁用导出",
+    "reviewedEnglishHash": "c82de6679205f4b7ac5a28f88df2e6d5668017d0278fc06e1660b17085ac5802"
+  },
+  "agentObservability.enableExport": {
+    "en": "Enable export",
+    "zh-CN": "启用导出",
+    "reviewedEnglishHash": "64c2a9cf2723914418d7404f898c2c747e39c582fae27f5a06ec252a1085a73b"
+  },
+  "agentObservability.enableExportHint": {
+    "en": "Applies to executions that start preparation after saving.",
+    "zh-CN": "适用于保存后开始准备的执行。",
+    "reviewedEnglishHash": "6363e56800a408bd80abdad075cba855811183ed50e55375c467e32c73a40a9f"
+  },
+  "agentObservability.headerFallback": {
+    "en": "header",
+    "zh-CN": "请求头",
+    "reviewedEnglishHash": "1e0584a25d9f43bf5cbd0aec01eb1af2220ed085b4e7f1837b0d89958cae353a"
+  },
+  "agentObservability.headerNameAria": {
+    "en": "Header name",
+    "zh-CN": "请求头名称",
+    "reviewedEnglishHash": "c1dcc8fb31f6ee89a78f94a93a21999c2ae6cfeec2d8a9bb5c86d2b0bddbdd6b"
+  },
+  "agentObservability.headerValueAria": {
+    "en": "Value for {{name}}",
+    "zh-CN": "{{name}} 的值",
+    "reviewedEnglishHash": "eb4297dc624dd515d6f85b7fa21bddf73db4163ec17ea489f7357c015ea3b01a"
+  },
+  "agentObservability.headerValuePlaceholder": {
+    "en": "Header value",
+    "zh-CN": "请求头值",
+    "reviewedEnglishHash": "f9a9058c0c22e511c58b7ca3f579036d24e2592ef72a0069df0736586ab46d8d"
+  },
+  "agentObservability.headers": {
+    "en": "Headers",
+    "zh-CN": "请求头",
+    "reviewedEnglishHash": "194e9fe656a1bcabfa596619d14560aa6836b8d88c304bd2eb9c214cbc0e5cb6"
+  },
+  "agentObservability.keepSavedValue": {
+    "en": "Keep saved value",
+    "zh-CN": "保留已保存的值",
+    "reviewedEnglishHash": "884e111c1950293c53618733196ec8fc1e2aa8c2ea2c86c6a205d2951abb4bde"
+  },
+  "agentObservability.loadFailed": {
+    "en": "Agent observability settings could not be loaded.",
+    "zh-CN": "无法加载智能体可观测性设置。",
+    "reviewedEnglishHash": "cf9d16b1442af95d5c88857712da03e37ed8e15b3c945470207b2451a89ba542"
+  },
+  "agentObservability.loading": {
+    "en": "Loading agent observability…",
+    "zh-CN": "正在加载智能体可观测性设置…",
+    "reviewedEnglishHash": "ecf5efdd8009186386e83dbf4c04e35af874cbd98e8f896505c23b6cfade4664"
+  },
+  "agentObservability.noHeaders": {
+    "en": "No authentication headers.",
+    "zh-CN": "暂无认证请求头。",
+    "reviewedEnglishHash": "f9ffc360b460904781a2946d0ef50b5c81b1ed095585e16982946393e1f8f5df"
+  },
+  "agentObservability.otlpBaseUrl": {
+    "en": "OTLP base URL",
+    "zh-CN": "OTLP 基础 URL",
+    "reviewedEnglishHash": "f1d4c59f5fd1dc77d6afcbc30f36aa238229b45b70ed43ce0571aaa7357e59af"
+  },
+  "agentObservability.otlpBaseUrlHint": {
+    "en": "Use the base URL without /v1/logs or /v1/traces. It must be reachable from each agent environment.",
+    "zh-CN": "请填写不含 /v1/logs 或 /v1/traces 的基础 URL，且必须可从各个智能体环境访问。",
+    "reviewedEnglishHash": "1ecb367271e39cd94bf5b25f1f4679d458c58f3e0b44b2b7ebe9ce6dd4d99a39"
+  },
+  "agentObservability.permissionRequired": {
+    "en": "Manage connections permission is required to configure agent observability.",
+    "zh-CN": "需要“管理连接”权限才能配置智能体可观测性。",
+    "reviewedEnglishHash": "a80f6a57c3ec11f18c611df7f1d4a90bdd17c92c2add8a3ddfe785690ce47c92"
+  },
+  "agentObservability.projectId": {
+    "en": "Project ID",
+    "zh-CN": "项目 ID",
+    "reviewedEnglishHash": "e511470b21a90cea819fb959f91e38fb462a40fa9745a4dda437d8f48f3de8da"
+  },
+  "agentObservability.projectIdPlaceholder": {
+    "en": "Braintrust project UUID",
+    "zh-CN": "Braintrust 项目 UUID",
+    "reviewedEnglishHash": "69277b6e22a43e6e90d27a4d9c510a2b9f8acaf0d619b7c7c51cc5696cf940c3"
+  },
+  "agentObservability.provider.braintrust": {
+    "en": "Braintrust",
+    "zh-CN": "Braintrust",
+    "reviewedEnglishHash": "53191979361af8b634cc5da1e6248fcf401666ac1568c47c36915ef6893f11f6"
+  },
+  "agentObservability.provider.otlp": {
+    "en": "Custom OTLP",
+    "zh-CN": "自定义 OTLP",
+    "reviewedEnglishHash": "e3f3526e8310941d541e12a6046b178a77129e3e4c57a0f8a77313fdebf4df93"
+  },
+  "agentObservability.refreshFailed": {
+    "en": "Saved settings could not be refreshed. Your draft is unchanged.",
+    "zh-CN": "无法刷新已保存的设置。你的草稿保持不变。",
+    "reviewedEnglishHash": "bd8f109ef5f8c077ac481017b8088c613ab434739e0038de687ce787244e8d03"
+  },
+  "agentObservability.reloadSavedSettings": {
+    "en": "Reload saved settings",
+    "zh-CN": "重新加载已保存的设置",
+    "reviewedEnglishHash": "415db71a129627bb3f0c61c2d45f05b391a5411d27d56b093d92cceaf884c072"
+  },
+  "agentObservability.removeConfiguration": {
+    "en": "Remove configuration",
+    "zh-CN": "移除配置",
+    "reviewedEnglishHash": "b2556f83e5d49e41e2756993a49c242cb2faa2547cfb0a7be671a3a36ce32ff2"
+  },
+  "agentObservability.removeHeaderAria": {
+    "en": "Remove {{name}}",
+    "zh-CN": "移除 {{name}}",
+    "reviewedEnglishHash": "43e1269ac88aba53770f74a888e94434ed456cafba03b1bd4bd40350f31befb0"
+  },
+  "agentObservability.removing": {
+    "en": "Removing…",
+    "zh-CN": "正在移除…",
+    "reviewedEnglishHash": "d4b09919ec929f15c19802296a06e97a0d0862e29e23c453d638fc0c3b87c641"
+  },
+  "agentObservability.replaceApiKey": {
+    "en": "Replace API key",
+    "zh-CN": "更换 API 密钥",
+    "reviewedEnglishHash": "f97925f1e14bff940fa951827c441e024e46aeb66045387f0fc212b760cc2a4b"
+  },
+  "agentObservability.saveBeforeTesting": {
+    "en": "Save changes before testing.",
+    "zh-CN": "请先保存更改再进行测试。",
+    "reviewedEnglishHash": "10a5f2545808037b8a2ad3997757e7dc49f257d6ce8f80766e03b5ba04877272"
+  },
+  "agentObservability.signal.logs": {
+    "en": "Logs",
+    "zh-CN": "日志",
+    "reviewedEnglishHash": "ea2100dc89ae9fe21fa9b08ab1bf18662dca1e53a3eebd7d03afebcaf5d57515"
+  },
+  "agentObservability.signal.traces": {
+    "en": "Traces",
+    "zh-CN": "追踪",
+    "reviewedEnglishHash": "998741a58ed2b4117c46419e19e9f3cbb0b3f46bcf2a721ce1c57625e50ad0f4"
+  },
+  "agentObservability.testAccepted": {
+    "en": "Test payload accepted",
+    "zh-CN": "测试数据已被接收",
+    "reviewedEnglishHash": "52d6b87c89bc1047c9692462592a75f342c4b1c306dafa803874e8209d045570"
+  },
+  "agentObservability.testFailed": {
+    "en": "Test payload failed",
+    "zh-CN": "测试数据发送失败",
+    "reviewedEnglishHash": "151fc55b5bce69a56f3161cc7a1db22197f8c607729ddf0d66fba5c811bb2451"
+  },
+  "agentObservability.testPartial": {
+    "en": "Some test records were rejected",
+    "zh-CN": "部分测试记录被拒绝",
+    "reviewedEnglishHash": "feee591c0fe63adcbaf92e535e88635ffa430ea2895bf0df838da7bd112d0a1f"
+  },
+  "agentObservability.testReceiptTimestamp": {
+    "en": "{{time}} · Sent from the Paperclip server.",
+    "zh-CN": "{{time}} · 由 Paperclip 服务器发送。",
+    "reviewedEnglishHash": "8d19b15bb1efac7bb6d4128587ff6a028b52f8018a39ca618b52829b6d62f5f1"
+  },
+  "agentObservability.testSavedSettings": {
+    "en": "Test saved settings",
+    "zh-CN": "测试已保存的设置",
+    "reviewedEnglishHash": "46f4577c611eda32942502f99759cd652c2cadb27c73b655984a76504934114f"
+  },
+  "agentObservability.testing": {
+    "en": "Testing…",
+    "zh-CN": "正在测试…",
+    "reviewedEnglishHash": "407b7a04662f2aabdfb3f017054466068e8155fc44815f88d9530833f30f7ff1"
+  },
+  "agentObservability.title": {
+    "en": "Agent observability",
+    "zh-CN": "智能体可观测性",
+    "reviewedEnglishHash": "88e9eaa25e4ce35228cf114743306a7b1bfb566ff6332b33eec92b5b6040c65e"
+  },
+  "agentObservability.updateFailed": {
+    "en": "The observability settings could not be updated.",
+    "zh-CN": "无法更新可观测性设置。",
+    "reviewedEnglishHash": "695fdfcba29b36fd206b017aa4a8adfc0881bcc9accb9b74be9cfa88bd28c239"
+  },
+  "agentObservability.validation.reenterHeaders": {
+    "en": "Re-enter every header value for the new endpoint, or remove the header.",
+    "zh-CN": "请为新端点重新输入每个请求头的值，或移除对应请求头。",
+    "reviewedEnglishHash": "36ab5e3ff73184ef3bc62aefd67423a0d35950ec41615236724fb8f2e0dfbdb8"
+  },
+  "agentObservability.validation.reviewConfig": {
+    "en": "Review the configuration.",
+    "zh-CN": "请检查配置。",
+    "reviewedEnglishHash": "4a08f252802412c2d8b52e74e5a2884c68bb440334574e7973ec4d616a5a48e5"
+  }
+}

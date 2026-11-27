@@ -73,14 +73,14 @@ interface EnvironmentDescriptor {
 
 const localEnvironmentDescriptor: EnvironmentDescriptor = {
   get label() { return translateInstant("Local"); },
-  detail: "Paperclip host",
-  title: "Local - Paperclip host",
+  get detail() { return translateInstant("agents.env.paperclipHost", { defaultValue: "Paperclip host" }); },
+  get title() { return `${translateInstant("Local")} - ${translateInstant("agents.env.paperclipHost", { defaultValue: "Paperclip host" })}`; },
 };
 
 const loadingEnvironmentDescriptor: EnvironmentDescriptor = {
   label: "—",
-  detail: "Loading environment",
-  title: "Loading environment",
+  get detail() { return translateInstant("agents.env.loading", { defaultValue: "Loading environment" }); },
+  get title() { return translateInstant("agents.env.loading", { defaultValue: "Loading environment" }); },
 };
 
 // Agents in these states never appear in the agents list — `terminated` is
@@ -141,11 +141,14 @@ function describeEnvironment(
   capabilities?: EnvironmentCapabilities | null,
 ): EnvironmentDescriptor {
   const detail = isPlatformManagedEnvironment(environment)
-    ? "Managed by Paperclip"
+    ? translateInstant("agents.env.managedByPaperclip", { defaultValue: "Managed by Paperclip" })
     : environment.driver === "sandbox"
-      ? `${getSandboxProviderLabel(environment, capabilities)} sandbox provider`
+      ? translateInstant("agents.env.sandboxProvider", {
+          provider: getSandboxProviderLabel(environment, capabilities),
+          defaultValue: "{{provider}} sandbox provider",
+        })
       : environment.driver === "local"
-        ? "Paperclip host"
+        ? translateInstant("agents.env.paperclipHost", { defaultValue: "Paperclip host" })
         : formatEnvironmentDriver(environment.driver);
 
   return {
@@ -157,7 +160,7 @@ function describeEnvironment(
 
 function describeMissingEnvironment(environmentId: string): EnvironmentDescriptor {
   return {
-    label: "Unknown environment",
+    label: translateInstant("agents.env.unknown", { defaultValue: "Unknown environment" }),
     detail: environmentId.slice(0, 8),
     title: `Unknown environment - ${environmentId}`,
   };
@@ -430,7 +433,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
             {showEnvironmentColumn && <span className="text-xs text-muted-foreground" title={resolveRenderedEnvironment(agent.id).title}>
               {resolveRenderedEnvironment(agent.id).label} · {resolveRenderedEnvironment(agent.id).detail}
             </span>}
-            {agent.lastHeartbeatAt && <span className="text-xs text-muted-foreground" title="Last heartbeat">{relativeTime(agent.lastHeartbeatAt)}</span>}
+            {agent.lastHeartbeatAt && <span className="text-xs text-muted-foreground" title={translateInstant("agents.lastHeartbeat", { defaultValue: "Last heartbeat" })}>{relativeTime(agent.lastHeartbeatAt)}</span>}
           </div>
         )}
       />
@@ -487,14 +490,14 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
                   <button
                     type="button"
                     className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/agent-row:opacity-100 focus-visible:opacity-100"
-                    aria-label={`Chat with ${agent.name}`}
+                    aria-label={translateInstant("agents.chatWithAgent", { name: agent.name, defaultValue: "Chat with {{name}}" })}
                     onClick={() => navigate(`/chats/${agentRouteRef(agent)}`)}
                   >
                     <MessagesSquare className="size-3.5" aria-hidden />
                     {translateInstant("Chat", { defaultValue: "Chat" })}
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>chat with this agent</TooltipContent>
+                <TooltipContent>{translateInstant("agents.chatTooltip", { defaultValue: "chat with this agent" })}</TooltipContent>
               </Tooltip>
             </TooltipPrimitive.Provider>
           ) : undefined} />

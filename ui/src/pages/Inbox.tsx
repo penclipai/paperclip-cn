@@ -1100,15 +1100,22 @@ function StreamlinedInbox({
       : "mine";
   const tab: InboxTab = tabOverride ?? pathTab;
   const canArchiveFromTab = isMineInboxTab(tab);
-  const isTasksUnread = surfaceLabel === "Tasks" && tab === "unread";
+  const isTasksSurface = surfaceLabel === "Tasks";
+  const isInboxSurface = surfaceLabel === "Inbox";
+  const displaySurfaceLabel = isTasksSurface
+    ? translateInstant("sidebar.issues")
+    : isInboxSurface
+      ? translateInstant("Inbox")
+      : surfaceLabel;
+  const isTasksUnread = isTasksSurface && tab === "unread";
   const issueLinkState = useMemo(
     () =>
       createIssueDetailLocationState(
-        surfaceLabel,
+        displaySurfaceLabel,
         `${location.pathname}${location.search}${location.hash}`,
         "inbox",
       ),
-    [surfaceLabel, location.pathname, location.search, location.hash],
+    [displaySurfaceLabel, location.pathname, location.search, location.hash],
   );
 
   const { data: session, isLoading: isSessionLoading } = useQuery({
@@ -1167,8 +1174,8 @@ function StreamlinedInbox({
     experimentalSettings?.enableExternalObjects === true;
 
   useEffect(() => {
-    setBreadcrumbs([{ label: surfaceLabel }]);
-  }, [setBreadcrumbs, surfaceLabel]);
+    setBreadcrumbs([{ label: displaySurfaceLabel }]);
+  }, [setBreadcrumbs, displaySurfaceLabel]);
 
   useEffect(() => {
     saveLastInboxTab(tab);
@@ -3559,9 +3566,13 @@ function StreamlinedInbox({
   if (!selectedCompanyId) {
     return (
       <EmptyState
-        placement={surfaceLabel === "Inbox" ? "upper" : "center"}
+        placement={isInboxSurface ? "upper" : "center"}
         icon={InboxIcon}
-        message={`Select an organization to view ${surfaceLabel.toLowerCase()}.`}
+        message={isTasksSurface
+          ? translateInstant("coordinatorTasks.selectOrg", { defaultValue: "Select an organization to view tasks." })
+          : isInboxSurface
+            ? translateInstant("inbox.selectOrg", { defaultValue: "Select an organization to view inbox." })
+            : translateInstant("inbox.selectOrgGeneric", { surface: displaySurfaceLabel.toLowerCase(), defaultValue: `Select an organization to view ${displaySurfaceLabel.toLowerCase()}.` })}
       />
     );
   }
@@ -3593,9 +3604,9 @@ function StreamlinedInbox({
       ),
     );
   const issueFilterFeedback = issueFilters.liveOnly
-    ? "Live runs only — tasks currently connected to an agent run."
+    ? translateInstant("inbox.filterFeedback.liveOnly", { defaultValue: "Live runs only — tasks currently connected to an agent run." })
     : activeStatusFilterApplied
-      ? "Active statuses — open tasks, whether or not an agent is running."
+      ? translateInstant("inbox.filterFeedback.activeStatuses", { defaultValue: "Active statuses — open tasks, whether or not an agent is running." })
       : null;
   return (
     <div className="space-y-6">
@@ -3603,10 +3614,10 @@ function StreamlinedInbox({
         error={optionalSourceError ?? rowDetailsError}
         message={
           optionalSourceError
-            ? "Some inbox items couldn’t load. Showing available items."
+            ? translateInstant("inbox.partialLoadNotice", { defaultValue: "Some inbox items couldn’t load. Showing available items." })
             : undefined
         }
-        retryLabel={optionalSourceError ? "Retry missing items" : undefined}
+        retryLabel={optionalSourceError ? translateInstant("inbox.retryMissingItems", { defaultValue: "Retry missing items" }) : undefined}
         onRetry={
           optionalSourceError
             ? retryFailedSources
@@ -3616,7 +3627,7 @@ function StreamlinedInbox({
       <InboxCollectionToolbar
         streamlined={streamlinedUiEnabled}
         ariaLabel={translateInstant("inbox.controls", {
-          surface: surfaceLabel,
+          surface: displaySurfaceLabel,
         })}
         context={
           toolbarContext ?? (
@@ -3641,7 +3652,11 @@ function StreamlinedInbox({
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
-              placeholder={`Search ${surfaceLabel.toLowerCase()}…`}
+              placeholder={isTasksSurface
+                ? translateInstant("issuesList.searchPlaceholder", { defaultValue: "Search tasks…" })
+                : isInboxSurface
+                  ? translateInstant("inbox.searchPlaceholder", { defaultValue: "Search inbox…" })
+                  : translateInstant("inbox.searchGenericPlaceholder", { surface: displaySurfaceLabel.toLowerCase(), defaultValue: `Search ${displaySurfaceLabel.toLowerCase()}…` })}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -4479,8 +4494,8 @@ function StreamlinedInbox({
                                   variant="ghost"
                                   size="icon-xs"
                                   className="-mr-2 text-muted-foreground"
-                                  title={`New task in ${group.label}`}
-                                  aria-label={`New task in ${group.label}`}
+                                  title={translateInstant("issuesList.newTaskInGroup", { group: group.label, defaultValue: `New task in ${group.label}` })}
+                                  aria-label={translateInstant("issuesList.newTaskInGroup", { group: group.label, defaultValue: `New task in ${group.label}` })}
                                   onClick={(event) => {
                                     event.stopPropagation();
                                     openCreateIssueForGroup(group);

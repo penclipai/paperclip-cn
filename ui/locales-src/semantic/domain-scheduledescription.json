@@ -39,6 +39,11 @@
     "zh-CN": "每天",
     "reviewedEnglishHash": "ed28f6cae0fa83a36aec9ce49eabd7feb487960cfff9df8b7595c10622c8e975"
   },
+  "scheduleDescription.everyDayAt": {
+    "en": "Every day at {{time}}",
+    "zh-CN": "每天 {{time}}",
+    "reviewedEnglishHash": "25949eda01dd1287068c6e6f554c4a4c78a8231e0ee8aa4e02b0ee109742dc9a"
+  },
   "scheduleDescription.everyHourAtMinute": {
     "en": "Every hour at :{{minute}}",
     "zh-CN": "每小时第 {{minute}} 分钟",
@@ -79,6 +84,11 @@
     "zh-CN": "每周{{day}}",
     "reviewedEnglishHash": "c51d27e4c8b8d6f73fcb0ccd84f09529d67f633c8d01870f5e8cd0d26947dd45"
   },
+  "scheduleDescription.everyNamedDayAt": {
+    "en": "Every {{day}} at {{time}}",
+    "zh-CN": "每{{day}} {{time}}",
+    "reviewedEnglishHash": "03059735b1f60d3e916d8d6f468aa13c074bc037d535d8ae381833c8e544b927"
+  },
   "scheduleDescription.everySelectedDays": {
     "en": "every {{days}}",
     "zh-CN": "每周{{days}}",
@@ -94,6 +104,11 @@
     "zh-CN": "每个周末",
     "reviewedEnglishHash": "167108b67e5bc9b6083ad202342a117615160a43be0f4bd59d99b4004cc8221a"
   },
+  "scheduleDescription.monthlyOnAt": {
+    "en": "Monthly on the {{ordinal}} at {{time}}",
+    "zh-CN": "每月 {{ordinal}} 日 {{time}}",
+    "reviewedEnglishHash": "25ea7e9f79beaf59dda178eaaa83c58478c4d1619e1d045d81aa407e10fa88d7"
+  },
   "scheduleDescription.onDayOfMonth": {
     "en": "on the {{day}} of the month",
     "zh-CN": "每月 {{day}} 日",
@@ -108,5 +123,10 @@
     "en": "{{count}} times per day",
     "zh-CN": "每天 {{count}} 次",
     "reviewedEnglishHash": "64ddfac93d4e24770e406191f7a28b7966f8e427f052b6f643e591001a478b7c"
+  },
+  "scheduleDescription.weekdaysAt": {
+    "en": "Weekdays at {{time}}",
+    "zh-CN": "工作日 {{time}}",
+    "reviewedEnglishHash": "67a5b3759146b7cfb9554778707316d225ba20b9c7f5798c89d0f7191ae9a9ae"
   }
 }

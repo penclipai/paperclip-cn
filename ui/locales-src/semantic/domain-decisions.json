@@ -1,0 +1,1202 @@
+{
+  "decisions.aTeammate": {
+    "en": "A teammate",
+    "zh-CN": "一位成员",
+    "reviewedEnglishHash": "89271b7400a2d432ae5de564a47867ee31a5d986e0e19a25c5eb4335520314ff"
+  },
+  "decisions.assignee.allAssignees": {
+    "en": "All assignees",
+    "zh-CN": "全部负责人",
+    "reviewedEnglishHash": "c095ce2221184accf3978f799b643b01ed2a770605037296aace7424f21ca218"
+  },
+  "decisions.assignee.assignedToYou": {
+    "en": "Assigned to you",
+    "zh-CN": "分配给你",
+    "reviewedEnglishHash": "dbf11bd849e218208ed24906c9db31d0685ab69db96babce6d1dfa50a670e473"
+  },
+  "decisions.assignee.companyAlerts": {
+    "en": "Company alerts",
+    "zh-CN": "公司告警",
+    "reviewedEnglishHash": "701e6c6b9a48633c0d8939208d022e90d5a6e436b64d6de2283791d43b5bb677"
+  },
+  "decisions.attentionTasks.loadError": {
+    "en": "Tasks needing attention could not be loaded.",
+    "zh-CN": "无法加载需要关注的任务。",
+    "reviewedEnglishHash": "070f307e3b5d81b8f01684a6683afbb5d1f6e94dda7c16f698846c002594da4a"
+  },
+  "decisions.attentionTasks.noMatch": {
+    "en": "No tasks match this search.",
+    "zh-CN": "没有符合此搜索的任务。",
+    "reviewedEnglishHash": "a341082c9700fe5867645ec854c95e1d481bbb58461684ea55e313589b8d1f84"
+  },
+  "decisions.attentionTasks.pendingCount": {
+    "en": "{{count}} pending",
+    "zh-CN": "{{count}} 项待处理",
+    "reviewedEnglishHash": "d927e95729e154a1c77f232eeb89eaeb594884f2f43af959590a0805afbaf7e7"
+  },
+  "decisions.attentionTasks.searchAria": {
+    "en": "Search tasks needing attention",
+    "zh-CN": "搜索需要关注的任务",
+    "reviewedEnglishHash": "42f18502ffaccf4fbca928a3e6c66e3266699bc1c3dbb54aca3d39ee3c3c189b"
+  },
+  "decisions.backToNeedsYouAria": {
+    "en": "Back to Needs You",
+    "zh-CN": "返回待你处理",
+    "reviewedEnglishHash": "224df28ef17239e6063982f53cc1989db0597ea55cb4cc8bfa390cc8de839a64"
+  },
+  "decisions.cardAsk.agentError": {
+    "en": "{{agent}} hit an error and needs help",
+    "zh-CN": "{{agent}} 遇到错误，需要协助",
+    "reviewedEnglishHash": "749999ae28dea464ac11f4bfef1a45f0a8de5313695ea51faf11fa0b0cf705c2"
+  },
+  "decisions.cardAsk.approval": {
+    "en": "Approve “{{title}}”?",
+    "zh-CN": "是否批准“{{title}}”？",
+    "reviewedEnglishHash": "3cf7b3ad1d41f62c549219c96effdafdbd0133e37b7cc5899da83ae746f8a256"
+  },
+  "decisions.cardAsk.blocker": {
+    "en": "Get “{{title}}” moving again",
+    "zh-CN": "让“{{title}}”继续推进",
+    "reviewedEnglishHash": "2cbaa3a5700c83e2d7a55323410b13f0ebd06f4e0a191375ccc708adfb629139"
+  },
+  "decisions.cardAsk.joinRequest": {
+    "en": "Let {{title}} join the company?",
+    "zh-CN": "允许 {{title}} 加入公司吗？",
+    "reviewedEnglishHash": "b1ba8d348742b7b0371a1c310f0ca3402e3430989fe32ce8654ea222f5fcea40"
+  },
+  "decisions.cardAsk.review": {
+    "en": "Review “{{title}}”",
+    "zh-CN": "审核“{{title}}”",
+    "reviewedEnglishHash": "3ec15092ef10f72fd6acd15208de592ef0bbf40f45bdd3a33b06bd4ca719b00d"
+  },
+  "decisions.cardBody.assignedTo": {
+    "en": "Assigned to {{assignee}}",
+    "zh-CN": "已分配给 {{assignee}}",
+    "reviewedEnglishHash": "26eb2976f24d8111929da84600f6a34e00d0af05fa2f18c4df4bd10ea1750d74"
+  },
+  "decisions.cardBody.blocksCount_one": {
+    "en": "Blocks {{count}} task",
+    "zh-CN": "阻塞 {{count}} 项任务",
+    "reviewedEnglishHash": "11e32e206c62b9767a2fc047b76533a1ca2d8b9a39fa57db8bd119391e0b8046"
+  },
+  "decisions.cardBody.blocksCount_other": {
+    "en": "Blocks {{count}} tasks",
+    "zh-CN": "阻塞 {{count}} 项任务",
+    "reviewedEnglishHash": "8af817b53a855f0dede96ac16045b60b8ffad367db7f016f080c2d04a26cd320"
+  },
+  "decisions.cardBody.blocksTask": {
+    "en": "Blocks {{task}}",
+    "zh-CN": "阻塞 {{task}}",
+    "reviewedEnglishHash": "5fc34996ac1d61de13c9bfac9a4228e1805c60784036088a494fa0876bf910dd"
+  },
+  "decisions.cardBody.blocksTaskMore": {
+    "en": "Blocks {{task}} and {{extra}} more",
+    "zh-CN": "阻塞 {{task}} 等 {{extra}} 项任务",
+    "reviewedEnglishHash": "d9ed30c6a2f952af288729df425aeca580ebade63c7655d3a7f490fdd490ed87"
+  },
+  "decisions.cardBody.markTaskDone": {
+    "en": "Mark task done",
+    "zh-CN": "将任务标为已完成",
+    "reviewedEnglishHash": "b33502efc8bfa4f8788182b033588e765aa0ae1bbab902a0df3388c51bb8c627"
+  },
+  "decisions.cardBody.openBlockingTask": {
+    "en": "Open blocking task",
+    "zh-CN": "打开阻塞任务",
+    "reviewedEnglishHash": "d52a15e0b9dd605c110a5ebac3f9ea60242afb2b855bc00ff4d4ad9af8de9fb8"
+  },
+  "decisions.cardBody.reviewStalled": {
+    "en": "Review stalled",
+    "zh-CN": "审核已停滞",
+    "reviewedEnglishHash": "d209c38d112718827694fd55028976314db20b1328015ccaadd83c5ee53560c5"
+  },
+  "decisions.cardBody.reviewStalledNote": {
+    "en": "No reviewer, approval or run is moving this review.",
+    "zh-CN": "当前没有审核人、审批或运行在推进此次审核。",
+    "reviewedEnglishHash": "592089599f0485d5440ae6f70600081f161ab29cc7db93ab77caa7e208923979"
+  },
+  "decisions.cardDetail.blockerNone": {
+    "en": "No one is working on it. Unblock it, reassign it, or nudge its owner.",
+    "zh-CN": "当前无人跟进。请解除阻塞、重新分配或提醒负责人。",
+    "reviewedEnglishHash": "e11c5d40b385e813a8cedb6c92e80b82fc30061832f7d35d290e6478e456dc54"
+  },
+  "decisions.cardDetail.blockerWithCount_one": {
+    "en": "It's holding up {{count}} task, and no one is working on it. Unblock it, reassign it, or nudge its owner.",
+    "zh-CN": "它正阻塞 {{count}} 项任务，且无人处理。请解除阻塞、重新分配或提醒负责人。",
+    "reviewedEnglishHash": "5cb416ecce50e6562ad5185b06a91d4bd5a39d006994c414c2532a7f8374dcae"
+  },
+  "decisions.cardDetail.blockerWithCount_other": {
+    "en": "It's holding up {{count}} tasks, and no one is working on it. Unblock it, reassign it, or nudge its owner.",
+    "zh-CN": "它正阻塞 {{count}} 项任务，且无人处理。请解除阻塞、重新分配或提醒负责人。",
+    "reviewedEnglishHash": "66260a8212237e8d3c88e65693451b7918622c0335e8b5462efa15ba8daa255e"
+  },
+  "decisions.cardType.agentError": {
+    "en": "Fix an agent error",
+    "zh-CN": "修复智能体错误",
+    "reviewedEnglishHash": "fbf3f7fca1978c99f8d712ff3ab7b17c5967db1bbec577c6bafe5b8094de8780"
+  },
+  "decisions.cardType.answerQuestions": {
+    "en": "Answer questions",
+    "zh-CN": "回答问题",
+    "reviewedEnglishHash": "0852e91b7e9765c5763d3afd46e974e5e7bcb839b61862ab46ab4098dc1fc270"
+  },
+  "decisions.cardType.approveStrategy": {
+    "en": "Approve a strategy",
+    "zh-CN": "批准策略",
+    "reviewedEnglishHash": "b2944b4eb1fc651da014d17be257c49ab5c07a6bc07f40491a7c74652a983e15"
+  },
+  "decisions.cardType.blockedTask": {
+    "en": "Unblock a task",
+    "zh-CN": "解除任务阻塞",
+    "reviewedEnglishHash": "8c443679a7a39781e7a88fe4d99999f8ba02efa0f101039e4278f28157ed60e1"
+  },
+  "decisions.cardType.boardApproval": {
+    "en": "Approve a request",
+    "zh-CN": "批准请求",
+    "reviewedEnglishHash": "5930d3d923bc891b68f8c7fd51f806e0aecdc5b22df593653877708ac0eefb89"
+  },
+  "decisions.cardType.budgetOverride": {
+    "en": "Approve a budget override",
+    "zh-CN": "批准预算超额",
+    "reviewedEnglishHash": "cf20ecd564de3e75d6cedda49b1d31abd9229571665587f0d0cb29b39e5be208"
+  },
+  "decisions.cardType.budgetStop": {
+    "en": "Resolve a budget stop",
+    "zh-CN": "处理预算停机",
+    "reviewedEnglishHash": "088d3e911d7fdf09d011075eccac7a4ce1450a257a2f9ad78ac678e4aea9e53f"
+  },
+  "decisions.cardType.budgetWarning": {
+    "en": "Review a budget warning",
+    "zh-CN": "查看预算警告",
+    "reviewedEnglishHash": "eae25c2e7fb6b359fa8926a40d1fdcb4de23b4a8caa8dd2abc3aaf3b40d9733b"
+  },
+  "decisions.cardType.confirm": {
+    "en": "Confirm or decline",
+    "zh-CN": "确认或拒绝",
+    "reviewedEnglishHash": "07c7177e470f4bf39b85093018d08cf82036f779edda36520b3d73fce54bf11a"
+  },
+  "decisions.cardType.connectService": {
+    "en": "Connect a service",
+    "zh-CN": "连接服务",
+    "reviewedEnglishHash": "83fdafd36732087b54a4803deb647623c4fcd080e9c1a6e5ef115b4159624da9"
+  },
+  "decisions.cardType.failedRun": {
+    "en": "Fix a failed run",
+    "zh-CN": "处理失败运行",
+    "reviewedEnglishHash": "cca4a7b665f93c0b53dd1bda706ffbb4e4fc4cf51739f4b54043542b2752c26a"
+  },
+  "decisions.cardType.hireAgent": {
+    "en": "Approve an agent hire",
+    "zh-CN": "批准雇佣智能体",
+    "reviewedEnglishHash": "9c07e0fcfe841ae009e4d57ac667057256da1e14feec45d2966950f37577c591"
+  },
+  "decisions.cardType.joinRequest": {
+    "en": "Review a join request",
+    "zh-CN": "审核加入申请",
+    "reviewedEnglishHash": "4f6a0c2755c838858ac166aca38addd4ea6351e65660a4c7c6ef6ecb932a70b9"
+  },
+  "decisions.cardType.makeChoice": {
+    "en": "Make a choice",
+    "zh-CN": "做出选择",
+    "reviewedEnglishHash": "05ed15dc8cf67aff9d949d5078f83585805419744daccf263dde75f0700f05c1"
+  },
+  "decisions.cardType.recovery": {
+    "en": "Recover a run",
+    "zh-CN": "恢复运行",
+    "reviewedEnglishHash": "620398d628a4cfeb20e5d897de5238dc5145c77465be935192f1966aed49c4ea"
+  },
+  "decisions.cardType.reviewDeliverable": {
+    "en": "Review a deliverable",
+    "zh-CN": "审核交付物",
+    "reviewedEnglishHash": "a15b9a83ada4c1fa2c68fe4db77c237053235b04395657f341a31a4a694281b7"
+  },
+  "decisions.cardType.reviewItems": {
+    "en": "Review items",
+    "zh-CN": "逐项审核",
+    "reviewedEnglishHash": "e6bc867f7622d434f33046e6445278063d873938a6c87a8019a463086a239335"
+  },
+  "decisions.cardType.reviewPlan": {
+    "en": "Review a plan",
+    "zh-CN": "审核方案",
+    "reviewedEnglishHash": "80342098fe8b4bbad7e997ee1648b34bae5751ecddcd788a945066680a3d3130"
+  },
+  "decisions.cardType.reviewTask": {
+    "en": "Review a task",
+    "zh-CN": "审核任务",
+    "reviewedEnglishHash": "66984f0e230eabfb1aa732c49b9a252f6cf8695f33dc27a58bd5e615139123ca"
+  },
+  "decisions.cardType.suggestedTasks": {
+    "en": "Accept suggested tasks",
+    "zh-CN": "采纳建议任务",
+    "reviewedEnglishHash": "dbd89151eb78b2c3cf03c29f0f14cfd726036fd67d297e18672add9a12c0c37d"
+  },
+  "decisions.cardType.toolAccess": {
+    "en": "Approve tool or secret access",
+    "zh-CN": "批准工具或密钥访问",
+    "reviewedEnglishHash": "49e1dad6a55d051ac90c9d90491fbe0ffabca089301373581c5d872ba67d78ba"
+  },
+  "decisions.claim": {
+    "en": "Claim",
+    "zh-CN": "认领",
+    "reviewedEnglishHash": "4ca41db0282537009663db9b9ae8142e0e6b60812996d07075e5a9291d3d91bf"
+  },
+  "decisions.claiming": {
+    "en": "Claiming…",
+    "zh-CN": "认领中…",
+    "reviewedEnglishHash": "702f4ab2f2deb555beb292c47fd1335cb4fdd3e91a1a9ce5ecc316a7a25e7a53"
+  },
+  "decisions.closeInSidebarAria": {
+    "en": "Close {{name}} in the sidebar",
+    "zh-CN": "在侧边栏中关闭 {{name}}",
+    "reviewedEnglishHash": "a3cbc404818967ecaf9b8a00adf3701fae6c8bd77f005f1fdceef111d0d068e1"
+  },
+  "decisions.closeMenu.archiveForMe": {
+    "en": "Archive for me",
+    "zh-CN": "为我归档",
+    "reviewedEnglishHash": "7aebe7eea4f50c587224144b68641a34633cdd29d8d32d7ae289c837a94bfa26"
+  },
+  "decisions.closeMenu.changeSnoozeTime": {
+    "en": "Change snooze time",
+    "zh-CN": "修改延后时间",
+    "reviewedEnglishHash": "9dd4bf1ac6e6037e95a5e0a4e2a233795343f3ac50226e70243969e5df740ebe"
+  },
+  "decisions.closeMenu.restoreNow": {
+    "en": "Restore now",
+    "zh-CN": "立即恢复",
+    "reviewedEnglishHash": "289b09b85cf5fd983a54a63a77b9038cb4025dace1c035f28e5cbbbcd69a166e"
+  },
+  "decisions.closeMenu.snoozeForMe": {
+    "en": "Snooze for me",
+    "zh-CN": "为我延后提醒",
+    "reviewedEnglishHash": "056714d7797c120f7c8e8b77dfe6c61c8db22dd434fe5cf891f7c2fcdb9e5d8a"
+  },
+  "decisions.closeMenu.snoozeUntilAria": {
+    "en": "Snooze until",
+    "zh-CN": "延后提醒至",
+    "reviewedEnglishHash": "878817e2e6a36cf56c378cef63affd216fe53bae0dab94cb4bf3bf708673abfe"
+  },
+  "decisions.closeMenu.transferDescription": {
+    "en": "The card leaves the list of @{{otherName}} and goes to @{{targetName}}. The history records the transfer.",
+    "zh-CN": "此卡片将从 @{{otherName}} 的列表中移出并转交至 @{{targetName}}。历史记录将保留此次转交。",
+    "reviewedEnglishHash": "5c981d4a35e61e1dbcf0aca3b7577f7fc132c61ff905e1189cf1699b63467e8c"
+  },
+  "decisions.closeMenu.transferTo": {
+    "en": "Transfer to…",
+    "zh-CN": "转交给…",
+    "reviewedEnglishHash": "d121cad2825e048822e015ed2f454e7d15c904d0b508761e677601d9f3c8fbbc"
+  },
+  "decisions.closeMenu.transferToUser": {
+    "en": "Transfer to @{{name}}",
+    "zh-CN": "转交给 @{{name}}",
+    "reviewedEnglishHash": "798d29f1cbc6075d78a51021c4d8f13cc957210c8b1ad1ea165cfa8ec825b71d"
+  },
+  "decisions.closeMenu.triggerAria": {
+    "en": "Close…",
+    "zh-CN": "关闭…",
+    "reviewedEnglishHash": "487665e63751a13e0fae33576591b2d08e9642a9ec7bd0cce80556db7a4869cc"
+  },
+  "decisions.closeMenu.withdrawMenu": {
+    "en": "Withdraw request…",
+    "zh-CN": "撤回请求…",
+    "reviewedEnglishHash": "4d3f6f3a7b511887c5764f0fad7a81dcb7dddd1c6bf51c87cb89f92aacb8ece9"
+  },
+  "decisions.empty.archived": {
+    "en": "Nothing archived. Cards you archive or snooze for yourself show here.",
+    "zh-CN": "暂无已归档内容。你为自己归档或延后的卡片会显示在这里。",
+    "reviewedEnglishHash": "9ef9062adf3fa818ce637371110f37b2aeee71dec56135621a3c16b5e84a6aa4"
+  },
+  "decisions.empty.caughtUp": {
+    "en": "You're caught up.",
+    "zh-CN": "已全部处理完毕。",
+    "reviewedEnglishHash": "48254fca201e823c62feec9b849e86e2a031a62fbebd7878426feb3878c48fc8"
+  },
+  "decisions.empty.caughtUpWithWaiting_one": {
+    "en": "You’re caught up. {{count}} item is waiting.",
+    "zh-CN": "已全部处理完毕。还有 {{count}} 项正在等待。",
+    "reviewedEnglishHash": "6ed8338b7b768f198515d80a5799c4fe508f91580b2e47112669470d610aa67a"
+  },
+  "decisions.empty.caughtUpWithWaiting_other": {
+    "en": "You’re caught up. {{count}} items are waiting.",
+    "zh-CN": "已全部处理完毕。还有 {{count}} 项正在等待。",
+    "reviewedEnglishHash": "59cc52f01edea401f508bbd46943ea2f9d462169cf68a97d97f75a0a2d816f82"
+  },
+  "decisions.empty.noOpenMatches": {
+    "en": "No open decisions match these filters.",
+    "zh-CN": "没有符合这些筛选条件的待处理决策。",
+    "reviewedEnglishHash": "5d1ee46f9998e04a360ab03b7670d9d28cd4679fda1a70b93407dad1f60ebf54"
+  },
+  "decisions.empty.nothingWaiting": {
+    "en": "Nothing is waiting.",
+    "zh-CN": "当前没有等待中的项目。",
+    "reviewedEnglishHash": "ca4fb9abe74fcb995ba48b05e36f6878796730f53c80c7d3e27ac3e32504c86f"
+  },
+  "decisions.empty.staleBelow": {
+    "en": "No current cards. Stale cards are below.",
+    "zh-CN": "暂无当前卡片。过期未处理卡片位于下方。",
+    "reviewedEnglishHash": "d27296cd209fde17e0067fabc14ad4deae45bc06a687f8ee696cc2e908afc089"
+  },
+  "decisions.folders.history": {
+    "en": "History",
+    "zh-CN": "历史记录",
+    "reviewedEnglishHash": "0e769600933790607b2a13b33ddfade0fa17810eb62c3b28ee23e59516516491"
+  },
+  "decisions.folders.historyDesc": {
+    "en": "Look back at past decisions and see what happened to failed runs.",
+    "zh-CN": "回顾过往决策，并查看失败运行的详情。",
+    "reviewedEnglishHash": "7a2eba3f705dc8a9331005e8ebcc5ab9e091a55c2e6b3d60ed55b5fcfb0d4399"
+  },
+  "decisions.folders.navAria": {
+    "en": "Inbox views",
+    "zh-CN": "收件箱视图",
+    "reviewedEnglishHash": "31a4dfa88ea76646f28b021cf46f8cd4c70919eca587fb9ef467cd53cbdc3b1a"
+  },
+  "decisions.folders.needsYou": {
+    "en": "Needs you",
+    "zh-CN": "待你处理",
+    "reviewedEnglishHash": "74b6abdf59690fdffec2059089487cd63658249da5301cbf065e9977518fbd8f"
+  },
+  "decisions.folders.needsYouDesc": {
+    "en": "Review open requests and decide what happens next.",
+    "zh-CN": "查看待处理请求并决定下一步行动。",
+    "reviewedEnglishHash": "d8d79b139d7601505feec95f65fd8efd1449558344ea03309b4b6498527f558f"
+  },
+  "decisions.folders.waiting": {
+    "en": "Waiting",
+    "zh-CN": "等待中",
+    "reviewedEnglishHash": "6e293a8c009e001103199768f7bcbea1729c59f9fc1ef2748958757f47ab99ed"
+  },
+  "decisions.folders.waitingDesc": {
+    "en": "See what you’ve snoozed and which tasks are waiting for an automatic retry.",
+    "zh-CN": "查看你已延后的卡片，以及正在等待自动重试的任务。",
+    "reviewedEnglishHash": "266d5e635c00e9705e3c790f63617d62dae44520baa0cf8987330bf9c8b7f477"
+  },
+  "decisions.fromRequester": {
+    "en": "from {{name}}",
+    "zh-CN": "来自 {{name}}",
+    "reviewedEnglishHash": "a09b964df2f85699f413d458fcad9ef845f119bdb0f3fb18f91c1bd28706d6d8"
+  },
+  "decisions.group.agent": {
+    "en": "By agent",
+    "zh-CN": "按智能体",
+    "reviewedEnglishHash": "0cb8a702286dadafe0b107c51fa3dfe5925a565f5f5064e2a6808d4150069d6d"
+  },
+  "decisions.group.none": {
+    "en": "No grouping",
+    "zh-CN": "不分组",
+    "reviewedEnglishHash": "a638b9f67ff072f661e0f0fdd8d73dc3366110fb9388e3e1616f036524b02b3b"
+  },
+  "decisions.group.otherDecisions": {
+    "en": "Other decisions",
+    "zh-CN": "其他决策",
+    "reviewedEnglishHash": "e8d0efb555711b5229234b593ea2602d40ab6de03a2b887c76bead55de8e6294"
+  },
+  "decisions.group.project": {
+    "en": "By project",
+    "zh-CN": "按项目",
+    "reviewedEnglishHash": "9335958ece132c08e730358fb633c34fcc45d9e30be8adf26e89ab776bc2030f"
+  },
+  "decisions.group.task": {
+    "en": "By task",
+    "zh-CN": "按任务",
+    "reviewedEnglishHash": "f99a5eeffd4abd140e871037ca8e50916f9f3b98ac7c67d2a7b699cd46cbc71f"
+  },
+  "decisions.group.type": {
+    "en": "By type",
+    "zh-CN": "按类型",
+    "reviewedEnglishHash": "df03ee78b5cafd9177c843a6bc984a941eef1cbf0cda3cb954346ea65e20d619"
+  },
+  "decisions.groupHeading": {
+    "en": "Group by",
+    "zh-CN": "分组方式",
+    "reviewedEnglishHash": "956a51f6b098a41b7c3108015f0790bb24af7693717b07cee39d5df6a5da1826"
+  },
+  "decisions.history.agentAria": {
+    "en": "Filter decision history by agent",
+    "zh-CN": "按智能体筛选决策历史",
+    "reviewedEnglishHash": "054d244debd9c59bcfb19cf6721ec8c922c3f442dfe7e4c43165ca2385082551"
+  },
+  "decisions.history.allOutcomes": {
+    "en": "All outcomes",
+    "zh-CN": "全部结果",
+    "reviewedEnglishHash": "1d7f920d0db49837e58ca014310e3ca1471ababdca673f87d1db57e1fdc08f01"
+  },
+  "decisions.history.approvalContext": {
+    "en": "Approval · {{title}}",
+    "zh-CN": "审批 · {{title}}",
+    "reviewedEnglishHash": "c5e0d795992d1bd39f806e255c2e6fd4486c476668a35d6c01ef6f1f0f9dcfc3"
+  },
+  "decisions.history.emptyFiltered": {
+    "en": "No decisions match these filters.",
+    "zh-CN": "没有符合这些筛选条件的决策。",
+    "reviewedEnglishHash": "d1bb591aa4dafa6072c6c68e87f7034faffa55e32bc416eaf4e621eefde0934a"
+  },
+  "decisions.history.emptyMine": {
+    "en": "No decisions handled by you or for you yet.",
+    "zh-CN": "尚无由你处理或与你相关的决策记录。",
+    "reviewedEnglishHash": "247cfeab57262c32a7bcb3f43f6849eae966f69e04827c566f03c8f082f4ab4a"
+  },
+  "decisions.history.groupAria": {
+    "en": "Group decision history",
+    "zh-CN": "决策历史分组",
+    "reviewedEnglishHash": "8172c3c20b2856ec5c70e651b196b0fc06e0745c92389b40c16b1f7b516c4dc8"
+  },
+  "decisions.history.handledForMe": {
+    "en": "Handled for me",
+    "zh-CN": "由他人代我处理",
+    "reviewedEnglishHash": "bbfd5109cab63ec12ffedac7d5456fe6978ae6f8b0e8166a549b2d8e8ba153d6"
+  },
+  "decisions.history.loadMore": {
+    "en": "Load more decisions",
+    "zh-CN": "加载更多决策",
+    "reviewedEnglishHash": "10e74bc6847d8b4540e1e153ce87f10950f25d23dd95e5e6325023b55f5a581d"
+  },
+  "decisions.history.newestFirst": {
+    "en": "Newest first",
+    "zh-CN": "最新优先",
+    "reviewedEnglishHash": "ffb6f5764bddb68c49177c75a9b4a9638878f862bd5d3b1375b8eb1d40538e15"
+  },
+  "decisions.history.noTask": {
+    "en": "No task",
+    "zh-CN": "无任务",
+    "reviewedEnglishHash": "c2a5a505c4678a34ec525cb4dd7f9bd4cd4dea84567fe2c9da736d35ac515a03"
+  },
+  "decisions.history.oldestFirst": {
+    "en": "Oldest first",
+    "zh-CN": "最早优先",
+    "reviewedEnglishHash": "6e2ebdab3c02a3e6afd09432dbb9508b46e3174dfbf752e6b80d4b645189078c"
+  },
+  "decisions.history.otherAgents": {
+    "en": "Other agents",
+    "zh-CN": "其他智能体",
+    "reviewedEnglishHash": "2dc61bdad7a484aee0b6b988dfbf57db41b31442f2ee3dd8219558f5f8e5829b"
+  },
+  "decisions.history.outcome.answered": {
+    "en": "Answered",
+    "zh-CN": "已回答",
+    "reviewedEnglishHash": "665590354e719bcf6610c39fe617cf8cf8109e96a59e64c73a41a028b74369f9"
+  },
+  "decisions.history.outcome.closedWithTask": {
+    "en": "Closed with task",
+    "zh-CN": "随任务关闭",
+    "reviewedEnglishHash": "5910380a21d3f5f9f8a85b9fb00cffe58bdc351a0aea59e2444632c463587270"
+  },
+  "decisions.history.outcomeAria": {
+    "en": "Filter decision outcomes",
+    "zh-CN": "筛选决策结果",
+    "reviewedEnglishHash": "83cd18b6ed9d3203fa4cbe44b986420ae021fd2416e4d3c673da1ab0d17db295"
+  },
+  "decisions.history.outcomeHeading": {
+    "en": "Outcome",
+    "zh-CN": "结果",
+    "reviewedEnglishHash": "4e80abb5b14656d4eed8fd93705fd4c774d7653b05162763770bd23f1755db1a"
+  },
+  "decisions.history.projectAria": {
+    "en": "Filter decision history by project",
+    "zh-CN": "按项目筛选决策历史",
+    "reviewedEnglishHash": "f001d03519fe4dde7f26b5d9db5562bdca28071566a31665cd55176b2f818045"
+  },
+  "decisions.history.scope.all": {
+    "en": "Everyone",
+    "zh-CN": "所有人",
+    "reviewedEnglishHash": "da2e5dc515b188dcac1afa88c93f859834ad57dfd921581172c9a74ab190e9f1"
+  },
+  "decisions.history.scope.mine": {
+    "en": "Handled by me or for me",
+    "zh-CN": "由我处理或需要我处理",
+    "reviewedEnglishHash": "c0059e0dd7dc53c540f20745ea08105ebbc5e2d0fb34385a9cd17a0318e8eaa9"
+  },
+  "decisions.history.scopeAria": {
+    "en": "Whose decision history",
+    "zh-CN": "决策历史范围",
+    "reviewedEnglishHash": "2649099a5f9124cafc1ed2d868c63e4f3b72e25baa38d820f12b45252d723b76"
+  },
+  "decisions.history.scopeHeading": {
+    "en": "Whose decisions",
+    "zh-CN": "决策归属",
+    "reviewedEnglishHash": "87870e4c3d4cf210c073ed59dfed1c201fe7394f9194b5a0ff84206c0f45f3e4"
+  },
+  "decisions.history.searchAria": {
+    "en": "Search decision history",
+    "zh-CN": "搜索决策历史",
+    "reviewedEnglishHash": "1945564f8c3ef0f266ea91f24016807da0eacd8c9a35f6ef7ec53d9546308b59"
+  },
+  "decisions.history.searchPlaceholder": {
+    "en": "Search decisions or task IDs…",
+    "zh-CN": "搜索决策或任务编号…",
+    "reviewedEnglishHash": "30cc46536656f52201d9d5821368a7a841daf36adfccc0b8b626cc51f76be0fa"
+  },
+  "decisions.history.showEveryones": {
+    "en": "Show everyone's decisions",
+    "zh-CN": "显示所有人的决策",
+    "reviewedEnglishHash": "bba8eac9ce61bc8b92b481e07298dd8508b8a6021addeb5b744c01930c35541d"
+  },
+  "decisions.history.sortAria": {
+    "en": "Sort decision history",
+    "zh-CN": "排序决策历史",
+    "reviewedEnglishHash": "ba964b9027316a16900210326c58115c610afc1bcbb466f5fbf8f820aca3faa3"
+  },
+  "decisions.history.sortHeading": {
+    "en": "Sort by",
+    "zh-CN": "排序方式",
+    "reviewedEnglishHash": "c9129025bd3ff6522a7eeebc1abf1481f36e4ac9d74524a473ac1c3be1c6fc2f"
+  },
+  "decisions.history.toolbarAria": {
+    "en": "Decision history controls",
+    "zh-CN": "决策历史控制栏",
+    "reviewedEnglishHash": "e97a7fd577a80bb78479a08c7d2649e411ebd2b279c85b1db92a92c1ad38e3b7"
+  },
+  "decisions.history.withdrawnBy": {
+    "en": "Withdrawn by @{{actor}}",
+    "zh-CN": "由 @{{actor}} 撤回",
+    "reviewedEnglishHash": "e55f9987ab976254c0ad412f5e9d4575c7da8ef8db09df4895f314e053ab3a23"
+  },
+  "decisions.limit.agentRunLog": {
+    "en": "{{agent}} run log",
+    "zh-CN": "{{agent}} 运行日志",
+    "reviewedEnglishHash": "66afc227eda853157bafe0cfb04ea5fe6389b35a51c61a5902a4d9cf42d72d0e"
+  },
+  "decisions.limit.atPrefix": {
+    "en": "at",
+    "zh-CN": "于",
+    "reviewedEnglishHash": "b1d6b91b67c2afa5e322988d9462638d354ddf8a1ef79dba987f815c22b4baee"
+  },
+  "decisions.limit.attemptsCount_one": {
+    "en": "{{count}} attempt",
+    "zh-CN": "{{count}} 次尝试",
+    "reviewedEnglishHash": "503486b0f7fdec69dc3725276f0a69e5ce0b5d36f12a74ca8d5ba87e649f22b9"
+  },
+  "decisions.limit.attemptsCount_other": {
+    "en": "{{count}} attempts",
+    "zh-CN": "{{count}} 次尝试",
+    "reviewedEnglishHash": "556cf9a2ce194b1a8ceccb3f04c680540195688addd2d40f123169105a7ec3a7"
+  },
+  "decisions.limit.forPrefix": {
+    "en": "for",
+    "zh-CN": "定于",
+    "reviewedEnglishHash": "10c22bcf4c768b515be4e94bcafc71bf3e8fb5f70b2584bcc8c7533217f2e7f9"
+  },
+  "decisions.limit.needsRetry": {
+    "en": "Needs retry",
+    "zh-CN": "需要重试",
+    "reviewedEnglishHash": "9a342e64945a1d46248f9243ea85c140cb287d135da7f2a68359825f123c8c99"
+  },
+  "decisions.limit.openAffectedTask": {
+    "en": "Open the affected task to retry it when capacity is available.",
+    "zh-CN": "额度恢复后，请打开受影响的任务进行重试。",
+    "reviewedEnglishHash": "cca1114a21c679c5cb0b5c3bfbdade2fd25a1a5a4cace836d9c184b5f8402360"
+  },
+  "decisions.limit.openTaskToRetry": {
+    "en": "Open task to retry",
+    "zh-CN": "打开任务以重试",
+    "reviewedEnglishHash": "95ad442c66b664b532e7b070a310bd63dffc4e0e1eb06b55979c22c70861d41f"
+  },
+  "decisions.limit.providerResetAtPrefix": {
+    "en": "Provider reset at",
+    "zh-CN": "服务商重置时间：",
+    "reviewedEnglishHash": "eb6047e66a1b8ba53603cb79adf8bf84d0f45d547815bb353380969901b5871a"
+  },
+  "decisions.limit.resetUnknown": {
+    "en": "Reset time unknown",
+    "zh-CN": "重置时间未知",
+    "reviewedEnglishHash": "bc41e55d420678776a44622ab937d8049f51a8b71f6d626f3c355e1a60d7cbce"
+  },
+  "decisions.limit.retryRequested": {
+    "en": "Retry requested",
+    "zh-CN": "已请求重试",
+    "reviewedEnglishHash": "6ef56fa452062d78084af6aeb03ad6fd93f9081c404677792db6186609f7ca6d"
+  },
+  "decisions.limit.retryRequestedWaiting": {
+    "en": "Retry requested. Waiting for work to resume.",
+    "zh-CN": "已请求重试，正等待工作恢复。",
+    "reviewedEnglishHash": "1c611ae3650ed85c504e19e2175aa5b1db8c717ada7550615111712d6e7cc85c"
+  },
+  "decisions.limit.retryScheduled": {
+    "en": "Retry scheduled",
+    "zh-CN": "已安排重试",
+    "reviewedEnglishHash": "5b6d7aa6820ca9cd329a749c87738767318bb54e787f0edbcdc9aedba4fade32"
+  },
+  "decisions.limit.retryScheduledForTasks_one": {
+    "en": "Retry scheduled for {{count}} task",
+    "zh-CN": "已为 {{count}} 项任务安排重试",
+    "reviewedEnglishHash": "8de1c5591bae5823e69cff877adaeb904d887011e4e44312e251261da5eeec02"
+  },
+  "decisions.limit.retryScheduledForTasks_other": {
+    "en": "Retry scheduled for {{count}} tasks",
+    "zh-CN": "已为 {{count}} 项任务安排重试",
+    "reviewedEnglishHash": "9818eb559c007b138486a71e9819bbf07177e36762d6287886c8f54c05b5036f"
+  },
+  "decisions.limit.tasksHitUsageLimits": {
+    "en": "{{count}} tasks hit usage limits",
+    "zh-CN": "{{count}} 项任务触及用量限制",
+    "reviewedEnglishHash": "a5972ed48c1feb989fd9e0732c39201c01da6c4e0440cf030e66bc89418b1f66"
+  },
+  "decisions.limit.tasksNeedRetry_one": {
+    "en": "{{count}} task needs a retry after the usage limit",
+    "zh-CN": "{{count}} 项任务在用量限制后需要重试",
+    "reviewedEnglishHash": "971ceb9f70ce41e8765b894a7c5869beb12c0dc0a5ea6b690f107e5b35f9364d"
+  },
+  "decisions.limit.tasksNeedRetry_other": {
+    "en": "{{count}} tasks need a retry after the usage limit",
+    "zh-CN": "{{count}} 项任务在用量限制后需要重试",
+    "reviewedEnglishHash": "c22f36411b624bd7f1ad02f337a2c4741ca81498455ab225b62900932fabeda9"
+  },
+  "decisions.limit.tasksPaused_one": {
+    "en": "{{count}} task paused by the provider usage limit",
+    "zh-CN": "{{count}} 项任务因服务商用量限制而暂停",
+    "reviewedEnglishHash": "970da5fb4e71ffa7834778b80a98229bba389f66c36e73ddcead746413ec1564"
+  },
+  "decisions.limit.tasksPaused_other": {
+    "en": "{{count}} tasks paused by the provider usage limit",
+    "zh-CN": "{{count}} 项任务因服务商用量限制而暂停",
+    "reviewedEnglishHash": "2732ea3622b6e225e096fad79d0763a3d18c201bd9d6a797a97f4e13795e9c73"
+  },
+  "decisions.limit.viewTasks_one": {
+    "en": "View {{count}} task",
+    "zh-CN": "查看 {{count}} 项任务",
+    "reviewedEnglishHash": "2b649b0345b5fe3113ab40266122190c30e9a382abb57ff2ee7370bab72dff3e"
+  },
+  "decisions.limit.viewTasks_other": {
+    "en": "View {{count}} tasks",
+    "zh-CN": "查看 {{count}} 项任务",
+    "reviewedEnglishHash": "fd04faea40f41b9c149b7393b9ca578bb9d041d14c0095f149cfa8ec3090f5db"
+  },
+  "decisions.loading": {
+    "en": "Loading decisions…",
+    "zh-CN": "正在加载决策…",
+    "reviewedEnglishHash": "627476df62cf0ef2b38d12b2cc8eff1d77927d8077831efc8658698d5d4a4fc8"
+  },
+  "decisions.noOwnerYet": {
+    "en": "No owner yet",
+    "zh-CN": "暂无负责人",
+    "reviewedEnglishHash": "964d12c53bf16ab27166549f96ee5feb4ae5a3c239a5d823281d0168187abaf1"
+  },
+  "decisions.openInSidebar": {
+    "en": "Open in sidebar",
+    "zh-CN": "在侧边栏打开",
+    "reviewedEnglishHash": "97c0c3bf66f44f3246ee19f19b231f7249d10d62a6708e40825bdb205c2e6303"
+  },
+  "decisions.openInSidebarAria": {
+    "en": "Open {{name}} in the sidebar",
+    "zh-CN": "在侧边栏中打开 {{name}}",
+    "reviewedEnglishHash": "f002468d155c91f1b68705515d292580a133e2122045d8eed15f3e985edb617d"
+  },
+  "decisions.openInSidebarShowing": {
+    "en": "Open in sidebar · Showing",
+    "zh-CN": "在侧边栏打开 · 显示中",
+    "reviewedEnglishHash": "8b2d45f60967e2275c9fcec868cb3abd0532ed5679e23cc11e1ef18b39747d77"
+  },
+  "decisions.openTask": {
+    "en": "Open task",
+    "zh-CN": "打开任务",
+    "reviewedEnglishHash": "6b5c9394cb7f900b89e177425c4c6a36365ed79b33c9521b9eb836248d28ad4d"
+  },
+  "decisions.openToAssign": {
+    "en": "Open to assign",
+    "zh-CN": "前往分配",
+    "reviewedEnglishHash": "49395d8d93335f0773446ee0e1ed18fa4c5b9b2106bd0a248698a450c2f455cc"
+  },
+  "decisions.openToReview": {
+    "en": "Open to review",
+    "zh-CN": "打开审核",
+    "reviewedEnglishHash": "c7bb7cad825ab99957d99e85507df4fc9f6177ea6b524a2f479cc016ecebe320"
+  },
+  "decisions.providerUsageLimit": {
+    "en": "Provider usage limit",
+    "zh-CN": "服务商用量限制",
+    "reviewedEnglishHash": "324be7442be8b272388e8709f8e6bae9ad138ebf49d117ad9129e4459c07cc29"
+  },
+  "decisions.receipt.forUser": {
+    "en": " · for @{{user}}",
+    "zh-CN": " · 代 @{{user}}",
+    "reviewedEnglishHash": "32531ea61024c4cea1577e65b4c71f92b851d9c362a87b54ed25fb88ef0fca1f"
+  },
+  "decisions.receipt.reason": {
+    "en": "Reason: {{reason}}",
+    "zh-CN": "原因：{{reason}}",
+    "reviewedEnglishHash": "9c5b890662ab808eb15e84282d7f502730d6a782fe80c652b5e4990e8170d4a3"
+  },
+  "decisions.receipt.viewRequest": {
+    "en": "View request",
+    "zh-CN": "查看请求",
+    "reviewedEnglishHash": "9c9c3275d4f0b9642e835a3194a384195f346235fe0f173563c7e9ac924da531"
+  },
+  "decisions.receipt.viewUpdate": {
+    "en": "View a request update",
+    "zh-CN": "查看请求更新",
+    "reviewedEnglishHash": "663247525cc1999c496ff04ebee07cb269d7afb1d8a8df9f61c54bc20447741d"
+  },
+  "decisions.receipt.yourRequest": {
+    "en": "Your request",
+    "zh-CN": "你的请求",
+    "reviewedEnglishHash": "73023a399137c4e9a61ed2ae44f1fd5919e8599642a5a56f63783070f91dbb61"
+  },
+  "decisions.recovery.activeRunWatchdog": {
+    "en": "Run gone quiet",
+    "zh-CN": "运行无响应",
+    "reviewedEnglishHash": "d7ca542999937a6e1c911cf2f9b9f5b35a0990e25ae32d5a1161f2398004682c"
+  },
+  "decisions.recovery.configurationValidation": {
+    "en": "Configuration missing",
+    "zh-CN": "缺少配置",
+    "reviewedEnglishHash": "c37101ed28a5d2cd5be5b0dbc6cbae1fc83ea6e66a0d7503e58fbdf72c4e4f81"
+  },
+  "decisions.recovery.deliberateWaitWithoutTarget": {
+    "en": "Waiting on nothing",
+    "zh-CN": "缺少等待目标",
+    "reviewedEnglishHash": "c9b728a969ac4d9c9186294fec8710f8a9b6a9dd917a8400557a8c8bbb7cd7c5"
+  },
+  "decisions.recovery.escalated": {
+    "en": "Recovery escalated",
+    "zh-CN": "恢复已升级",
+    "reviewedEnglishHash": "b976b9c412db5314bdd09f658467998df21a9acb99e2b94901a333263e28bbcf"
+  },
+  "decisions.recovery.issueGraphLiveness": {
+    "en": "Task needs a next step",
+    "zh-CN": "任务需要下一步",
+    "reviewedEnglishHash": "051e3a1b0d039ad8d4f433285b3d40e943c9cd0e4c50698108b4e8d61cb3fa10"
+  },
+  "decisions.recovery.missingDisposition": {
+    "en": "No next step chosen",
+    "zh-CN": "未选择下一步",
+    "reviewedEnglishHash": "8dee25886fb5be130fae5bdb63bd9492b5bb2964b00d0c9b8152109e4f4c3078"
+  },
+  "decisions.recovery.note": {
+    "en": "Resolve, reassign or cancel it in the recovery control on the task.",
+    "zh-CN": "请在任务的恢复控件中处理、重新分配或取消该任务。",
+    "reviewedEnglishHash": "fbffe5e0cd6506e93eddb0605a8051e5a23c11475ba652b80abf965792da8e1d"
+  },
+  "decisions.recovery.openRecovery": {
+    "en": "Open recovery",
+    "zh-CN": "打开恢复",
+    "reviewedEnglishHash": "7613c8f6ce5e68afa105e1510f50fbe06623ab14be397dccd0a8f85f75fba851"
+  },
+  "decisions.recovery.paused": {
+    "en": "Recovery paused",
+    "zh-CN": "恢复已暂停",
+    "reviewedEnglishHash": "378c94f165daa8ffab065ac4566160b63288ac219add1e2a6bc2d3ce750e220f"
+  },
+  "decisions.recovery.strandedAssignedIssue": {
+    "en": "Task stranded",
+    "zh-CN": "任务已滞留",
+    "reviewedEnglishHash": "94cec2ab181bc7c61f1c1f68b94dc03c9a1761d7663bf8a58a7639c4e21329eb"
+  },
+  "decisions.recovery.workspaceValidation": {
+    "en": "Workspace unavailable",
+    "zh-CN": "工作区不可用",
+    "reviewedEnglishHash": "f29d3f31dc6e215a84d55322e5d23fc43997a76f0e1ed4e774a2b96e50eb7328"
+  },
+  "decisions.runHistory.columnsAria": {
+    "en": "Run history columns",
+    "zh-CN": "运行历史列",
+    "reviewedEnglishHash": "69ae6eb7c6d160bd0267b70a5070ee8a8c914429c9540c7a52af2f757b74978f"
+  },
+  "decisions.runHistory.empty": {
+    "en": "No failed runs on visible tasks.",
+    "zh-CN": "可见任务中没有失败的运行。",
+    "reviewedEnglishHash": "0963cc17e427c34cc15ad1f2455431433358ba98aa12dcd56adddd47014394f7"
+  },
+  "decisions.runHistory.heading": {
+    "en": "Recent run history",
+    "zh-CN": "近期运行历史",
+    "reviewedEnglishHash": "05d732926cc851b07fe83724b9bfa4c56a28fd09b0786f3e896c1795dcb4b475"
+  },
+  "decisions.runHistory.loading": {
+    "en": "Loading runs…",
+    "zh-CN": "正在加载运行…",
+    "reviewedEnglishHash": "8438ea394d1520d98769e60d34cc254b28e0101bce6cbc0e0c1d14959ffb3909"
+  },
+  "decisions.runHistory.recorded": {
+    "en": "Recorded",
+    "zh-CN": "记录时间",
+    "reviewedEnglishHash": "c7175fa7a0db0d3ca4b26d27675d2e4e0776634ce5ffa35c88daa749b57d6846"
+  },
+  "decisions.runHistory.runLog": {
+    "en": "Run log",
+    "zh-CN": "运行日志",
+    "reviewedEnglishHash": "22ae6e9aa73ddd8eaa8529ef420628a68c57aa44036a4ce9f3138a80aa38efbc"
+  },
+  "decisions.runHistory.runLogAria": {
+    "en": "{{agent}} run log for {{task}}",
+    "zh-CN": "{{task}} 的 {{agent}} 运行日志",
+    "reviewedEnglishHash": "5530f02d11fe3162d831f4aec7f60980b6bf2a18ac94502a18dd77eb44a19bd9"
+  },
+  "decisions.runHistory.showOlder": {
+    "en": "Show older runs",
+    "zh-CN": "显示更早的运行",
+    "reviewedEnglishHash": "31bd073cf850c78178027a14a2eb4ae154b1e37b5fd3a8b745501af197f24e13"
+  },
+  "decisions.runHistory.taskId": {
+    "en": "Task ID",
+    "zh-CN": "任务编号",
+    "reviewedEnglishHash": "3e0cce3aac8965cde8e12b9e11ce70029a0b992074d11140d7c2a9b034a24034"
+  },
+  "decisions.section.problems": {
+    "en": "Problems",
+    "zh-CN": "异常问题",
+    "reviewedEnglishHash": "a7b182f8c24ea564efd5c4bbacdbf11124c38e49d078bd4d7be5e1050d1e1280"
+  },
+  "decisions.section.updates": {
+    "en": "Updates",
+    "zh-CN": "动态更新",
+    "reviewedEnglishHash": "22e2bada8f1c65cd83f4ba976f0027c5dd7cb81d5d2199cd1b0130792841eef4"
+  },
+  "decisions.selectCompany": {
+    "en": "Choose a company to see its decisions.",
+    "zh-CN": "请选择一个公司以查看其决策。",
+    "reviewedEnglishHash": "ba231bf587188abcc2c0f476a4b70d336360eeb500b507e0dbc0135b774433d7"
+  },
+  "decisions.showMore": {
+    "en": "Show more decisions",
+    "zh-CN": "显示更多决策",
+    "reviewedEnglishHash": "2ac1733d899bf70a76da6be0a5fe8d04503a3f2e32a49837d2a2e5cfbe4ac97e"
+  },
+  "decisions.sidePanel.noLongerWaiting": {
+    "en": "This is no longer waiting on you.",
+    "zh-CN": "此项已不再需要你处理。",
+    "reviewedEnglishHash": "7a6e5683ac830431183277e1c531ff133db218c780425cf13ec76c4fbee6a328"
+  },
+  "decisions.sidePanel.nothingElseWaiting": {
+    "en": "Nothing else is waiting on you.",
+    "zh-CN": "暂无其他需要你处理的项目。",
+    "reviewedEnglishHash": "0739a39122243d3c29064f16ff44e25aa3717738b3c2926eadb557e0981b7dab"
+  },
+  "decisions.sidePanel.waitingOnYou": {
+    "en": "Waiting on you",
+    "zh-CN": "待你处理",
+    "reviewedEnglishHash": "57dccc5db9b096172f80ed94d7ba1886dbd8ad7c582831c78f0a3e4ab095ceec"
+  },
+  "decisions.snoozedGroup.aria": {
+    "en": "Snoozed cards",
+    "zh-CN": "已延后卡片",
+    "reviewedEnglishHash": "739cabaad59e6a050ae6e2dcbf0778ff4cb221596f8cf9430102e888bf1ab4b6"
+  },
+  "decisions.snoozedGroup.header": {
+    "en": "Snoozed ({{count}})",
+    "zh-CN": "已延后（{{count}}）",
+    "reviewedEnglishHash": "81ea5aedf8c6517715b8d83065ed4db06435a91e14019cd37e4847aa2892962c"
+  },
+  "decisions.someone": {
+    "en": "someone",
+    "zh-CN": "某位成员",
+    "reviewedEnglishHash": "2a59d59e3809f827ce709d3815e3950eef4a6a93af5557a93a7fdfba71460843"
+  },
+  "decisions.someoneCapitalized": {
+    "en": "Someone",
+    "zh-CN": "某位成员",
+    "reviewedEnglishHash": "864c855e3d64399dc06fa30ebb75526c2c2e73db7216b16a3d4cf03e8a52ec3b"
+  },
+  "decisions.someoneElse": {
+    "en": "someone else",
+    "zh-CN": "其他成员",
+    "reviewedEnglishHash": "8e5966554908cc04840d0975ab4d5870643b1649f85e7267f6b732a7a0bef383"
+  },
+  "decisions.someoneElseCapitalized": {
+    "en": "Someone else",
+    "zh-CN": "其他成员",
+    "reviewedEnglishHash": "3233cb049ab7f4ed5c6eccc11a4c9b6e02d0ed8e74e159d5e6baddd525b9febb"
+  },
+  "decisions.staleChip": {
+    "en": "Stale · {{text}}",
+    "zh-CN": "已过期 · {{text}}",
+    "reviewedEnglishHash": "d9975f36fd81795775ae5aa5c677014ed7940b526b22b65a84d79e08081fc874"
+  },
+  "decisions.staleGroup.aria": {
+    "en": "Stale cards",
+    "zh-CN": "已过期卡片",
+    "reviewedEnglishHash": "7830aff848e942150688bb2264d939c57d4fc8f67572e22deef4751bb543639a"
+  },
+  "decisions.staleGroup.confirmButton_one": {
+    "en": "Withdraw {{count}} request",
+    "zh-CN": "撤回 {{count}} 项请求",
+    "reviewedEnglishHash": "f68cc0ac0ebed6ae593a1d9782963fe24fe8812e50de20aa160a32a2f16b5312"
+  },
+  "decisions.staleGroup.confirmButton_other": {
+    "en": "Withdraw {{count}} requests",
+    "zh-CN": "撤回 {{count}} 项请求",
+    "reviewedEnglishHash": "a5b303dfeb80e20b297853346663f71347ea6d7de879cf75fe02eb8748cd15a2"
+  },
+  "decisions.staleGroup.confirmDescription": {
+    "en": "Each request closes for everyone and its agent is told it is out of date. None of them counts as approved. You cannot undo this.",
+    "zh-CN": "每项请求都会对所有人关闭，并通知对应智能体该请求已过时，均不视为已批准。此操作无法撤销。",
+    "reviewedEnglishHash": "72df71388a85e586e804554e09cfa62da138e1b216d09b99a31dd780eb9370c2"
+  },
+  "decisions.staleGroup.confirmTitle_one": {
+    "en": "Withdraw {{count}} stale request?",
+    "zh-CN": "撤回 {{count}} 项过期请求？",
+    "reviewedEnglishHash": "887b2738778d48f86ae2ff8a13bb2d4eb304f9060c5df8cf9ac761b3454cda2c"
+  },
+  "decisions.staleGroup.confirmTitle_other": {
+    "en": "Withdraw {{count}} stale requests?",
+    "zh-CN": "撤回 {{count}} 项过期请求？",
+    "reviewedEnglishHash": "df4fea95065e42091ee606b4a8e0fcfbd5085a8b740b8ee0a77cebfba5fde611"
+  },
+  "decisions.staleGroup.forOthersPlural": {
+    "en": "{{count}} of these are for other people. Continue?",
+    "zh-CN": "其中有 {{count}} 项归属其他成员，是否继续？",
+    "reviewedEnglishHash": "28daf327f085d786c61340e84b6a19e9aab37ad6a2e0f2446a75b7f2d23aea84"
+  },
+  "decisions.staleGroup.forUser": {
+    "en": "For @{{user}}",
+    "zh-CN": "归属 @{{user}}",
+    "reviewedEnglishHash": "e2a8e13750384ec1e5c0b82a94d1e33af6429c6dbac65cf245d1af4d8bc8135b"
+  },
+  "decisions.staleGroup.header": {
+    "en": "Stale ({{count}})",
+    "zh-CN": "已过期（{{count}}）",
+    "reviewedEnglishHash": "38fb02d59973349aa52c0a38d8f8b9d31518c573e0ecf31d0ec0d102d41f66c0"
+  },
+  "decisions.staleGroup.reasonAria": {
+    "en": "Reason for withdrawing stale requests",
+    "zh-CN": "撤回过期请求的原因",
+    "reviewedEnglishHash": "10596ad88ae2beebfea316a0153c4ae4026a1e292002f4e202c1b5dfc8a28466"
+  },
+  "decisions.staleGroup.reasonPlaceholder": {
+    "en": "Why are they out of date? (optional, shown in history and to the agents)",
+    "zh-CN": "为什么这些请求已过时？（可选，将显示在历史记录中并告知智能体）",
+    "reviewedEnglishHash": "284580b0b80feee1d781ced87458d4db330c171429626be48315c6ceef184269"
+  },
+  "decisions.staleGroup.stayOpenNoRequest": {
+    "en": "Stay open: no request to withdraw",
+    "zh-CN": "保持开启：没有可撤回的请求",
+    "reviewedEnglishHash": "2cb5c7ca84c992e2ab6d079fa7be24d7b8d1a3e2eeb0d8a94e02b9cddb6b8fa9"
+  },
+  "decisions.staleGroup.stayOpenRequired": {
+    "en": "Stay open: required, withdraw one at a time",
+    "zh-CN": "保持开启：必选项，请逐一撤回",
+    "reviewedEnglishHash": "18c4697ce1963933e7c510c1f08813f918705497d0797a91855067e7be720afc"
+  },
+  "decisions.staleGroup.willBeWithdrawn": {
+    "en": "Will be withdrawn",
+    "zh-CN": "将被撤回",
+    "reviewedEnglishHash": "a177960304fb9a3ad49dd71194def8e953aa92e5ad25fc939f753f3f1750e40c"
+  },
+  "decisions.staleGroup.withdrawAll": {
+    "en": "Withdraw all stale",
+    "zh-CN": "撤回全部过期项",
+    "reviewedEnglishHash": "774eec1fcb01b06f9f7cc4ccbd673826042407802b0862363336fdca0ae8be7a"
+  },
+  "decisions.staleGroup.withdrawing": {
+    "en": "Withdrawing…",
+    "zh-CN": "正在撤回…",
+    "reviewedEnglishHash": "fd1fd7ba0c054cd361fd81f64533498ea96e8ff1402de228e0cb9c2be14966ad"
+  },
+  "decisions.stalledReview.description": {
+    "en": "This task is still in review with no active reviewer or continuation. Return it to work, request changes, or mark the task done.",
+    "zh-CN": "此任务仍处于审核中，且没有活跃审核人或后续处理。请退回处理、请求修改或标记为已完成。",
+    "reviewedEnglishHash": "1e925f4404863afb6c92e8dab211d35275d47384877a3c778cee43687d481f13"
+  },
+  "decisions.stalledReview.title": {
+    "en": "Choose how this task continues",
+    "zh-CN": "选择此任务的后续处理方式",
+    "reviewedEnglishHash": "11a940b375062bb62b9eb639f917c0628578954a474b1e7db421f2ba20e3a7d3"
+  },
+  "decisions.summary.decisions_one": {
+    "en": "{{count}} decision",
+    "zh-CN": "{{count}} 项决策",
+    "reviewedEnglishHash": "c7c58aae9a4485b4dbbb6654b16c57c6771f896d6645d436e0746011acc8656e"
+  },
+  "decisions.summary.decisions_other": {
+    "en": "{{count}} decisions",
+    "zh-CN": "{{count}} 项决策",
+    "reviewedEnglishHash": "8f0f22bf2a768ffff0b9fadb9c2b18b6da7937efc12b8d4be3e387b4e5818a78"
+  },
+  "decisions.summary.problems_one": {
+    "en": "{{count}} problem",
+    "zh-CN": "{{count}} 项异常",
+    "reviewedEnglishHash": "dd969c475cfe6d000515d2b7233a86bb39f496b30aec862e550c6ce4b172f38c"
+  },
+  "decisions.summary.problems_other": {
+    "en": "{{count}} problems",
+    "zh-CN": "{{count}} 项异常",
+    "reviewedEnglishHash": "8e500612b6ef6cb23ca13789ece830a055a11407a4e841bb253f821e92e2da45"
+  },
+  "decisions.summary.updates_one": {
+    "en": "{{count}} update",
+    "zh-CN": "{{count}} 条更新",
+    "reviewedEnglishHash": "e32de41b8eda92a588fe34078cb3de425da21cace084d5781e224cc23079673d"
+  },
+  "decisions.summary.updates_other": {
+    "en": "{{count}} updates",
+    "zh-CN": "{{count}} 条更新",
+    "reviewedEnglishHash": "761fff0718572bba2a5db719bb741d47b6992d32c7c933c72df4f064f65e16cc"
+  },
+  "decisions.toast.archivedForYou": {
+    "en": "Archived for you",
+    "zh-CN": "已为你归档",
+    "reviewedEnglishHash": "fe54569b0701c6da96a596c2ffd50020dc9e09accb004e87b8190e633b8c83dc"
+  },
+  "decisions.toast.claimError": {
+    "en": "Could not claim this card",
+    "zh-CN": "无法认领此卡片",
+    "reviewedEnglishHash": "ba5bf02077debf071da65884322186e86e7e1657e26f954eeaf860db0550d59f"
+  },
+  "decisions.toast.claimed": {
+    "en": "Claimed",
+    "zh-CN": "已认领",
+    "reviewedEnglishHash": "ddcd2779294a61f056090b2bbc47444816ff791ed0cf9ec295821e82a384ef81"
+  },
+  "decisions.toast.claimedBody": {
+    "en": "The card is now in For you.",
+    "zh-CN": "该卡片现已移至“分配给你”。",
+    "reviewedEnglishHash": "4ff7e5971728c7084f92bce04276e5a130a8bc87aa3b9fcd1c3dfe76e954a1b6"
+  },
+  "decisions.toast.claimedItemBody": {
+    "en": "{{title}} is now in For you.",
+    "zh-CN": "“{{title}}”现已移至“分配给你”。",
+    "reviewedEnglishHash": "11525c5b26701c4e0c1760d9426934fc231e30364e27dca36dd5db65fad8fda1"
+  },
+  "decisions.toast.dismissReceiptError": {
+    "en": "Could not dismiss this receipt",
+    "zh-CN": "无法关闭此回执",
+    "reviewedEnglishHash": "220e135707110bbabfe82f41ecb462c717fc576379fceae3df8afe334e021a8b"
+  },
+  "decisions.toast.hideError": {
+    "en": "Could not hide this card",
+    "zh-CN": "无法隐藏此卡片",
+    "reviewedEnglishHash": "83243cea5974ac3b30fa9f7da7a3404964e3aed148399d9cf7f94ac813270b9b"
+  },
+  "decisions.toast.restoreError": {
+    "en": "Could not restore this card",
+    "zh-CN": "无法恢复此卡片",
+    "reviewedEnglishHash": "21e8db23bf437a247d2c765c4f6de14d685281c283937fefe31ceeb87e9efbce"
+  },
+  "decisions.toast.restored": {
+    "en": "Restored",
+    "zh-CN": "已恢复",
+    "reviewedEnglishHash": "5d561a1e3f1707d65de64ec5e49c6134aa1bccd58949ffb4d7d1ffc98fd3e65a"
+  },
+  "decisions.toast.snoozeUntilBody": {
+    "en": "Back {{time}}.",
+    "zh-CN": "将于 {{time}} 恢复。",
+    "reviewedEnglishHash": "de145cf9679f30d2e11f2b176d45623cc7e6b6743d6e449b03d436e57fb5ac73"
+  },
+  "decisions.toast.snoozedForYou": {
+    "en": "Snoozed for you",
+    "zh-CN": "已为你延后提醒",
+    "reviewedEnglishHash": "f1e313b2275bfe0af7e9e584e5cc3134dec8b0481e5a2ce74e0e02d5e247ef6e"
+  },
+  "decisions.toast.transferError": {
+    "en": "Could not transfer this card",
+    "zh-CN": "无法转交此卡片",
+    "reviewedEnglishHash": "6ab464e983745cebfc70ba146eaa2c47ac7717d3b1735cd708780f005ee4e586"
+  },
+  "decisions.toast.transferredTo": {
+    "en": "Transferred to @{{name}}",
+    "zh-CN": "已转交给 @{{name}}",
+    "reviewedEnglishHash": "f3402ea7d9d131dd9eed4dc01aca02e38664372610e479efe9d0bacbe5f0778f"
+  },
+  "decisions.toast.withdrawAllAlreadyClosed": {
+    "en": "{{count}} already answered by someone else.",
+    "zh-CN": "其中 {{count}} 项已由他人处理。",
+    "reviewedEnglishHash": "bb97307d816a7f2b1cf52ecd016628c3e5f2dc1943b7a248233e257c4b96c3a8"
+  },
+  "decisions.toast.withdrawAllFailed": {
+    "en": "{{count}} could not be withdrawn.",
+    "zh-CN": "其中 {{count}} 项无法撤回。",
+    "reviewedEnglishHash": "a6e0698ccd8e21d18480f09a6c346939e6c25233bf7e77e76051857e62499c69"
+  },
+  "decisions.toast.withdrawError": {
+    "en": "Could not withdraw this request",
+    "zh-CN": "无法撤回此请求",
+    "reviewedEnglishHash": "dc5e769ac175aee902e717eafe6045b62369cabdbe83d06d59b2316344a9fea6"
+  },
+  "decisions.toast.withdrawn": {
+    "en": "Request withdrawn",
+    "zh-CN": "请求已撤回",
+    "reviewedEnglishHash": "15727f6969681808a198956764ded126e2edfc544a67b5e484f82d647bb4e639"
+  },
+  "decisions.toast.withdrewStale_one": {
+    "en": "Withdrew 1 stale request",
+    "zh-CN": "已撤回 1 项过期请求",
+    "reviewedEnglishHash": "6304f9a0597180277c1b40b17a4d424506b9d5510e72e8181f78ce6bac87baa5"
+  },
+  "decisions.toast.withdrewStale_other": {
+    "en": "Withdrew {{count}} stale requests",
+    "zh-CN": "已撤回 {{count}} 项过期请求",
+    "reviewedEnglishHash": "1553ddbec68dafdf2b1889a5c36c79ad983b959b446cc880012cb025c3c0ab1a"
+  },
+  "decisions.toolbar.aria": {
+    "en": "Decisions controls",
+    "zh-CN": "决策控制栏",
+    "reviewedEnglishHash": "46d825044ae4cbdc48e95e09b02ecee803b38c8f3e680d13d7c3047c79da8bff"
+  },
+  "decisions.toolbar.assignedTo": {
+    "en": "Assigned to",
+    "zh-CN": "分配给",
+    "reviewedEnglishHash": "08ee4565a256df6e41fff228b70a59710bdeaf25dcfa4abb206d77d0c9ff2517"
+  },
+  "decisions.toolbar.byAgents": {
+    "en": "By agents",
+    "zh-CN": "按智能体",
+    "reviewedEnglishHash": "b8ee9f97d2b75d60714ed0838e7983d428b53419a3f05af86379b1048b44f3e9"
+  },
+  "decisions.toolbar.byProjects": {
+    "en": "By projects",
+    "zh-CN": "按项目",
+    "reviewedEnglishHash": "35aa34da0af23deaa2dc3099f9d1c3c4d094a5c02257c76fb263f9be69cd694d"
+  },
+  "decisions.toolbar.filterByAgentAria": {
+    "en": "Filter decisions by agent",
+    "zh-CN": "按智能体筛选决策",
+    "reviewedEnglishHash": "2b6bef36685eabc69006c7b309d497eeb260d759c2cbffd623cc65f15d0d8e84"
+  },
+  "decisions.toolbar.filterByAssigneeAria": {
+    "en": "Filter decisions by assignee",
+    "zh-CN": "按负责人筛选决策",
+    "reviewedEnglishHash": "13935f0ae4f885651405f97c7f16657a811581bd517360f49ed37933969f6a48"
+  },
+  "decisions.toolbar.filterByProjectAria": {
+    "en": "Filter decisions by project",
+    "zh-CN": "按项目筛选决策",
+    "reviewedEnglishHash": "acdc140d39adce7cb59d74b6385bc566c9b37b442c9a0c7a2d65fb0b3aabaa15"
+  },
+  "decisions.toolbar.groupAria": {
+    "en": "Group decisions",
+    "zh-CN": "决策分组",
+    "reviewedEnglishHash": "1538bb857302640d44f20b494b140c874ff0b1a4bfa0b1ca22cf6d4f2296675e"
+  },
+  "decisions.toolbar.searchAria": {
+    "en": "Search decisions",
+    "zh-CN": "搜索决策",
+    "reviewedEnglishHash": "a941e56ee6706b3c80e1343dac913426078613874cc6eb6966524ccc1678d3ff"
+  },
+  "decisions.toolbar.viewMenu": {
+    "en": "View",
+    "zh-CN": "视图",
+    "reviewedEnglishHash": "dcc839a4015c4b7dd9db959a8f757833b8adb92462a751b973386e453c6d58a3"
+  },
+  "decisions.unnamedProject": {
+    "en": "Unnamed project",
+    "zh-CN": "未命名项目",
+    "reviewedEnglishHash": "edba1e383471e5aaf3c944276a1e12564a5574fdc6b61d564e64de7908c93291"
+  },
+  "decisions.whyMe": {
+    "en": "Why me? {{reason}}",
+    "zh-CN": "为什么需要我？{{reason}}",
+    "reviewedEnglishHash": "fdeff563529f2dab206ae9507e643304e97e149f4c266630842b268bb100f7b3"
+  },
+  "decisions.withdrawDialog.confirm": {
+    "en": "Withdraw request",
+    "zh-CN": "撤回请求",
+    "reviewedEnglishHash": "8bd07d76858d2be298784a5482f2ac4c0e1e41af8ed779fdb67b059c6a3dc179"
+  },
+  "decisions.withdrawDialog.description": {
+    "en": "This closes the request for everyone and tells the agent it is out of date. It is not an approval. You cannot undo it.",
+    "zh-CN": "此操作会对所有人关闭该请求，并通知智能体该请求已过时。这不代表批准，且操作不可撤销。",
+    "reviewedEnglishHash": "9cc56bc3ef01eb1ef4ef837c29d4af90cde6fdfbf3bcae734e2464942d831fab"
+  },
+  "decisions.withdrawDialog.reasonAria": {
+    "en": "Reason for withdrawing",
+    "zh-CN": "撤回原因",
+    "reviewedEnglishHash": "b3ee3cdaa5fbadf2b1326181b58419b1ef9b77dd22e2389801e750e1fe2bda1c"
+  },
+  "decisions.withdrawDialog.reasonPlaceholder": {
+    "en": "Why is it out of date? (optional, shown in history and to the agent)",
+    "zh-CN": "为什么已过时？（可选，将显示在历史记录中并告知智能体）",
+    "reviewedEnglishHash": "407a410a553f902a66dad0d3bd20dfb8f86f8483d4b3cbb3a41d50bf88d6a619"
+  },
+  "decisions.withdrawDialog.title": {
+    "en": "Withdraw this request?",
+    "zh-CN": "确定撤回此请求？",
+    "reviewedEnglishHash": "b03cac819e472a6c7cd9dfe7373994a07a9efd65b1ffe23633d8b8b0537320bc"
+  }
+}

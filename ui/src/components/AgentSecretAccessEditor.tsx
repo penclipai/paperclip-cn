@@ -375,20 +375,20 @@ export function AgentSecretAccessEditor({
                       className="ml-auto inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-0.5 text-(length:--text-micro) font-medium text-foreground transition-colors hover:bg-accent"
                       title={
                         envKeyOccupied
-                          ? `$${suggestedEnvKey} already exists — click to choose a new name or confirm replacement`
-                          : `Bind as $${suggestedEnvKey} under Environment variables`
+                          ? t("agentSecrets.envKeyExistsTitle", { envKey: suggestedEnvKey, defaultValue: "${{envKey}} already exists — click to choose a new name or confirm replacement" })
+                          : t("agentSecrets.bindAsEnvTitle", { envKey: suggestedEnvKey, defaultValue: "Bind as ${{envKey}} under Environment variables" })
                       }
                     >
                       <Variable className="size-3" />
-                      Also bind as env var
+                      {t("agentSecrets.alsoBindAsEnvVar", { defaultValue: "Also bind as env var" })}
                     </button>
                   ) : null}
                 </div>
                 {conflictForRow && onBindAsEnvVar ? (
                   <div className="flex flex-wrap items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1.5 text-(length:--text-micro)">
                     <span className="text-foreground">
-                      <code className="font-mono">${conflictForRow.envKey}</code> already exists under Environment
-                      variables.
+                      <code className="font-mono">${conflictForRow.envKey}</code>{" "}
+                      {t("agentSecrets.alreadyExistsUnderEnv", { defaultValue: "already exists under Environment variables." })}
                     </span>
                     <button
                       type="button"
@@ -402,7 +402,7 @@ export function AgentSecretAccessEditor({
                       }}
                       className="inline-flex items-center rounded-md border border-border bg-muted/40 px-2 py-0.5 font-medium text-foreground transition-colors hover:bg-accent"
                     >
-                      Bind as {conflictForRow.availableEnvKey}
+                      {t("agentSecrets.bindAsKey", { envKey: conflictForRow.availableEnvKey, defaultValue: "Bind as {{envKey}}" })}
                     </button>
                     <button
                       type="button"
@@ -417,7 +417,7 @@ export function AgentSecretAccessEditor({
                       }}
                       className="inline-flex items-center rounded-md border border-destructive/40 bg-destructive/10 px-2 py-0.5 font-medium text-destructive transition-colors hover:bg-destructive/15"
                     >
-                      Replace {conflictForRow.envKey}
+                      {t("agentSecrets.replaceKey", { envKey: conflictForRow.envKey, defaultValue: "Replace {{envKey}}" })}
                     </button>
                     <button
                       type="button"
@@ -485,8 +485,10 @@ export function AgentSecretAccessEditor({
             {t("agentSecrets.apiAccess", { defaultValue: "API access (no env var)" })}
           </div>
           <p className="text-(length:--text-micro) text-muted-foreground">
-            Processes and shell scripts will not see <code className="font-mono">$NAME</code> for API-access secrets.
-            To expose a secret as <code className="font-mono">$NAME</code>, bind it under Environment variables above.
+            {t("agentSecrets.apiAccessDollarNotePrefix", { defaultValue: "Processes and shell scripts will not see" })}{" "}
+            <code className="font-mono">$NAME</code>{" "}
+            {t("agentSecrets.apiAccessDollarNoteSuffix", { defaultValue: "for API-access secrets. To expose a secret as" })}{" "}
+            <code className="font-mono">$NAME</code>{t("agentSecrets.apiAccessDollarNoteEnd", { defaultValue: ", bind it under Environment variables above." })}
           </p>
         </div>
         {rows.length > 0 ? (
@@ -654,7 +656,7 @@ export function AgentSecretAccessEditor({
                   </div>
                   {aliasLooksLikeSecret ? (
                     <p className="pl-0.5 text-(length:--text-micro) text-destructive">
-                      Looks like a secret value — enter an alias name (e.g. GH_TOKEN), not the token itself
+                      {t("agentSecrets.aliasLooksLikeSecret", { defaultValue: "Looks like a secret value — enter an alias name (e.g. GH_TOKEN), not the token itself" })}
                     </p>
                   ) : aliasInvalid ? (
                     <p className="pl-0.5 text-(length:--text-micro) text-destructive">

@@ -94,6 +94,11 @@
     "zh-CN": "目标日期",
     "reviewedEnglishHash": "be1422226c2669dad5c44027b1ffd342d1c6a1ed97dafae63b87b5cb5f9f0d9c"
   },
+  "Target date": {
+    "en": "Target date",
+    "zh-CN": "目标日期",
+    "reviewedEnglishHash": "834cc86be240611d7e6bf07a86628e8a51d17cc5edd90f8795ffd5888d9e8647"
+  },
   "Task": {
     "en": "Task",
     "zh-CN": "任务",
@@ -203,6 +208,11 @@
     "en": "Task-pinned pool account ·",
     "zh-CN": "任务固定池账户·",
     "reviewedEnglishHash": "809c7c5385f957e1df2acae367fbd894521a11bc76deadf99241b5f58bf150a7"
+  },
+  "Tasks": {
+    "en": "Tasks",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "b3a60e61a5233d0506ac737405a2a45280349683cac68722f18d0b73eb495ef4"
   },
   "Tasks by Priority": {
     "en": "Tasks by Priority",
@@ -844,6 +854,11 @@
     "zh-CN": "无法重新连接此连接",
     "reviewedEnglishHash": "68c04b0d88a02773874f47bc35f97a31f63edf8b95dbb989eebfbf0d6c025c4a"
   },
+  "This connection change was recorded in the app's activity history.": {
+    "en": "This connection change was recorded in the app's activity history.",
+    "zh-CN": "此次连接变更已记录在该应用的活动历史中。",
+    "reviewedEnglishHash": "ab3f21da12c70495907b35153d5b177951079238d9e19ee347a2e44933150fee"
+  },
   "This connection does not support the current harness and model. Choose a compatible connection before saving.": {
     "en": "This connection does not support the current harness and model. Choose a compatible connection before saving.",
     "zh-CN": "此连接不支持当前运行框架和模型。保存前请选择兼容的连接。",
@@ -1339,10 +1354,20 @@
     "zh-CN": "待办",
     "reviewedEnglishHash": "4ff402d768211082ae1a70ae586a4c7a907c57d66467279a71283219968c04bc"
   },
+  "Toggle Cloud starter inference experimental setting": {
+    "en": "Toggle Cloud starter inference experimental setting",
+    "zh-CN": "切换 Cloud 入门推理实验功能设置",
+    "reviewedEnglishHash": "cbab60fd8d50e7ff167ec915b9ff0fc7e660e44150af5c6f1b3ab4d0ebb3c702"
+  },
   "Toggle GitHub review bots experimental setting": {
     "en": "Toggle GitHub review bots experimental setting",
     "zh-CN": "切换 GitHub 审查机器人实验设置",
     "reviewedEnglishHash": "438b46eb027f204c8110be1fdb33e4469c63ca40b5335e367a29112766c384b3"
+  },
+  "Toggle Google Antigravity swarm experimental setting": {
+    "en": "Toggle Google Antigravity swarm experimental setting",
+    "zh-CN": "切换 Google Antigravity 集群协同实验功能设置",
+    "reviewedEnglishHash": "545f23a91fc7f5fcbc1e72618caa67fa4594c76c6136be29d0d46cc1f093ace4"
   },
   "Toggle OpenAI Dot experimental setting": {
     "en": "Toggle OpenAI Dot experimental setting",
@@ -1488,6 +1513,11 @@
     "en": "Token history",
     "zh-CN": "词元历史",
     "reviewedEnglishHash": "17d96e04d8b230c302e7c595c609ce0dcc6dcba121acda1977f5003419add98a"
+  },
+  "Token usage": {
+    "en": "Token usage",
+    "zh-CN": "词元用量",
+    "reviewedEnglishHash": "67908a8d41024d69be93738c7d7eea6068b329355ab9c2d374f189f2bb5da700"
   },
   "Tokens": {
     "en": "Tokens",
@@ -1688,6 +1718,11 @@
     "en": "Turning this off hides experimental chat setup and connected-task controls. Existing chat connections keep running. AgentMail, GitHub review bots, and tool connectors are controlled separately.",
     "zh-CN": "关闭后会隐藏实验性聊天设置和关联任务控件。已有聊天连接继续运行。AgentMail、GitHub 代码审查机器人和工具连接器单独控制。",
     "reviewedEnglishHash": "c622c23ecf0f3a27b0ad23941b7524bebaf9a64ab50341e953cdecf7a839486e"
+  },
+  "Turning this off hides experimental chat setup and connected-task controls. Existing chat connections keep running. AgentMail, GitHub review bots, and tool connectors are unaffected.": {
+    "en": "Turning this off hides experimental chat setup and connected-task controls. Existing chat connections keep running. AgentMail, GitHub review bots, and tool connectors are unaffected.",
+    "zh-CN": "关闭此项将隐藏实验性聊天配置和已关联任务控件。现有聊天连接会继续运行。AgentMail、GitHub 审查机器人和工具连接器不受影响。",
+    "reviewedEnglishHash": "2adcce7441d39ebced1caa1ae3902e231177b865ce3b631c003cb546e7e2f0c1"
   },
   "Turning this off hides setup for these connectors. Existing connections keep running.": {
     "en": "Turning this off hides setup for these connectors. Existing connections keep running.",

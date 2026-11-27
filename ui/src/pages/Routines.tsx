@@ -471,7 +471,7 @@ export function Routines() {
       ]);
       pushToast({
         title: translateInstant("folders.deleted"),
-        body: "Items moved to Unfiled.",
+        body: translateInstant("folders.movedToUnfiled", { defaultValue: "Items moved to Unfiled." }),
         tone: "success",
       });
     },
@@ -681,7 +681,7 @@ export function Routines() {
     if (!enabled && !routine.assigneeAgentId) {
       pushToast({
         title: translateInstant("Default agent required"),
-        body: "Set a default agent before enabling routine automation.",
+        body: translateInstant("routines.defaultAgentRequiredBody", { defaultValue: "Set a default agent before enabling routine automation." }),
         tone: "warn",
       });
       return;
@@ -948,12 +948,14 @@ export function Routines() {
                               currentFolderId={routine.folderId ?? null}
                               onMove={(folderId) => {
                                 const previousFolderId = routine.folderId ?? null;
+                                const folderName = routineFolders?.folders.find((folder) => folder.id === folderId)?.name
+                                  ?? translateInstant("Folder", { defaultValue: "folder" });
                                 moveRoutineToFolder.mutate({ itemId: routine.id, folderId });
                                 pushToast({
                                   title: translateInstant("folders.routineMoved"),
                                   body: folderId
-                                    ? `Moved "${routine.title}" to ${routineFolders?.folders.find((folder) => folder.id === folderId)?.name ?? "folder"}.`
-                                    : `Moved "${routine.title}" to Unfiled.`,
+                                    ? translateInstant("folders.movedRoutineToFolder", { title: routine.title, folder: folderName, defaultValue: 'Moved "{{title}}" to {{folder}}.' })
+                                    : translateInstant("folders.movedRoutineToUnfiled", { title: routine.title, defaultValue: 'Moved "{{title}}" to Unfiled.' }),
                                   tone: "success",
                                   action: {
                                     label: translateInstant("common.undo"),
@@ -992,7 +994,7 @@ export function Routines() {
       <DeleteFolderDialog
         open={deleteFolderTarget !== null}
         folder={deleteFolderTarget}
-        itemLabelPlural="routines"
+        itemLabelPlural={translateInstant("folders.routines")}
         pending={deleteFolder.isPending}
         onOpenChange={(open) => {
           if (!open) setDeleteFolderTarget(null);
@@ -1006,7 +1008,7 @@ export function Routines() {
         onOpenChange={setMobileFoldersOpen}
         result={railFolderResult}
         selection={folderSelection}
-        allLabel="All routines"
+        allLabel={translateInstant("folders.allRoutines")}
         itemLabelPlural={translateInstant("Routines")}
         onSelect={setFolderSelection}
         onCreate={() => openCreateFolder()}
@@ -1018,7 +1020,7 @@ export function Routines() {
           if (!next) setRunDialogRoutine(null);
         }}
         companyId={selectedCompanyId}
-        routineName={runDialogRoutine?.title ?? null}
+        routineName={runDialogRoutine ? displayRoutineTitle(runDialogRoutine, t) : null}
         agents={agents ?? []}
         projects={projects ?? []}
         defaultProjectId={runDialogRoutine?.projectId ?? null}

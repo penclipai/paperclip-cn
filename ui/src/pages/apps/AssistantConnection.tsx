@@ -172,16 +172,19 @@ export function AssistantConnectionCard({
 
 /** The same entry as a marketplace tile, for the Installed grid. Opening it shows the accounts and any load failure in full. */
 export function AssistantConnectionTile({ onNavigate }: { onNavigate: (href: string) => void }) {
+  useTranslation();
   const connections = useAssistantConnections();
   const failed = connections.view.kind === "error";
   return <PluginTile
     slug="assistant-connection"
-    name="Assistant Connection (MCP)"
-    description={failed ? "Couldn’t load your connection status. Open it to try again." : "Use your Paperclip organization from Codex, Claude, OpenCode, or another assistant."}
+    name={translateInstant("apps.assistantConnection.title")}
+    description={failed
+      ? translateInstant("apps.assistantConnection.loadErrorTile", { defaultValue: "Couldn’t load your connection status. Open it to try again." })
+      : translateInstant("Use your Paperclip organization from Codex, Claude, OpenCode, or another assistant.")}
     brandKey="paperclip"
     icon={<Paperclip className="size-8 shrink-0 p-1 text-foreground" aria-hidden="true" />}
     state={failed ? "attention" : connections.loaded && connections.rows.length > 0 ? "connected" : "available"}
-    statusLabel={failed ? "Needs attention" : "Connected"}
+    statusLabel={failed ? translateInstant("Needs attention") : translateInstant("companySettings.customImage.terminalStatus.connected", { defaultValue: "Connected" })}
     action={null}
     onOpen={() => onNavigate(ASSISTANT_CONNECTION_PATH)}
   />;
@@ -395,7 +398,7 @@ export function AssistantConnection({
             </Tabs>
             <section
               className="space-y-4"
-              aria-label={`Set up ${assistants[assistant]}`}
+              aria-label={translateInstant("apps.assistantConnection.setUpNamed", { name: assistants[assistant], defaultValue: `Set up ${assistants[assistant]}` })}
             >
               {mcpSetupSteps(serverUrl, assistant).map((step, index) => (
                 <div key={`${assistant}-${index}`} className="space-y-2">
@@ -403,7 +406,7 @@ export function AssistantConnection({
                   {step.code && (
                     <CopyValue
                       value={step.code}
-                      label={`${assistants[assistant]} setup step ${index + 1}`}
+                      label={translateInstant("apps.assistantConnection.setupStep", { name: assistants[assistant], step: index + 1, defaultValue: `${assistants[assistant]} setup step ${index + 1}` })}
                     />
                   )}
                 </div>
@@ -443,7 +446,7 @@ export function AssistantConnection({
         )}
         {revoke.error && (
           <p role="alert" className="text-sm text-destructive">
-            Couldn’t revoke this connection. Try again.{" "}
+            {translateInstant("apps.assistantConnection.revokeError", { defaultValue: "Couldn’t revoke this connection. Try again." })}{" "}
             <button
               type="button"
               className="underline"
@@ -479,14 +482,24 @@ export function AssistantConnection({
                   initials={deriveInitials(row.user?.name ?? "You")}
                   className="font-medium"
                 />
-                <p className="text-xs text-muted-foreground">{`Connected as you · ${row.scopes.includes("paperclip:write") ? "Read and write" : "Read only"}${row.scopes.includes("paperclip:configure") ? " · Configure agents, projects and skills" : ""}`}</p>
+                <p className="text-xs text-muted-foreground">
+                  {translateInstant("apps.assistantConnection.connectedAsYou", {
+                    scope: row.scopes.includes("paperclip:write")
+                      ? translateInstant("apps.assistantConnection.readAndWrite", { defaultValue: "Read and write" })
+                      : translateInstant("apps.assistantConnection.readOnly", { defaultValue: "Read only" }),
+                    configure: row.scopes.includes("paperclip:configure")
+                      ? translateInstant("apps.assistantConnection.configureScope", { defaultValue: " · Configure agents, projects and skills" })
+                      : "",
+                    defaultValue: `Connected as you · ${row.scopes.includes("paperclip:write") ? "Read and write" : "Read only"}${row.scopes.includes("paperclip:configure") ? " · Configure agents, projects and skills" : ""}`,
+                  })}
+                </p>
               </div>
               <Button
                 variant="outline"
                 size="sm"
                 disabled={revoke.isPending}
                 onClick={() => revoke.mutate(row.id)}
-                aria-label={`Revoke ${assistantConnectionDisplayName(row)}`}
+                aria-label={translateInstant("apps.assistantConnection.revokeAria", { name: assistantConnectionDisplayName(row), defaultValue: `Revoke ${assistantConnectionDisplayName(row)}` })}
               >
                 {translateInstant("Revoke")}
               </Button>

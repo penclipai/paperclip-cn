@@ -10,6 +10,7 @@ import { MarkdownBody } from "@/components/MarkdownBody";
 import { DocumentAnnotationsCountChip, IssueDocumentAnnotations } from "@/components/IssueDocumentAnnotations";
 import { useIssuePlanDocument } from "@/hooks/useIssuePlanDocument";
 import { useLocation } from "@/lib/router";
+import { formatDateTime } from "@/lib/utils";
 
 interface IssuePropertiesPlansTabProps {
   issue: Issue;
@@ -67,7 +68,7 @@ export function IssuePropertiesPlansTab({ issue }: IssuePropertiesPlansTabProps)
             ) : null}
           </div>
         ) : (
-          "No plan yet. The plan document, accepted plans, and their revisions will appear here."
+          translateInstant("issueProperties.plans.empty", { defaultValue: "No plan yet. The plan document, accepted plans, and their revisions will appear here." })
         )}
       </div>
     );
@@ -82,12 +83,11 @@ export function IssuePropertiesPlansTab({ issue }: IssuePropertiesPlansTabProps)
       {planDocument ? (
         <section data-testid="issue-plan-document" className="space-y-2">
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            {`Revision ${planDocument.latestRevisionNumber ?? 1} · updated ${new Date(planDocument.updatedAt).toLocaleString([], {
-              month: "short",
-              day: "numeric",
-              hour: "numeric",
-              minute: "2-digit",
-            })}`}
+            {translateInstant("issueProperties.plans.revisionUpdated", {
+              revision: planDocument.latestRevisionNumber ?? 1,
+              updatedAt: formatDateTime(planDocument.updatedAt),
+              defaultValue: `Revision ${planDocument.latestRevisionNumber ?? 1} · updated ${formatDateTime(planDocument.updatedAt)}`,
+            })}
             <DocumentAnnotationsCountChip
               issueId={issue.id}
               docKey="plan"

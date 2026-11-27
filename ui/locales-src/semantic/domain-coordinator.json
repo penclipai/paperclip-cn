@@ -1,0 +1,22 @@
+{
+  "coordinator.relativeTime.daysAgo": {
+    "en": "{{count}}d ago",
+    "zh-CN": "{{count}} 天前",
+    "reviewedEnglishHash": "477879d991b4f84f84011ea85e3e3f55bd1e0f64148a26a0cdb4d59a478d1cde"
+  },
+  "coordinator.relativeTime.hoursAgo": {
+    "en": "{{count}}h ago",
+    "zh-CN": "{{count}} 小时前",
+    "reviewedEnglishHash": "f9fd95fe176ea25b5a5a8741cdd8564ef60faa4da09674c70ba0e82b3f58bb13"
+  },
+  "coordinator.relativeTime.justNow": {
+    "en": "Just now",
+    "zh-CN": "刚刚",
+    "reviewedEnglishHash": "66f53417d3b7797ae3d8ca9b26bf4b5b3cb7e42e5ef29d9ba449f9d3ae8d0e84"
+  },
+  "coordinator.relativeTime.minutesAgo": {
+    "en": "{{count}}m ago",
+    "zh-CN": "{{count}} 分钟前",
+    "reviewedEnglishHash": "96da0d6c543c29bdad16bee63e9c9d4bd4516ac1c9d0296e73b2f24bc8ed74d6"
+  }
+}

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { AgentConversationSidebar } from "./AgentConversationSidebar";
 import { queryViewKind } from "./QueryView";
 import { useAgentChatNavigation, useOpenAgentChat } from "@/hooks/useAgentChatNavigation";
@@ -14,6 +15,7 @@ import { AgentChatPin, agentChatPinKey, useAgentChatPins } from "./AgentChatPin"
 
 /** Account- and company-scoped data for the secondary chat navigation. */
 export function AgentConversationsSidebar({ compact = false }: { compact?: boolean } = {}) {
+  const { t } = useTranslation();
   const { companyId, userId, agents, chats, session } = useAgentChatNavigation();
   const agentChatPins = useAgentChatPins();
   const unreadMessageCounts = useMemo(() => new Map((chats.data ?? [])
@@ -59,7 +61,7 @@ export function AgentConversationsSidebar({ compact = false }: { compact?: boole
       && (!memberships.isSuccess || resourceMembershipState(memberships.data, "agent", agent.id) !== "left"))
     .sort((left, right) => left.name.localeCompare(right.name, undefined, { sensitivity: "base" }));
   const previews = Object.fromEntries((chats.data ?? []).filter(chat => chat.conversationState === "active")
-    .map(chat => [chat.conversationAgentId!, "Working…"]));
+    .map(chat => [chat.conversationAgentId!, t("agentChat.working", { defaultValue: "Working…" })]));
   const pinnedAgentIds = useMemo(() => {
     const prefix = `agent-chat:${companyId}:`;
     return agentChatPins.orderedKeys.filter(key => key.startsWith(prefix)).map(key => key.slice(prefix.length));

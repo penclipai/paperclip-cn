@@ -789,6 +789,11 @@
     "zh-CN": "条匹配 · 按 A–Z 排序",
     "reviewedEnglishHash": "f2a4ad9c1a3b91525208caa065a0779c188a6d4ce2924d082d13ed90dfe05f8a"
   },
+  "member": {
+    "en": "member",
+    "zh-CN": "成员",
+    "reviewedEnglishHash": "e31ab643c44f7a0ec824b59d1194d60dac334200d845e61d2d289daa0f087ea4"
+  },
   "metadata": {
     "en": "metadata",
     "zh-CN": "元数据",

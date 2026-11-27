@@ -1,4 +1,5 @@
 import { Pin, PinOff } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import type { usePinnedNavigation } from "@/hooks/usePinnedNavigation";
 
@@ -12,15 +13,20 @@ interface NavigationPinButtonProps {
 }
 
 export function NavigationPinButton({ pinKey, label, pins, className }: NavigationPinButtonProps) {
+  const { t } = useTranslation();
   const pinned = pins.keys.has(pinKey);
   const Icon = pinned ? PinOff : Pin;
-  const action = `${pinned ? "Unpin" : "Pin"} ${label}`;
+  const action = pinned
+    ? t("nav.unpinItem", { label, defaultValue: "Unpin {{label}}" })
+    : t("nav.pinItem", { label, defaultValue: "Pin {{label}}" });
 
   return (
     <button
       type="button"
       aria-label={action}
-      title={`${action} ${pinned ? "from" : "to"} sidebar`}
+      title={pinned
+        ? t("nav.unpinFromSidebar", { label, defaultValue: "Unpin {{label}} from sidebar" })
+        : t("nav.pinToSidebar", { label, defaultValue: "Pin {{label}} to sidebar" })}
       aria-pressed={pinned}
       disabled={!pins.canPin}
       onClick={(event) => {

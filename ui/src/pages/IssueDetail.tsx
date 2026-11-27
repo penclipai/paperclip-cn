@@ -1,4 +1,4 @@
-import { translateInstant } from "@/i18n";
+import { getCurrentLocale, translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { createUuid } from "@/lib/uuid";
 import { invalidateInteractionRecordViews } from "@/lib/attention-record-views";
@@ -532,9 +532,11 @@ function isPlanConfirmationInteraction(
 function buildPlanDecisionResponseText(
   interaction: RequestConfirmationInteraction,
 ) {
-  if (interaction.status === "accepted") return "Approved plan";
+  if (interaction.status === "accepted") return translateInstant("issueDetail.approvedPlan", { defaultValue: "Approved plan" });
   const reason = interaction.result?.reason?.trim();
-  return reason ? `Requested changes\n\n${reason}` : "Requested changes";
+  return reason
+    ? translateInstant("issueDetail.requestedChangesWithReason", { reason, defaultValue: `Requested changes\n\n${reason}` })
+    : translateInstant("issueDetail.requestedChanges", { defaultValue: "Requested changes" });
 }
 
 const FEEDBACK_TERMS_URL =
@@ -1087,7 +1089,7 @@ export function IssueDetailLoadingState({
         <div data-testid="issue-detail-header">{titleEditor}</div>
         <div
           role="status"
-          aria-label="Loading conversation"
+          aria-label={translateInstant("issueDetail.loadingConversation", { defaultValue: "Loading conversation" })}
           className="flex items-center justify-center"
         >
           <Skeleton aria-hidden="true" className="h-4 w-24" />
@@ -1100,7 +1102,7 @@ export function IssueDetailLoadingState({
       <div
         data-testid="task-detail-presentation-loading"
         role="status"
-        aria-label="Loading conversation"
+        aria-label={translateInstant("issueDetail.loadingConversation", { defaultValue: "Loading conversation" })}
         className="flex h-full min-h-0 w-full flex-1 items-center justify-center"
       >
         <Skeleton aria-hidden="true" className="h-4 w-24" />
@@ -2905,7 +2907,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
                           size="sm"
                           onClick={onExpandHistory}
                         >
-                          More messages
+                          {translateInstant("issueDetail.moreMessages", { defaultValue: "More messages" })}
                         </Button>
                       ) : null,
                   }
@@ -3134,10 +3136,9 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
                   <>
                     {grokWork && (
                       <p className="text-xs text-muted-foreground">
-                        Runs in Grok Bot · Usage not reported. Stop Paperclip
-                        work revokes this session’s authority; remote execution
-                        may continue. Open the Grok Bot desktop app to inspect
-                        it.
+                        {translateInstant("issueDetail.grokBotRunNotice", {
+                          defaultValue: "Runs in Grok Bot · Usage not reported. Stop Paperclip work revokes this session’s authority; remote execution may continue. Open the Grok Bot desktop app to inspect it.",
+                        })}
                       </p>
                     )}
                     {stopGrokWork.error && (
@@ -3408,7 +3409,7 @@ function IssueDetailActivityTab({
                   <span className="font-medium text-foreground">
                     {translateInstant("issueDetail.includingSubtasks")}{" "}
                     {(issueTreeCostSummary.costCents / 100).toLocaleString(
-                      undefined,
+                      getCurrentLocale(),
                       {
                         style: "currency",
                         currency: "USD",
@@ -8936,7 +8937,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                         }}
                       >
                         <ActivityIcon className="h-3 w-3" />
-                        Show task activity
+                        {translateInstant("issueDetail.showTaskActivity", { defaultValue: "Show task activity" })}
                       </button>
                     ) : null}
                     {streamlinedTaskDetailEnabled ? (

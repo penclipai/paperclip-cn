@@ -1,0 +1,127 @@
+{
+  "promptInjection.addConnection": {
+    "en": "Add OpenRouter connection",
+    "zh-CN": "添加 OpenRouter 连接",
+    "reviewedEnglishHash": "66aca6f3c9e1ba176512833caf4aa3b4c1612e9a53930f9e13ce14d0a90a4206"
+  },
+  "promptInjection.addDialogDescription": {
+    "en": "Use a shared API connection for prompt injection checks.",
+    "zh-CN": "使用共享 API 连接进行提示词注入检查。",
+    "reviewedEnglishHash": "bca0453e5a3be11eea8028a71e4fe38a629f0e5627440942354196f1d0aae325"
+  },
+  "promptInjection.addDialogTitle": {
+    "en": "Add an OpenRouter connection",
+    "zh-CN": "添加 OpenRouter 连接",
+    "reviewedEnglishHash": "2e306132349894b47b36d04d31bde743906e42b10ac2077c19da25a767e44703"
+  },
+  "promptInjection.clearSelection": {
+    "en": "Clear selection",
+    "zh-CN": "清除选择",
+    "reviewedEnglishHash": "cea4d2e010b8fd52bc28a66eca24ff0d616b2c7d982545757780c196c5cc04c7"
+  },
+  "promptInjection.description": {
+    "en": "Check tool results for instructions that could redirect your agents. The selected provider receives tool content and charges API usage. Built-in detection is used when the model is unavailable.",
+    "zh-CN": "检查工具返回结果中是否包含可能诱导或劫持智能体的指令。所选提供方将接收工具内容并按 API 用量计费。当模型不可用时，将使用内置检测。",
+    "reviewedEnglishHash": "3fc8407334bfacb90411d303e32225456801e39d6a77674dc9dbe2779949350e"
+  },
+  "promptInjection.enableModelChecks": {
+    "en": "Use model for prompt injection checks",
+    "zh-CN": "使用模型进行提示词注入检查",
+    "reviewedEnglishHash": "0302a1e03fc902570cb67de805e9cc6ec632654756d2906b9ba1f85dd9a33e3b"
+  },
+  "promptInjection.loadError": {
+    "en": "Could not load prompt injection settings.",
+    "zh-CN": "无法加载提示词注入防护设置。",
+    "reviewedEnglishHash": "4e41c167b4e75c8cee19ae340ac8fa871127978b213fce07c46a423fc9b252db"
+  },
+  "promptInjection.loading": {
+    "en": "Loading prompt injection settings…",
+    "zh-CN": "正在加载提示词注入防护设置…",
+    "reviewedEnglishHash": "2cf698854863698a434765696dc5dd4e84d40167794eb85a97863038baf1dd90"
+  },
+  "promptInjection.manageConnections": {
+    "en": "Manage connections",
+    "zh-CN": "管理连接",
+    "reviewedEnglishHash": "cadfaac7241e3651a773a90efc7a3e1d4d818d3674eccde2e7e3f65dfead5de8"
+  },
+  "promptInjection.modelsError": {
+    "en": "Could not load model suggestions. You can still enter and save a model ID.",
+    "zh-CN": "无法加载模型推荐列表，你仍可手动输入并保存模型 ID。",
+    "reviewedEnglishHash": "42ec1db056190c04bcdf21a32c33da3f609124da449f0d671105c1ef2e0903d9"
+  },
+  "promptInjection.needsAttention": {
+    "en": "Needs attention",
+    "zh-CN": "需要处理",
+    "reviewedEnglishHash": "c1ebc7817870e5be78fceae559ba5fcac2b68d5c5498d8080298004f3f79d62d"
+  },
+  "promptInjection.noConnections": {
+    "en": "Add a shared OpenRouter API connection to use model checks.",
+    "zh-CN": "添加共享 OpenRouter API 连接以启用模型检查。",
+    "reviewedEnglishHash": "7304e115a73a4287419dacd4b917134a52eb1653fe2fe7cf885f3e64f4c1a33c"
+  },
+  "promptInjection.sampleDurationSeconds": {
+    "en": "{{seconds}} seconds",
+    "zh-CN": "{{seconds}} 秒",
+    "reviewedEnglishHash": "6afe840152988ece842de2528c862a85058a3d921dbaae0c038182b6fa53d6eb"
+  },
+  "promptInjection.sampleFallback": {
+    "en": "Model unavailable ({{reason}}); built-in detection is the fallback.",
+    "zh-CN": "模型不可用（{{reason}}）；已回退为内置检测。",
+    "reviewedEnglishHash": "f60c254d1f39e9e6fe4473f9d912159afb622018c63aa2692fb39cf4bc2f56da"
+  },
+  "promptInjection.sampleIncorrect": {
+    "en": "Incorrect verdict",
+    "zh-CN": "判定结果有误",
+    "reviewedEnglishHash": "543a1c9dbf40f8a978b2096e2acdaf974743fce81b33c023675687c3dafb3060"
+  },
+  "promptInjection.samplePassed": {
+    "en": "Passed",
+    "zh-CN": "通过",
+    "reviewedEnglishHash": "436fe71bb9561f0596161c4d50c7b23327b4189acaf63dc89f4f9205b67a7528"
+  },
+  "promptInjection.saveBeforeTesting": {
+    "en": "Save changes before testing.",
+    "zh-CN": "请先保存更改再进行测试。",
+    "reviewedEnglishHash": "10a5f2545808037b8a2ad3997757e7dc49f257d6ce8f80766e03b5ba04877272"
+  },
+  "promptInjection.saveButton": {
+    "en": "Save prompt injection settings",
+    "zh-CN": "保存提示词注入防护设置",
+    "reviewedEnglishHash": "1a5bd4fd5c84f9f6a15e40d065237a185700533e1f0c9113fa72d722731a649f"
+  },
+  "promptInjection.testButton": {
+    "en": "Test model checks",
+    "zh-CN": "测试模型检查",
+    "reviewedEnglishHash": "e400861434cbf86b4996a8bf3f69b156d1fa9a6d6c82e48781288f904db6369f"
+  },
+  "promptInjection.testChargeNote": {
+    "en": "Tests two fixed samples with an API charge.",
+    "zh-CN": "将使用两个固定样本进行测试并产生 API 费用。",
+    "reviewedEnglishHash": "1dcfadd0482eb4b6873101ea918a4b13de2e377cadff20379179f16a285ce988"
+  },
+  "promptInjection.testFailed": {
+    "en": "Model checks did not pass. Check the connection and model, then try again.",
+    "zh-CN": "模型检查未通过。请检查连接与模型后重试。",
+    "reviewedEnglishHash": "afd9879306a950bb173d3628af4611aa2532cf396e408fa73f54ab9058ce6155"
+  },
+  "promptInjection.testPassed": {
+    "en": "Both model checks passed.",
+    "zh-CN": "两项模型检查均已通过。",
+    "reviewedEnglishHash": "876f97074421117b627189d5f1fd1ff7cf187277fe0326925917dfb931489c0d"
+  },
+  "promptInjection.testing": {
+    "en": "Testing…",
+    "zh-CN": "正在测试…",
+    "reviewedEnglishHash": "407b7a04662f2aabdfb3f017054466068e8155fc44815f88d9530833f30f7ff1"
+  },
+  "promptInjection.title": {
+    "en": "Prompt Injection Prevention",
+    "zh-CN": "提示词注入防护",
+    "reviewedEnglishHash": "ec943d63cadb3e3e939de2cf37b3096d47e1f8c43833fe4a4ed65e145f563bf2"
+  },
+  "promptInjection.unavailableConnection": {
+    "en": "The saved connection is unavailable. Choose a replacement, disable model checks, or clear the selection. Built-in detection stays active.",
+    "zh-CN": "已保存的连接当前不可用。请选择替代连接、禁用模型检查或清除选择。内置检测将继续保持启用。",
+    "reviewedEnglishHash": "f99ddf9a565f67b777db38e8772dc9f43a23f89178b06c89de3e8ebd184deb5d"
+  }
+}

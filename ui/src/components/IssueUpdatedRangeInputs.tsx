@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import type { IssueFilterState } from "../lib/issue-filters";
 import { cn } from "../lib/utils";
@@ -19,14 +20,15 @@ export function IssueUpdatedRangeInputs({
   className?: string;
   inputClassName?: string;
 }) {
+  const { t } = useTranslation();
   const today = localDateString(new Date());
   return (
     <div className={cn("grid grid-cols-2 gap-2", className)} data-filter-options="updated-range">
       <label className="min-w-0 space-y-1">
-        <span className="text-xs text-muted-foreground">From</span>
+        <span className="text-xs text-muted-foreground">{t("whatNeedsMe.dateRange.from", { defaultValue: "From" })}</span>
         <Input
           type="date"
-          aria-label="Updated from"
+          aria-label={t("issueFilters.updatedFromAria", { defaultValue: "Updated from" })}
           value={state.updatedFrom ?? ""}
           max={state.updatedTo ?? today}
           onChange={(event) => onChange({ updatedFrom: event.target.value || null })}
@@ -34,10 +36,10 @@ export function IssueUpdatedRangeInputs({
         />
       </label>
       <label className="min-w-0 space-y-1">
-        <span className="text-xs text-muted-foreground">To</span>
+        <span className="text-xs text-muted-foreground">{t("whatNeedsMe.dateRange.to", { defaultValue: "To" })}</span>
         <Input
           type="date"
-          aria-label="Updated to"
+          aria-label={t("issueFilters.updatedToAria", { defaultValue: "Updated to" })}
           value={state.updatedTo ?? ""}
           min={state.updatedFrom ?? undefined}
           max={today}

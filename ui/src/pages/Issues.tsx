@@ -446,8 +446,8 @@ function OrganizationIssues({
         icon={CircleDot}
         message={
           streamlinedUiEnabled
-            ? "Select an organization to view tasks."
-            : "Select a company to view tasks."
+            ? translateInstant("coordinatorTasks.selectOrg", { defaultValue: "Select an organization to view tasks." })
+            : translateInstant("issuesList.selectCompany", { defaultValue: "Select a company to view tasks." })
         }
       />
     );

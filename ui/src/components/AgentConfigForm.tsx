@@ -1807,21 +1807,21 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
             >
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Environment variable already exists</DialogTitle>
+                  <DialogTitle>{t("agentConfig.envBindConflict.title", { defaultValue: "Environment variable already exists" })}</DialogTitle>
                   <DialogDescription>
-                    <code className="font-mono">{pendingEnvBindConflict?.binding.envKey}</code> is already set as{" "}
+                    <code className="font-mono">{pendingEnvBindConflict?.binding.envKey}</code>{" "}
+                    {t("agentConfig.envBindConflict.isAlreadySetAs", { defaultValue: "is already set as" })}{" "}
                     {pendingEnvBindConflict?.existingKind === "secret_ref"
-                      ? "another company secret"
+                      ? t("agentConfig.envBindConflict.anotherCompanySecret", { defaultValue: "another company secret" })
                       : pendingEnvBindConflict?.existingKind === "user_secret_ref"
-                        ? "a user secret"
-                        : "a plain value"}
-                    . Choose <code className="font-mono">{pendingEnvBindConflict?.availableEnvKey}</code> to keep the
-                    existing variable, or confirm replacing it.
+                        ? t("agentConfig.envBindConflict.userSecret", { defaultValue: "a user secret" })
+                        : t("agentConfig.envBindConflict.plainValue", { defaultValue: "a plain value" })}
+                    {t("agentConfig.envBindConflict.choosePrefix", { defaultValue: ". Choose " })}<code className="font-mono">{pendingEnvBindConflict?.availableEnvKey}</code>{t("agentConfig.envBindConflict.chooseSuffix", { defaultValue: " to keep the existing variable, or confirm replacing it." })}
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="sm:justify-between">
                   <Button type="button" variant="ghost" onClick={() => setPendingEnvBindConflict(null)}>
-                    Cancel
+                    {t("Cancel", { defaultValue: "Cancel" })}
                   </Button>
                   <div className="flex items-center gap-2">
                     <Button
@@ -1837,7 +1837,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                         setPendingEnvBindConflict(null);
                       }}
                     >
-                      Bind as {pendingEnvBindConflict?.availableEnvKey}
+                      {t("agentSecrets.bindAsKey", { envKey: pendingEnvBindConflict?.availableEnvKey, defaultValue: "Bind as {{envKey}}" })}
                     </Button>
                     <Button
                       type="button"
@@ -1852,7 +1852,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                         setPendingEnvBindConflict(null);
                       }}
                     >
-                      Replace {pendingEnvBindConflict?.binding.envKey}
+                      {t("agentSecrets.replaceKey", { envKey: pendingEnvBindConflict?.binding.envKey, defaultValue: "Replace {{envKey}}" })}
                     </Button>
                   </div>
                 </DialogFooter>
@@ -1959,7 +1959,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       String(config.promptTemplate ?? ""),
                     )}
                     onChange={(v) => mark("adapterConfig", "promptTemplate", v ?? "")}
-                    placeholder="You are agent {{ agent.name }}. Your role is {{ agent.role }}..."
+                    placeholder={translateInstant("agentConfig.promptTemplatePlaceholder", { defaultValue: "You are agent {{ agent.name }}. Your role is {{ agent.role }}..." })}
                     contentClassName="min-h-(--sz-88px) text-sm font-mono"
                     imageUploadHandler={async (file) => {
                       const namespace = `agents/${props.agent.id}/prompt-template`;
@@ -2433,7 +2433,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       : mark("adapterConfig", "extraArgs", v?.trim() ? parseCommaArgs(v) : null)
                   }
                   className={inputClass}
-                  placeholder="e.g. --verbose, --foo=bar"
+                  placeholder={translateInstant("agentConfig.extraArgsPlaceholder", { defaultValue: "e.g. --verbose, --foo=bar" })}
                 />
               </Field>
 

@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2, Package } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { translateInstant } from "@/i18n";
 import { companySkillsApi } from "@/api/companySkills";
 import { mcpSkillsApi } from "@/api/mcpSkills";
 import { Button } from "@/components/ui/button";
@@ -9,11 +11,27 @@ import { QueryErrorState } from "@/components/QueryView";
 import { queryKeys } from "@/lib/queryKeys";
 
 /** Skills Paperclip applies on its own while an agent is assigned the connector (server/src/services/connector-runtime.ts). */
-const BUILT_IN_SKILLS: Record<string, { name: string; description: string }> = {
-  slack: { name: "slack", description: "How to read and post in Slack through the governed Slack tools." },
-  agentmail: { name: "agentmail", description: "How to send, read and reply to email from an assigned inbox." },
-  "browser-use-cloud": { name: "browser-use-cloud", description: "How to drive a cloud browser session for web tasks." },
-  speko: { name: "speko", description: "How to place and handle phone calls with Speko." },
+const BUILT_IN_SKILLS: Record<string, { name: string; descriptionKey: string; defaultDescription: string }> = {
+  slack: {
+    name: "slack",
+    descriptionKey: "apps.plugins.skills.builtIn.slack",
+    defaultDescription: "How to read and post in Slack through the governed Slack tools.",
+  },
+  agentmail: {
+    name: "agentmail",
+    descriptionKey: "apps.plugins.skills.builtIn.agentmail",
+    defaultDescription: "How to send, read and reply to email from an assigned inbox.",
+  },
+  "browser-use-cloud": {
+    name: "browser-use-cloud",
+    descriptionKey: "apps.plugins.skills.builtIn.browserUseCloud",
+    defaultDescription: "How to drive a cloud browser session for web tasks.",
+  },
+  speko: {
+    name: "speko",
+    descriptionKey: "apps.plugins.skills.builtIn.speko",
+    defaultDescription: "How to place and handle phone calls with Speko.",
+  },
 };
 
 /** Catalog skills that pair with a connector. The pairing lives here until the catalog can declare it. */
@@ -54,6 +72,7 @@ export function PluginSkills({
   connectionIds: readonly string[];
   onNavigate: (href: string) => void;
 }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const builtIn = BUILT_IN_SKILLS[slug];
   const catalogIds = CATALOG_SKILL_IDS[slug] ?? [];
@@ -94,20 +113,22 @@ export function PluginSkills({
   return (
     <section aria-labelledby="plugin-skills-title" className="flex flex-col gap-2">
       <h2 id="plugin-skills-title" className="flex items-baseline gap-2 px-4 text-sm text-muted-foreground">
-        Skills {count > 0 ? <span className="tabular-nums">{count}</span> : null}
+        {t("Skills")} {count > 0 ? <span className="tabular-nums">{count}</span> : null}
       </h2>
       {failed.length > 0 ? (
         <QueryErrorState
           error={failed[0].error}
-          action={`load the skills that come with ${name}`}
+          action={t("apps.plugins.skills.loadAction", { name, defaultValue: `load the skills that come with ${name}` })}
           onRetry={() => failed.forEach((query) => void query.refetch())}
           retrying={failed.some((query) => query.isFetching)}
         />
       ) : null}
-      {count > 0 ? <ul aria-label={`Skills that come with ${name}`} className="divide-y divide-border rounded-2xl bg-muted/50">
+      {count > 0 ? <ul aria-label={t("apps.plugins.skills.listAria", { name, defaultValue: `Skills that come with ${name}` })} className="divide-y divide-border rounded-2xl bg-muted/50">
         {builtIn ? (
-          <SkillRow name={builtIn.name} detail={builtIn.description}>
-            <span className="shrink-0 text-xs text-muted-foreground">Added for agents assigned {name}</span>
+          <SkillRow name={builtIn.name} detail={translateInstant(builtIn.descriptionKey, { defaultValue: builtIn.defaultDescription })}>
+            <span className="shrink-0 text-xs text-muted-foreground">
+              {t("apps.plugins.skills.addedForAgents", { name, defaultValue: `Added for agents assigned ${name}` })}
+            </span>
           </SkillRow>
         ) : null}
         {published.map((skill) => (
@@ -115,11 +136,13 @@ export function PluginSkills({
             {skill.status === "approved" ? (
               <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
                 <Check className="size-3.5" aria-hidden />
-                Approved
+                {t("Approved")}
               </span>
             ) : (
               <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={() => onNavigate("/skills")}>
-                {skill.status === "pending_review" ? "Review" : "Open in Skills"}
+                {skill.status === "pending_review"
+                  ? t("Review")
+                  : t("apps.plugins.skills.openInSkills", { defaultValue: "Open in Skills" })}
               </Button>
             )}
           </SkillRow>
@@ -132,12 +155,12 @@ export function PluginSkills({
               {!installedKnown ? null : installed ? (
                 <Button type="button" variant="ghost" size="sm" className="shrink-0" onClick={() => onNavigate("/skills")}>
                   <Check aria-hidden />
-                  Added · choose agents
+                  {t("apps.plugins.skills.addedChooseAgents", { defaultValue: "Added · choose agents" })}
                 </Button>
               ) : (
-                <Button type="button" variant="outline" size="sm" className="shrink-0" disabled={pending} aria-label={`Add ${skill.name}`} onClick={() => install.mutate(skill.id)}>
+                <Button type="button" variant="outline" size="sm" className="shrink-0" disabled={pending} aria-label={t("apps.plugins.skills.addNamedAria", { name: skill.name, defaultValue: `Add ${skill.name}` })} onClick={() => install.mutate(skill.id)}>
                   {pending ? <Loader2 className="animate-spin" aria-hidden /> : null}
-                  Add skill
+                  {t("apps.plugins.skills.addSkill", { defaultValue: "Add skill" })}
                 </Button>
               )}
             </SkillRow>
@@ -149,7 +172,9 @@ export function PluginSkills({
           {describeError(install.error).body}
         </p>
       ) : null}
-      <p className="px-4 text-xs text-muted-foreground">Skills stay editable in Skills, where you choose which agents use them.</p>
+      <p className="px-4 text-xs text-muted-foreground">
+        {t("apps.plugins.skills.editableNote", { defaultValue: "Skills stay editable in Skills, where you choose which agents use them." })}
+      </p>
     </section>
   );
 }

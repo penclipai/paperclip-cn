@@ -1,0 +1,352 @@
+{
+  "routinePage.addInstructions": {
+    "en": "Add instructions",
+    "zh-CN": "添加指令",
+    "reviewedEnglishHash": "ce9e893bb030fa865f71760a0004aa106fcfaed58f5a47a43afa9baa07d298f2"
+  },
+  "routinePage.api": {
+    "en": "API",
+    "zh-CN": "API",
+    "reviewedEnglishHash": "c8e5998f6a3955c21d858936fe05c69621724d7f825c6e17793002a0fa798bf9"
+  },
+  "routinePage.apiDescription": {
+    "en": "Starts this routine when an app or agent calls the routine API.",
+    "zh-CN": "当应用或智能体调用例行任务 API 时启动此例行任务。",
+    "reviewedEnglishHash": "db6d38e62c6b4f65aa8b93c9f95a0680dc32c5d26189176d62ffb3c3c21ca0e3"
+  },
+  "routinePage.apiDetail": {
+    "en": "Started by an API call",
+    "zh-CN": "由 API 调用启动",
+    "reviewedEnglishHash": "f25ba62237e092911b39556345a8d9575c65b2dc9adbddadf7685ea71c8f56a0"
+  },
+  "routinePage.apiTrigger": {
+    "en": "API trigger",
+    "zh-CN": "API 触发器",
+    "reviewedEnglishHash": "ef556ef20b2789667beaefef6b0f634eb981a2ec9a051c47c05d593f9ad79131"
+  },
+  "routinePage.archiveRoutine": {
+    "en": "Archive routine",
+    "zh-CN": "归档例行任务",
+    "reviewedEnglishHash": "3270cab1cde88b742d30890144a1c239acf936853926ee0cf0caf2787952df19"
+  },
+  "routinePage.asksFor": {
+    "en": "Asks for",
+    "zh-CN": "需要提供",
+    "reviewedEnglishHash": "f07bf14480363e8ab4f2d40bde4004818507ffa4686e2a281cc31da5b60f6710"
+  },
+  "routinePage.changeScheduleAria": {
+    "en": "Change schedule: {{schedule}}",
+    "zh-CN": "更改计划：{{schedule}}",
+    "reviewedEnglishHash": "389e2df78652a2541a39c62a43b75f80bfee2d089c00501707a02378727989a4"
+  },
+  "routinePage.changeTriggerAria": {
+    "en": "Change {{title}}",
+    "zh-CN": "更改 {{title}}",
+    "reviewedEnglishHash": "3f53069d2c9e395d50ade9a0a0592c78aeec99622cb39c7147a9b420d7aaeb6f"
+  },
+  "routinePage.chooseAgent": {
+    "en": "Choose an agent",
+    "zh-CN": "选择智能体",
+    "reviewedEnglishHash": "b6890bc23a9c54fa0f692448cce607dff308a17f9078bd45d86c67e3afe779b5"
+  },
+  "routinePage.chooseDefaultAgent": {
+    "en": "Choose a default agent",
+    "zh-CN": "选择默认智能体",
+    "reviewedEnglishHash": "f2810103677d3a09910fa09b013d70f67087667e9696b61e75f454c2fc9c4c44"
+  },
+  "routinePage.commentCount": {
+    "en": "{{count}} comments",
+    "zh-CN": "{{count}} 条评论",
+    "reviewedEnglishHash": "3313c3ed57add98d84a952640940903b6720d20da0cb0c134cf697c1eba32bf7"
+  },
+  "routinePage.commentCount_one": {
+    "en": "{{count}} comment",
+    "zh-CN": "{{count}} 条评论",
+    "reviewedEnglishHash": "7f6fbb6d425c5387203e267050f37a180710fdc2a7bffe3f79a8988e0802f296"
+  },
+  "routinePage.commentCount_other": {
+    "en": "{{count}} comments",
+    "zh-CN": "{{count}} 条评论",
+    "reviewedEnglishHash": "3313c3ed57add98d84a952640940903b6720d20da0cb0c134cf697c1eba32bf7"
+  },
+  "routinePage.copyInstructions": {
+    "en": "Copy instructions",
+    "zh-CN": "复制指令",
+    "reviewedEnglishHash": "37b2f33727bdf7215ed2273217f9eba4a5b10f2597a54c51ab1454dda8683d7b"
+  },
+  "routinePage.defaultAgent": {
+    "en": "Default agent",
+    "zh-CN": "默认智能体",
+    "reviewedEnglishHash": "94da52ecd6c5c3b77b89b8427f4bcaf11a40ddf68f5b00171977349fb2e6abc9"
+  },
+  "routinePage.defaultResponsibleUser": {
+    "en": "Default responsible user",
+    "zh-CN": "默认责任人",
+    "reviewedEnglishHash": "e6851457518d1d114b8f1e2f91e6a659b76c44d1840719ff0446a81a4b8427a9"
+  },
+  "routinePage.doesNotRepeat": {
+    "en": "Doesn’t repeat. Runs only when you start it.",
+    "zh-CN": "不重复执行，仅在你手动启动时运行。",
+    "reviewedEnglishHash": "7c842716605da395942a4464d00604262a5d1b0ce5f012306a53ab85e4eea612"
+  },
+  "routinePage.editRoutine": {
+    "en": "Edit routine",
+    "zh-CN": "编辑例行任务",
+    "reviewedEnglishHash": "801e2738261ad99f096090807bdbb03e127d49e984faae5f5fcbd328e6862b6c"
+  },
+  "routinePage.foldedRuns": {
+    "en": "{{count}} runs were folded into a task that was still in progress.",
+    "zh-CN": "已将 {{count}} 次运行合并到仍在进行中的任务。",
+    "reviewedEnglishHash": "c508a3abd4b41099c75fb489237b168a6a68b5c8ac53df99c3ba6e301d47b8e1"
+  },
+  "routinePage.foldedRuns_one": {
+    "en": "1 run was folded into a task that was still in progress.",
+    "zh-CN": "已将 1 次运行合并到仍在进行中的任务。",
+    "reviewedEnglishHash": "b91a0d081f6f543dad1b2952620c0b6048321dffd20b9173b44bb440069fe1ed"
+  },
+  "routinePage.foldedRuns_other": {
+    "en": "{{count}} runs were folded into a task that was still in progress.",
+    "zh-CN": "已将 {{count}} 次运行合并到仍在进行中的任务。",
+    "reviewedEnglishHash": "c508a3abd4b41099c75fb489237b168a6a68b5c8ac53df99c3ba6e301d47b8e1"
+  },
+  "routinePage.history": {
+    "en": "History",
+    "zh-CN": "历史记录",
+    "reviewedEnglishHash": "0e769600933790607b2a13b33ddfade0fa17810eb62c3b28ee23e59516516491"
+  },
+  "routinePage.ignoringEvents": {
+    "en": "Ignoring events",
+    "zh-CN": "正在忽略事件",
+    "reviewedEnglishHash": "80e326b275a7861782e10aeedde4d0de091aa448c0115ef1dda82d9ca34f6f8f"
+  },
+  "routinePage.instructions": {
+    "en": "Instructions",
+    "zh-CN": "指令",
+    "reviewedEnglishHash": "934652dce41d62d3c9ff34b2c5e44e3addaedc67d6137328a9fe75a63c51dbac"
+  },
+  "routinePage.instructionsCopied": {
+    "en": "Instructions copied",
+    "zh-CN": "已复制指令",
+    "reviewedEnglishHash": "3868e6c639803081d403d28fcf9ffead24bbc2c4de53441b3a1a8698d63f0a9a"
+  },
+  "routinePage.loadingTasks": {
+    "en": "Loading tasks…",
+    "zh-CN": "正在加载任务…",
+    "reviewedEnglishHash": "9ae9f7d835d95a2cf1362c130da3a0ebacae4331dbb431e60e1735477591bf7b"
+  },
+  "routinePage.managedBy": {
+    "en": "Managed by {{name}}",
+    "zh-CN": "由 {{name}} 托管",
+    "reviewedEnglishHash": "857e630570ad0a42c76d322e18d6443e18085fd098c24218e81a00a473351c90"
+  },
+  "routinePage.moreActionsAria": {
+    "en": "More routine actions",
+    "zh-CN": "更多例行任务操作",
+    "reviewedEnglishHash": "42b3fa2b0b3c567154948c4a68eb8589872126ec13b6c4fdff5a94fb872ac03b"
+  },
+  "routinePage.nextRunDated": {
+    "en": "{{day}} at {{time}}",
+    "zh-CN": "{{day}} {{time}}",
+    "reviewedEnglishHash": "c04cb6147427e45e5293413f3a9308e0e8d986b248f05a292573c0ea723ca13f"
+  },
+  "routinePage.nextRunToday": {
+    "en": "today at {{time}}",
+    "zh-CN": "今天 {{time}}",
+    "reviewedEnglishHash": "bf89bf671c73aa1ed91fd9e248bd65ea2467ac3af9ea75c8ec90ed099eb1ef8c"
+  },
+  "routinePage.nextRunTomorrow": {
+    "en": "tomorrow at {{time}}",
+    "zh-CN": "明天 {{time}}",
+    "reviewedEnglishHash": "9cc4a162effb3033302f8e06901250d2cb403a488b3a3aeb9546a630967bec9a"
+  },
+  "routinePage.noInstructions": {
+    "en": "No instructions yet. The agent only gets the title.",
+    "zh-CN": "暂无指令，智能体只会收到标题。",
+    "reviewedEnglishHash": "557482681be95a98f7642accf1c26bdf95d3627499048d4ed59a1b9a39606fcb"
+  },
+  "routinePage.noOneYet": {
+    "en": "No one yet",
+    "zh-CN": "暂无",
+    "reviewedEnglishHash": "34e9544e35744ed1e8786d28a89c5c153f7e3373ab78b6718fa005c7a01ddaf5"
+  },
+  "routinePage.noTasksEmpty": {
+    "en": "No tasks yet. Each run creates a task here.",
+    "zh-CN": "暂无任务，每次运行都会在此创建一个任务。",
+    "reviewedEnglishHash": "2eca68f773fa289fe2780ddd2d07f397e6cc063599ab87a06531f1671b21c81d"
+  },
+  "routinePage.noTasksNextRun": {
+    "en": "No tasks yet. The first one starts {{when}}.",
+    "zh-CN": "暂无任务，首次运行将于 {{when}} 开始。",
+    "reviewedEnglishHash": "3cdfda0608adc9a9b4edf14380ca19ab14562c3060c78ef582ca9a75ffaf5edc"
+  },
+  "routinePage.openTriggerAria": {
+    "en": "Open {{title}}",
+    "zh-CN": "打开 {{title}}",
+    "reviewedEnglishHash": "3df95766b5b681e0f41d3a7c4e69aef1332deaad72ed2c655073fc623f0ba302"
+  },
+  "routinePage.pauseRoutineAria": {
+    "en": "Pause this routine",
+    "zh-CN": "暂停此例行任务",
+    "reviewedEnglishHash": "ab78361c2ad20dea35c5212139fcb0ddba8481853b29c5bf9b285ecdf723db3d"
+  },
+  "routinePage.pausedNotice.both": {
+    "en": "Scheduled runs are skipped and webhook events are ignored until this routine is on.",
+    "zh-CN": "开启此例行任务前，定时运行将被跳过且 Webhook 事件将被忽略。",
+    "reviewedEnglishHash": "3f7c3ca673c856ce983fabe4ad6fceb59ec2db3e11c1c9b323a45369f27592ad"
+  },
+  "routinePage.pausedNotice.schedule": {
+    "en": "Scheduled runs are skipped until this routine is on.",
+    "zh-CN": "开启此例行任务前，定时运行将被跳过。",
+    "reviewedEnglishHash": "608c6aed77dbcecedb0f4b01849c71d985073b0875393a032cc6e6dd547a681a"
+  },
+  "routinePage.pausedNotice.webhooks": {
+    "en": "Webhook events are ignored until this routine is on. The sending app gets an error.",
+    "zh-CN": "开启此例行任务前，Webhook 事件将被忽略，发送方应用会收到错误。",
+    "reviewedEnglishHash": "c02c1627c3ffb6523340de3cbd672ac60d4228e85c360e7433a103c7f896f513"
+  },
+  "routinePage.removeSchedule": {
+    "en": "Remove schedule",
+    "zh-CN": "移除计划",
+    "reviewedEnglishHash": "55a702c6cb961c78d6eeb11cc2654a5a2120f7bdb6d0c835df2cf0858b30070d"
+  },
+  "routinePage.repeats": {
+    "en": "Repeats",
+    "zh-CN": "重复规则",
+    "reviewedEnglishHash": "92ee0233f01396ac4f4a0ebf81277a72915fde9837a042a70ad568c26f92ad15"
+  },
+  "routinePage.responsibility": {
+    "en": "Responsibility",
+    "zh-CN": "职责",
+    "reviewedEnglishHash": "c91217be093ab3d9bc1ce3917ed89c8c74d60bada735eea6ca2fa9fb9c3931a3"
+  },
+  "routinePage.restoreRoutine": {
+    "en": "Restore routine",
+    "zh-CN": "恢复例行任务",
+    "reviewedEnglishHash": "e8a9e693b19e3e95ecd581ae6e1a0974b472f84bc485128a2739ec62bd62e92b"
+  },
+  "routinePage.runRule.alwaysEnqueue": {
+    "en": "Queues every run, even while one is still working",
+    "zh-CN": "即使已有运行正在执行，也将每次运行加入队列",
+    "reviewedEnglishHash": "3b02200c0a49b2c13c5bc82b6be9a2c0669dc92ce8e2ae3bad72201d066bba5e"
+  },
+  "routinePage.runRule.catchUp": {
+    "en": "Catches up on runs missed while paused",
+    "zh-CN": "恢复后补跑暂停期间错过的运行",
+    "reviewedEnglishHash": "0b12975df49e7d63ba6bd388b9736f1b515a5e87688b9da6cbc6740791b7809f"
+  },
+  "routinePage.runRule.requireActivity": {
+    "en": "Skips scheduled runs when nothing changed",
+    "zh-CN": "若无变更，则跳过定时运行",
+    "reviewedEnglishHash": "9b475bdc377eac15bb25e11f4ad1d72f6077b04e00e515c31f0110b728c09969"
+  },
+  "routinePage.runRule.requireActivityProject": {
+    "en": "Skips scheduled runs when nothing changed in its project",
+    "zh-CN": "若所属项目无变更，则跳过定时运行",
+    "reviewedEnglishHash": "346a9a6f520d86fecd9c0b45340b788048973badf4665061d9dbd2ff6f4f6ae6"
+  },
+  "routinePage.runRule.skipIfActive": {
+    "en": "Skips a run while one is still working",
+    "zh-CN": "当仍有运行正在执行时跳过本次运行",
+    "reviewedEnglishHash": "f36d2706ab0cbd83f7920c203ac371aeb9894a9a563a1ea2c822612bb52e57e3"
+  },
+  "routinePage.runRules": {
+    "en": "Run rules",
+    "zh-CN": "运行规则",
+    "reviewedEnglishHash": "d494a6922d5f33736bfe72c061f5f634c947b004723133178b4bebb26aa187d3"
+  },
+  "routinePage.saveSchedule": {
+    "en": "Save schedule",
+    "zh-CN": "保存计划",
+    "reviewedEnglishHash": "387f355f83e2679c18a587ad4a913919e525160286023f5b0f05c6ef3840d807"
+  },
+  "routinePage.showAll": {
+    "en": "Show all",
+    "zh-CN": "显示全部",
+    "reviewedEnglishHash": "2150d8df37e489573fb8f0f19ef89d2eda2ba4b49b3beb36333e5096a99a6dc0"
+  },
+  "routinePage.showLess": {
+    "en": "Show less",
+    "zh-CN": "收起",
+    "reviewedEnglishHash": "94ea9b1d33a02975ea6b71d6cf87d461a48de07869c047b5daeb1654e9d539f8"
+  },
+  "routinePage.standingCheck": {
+    "en": "Standing check",
+    "zh-CN": "常规检查",
+    "reviewedEnglishHash": "45d32d44264c89da0688b42234b1cfcb85623a3ad01754405f5d1bfd10bba743"
+  },
+  "routinePage.standingCheckDescription": {
+    "en": "The agent carries out these instructions each time it wakes up and reports what it found. It never creates a task by itself.",
+    "zh-CN": "智能体每次唤醒时都会执行这些指令并汇报结果，不会自行创建新任务。",
+    "reviewedEnglishHash": "faecf0a41d453714d173df61fed5509e7648f0bd25b9f12aa33baa9f3a806d39"
+  },
+  "routinePage.standingCheckDetail": {
+    "en": "Each time the agent wakes up",
+    "zh-CN": "每次智能体唤醒时检查",
+    "reviewedEnglishHash": "2e9e2dde9414c3582e46ef4a7bc2685bcc7ed4683b36764d0c079958fd0b7ca5"
+  },
+  "routinePage.statusDetail.archived": {
+    "en": "No longer runs",
+    "zh-CN": "不再运行",
+    "reviewedEnglishHash": "a15beeb37f7d83ab8c08ac15ab5b7c42e122b632676a7c822b5654d86c064ca0"
+  },
+  "routinePage.statusDetail.manual": {
+    "en": "Only runs when you start it",
+    "zh-CN": "仅在你手动启动时运行",
+    "reviewedEnglishHash": "67e1bea1718c6521592184cd5645e6f16f323fd0669fb807eb1e477301170c37"
+  },
+  "routinePage.statusDetail.nextRun": {
+    "en": "Next run {{when}}",
+    "zh-CN": "下次运行：{{when}}",
+    "reviewedEnglishHash": "e2dc3cb22d51450ccae4fb0038466920a04d67578f46e08af04f00d9fef28bc1"
+  },
+  "routinePage.statusDetail.paused": {
+    "en": "Run now still works",
+    "zh-CN": "仍可立即运行",
+    "reviewedEnglishHash": "6f9ff76b85c9ff78fd7750b4fb2ee9fa3265338835f86a21b11a848a16033563"
+  },
+  "routinePage.statusDetail.standingCheck": {
+    "en": "Checked each time the agent wakes up",
+    "zh-CN": "每次智能体唤醒时检查",
+    "reviewedEnglishHash": "5030eb37a9e14c5643d1d87b50e4587c745365c09596b64261a349603fd4a2f6"
+  },
+  "routinePage.statusDetail.webhook": {
+    "en": "Runs when a webhook arrives",
+    "zh-CN": "收到 Webhook 时运行",
+    "reviewedEnglishHash": "c6af32bcc22e348e1496d8e46029d6d3b65fc93b0836da6935175fd6008f69a6"
+  },
+  "routinePage.tasksCreatedLabel": {
+    "en": "Tasks created by this routine",
+    "zh-CN": "此例行任务创建的任务",
+    "reviewedEnglishHash": "43f0e92a5dacd7e4abc33ce5c23fe6fe1abd77e340c49eea60981c5471457c9a"
+  },
+  "routinePage.throughProject": {
+    "en": "Through {{project}}",
+    "zh-CN": "通过 {{project}}",
+    "reviewedEnglishHash": "5f3fbcadf9c6c87d91ef21ffdc0a53aac0e6c58b8e51cbe222860b7f371e2901"
+  },
+  "routinePage.timesInTimezone": {
+    "en": "Times are in {{timezone}}.",
+    "zh-CN": "时间按 {{timezone}} 时区显示。",
+    "reviewedEnglishHash": "8cd78f8692b3f44f465a77f87c71de3ac4d80336f0ef707b5bb1d945db943264"
+  },
+  "routinePage.toTurnOnSuffix": {
+    "en": "to turn this routine on.",
+    "zh-CN": "以启用此例行任务。",
+    "reviewedEnglishHash": "d462a86f42705b735d06d6ba93103554079ff44c5169ccecf83acedf6749378f"
+  },
+  "routinePage.triggerRemoved": {
+    "en": "{{title}} removed.",
+    "zh-CN": "已移除 {{title}}。",
+    "reviewedEnglishHash": "69117902a71a9403c6aa04161bef2d8de8ea1d9f5488813de2d542704fb252b6"
+  },
+  "routinePage.turnOnRoutineAria": {
+    "en": "Turn this routine on",
+    "zh-CN": "开启此例行任务",
+    "reviewedEnglishHash": "6b588c1ef2dece6c63394a46af65d4dd6e420e56a48ec05502576bc1429762c3"
+  },
+  "routinePage.usuallyValue": {
+    "en": "Usually {{value}}",
+    "zh-CN": "通常为 {{value}}",
+    "reviewedEnglishHash": "81a5ce45184db762f620babfba6d0a63ca512dd4656caf41d3c8f02fe8e16a6d"
+  }
+}

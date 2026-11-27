@@ -615,7 +615,8 @@ function TaskSidePanelForScope({
   useEffect(() => {
     if (activeTab) return;
     window.requestAnimationFrame(() => {
-      bodyRef.current?.querySelector<HTMLInputElement>('input[aria-label="Search tabs and resources…"]')?.focus();
+      const searchLabel = translateInstant("sidePanel.searchPlaceholder", { defaultValue: "Search tabs and resources…" });
+      bodyRef.current?.querySelector<HTMLInputElement>(`input[aria-label="${searchLabel}"], input[cmdk-input]`)?.focus();
     });
   }, [activeTab]);
 
@@ -703,7 +704,7 @@ function TaskSidePanelForScope({
       ...(planDocument ? [{
         id: "document:plan",
         label: documentDisplayTitle(planDocument),
-        description: `Revision ${planDocument.latestRevisionNumber ?? 1}`,
+        description: translateInstant("taskSidePanel.revision", { revision: planDocument.latestRevisionNumber ?? 1, defaultValue: `Revision ${planDocument.latestRevisionNumber ?? 1}` }),
         icon: <Lightbulb />,
         alreadyOpen: controller.tabs.some((tab) => tab.id === "document:plan"),
       }] : []),
@@ -713,7 +714,7 @@ function TaskSidePanelForScope({
         .map((document) => ({
           id: `document:${document.key}`,
           label: documentDisplayTitle(document),
-          description: `Revision ${document.latestRevisionNumber ?? 1}`,
+          description: translateInstant("taskSidePanel.revision", { revision: document.latestRevisionNumber ?? 1, defaultValue: `Revision ${document.latestRevisionNumber ?? 1}` }),
           icon: <FileText />,
           alreadyOpen: controller.tabs.some((tab) => tab.id === `document:${document.key}`),
         })),
@@ -739,7 +740,7 @@ function TaskSidePanelForScope({
         label: translateInstant("Recent workspace files"),
         items: recentItems,
         loading: recentFilesQuery.isLoading,
-        error: recentFilesView.kind === "error" ? "Recent files are temporarily unavailable." : null,
+        error: recentFilesView.kind === "error" ? translateInstant("taskSidePanel.recentFilesUnavailable", { defaultValue: "Recent files are temporarily unavailable." }) : null,
       });
     }
     return sections;

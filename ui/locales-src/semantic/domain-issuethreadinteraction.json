@@ -44,6 +44,11 @@
     "zh-CN": "已应用且无法撤销。其余项目已取消。",
     "reviewedEnglishHash": "360a2fec19eba1b092b330e1961a7a9ed291181e6040668b947ba75ab5efdec8"
   },
+  "issueThreadInteraction.alwaysAllowedSuffix": {
+    "en": " · Always allowed",
+    "zh-CN": " · 始终允许",
+    "reviewedEnglishHash": "b2f63ebe84ae46f383cdbb0972afa28948463fbcef8040a73ea53ba0776ce8d2"
+  },
   "issueThreadInteraction.answersSubmitted": {
     "en": "Answers submitted",
     "zh-CN": "答案已提交",
@@ -289,6 +294,36 @@
     "zh-CN": "发送给 {{name}}",
     "reviewedEnglishHash": "eca307bbb7592a8f1db3cc14ce94c733db576fe1a83c399e0c560833512451fe"
   },
+  "issueThreadInteraction.github.accessNeededBody": {
+    "en": "This GitHub connection cannot access the requested account or repository. Check the connected account and Paperclip’s repository access, then ask the agent to continue.",
+    "zh-CN": "此 GitHub 连接无法访问请求的账户或仓库。请检查已连接的账户和 Paperclip 的仓库访问权限，然后让智能体继续。",
+    "reviewedEnglishHash": "d1d43d1381654aa1ccf9b8260f1794d6a8fd703f71247345c78fa34f8f6b8325"
+  },
+  "issueThreadInteraction.github.accessNeededTitle": {
+    "en": "GitHub access needed",
+    "zh-CN": "需要 GitHub 访问权限",
+    "reviewedEnglishHash": "c3c912a124a58cbbf000fa0909f037e711e902a0153018a87694ba20e92fc924"
+  },
+  "issueThreadInteraction.github.appSuspendedBody": {
+    "en": "The Paperclip GitHub App installation for this account or organization is suspended. Ask an administrator to unsuspend it on GitHub, refresh access on the Permissions page, then ask the agent to continue.",
+    "zh-CN": "此账户或组织的 Paperclip GitHub App 安装已被暂停。请联系管理员在 GitHub 上解除暂停，在“权限”页面刷新访问权限，然后让智能体继续。",
+    "reviewedEnglishHash": "3d4be94ab7e1d0eb8e6ca8841b51d4deebdbe62d20d13fee401c0347b7dad3e7"
+  },
+  "issueThreadInteraction.github.appSuspendedTitle": {
+    "en": "GitHub App installation suspended",
+    "zh-CN": "GitHub App 安装已暂停",
+    "reviewedEnglishHash": "bfa822b0abd7db3f33676b173ce1cc4a93bd69aedac613935c9f5bb2c4d3229a"
+  },
+  "issueThreadInteraction.github.repoOutsideAppBody": {
+    "en": "The Paperclip GitHub App is not installed on this repository’s organization or account, so refreshing access cannot grant write permission here. Post on GitHub directly, use a personal access token connection, or have an administrator of that organization install the Paperclip GitHub App.",
+    "zh-CN": "此仓库所属的组织或账户尚未安装 Paperclip GitHub App，因此刷新访问权限无法在此授予写入权限。请直接在 GitHub 上发布、改用个人访问令牌连接，或联系该组织管理员安装 Paperclip GitHub App。",
+    "reviewedEnglishHash": "90bfa49e82e164c8d7e06a71e1095338150166d6d1bf60a4f6a01197cd926fe1"
+  },
+  "issueThreadInteraction.github.repoOutsideAppTitle": {
+    "en": "Repository outside GitHub App access",
+    "zh-CN": "仓库不在 GitHub App 访问范围内",
+    "reviewedEnglishHash": "01aef05ab7c9337ded8aad42d8e6e558626dfdc8f16520a5529cb43667465105"
+  },
   "issueThreadInteraction.grantAccessToConnection": {
     "en": "Grant {{agent}} access to “{{connection}}”?",
     "zh-CN": "授予 {{agent}} 对“{{connection}}”的访问权限？",
@@ -305,6 +340,11 @@
     "reviewedEnglishHash": "c39059141ced2ea71d38d312b6bdaa6da1da299820b4021169382a2e54f57672"
   },
   "issueThreadInteraction.includeTask": {
+    "en": "Include {{title}}",
+    "zh-CN": "包含 {{title}}",
+    "reviewedEnglishHash": "aa46c47532ca43356aa878ae45b4fec36511e6918c49e41b9c43dc6727bdb362"
+  },
+  "issueThreadInteraction.includeTaskAria": {
     "en": "Include {{title}}",
     "zh-CN": "包含 {{title}}",
     "reviewedEnglishHash": "aa46c47532ca43356aa878ae45b4fec36511e6918c49e41b9c43dc6727bdb362"
@@ -824,6 +864,11 @@
     "zh-CN": "可选择项",
     "reviewedEnglishHash": "aaabfe0b43a1950b78db9798bf11c8630080670e625770cdb26e76d1fb29c97e"
   },
+  "issueThreadInteraction.selectableOptionsAria": {
+    "en": "Selectable options",
+    "zh-CN": "可选项",
+    "reviewedEnglishHash": "aaabfe0b43a1950b78db9798bf11c8630080670e625770cdb26e76d1fb29c97e"
+  },
   "issueThreadInteraction.selected": {
     "en": "Selected",
     "zh-CN": "已选",
@@ -874,10 +919,20 @@
     "zh-CN": "已回答",
     "reviewedEnglishHash": "665590354e719bcf6610c39fe617cf8cf8109e96a59e64c73a41a028b74369f9"
   },
+  "issueThreadInteraction.status.approvedResumeFailed": {
+    "en": "Approved — agent resume failed",
+    "zh-CN": "已批准 — 智能体恢复失败",
+    "reviewedEnglishHash": "03dbaee78a06fbac44dd3da8531118950bb5d604af2bd900d08a8bbe6f7ae226"
+  },
   "issueThreadInteraction.status.cancelled": {
     "en": "Cancelled",
     "zh-CN": "已取消",
     "reviewedEnglishHash": "d353a99eb4556847ceeb3c306ac886cf6b4fa13043eb1864b9aeb0607fd5f2cc"
+  },
+  "issueThreadInteraction.status.changesRequested": {
+    "en": "Changes requested",
+    "zh-CN": "已请求修改",
+    "reviewedEnglishHash": "10a92a8ad3ee5891bd0733ce52bd7c8d94825077fa79a593f711cba61e768478"
   },
   "issueThreadInteraction.status.expired": {
     "en": "Expired",
@@ -933,6 +988,11 @@
     "en": "Suggested tasks accepted",
     "zh-CN": "已接受建议任务",
     "reviewedEnglishHash": "1b2ba6ca6b4a55643dd73afe22d93755fc7fc69f74328551d3e40d8f1914a02e"
+  },
+  "issueThreadInteraction.suggestedTasksAria": {
+    "en": "Suggested tasks",
+    "zh-CN": "建议任务",
+    "reviewedEnglishHash": "5addd6fff8dd7969a12d449ba08a6d85be3de71d4b66f8797768be5f7e9da9aa"
   },
   "issueThreadInteraction.suggestionRejected": {
     "en": "Suggestion rejected",
@@ -999,6 +1059,16 @@
     "zh-CN": "批准请求",
     "reviewedEnglishHash": "9ed200aeb78c5b9b70da66f07ed48c545ad9261e06a29e4b3a3a2936a9454294"
   },
+  "issueThreadInteraction.toolAction.approvedRunning": {
+    "en": "Approved · Running…",
+    "zh-CN": "已批准 · 运行中…",
+    "reviewedEnglishHash": "2a0bae3d993d8f300188bb4005b30fe2eab33acb10431d673ec96adb732ded2d"
+  },
+  "issueThreadInteraction.toolAction.approvedSignInNeeded": {
+    "en": "Approved · Sign-in needed",
+    "zh-CN": "已批准 · 需要登录",
+    "reviewedEnglishHash": "a7637ad6d78d1cff41e16b99e0fd1e94cad2d4a35b348c34610630a4a549be27"
+  },
   "issueThreadInteraction.toolAction.approving": {
     "en": "Approving…",
     "zh-CN": "正在批准…",
@@ -1028,6 +1098,11 @@
     "en": "Optional: tell the agent why, so it doesn't retry the same call.",
     "zh-CN": "可选：向智能体说明原因，以免其重试同一调用。",
     "reviewedEnglishHash": "631d356e7646cb7bf9fd44592a842ff816ae6aa118150c7e34e0930343adfbbd"
+  },
+  "issueThreadInteraction.toolAction.declined": {
+    "en": "Declined",
+    "zh-CN": "已拒绝",
+    "reviewedEnglishHash": "dce083a2c47ffdc44982315487afb6e121e96cef2df6dc1ec11bac7ab5052142"
   },
   "issueThreadInteraction.toolAction.declinedBody": {
     "en": "The action did not run. {{requestedBy}} was resumed with your reason and told not to retry the same call.",
@@ -1093,6 +1168,11 @@
     "en": "Expired at {{when}} — no one responded within 60 minutes",
     "zh-CN": "已于 {{when}} 过期 - 60 分钟内无人响应",
     "reviewedEnglishHash": "bc85756299d883add845a18b8730ff245b370eaf76fa9767c7bf25a56151dc80"
+  },
+  "issueThreadInteraction.toolAction.failed": {
+    "en": "Execution failed",
+    "zh-CN": "执行失败",
+    "reviewedEnglishHash": "19e5e642387bbd0d288840807f4f69e6164d8d821bff5d492b7e9601c48f7245"
   },
   "issueThreadInteraction.toolAction.failedBody": {
     "en": "You approved it and it ran, but the connector returned an error. {{requestedBy}} was resumed with this error.",
@@ -1179,6 +1259,11 @@
     "zh-CN": "无法提交，请重试。",
     "reviewedEnglishHash": "41322b9f8c170ab4deb76134f64c8a165292a29b65052491f0cddee90d73b722"
   },
+  "issueThreadInteraction.toolAction.succeeded": {
+    "en": "Succeeded",
+    "zh-CN": "已成功",
+    "reviewedEnglishHash": "6d9a6f97a5fdaf3b90a0cf02e0b43d8b7ec1d05c0e4718e02ddd1c5b450e5b39"
+  },
   "issueThreadInteraction.toolAction.technicalDetails": {
     "en": "Technical details",
     "zh-CN": "技术详情",
@@ -1203,6 +1288,11 @@
     "en": "Your approval is saved. Reconnect the app to continue. Paperclip will check the account and action again before it runs.",
     "zh-CN": "审批已保存。请重新连接应用后继续；系统会在运行前再次检查账户和操作。",
     "reviewedEnglishHash": "cabd5e3bd0cd70600a35f449e971b514ff1cb77638feca0c0717d22499f2c1cd"
+  },
+  "issueThreadInteraction.toolAction.waitingForApproval": {
+    "en": "Waiting for approval",
+    "zh-CN": "等待审批",
+    "reviewedEnglishHash": "10c5739b95bdf361bfc01dfe5c095102bef36b3e27002327192d0c6a368aeb22"
   },
   "issueThreadInteraction.toolApprovalRequested": {
     "en": "Tool approval requested",
@@ -1316,7 +1406,7 @@
   },
   "issueThreadInteraction.verdict.defer": {
     "en": "Defer",
-    "zh-CN": "稍后处理",
+    "zh-CN": "推迟",
     "reviewedEnglishHash": "3fb8f982624e36ea2511f3d67be559dc092debf887ad4a29b4cabcfdeae01b96"
   },
   "issueThreadInteraction.verdict.deferred": {
@@ -1366,7 +1456,7 @@
   },
   "issueThreadInteraction.verdict.itemActionAria": {
     "en": "{{action}} this item",
-    "zh-CN": "对此项目执行“{{action}}”",
+    "zh-CN": "对此项执行“{{action}}”",
     "reviewedEnglishHash": "8253a07f8dcb438539b604357e08b1b5534390dd23b5752a7b6e023b57f34c6a"
   },
   "issueThreadInteraction.verdict.itemsToReview": {
@@ -1392,6 +1482,11 @@
   "issueThreadInteraction.verdict.progress": {
     "en": "{{decided}} of {{total}} decided",
     "zh-CN": "已决定 {{decided}} / {{total}}",
+    "reviewedEnglishHash": "4a15c2fc23b65fa627d6c1c2572862104e25f42e14dcf0a8952077b527711a96"
+  },
+  "issueThreadInteraction.verdict.progressAria": {
+    "en": "{{decided}} of {{total}} decided",
+    "zh-CN": "已决定 {{decided}} / {{total}} 项",
     "reviewedEnglishHash": "4a15c2fc23b65fa627d6c1c2572862104e25f42e14dcf0a8952077b527711a96"
   },
   "issueThreadInteraction.verdict.readyToSubmit": {

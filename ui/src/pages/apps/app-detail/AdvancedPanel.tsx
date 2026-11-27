@@ -246,7 +246,7 @@ export function ReconnectCard({
       <div className="min-w-0">
         <h2 className="text-sm font-semibold text-amber-900 dark:text-amber-100">
           {methodUnavailable
-            ? "Connection no longer supported"
+            ? translateInstant("apps.detail.advanced.connectionUnsupported.title", { defaultValue: "Connection no longer supported" })
             : oauth
               ? translateInstant(
                   "apps.detail.advanced.reconnectCard.oauthTitle",
@@ -255,7 +255,7 @@ export function ReconnectCard({
         </h2>
         <p className="mt-0.5 text-sm text-amber-800 dark:text-amber-200">
           {methodUnavailable
-            ? "Add a supported connection from Connectors, then remove this connection."
+            ? translateInstant("apps.detail.advanced.connectionUnsupported.description", { defaultValue: "Add a supported connection from Connectors, then remove this connection." })
             : connection.healthMessage?.trim() ||
               (oauth
                 ? translateInstant(
@@ -270,7 +270,7 @@ export function ReconnectCard({
         {!canReconnect ? (
           <p className="text-sm text-amber-800 dark:text-amber-200">
             {reconnectUnavailableMessage ??
-              "You don't have permission to reconnect this identity."}
+              translateInstant("apps.detail.advanced.noReconnectPermission", { defaultValue: "You don't have permission to reconnect this identity." })}
           </p>
         ) : methodUnavailable ? (
           <Button size="sm" variant="outline" asChild>
@@ -410,7 +410,7 @@ function ReconnectForm({
           ),
           body:
             result.connection.healthMessage?.trim() ||
-            "That key didn't check out. Try another.",
+            translateInstant("apps.detail.advanced.reconnect.stillFailing.body", { defaultValue: "That key didn't check out. Try another." }),
           tone: "error",
         });
       }
@@ -798,8 +798,8 @@ export function connectionAddress(connection: ToolConnection): string {
   const value = config.url ?? config.endpoint ?? config.remoteUrl;
   if (typeof value === "string" && value.trim().length > 0)
     return redactUrlSecrets(value);
-  if (connection.transport === "local_stdio") return "Local command";
-  return "Not set";
+  if (connection.transport === "local_stdio") return translateInstant("apps.detail.advanced.localCommand", { defaultValue: "Local command" });
+  return translateInstant("Not set");
 }
 
 export { connectionTransportLabel };

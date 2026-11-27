@@ -298,11 +298,11 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
   const applicationLabel = useMemo(() => {
     switch (skillSnapshot?.mode) {
       case "persistent":
-        return "Kept in workspace";
+        return translateInstant("agentSkills.mode.keptInWorkspace", { defaultValue: "Kept in workspace" });
       case "ephemeral":
-        return "Applied on next run";
+        return translateInstant("agentSkills.mode.appliedOnNextRun", { defaultValue: "Applied on next run" });
       case "unsupported":
-        return "Tracked only";
+        return translateInstant("agentSkills.mode.trackedOnly", { defaultValue: "Tracked only" });
       default:
         return null;
     }
@@ -315,12 +315,12 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
       typeof agent.adapterConfig.agent === "string" &&
       agent.adapterConfig.agent === "custom"
     ) {
-      return "Paperclip cannot manage skills for custom ACP commands yet.";
+      return translateInstant("agentSkills.unsupported.customAcpx", { defaultValue: "Paperclip cannot manage skills for custom ACP commands yet." });
     }
     if (agent.adapterType === "openclaw_gateway") {
-      return "Paperclip cannot manage OpenClaw skills here. Visit your OpenClaw instance to manage this agent's skills.";
+      return translateInstant("agentSkills.unsupported.openclawGateway", { defaultValue: "Paperclip cannot manage OpenClaw skills here. Visit your OpenClaw instance to manage this agent's skills." });
     }
-    return "Paperclip cannot manage skills for this adapter yet. Manage them in the adapter directly.";
+    return translateInstant("agentSkills.unsupported.generic", { defaultValue: "Paperclip cannot manage skills for this adapter yet. Manage them in the adapter directly." });
   }, [agent.adapterConfig.agent, agent.adapterType, unsupported]);
 
   const hasUnsavedChanges = !sameSkillSelection(skillDraft, lastSavedSkills);
@@ -357,7 +357,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
       && row.key === PAPERCLIP_CORE_SKILL_KEY;
     const rowDisabled = unsupported || legacyPaperclipBlocked;
     const rowDisabledReason = legacyPaperclipBlocked
-      ? "Paperclip Runner uses native semantic coordination and cannot attach the legacy Paperclip operational skill."
+      ? translateInstant("agentSkills.legacyPaperclipBlocked", { defaultValue: "Paperclip Runner uses native semantic coordination and cannot attach the legacy Paperclip operational skill." })
       : unsupportedMessage;
     const showReleasePicker =
       releasePickerActive && variant === "enabled" && row.key === PAPERCLIP_CORE_SKILL_KEY;
@@ -404,7 +404,12 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium text-foreground">
-            {enabledRows.length} {translateInstant("issueCommon.of")}{" "}{libraryRows.length} {translateInstant("routineHistory.enabled")}</span>
+            {translateInstant("agentSkills.enabledOfTotal", {
+              enabled: enabledRows.length,
+              total: libraryRows.length,
+              defaultValue: "{{enabled}} of {{total}} enabled",
+            })}
+          </span>
           {applicationLabel ? (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -413,7 +418,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
                 </span>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="max-w-xs">
-                {unsupported ? unsupportedMessage : MATERIALIZATION_NOTE}
+                {unsupported ? unsupportedMessage : translateInstant("agentSkills.materializationNote", { defaultValue: MATERIALIZATION_NOTE })}
               </TooltipContent>
             </Tooltip>
           ) : null}
@@ -422,7 +427,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
             unsaved={hasUnsavedChanges}
             error={syncSkills.isError && hasUnsavedChanges} // query-error-ok: syncSkills is a save mutation result, not a query read
           />
-          <div data-canonical-toolbar="agent-skills" role="toolbar" aria-label="Agent skills controls" className="ml-auto flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <div data-canonical-toolbar="agent-skills" role="toolbar" aria-label={translateInstant("agentSkills.toolbarAria", { defaultValue: "Agent skills controls" })} className="ml-auto flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
             <div className="relative w-full sm:w-auto">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -501,7 +506,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
                 {search
                   ? translateInstant("agentSkills.noAvailableSearchResults")
                   : libraryEmpty
-                    ? "Import skills into the organization library to enable them here."
+                    ? translateInstant("agentSkills.emptyImportPrompt", { defaultValue: "Import skills into the organization library to enable them here." })
                     : translateInstant("agentSkills.allLibrarySkillsEnabled")}
               </SectionEmpty>
             )}

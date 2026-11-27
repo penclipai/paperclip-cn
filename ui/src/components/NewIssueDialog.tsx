@@ -660,18 +660,26 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
       const prefix = (companies.find((company) => company.id === companyId)?.issuePrefix ?? "").trim();
       const issueRef = issue.identifier ?? issue.id;
       const openIssueAction = prefix
-        ? { label: `Open ${issueRef}`, href: `/${prefix}/issues/${issueRef}` }
+        ? { label: translateInstant("newIssue.uploadWarnings.openIssue", { issueRef, defaultValue: "Open {{issueRef}}" }), href: `/${prefix}/issues/${issueRef}` }
         : undefined;
       if (failures.length > 0) {
         pushToast({
-          title: `Created ${issueRef} with upload warnings`,
-          body: `${failures.length} staged ${failures.length === 1 ? "file" : "files"} could not be added.`,
+          title: translateInstant("newIssue.uploadWarnings.title", { issueRef, defaultValue: "Created {{issueRef}} with upload warnings" }),
+          body: translateInstant(
+            failures.length === 1 ? "newIssue.uploadWarnings.body_one" : "newIssue.uploadWarnings.body_other",
+            {
+              count: failures.length,
+              defaultValue: failures.length === 1
+                ? "1 staged file could not be added."
+                : "{{count}} staged files could not be added.",
+            },
+          ),
           tone: "warn",
           action: openIssueAction,
         });
       } else {
         pushToast({
-          title: `Created ${issueRef}`,
+          title: translateInstant("newIssue.createdTitle", { issueRef, defaultValue: "Created {{issueRef}}" }),
           tone: "success",
           action: openIssueAction,
         });
@@ -718,7 +726,11 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
     const hasOtherDraft = differentLaunch || (!sameDraft && (titleRef.current.trim() || descriptionRef.current.trim()
       || savedDraft?.title.trim() || savedDraft?.description.trim()));
     if (pending.payload.data.companyId !== effectiveCompanyId || hasOtherDraft) {
-      pushToast({ title: "A task could not be saved", body: "Open New task to recover the saved request.", tone: "warn" });
+      pushToast({
+        title: translateInstant("newIssue.saveFailedTitle", { defaultValue: "A task could not be saved" }),
+        body: translateInstant("newIssue.saveFailedBody", { defaultValue: "Open New task to recover the saved request." }),
+        tone: "warn",
+      });
       return;
     }
     if (pending.payload.draft) {
@@ -1259,7 +1271,7 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
     if (request.recovering) {
       const original = request.payload;
       const rejectRecovery = (message: string): never => {
-        setResendError({ title: "Saved request needs attention", body: message, retryable: false });
+        setResendError({ title: translateInstant("newIssue.savedRequestNeedsAttention", { defaultValue: "Saved request needs attention" }), body: message, retryable: false });
         throw new Error(message);
       };
       if (!original) rejectRecovery("The saved request is unavailable. Cancel it before creating another task.");
@@ -1527,7 +1539,7 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
           }
         }}
       >
-        <DialogTitle className="sr-only">{isSubIssueMode ? "New sub-task" : "New task"}</DialogTitle>
+        <DialogTitle className="sr-only">{isSubIssueMode ? translateInstant("newIssue.subIssueTitle", { defaultValue: "New sub-task" }) : translateInstant("newIssue.newTaskTitle", { defaultValue: "New task" })}</DialogTitle>
         <div
           ref={dialogBodyRef}
           className="min-h-0 overflow-y-auto overscroll-contain"
@@ -1578,7 +1590,7 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
                     }
                   },
                 },
-                submitLabel: isSubIssueMode ? "Create sub-task" : "Create task",
+                submitLabel: isSubIssueMode ? translateInstant("newIssue.createSubTaskLabel", { defaultValue: "Create sub-task" }) : translateInstant("newIssue.createTaskLabel", { defaultValue: "Create task" }),
                 canSubmitWithoutBody: Boolean(title.trim()),
                 onSelectFiles: stageFiles,
                 images: stagedFiles.filter(isStagedImage).map(item => ({ id: item.id, name: item.file.name, file: item.file })),
@@ -1590,12 +1602,12 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
                     <div className="mb-3 flex flex-col gap-2 text-xs">
                       {otherCreates.map(item => (
                         <div key={item.idempotencyKey}>
-                          <p role="alert" className="text-sm text-destructive">{item.rejection ? `${item.rejection.title}. ${item.rejection.body}` : "This task is waiting to be saved."}</p>
+                          <p role="alert" className="text-sm text-destructive">{item.rejection ? `${item.rejection.title}. ${item.rejection.body}` : translateInstant("newIssue.waitingToBeSaved", { defaultValue: "This task is waiting to be saved." })}</p>
                           <Button type="button" size="sm" variant="ghost" onClick={() => {
                             if (!titleRef.current.trim() && !descriptionRef.current.trim()) restoreBackgroundCreate(item, item.rejection ?? null);
                             else if (item.idempotencyKey === durableCreate.pending?.idempotencyKey) durableCreate.resendNow();
                             else durableCreate.enqueue(item.payload, item.idempotencyKey);
-                          }}>Retry saved task: {String(item.payload.data.title ?? item.payload.data.description ?? "New task").slice(0, 80)}</Button>
+                          }}>{translateInstant("newIssue.retrySavedTask", { title: String(item.payload.data.title ?? item.payload.data.description ?? translateInstant("newIssue.newTaskTitle", { defaultValue: "New task" })).slice(0, 80), defaultValue: "Retry saved task: {{title}}" })}</Button>
                         </div>
                       ))}
                       {visiblePending && durableCreate.status !== "sending" ? (
@@ -1626,7 +1638,9 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
                             if (awaitingFilesKey && key) clearPendingSend(awaitingFilesKey, key);
                             if (key) discardCreate(key, createRequestRef.current?.payload);
                             createRequestRef.current = null; visibleRequestKey.current = null; setRecoveredCreate(null); setRestoredLaunch(null); setResendError(null);
-                          }}>Cancel saved request</Button> : null}
+                          }}>
+                            {translateInstant("newIssue.cancelSavedRequest", { defaultValue: "Cancel saved request" })}
+                          </Button> : null}
                         </div>
                       ) : null}
                       {hasTitle ? (
@@ -1663,14 +1677,14 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
                   <>
                     {parentPrivacyUnresolved ? (
                       <div role={parentPrivacyError ? "alert" : "status"} className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{parentPrivacyError ? "Couldn't check parent access." : "Checking parent access…"}</span>
+                        <span>{parentPrivacyError ? translateInstant("newIssue.couldNotCheckParentAccess", { defaultValue: "Couldn't check parent access." }) : translateInstant("newIssue.checkingParentAccess", { defaultValue: "Checking parent access…" })}</span>
                         {parentPrivacyError ? <Button variant="ghost" size="sm" onClick={() => void refetchParentPrivacy()}>{translateInstant("Retry")}</Button> : null}
                       </div>
                     ) : null}
                     {worktreeSelectionIncomplete && !worktreesLoading ? (
                       <p role="alert" className="mb-2 text-xs text-destructive">
-                        {worktreesError ? "Couldn't check the selected worktree. Retry in Worktrees or choose New worktree."
-                          : "The selected worktree is no longer available. Choose another worktree or start a new one."}
+                        {worktreesError ? translateInstant("newIssue.couldNotCheckWorktree", { defaultValue: "Couldn't check the selected worktree. Retry in Worktrees or choose New worktree." })
+                          : translateInstant("newIssue.worktreeUnavailable", { defaultValue: "The selected worktree is no longer available. Choose another worktree or start a new one." })}
                       </p>
                     ) : null}
                     {stagedDocuments.length > 0 || stagedAttachments.length > 0 ? (
@@ -1768,10 +1782,17 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
                     {selectedAssigneeAgent?.status === "paused" ? (
                       <div data-testid="new-issue-paused-assignee-note" className="mx-4 mb-2">
                         <InlineBanner tone="warning" icon={PauseCircle} compact>
-                          <span className="font-medium">{selectedAssigneeAgent.name}</span> {translateInstant("is paused and will not start work on this task until it is resumed")}{selectedAssigneeAgent.pauseReason === "import"
-                            ? " — it arrived paused from an organization import"
-                            : ""}
-                          . You can resume it from the task page after creating the task.
+                          <span className="font-medium">{selectedAssigneeAgent.name}</span>{" "}
+                          {translateInstant(
+                            selectedAssigneeAgent.pauseReason === "import"
+                              ? "newIssue.pausedAssigneeNoteImport"
+                              : "newIssue.pausedAssigneeNote",
+                            {
+                              defaultValue: selectedAssigneeAgent.pauseReason === "import"
+                                ? "is paused and will not start work on this task until it is resumed — it arrived paused from an organization import. You can resume it from the task page after creating the task."
+                                : "is paused and will not start work on this task until it is resumed. You can resume it from the task page after creating the task.",
+                            },
+                          )}
                         </InlineBanner>
                       </div>
                     ) : null}
@@ -1801,15 +1822,15 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
                       options={projectOptions}
                       recentOptionIds={recentProjectIds}
                       placeholder={translateInstant("newIssue.project")}
-                      mobileTitle="Select project"
+                      mobileTitle={translateInstant("newIssue.selectProject", { defaultValue: "Select project" })}
                       modal
                       className="h-8 min-w-0 flex-1 gap-1.5 border-0 bg-transparent px-2 text-xs shadow-none hover:bg-accent focus-visible:bg-accent focus-visible:ring-0 sm:max-w-64 sm:flex-none"
                       disabled={submittingRecoveredCreate}
                       triggerDataSlot="new-issue-compact-control"
                       contentStyle={entityPickerViewportStyle}
-                      noneLabel="No project"
+                      noneLabel={translateInstant("newIssue.noProject")}
                       noneAtTop
-                      searchPlaceholder="Search projects..."
+                      searchPlaceholder={translateInstant("newIssue.searchProjects")}
                       emptyMessage={translateInstant("newIssue.noProjectsFound")}
                       onChange={handleProjectChange}
                       renderTriggerValue={(option) =>

@@ -1,12 +1,23 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowUpRight, Check, Plug, TriangleAlert } from "lucide-react";
 import type { ConnectionMethodDef } from "@penclipai/shared";
+import { translateInstant } from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AppLogo } from "./AppLogo";
 import type { PluginTileState } from "./PluginMarketplace";
 
-const AUTH_LABEL: Record<ConnectionMethodDef["auth"], string> = { oauth: "OAuth", api_key: "API key", none: "No sign-in" };
+function authLabel(auth: ConnectionMethodDef["auth"]): string {
+  switch (auth) {
+    case "oauth":
+      return translateInstant("apps.plugins.auth.oauth", { defaultValue: "OAuth" });
+    case "api_key":
+      return translateInstant("apps.plugins.auth.apiKey", { defaultValue: "API key" });
+    case "none":
+      return translateInstant("apps.plugins.auth.none", { defaultValue: "No sign-in" });
+  }
+}
 
 /** The host a connector talks to, when its definition names one. */
 export function pluginHost(methods: readonly ConnectionMethodDef[] | undefined): string | null {
@@ -24,8 +35,8 @@ export function pluginHost(methods: readonly ConnectionMethodDef[] | undefined):
 
 /** Sign-in kinds a connector offers, in the order its definition lists them. */
 export function pluginSignIn(methods: readonly ConnectionMethodDef[] | undefined): string | null {
-  const labels = [...new Set((methods ?? []).map((method) => AUTH_LABEL[method.auth]))];
-  return labels.length > 0 ? labels.join(" or ") : null;
+  const labels = [...new Set((methods ?? []).map((method) => authLabel(method.auth)))];
+  return labels.length > 0 ? labels.join(translateInstant("apps.plugins.auth.orSeparator", { defaultValue: " or " })) : null;
 }
 
 /** A labelled block on the plugin page: a quiet heading with an optional count over one grouped surface. */
@@ -42,13 +53,18 @@ export function PluginGroup({ id, label, count, children }: { id: string; label:
 }
 
 function StatusMark({ state, name }: { state: Exclude<PluginTileState, "available">; name: string }) {
+  const { t } = useTranslation();
   const attention = state === "attention";
   const Icon = attention ? TriangleAlert : Check;
   return (
     <span
       role="img"
-      aria-label={attention ? `${name} needs attention` : `${name} connected`}
-      title={attention ? "Needs attention" : "Connected"}
+      aria-label={attention
+        ? t("apps.plugins.status.needsAttentionAria", { name, defaultValue: "{{name}} needs attention" })
+        : t("apps.plugins.status.connectedAria", { name, defaultValue: "{{name}} connected" })}
+      title={attention
+        ? t("Needs attention")
+        : t("companySettings.customImage.terminalStatus.connected", { defaultValue: "Connected" })}
       className={cn("grid size-7 shrink-0 place-items-center rounded-lg", attention ? "bg-(--status-task-todo)/15 text-(--status-task-icon-todo)" : "bg-(--status-task-done)/15 text-(--status-task-icon-done)")}
     >
       <Icon className="size-4" aria-hidden />
@@ -80,6 +96,7 @@ export function PluginPageHeader({
   docsUrl?: string;
   connect: PluginConnectAction | null;
 }) {
+  const { t } = useTranslation();
   return (
     <header className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-4">
@@ -97,14 +114,14 @@ export function PluginPageHeader({
           {state !== "available" && docsUrl ? (
             <Button asChild variant="ghost">
               <a href={docsUrl} target="_blank" rel="noopener noreferrer">
-                Docs
+                {t("apps.plugins.docs", { defaultValue: "Docs" })}
                 <ArrowUpRight aria-hidden />
               </a>
             </Button>
           ) : null}
           {state === "available" && connect ? (
-            <Button type="button" disabled={connect.disabled} title={connect.title} aria-label={`Connect ${name}`} onClick={connect.onSelect}>
-              Connect
+            <Button type="button" disabled={connect.disabled} title={connect.title} aria-label={t("apps.connect.connectNamedApp", { appName: name, defaultValue: `Connect ${name}` })} onClick={connect.onSelect}>
+              {t("Connect")}
             </Button>
           ) : null}
         </div>
@@ -116,8 +133,10 @@ export function PluginPageHeader({
 
 /** The connector a plugin installs: what it is, where it runs and how it signs in. */
 export function PluginConnector({ name, host, signIn }: { name: string; host: string | null; signIn: string | null }) {
+  const { t } = useTranslation();
+  const connectorLabel = t("apps.plugins.connector", { defaultValue: "Connector" });
   return (
-    <PluginGroup id="plugin-connector-title" label="Connector">
+    <PluginGroup id="plugin-connector-title" label={connectorLabel}>
       <div className="flex min-h-14 items-center gap-3 px-4 py-2.5">
         <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-foreground/5 text-foreground">
           <Plug className="size-4" aria-hidden />
@@ -125,7 +144,7 @@ export function PluginConnector({ name, host, signIn }: { name: string; host: st
         <div className="flex min-w-0 flex-1 flex-col">
           <p className="truncate text-sm font-semibold text-foreground">{name}</p>
           <p className="truncate text-sm text-muted-foreground">
-            Connector{host ? <> · <span className="font-mono text-xs">{host}</span></> : null}
+            {connectorLabel}{host ? <> · <span className="font-mono text-xs">{host}</span></> : null}
           </p>
         </div>
         {signIn ? <span className="shrink-0 text-sm text-muted-foreground">{signIn}</span> : null}
@@ -145,18 +164,19 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
 
 /** Reference facts about a plugin, drawn from its catalog definition. */
 export function PluginInformation({ category, signIn, host, docsUrl }: { category: string; signIn: string | null; host: string | null; docsUrl?: string }) {
+  const { t } = useTranslation();
   return (
-    <PluginGroup id="plugin-information-title" label="Information">
+    <PluginGroup id="plugin-information-title" label={t("apps.plugins.information", { defaultValue: "Information" })}>
       <dl className="flex flex-col divide-y divide-border">
-        <Fact label="Category">{category}</Fact>
-        {signIn ? <Fact label="Sign-in">{signIn}</Fact> : null}
+        <Fact label={t("apps.plugins.category", { defaultValue: "Category" })}>{category}</Fact>
+        {signIn ? <Fact label={t("apps.plugins.signIn", { defaultValue: "Sign-in" })}>{signIn}</Fact> : null}
         {host ? (
-          <Fact label="Server">
+          <Fact label={t("apps.plugins.server", { defaultValue: "Server" })}>
             <span className="truncate font-mono text-xs">{host}</span>
           </Fact>
         ) : null}
         {docsUrl ? (
-          <Fact label="Docs">
+          <Fact label={t("apps.plugins.docs", { defaultValue: "Docs" })}>
             <a href={docsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-w-0 items-center gap-1 underline underline-offset-2">
               <span className="truncate">{docsUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")}</span>
               <ArrowUpRight className="size-3.5 shrink-0" aria-hidden />

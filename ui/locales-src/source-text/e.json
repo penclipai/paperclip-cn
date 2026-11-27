@@ -534,6 +534,11 @@
     "zh-CN": "错误详情",
     "reviewedEnglishHash": "674c0b62eba94a34a9927aa9ec8517ea32bbaee7811afe48073e1956b54045af"
   },
+  "Error details": {
+    "en": "Error details",
+    "zh-CN": "错误详情",
+    "reviewedEnglishHash": "5b546022750c1994cf51ec7577eb6c24917b35dc7e9399f5a721549ef1a8c2fd"
+  },
   "Error reason": {
     "en": "Error reason",
     "zh-CN": "错误原因",
@@ -761,7 +766,7 @@
   },
   "Existing authentication — not managed by Connections": {
     "en": "Existing authentication — not managed by Connections",
-    "zh-CN": "现有身份验证 — 不由 Connections 管理",
+    "zh-CN": "现有身份验证 — 不由“连接”管理",
     "reviewedEnglishHash": "c836e59bd188e034a97b6060d60a8efcb2a7f477c07144e971468d3cf21b1c3d"
   },
   "Existing company:": {
@@ -821,7 +826,7 @@
   },
   "Expand {{label}}": {
     "en": "Expand {{label}}",
-    "zh-CN": "展开 {{label}}",
+    "zh-CN": "展开{{label}}",
     "reviewedEnglishHash": "871d37330dc95a18981b8b792272a93b8904cf4d94cbb294f3d52599bcc199d5"
   },
   "Expand {{name}}": {

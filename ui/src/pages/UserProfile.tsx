@@ -30,6 +30,8 @@ import {
   providerDisplayName,
   relativeTime,
 } from "../lib/utils";
+import { formatIssueActivityAction } from "../lib/activity-format";
+import { translateEntityTypeLabel, translateStatusLabel } from "../lib/i18n-labels";
 import { taskStatusIconProps } from "@/lib/task-status-presentation";
 
 const NO_COMPANY = "__none__";
@@ -67,7 +69,9 @@ function WindowColumn({ stats }: { stats: UserProfileWindowStats }) {
   return (
     <div className="flex min-w-0 flex-col gap-4 border-l border-border pl-5 first:border-l-0 first:pl-0">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">{stats.label}</h2>
+        <h2 className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
+          {translateInstant(`userProfile.window.${stats.key}`, { defaultValue: stats.label })}
+        </h2>
         <span className="text-(length:--text-micro) text-muted-foreground tabular-nums">{completionRate(stats)} {translateInstant("issueCommon.done")}</span>
       </div>
 
@@ -85,7 +89,7 @@ function WindowColumn({ stats }: { stats: UserProfileWindowStats }) {
         <span className="text-right text-foreground">{formatCents(stats.costCents)}</span>
         <span>{translateInstant("Created")}</span>
         <span className="text-right text-foreground">{formatNumber(stats.createdIssues)}</span>
-        <span>{translateInstant("Open")}</span>
+        <span>{translateInstant("userProfile.openTasks", { defaultValue: "Open" })}</span>
         <span className="text-right text-foreground">{formatNumber(stats.assignedOpenIssues)}</span>
       </div>
     </div>
@@ -129,7 +133,12 @@ function UsageChart({ points }: { points: UserProfileDailyPoint[] }) {
               <div
                 className="w-full bg-foreground/80 transition-opacity group-hover:bg-foreground"
                 style={{ height: `${heightPct}%`, minHeight: tokens === 0 ? 1 : undefined }}
-                title={`${formatShortDate(point.date)}: ${formatTokens(tokens)} tokens, ${point.completedIssues} completed`}
+                title={translateInstant("userProfile.chartPointTitle", {
+                  date: formatShortDate(point.date),
+                  tokens: formatTokens(tokens),
+                  completed: point.completedIssues,
+                  defaultValue: `${formatShortDate(point.date)}: ${formatTokens(tokens)} tokens, ${point.completedIssues} completed`,
+                })}
               />
               {completedPct > 0 ? (
                 <div
@@ -206,7 +215,7 @@ function UsageList({
 }
 
 export function UserProfile() {
-  useTranslation();
+  const { t } = useTranslation();
   const { userSlug = "" } = useParams<{ userSlug: string }>();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -242,7 +251,7 @@ export function UserProfile() {
       (data?.topAgents ?? []).map((row) => ({
         key: row.agentId ?? "unknown",
         label: row.agentName ?? (row.agentId ? row.agentId.slice(0, 8) : translateInstant("Paperclip services")),
-        sublabel: "Task-linked usage",
+        sublabel: translateInstant("userProfile.taskLinkedUsage", { defaultValue: "Task-linked usage" }),
         costCents: row.costCents,
         inputTokens: row.inputTokens,
         cachedInputTokens: row.cachedInputTokens,
@@ -256,7 +265,10 @@ export function UserProfile() {
       (data?.topProviders ?? []).map((row) => ({
         key: `${row.provider}:${row.biller}:${row.model}`,
         label: `${providerDisplayName(row.provider)} / ${row.model}`,
-        sublabel: `Billed through ${providerDisplayName(row.biller)}`,
+        sublabel: translateInstant("userProfile.billedThrough", {
+          provider: providerDisplayName(row.biller),
+          defaultValue: `Billed through ${providerDisplayName(row.biller)}`,
+        }),
         costCents: row.costCents,
         inputTokens: row.inputTokens,
         cachedInputTokens: row.cachedInputTokens,
@@ -278,10 +290,14 @@ export function UserProfile() {
   }
 
   const allTimeTokens = allTime ? totalTokens(allTime) : 0;
+  const roleKey = data.user.membershipRole ?? "member";
   const metaParts = [
-    data.user.membershipRole ?? "member",
-    data.user.membershipStatus,
-    `joined ${formatDate(data.user.joinedAt)}`,
+    translateInstant(`humanRole.${roleKey}`, { defaultValue: roleKey }),
+    translateStatusLabel(t, data.user.membershipStatus),
+    translateInstant("userProfile.joinedDate", {
+      date: formatDate(data.user.joinedAt),
+      defaultValue: `joined ${formatDate(data.user.joinedAt)}`,
+    }),
   ];
 
   return (
@@ -313,10 +329,26 @@ export function UserProfile() {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <HeroStat label={translateInstant("All-time tokens")} value={formatTokens(allTimeTokens)} hint={formatCents(allTime?.costCents ?? 0) + " spent"} />
-          <HeroStat label={translateInstant("Completed")} value={formatNumber(allTime?.completedIssues ?? 0)} hint={allTime ? `${completionRate(allTime)} rate` : undefined} />
-          <HeroStat label={translateInstant("Open assigned")} value={formatNumber(allTime?.assignedOpenIssues ?? 0)} hint={`${formatNumber(allTime?.createdIssues ?? 0)} created`} />
-          <HeroStat label={translateInstant("7-day actions")} value={formatNumber(last7?.activityCount ?? 0)} hint={`${formatNumber(last7?.commentCount ?? 0)} comments`} />
+          <HeroStat
+            label={translateInstant("All-time tokens")}
+            value={formatTokens(allTimeTokens)}
+            hint={translateInstant("userProfile.spentAmount", { amount: formatCents(allTime?.costCents ?? 0) })}
+          />
+          <HeroStat
+            label={translateInstant("Completed")}
+            value={formatNumber(allTime?.completedIssues ?? 0)}
+            hint={allTime ? translateInstant("userProfile.completionRate", { rate: completionRate(allTime) }) : undefined}
+          />
+          <HeroStat
+            label={translateInstant("Open assigned")}
+            value={formatNumber(allTime?.assignedOpenIssues ?? 0)}
+            hint={translateInstant("userProfile.createdCount", { count: allTime?.createdIssues ?? 0 })}
+          />
+          <HeroStat
+            label={translateInstant("7-day actions")}
+            value={formatNumber(last7?.activityCount ?? 0)}
+            hint={translateInstant("userProfile.commentsCount", { count: last7?.commentCount ?? 0 })}
+          />
         </div>
       </section>
 
@@ -367,9 +399,9 @@ export function UserProfile() {
               {data.recentActivity.map((event) => (
                 <li key={event.id} className="grid gap-2 py-2.5 sm:grid-cols-(--gtc-17) sm:items-center">
                   <div className="min-w-0">
-                    <div className="truncate text-sm">{event.action.replaceAll("_", " ")}</div>
+                    <div className="truncate text-sm">{formatIssueActivityAction(event.action, event.details)}</div>
                     <div className="truncate text-xs text-muted-foreground">
-                      {event.entityType} · {event.entityId.slice(0, 12)}
+                      {translateEntityTypeLabel(t, event.entityType)} · {event.entityId.slice(0, 12)}
                     </div>
                   </div>
                   <span className="text-xs tabular-nums text-muted-foreground sm:justify-self-end">{relativeTime(event.createdAt)}</span>
@@ -381,8 +413,16 @@ export function UserProfile() {
       </div>
 
       <div className="grid gap-10 xl:grid-cols-2">
-        <UsageList title={translateInstant("Agent attribution")} empty="No issue-linked token usage yet." rows={agentUsageRows} />
-        <UsageList title={translateInstant("Provider mix")} empty="No provider usage attributed yet." rows={providerUsageRows} />
+        <UsageList
+          title={translateInstant("Agent attribution")}
+          empty={translateInstant("userProfile.noIssueLinkedTokens", { defaultValue: "No issue-linked token usage yet." })}
+          rows={agentUsageRows}
+        />
+        <UsageList
+          title={translateInstant("Provider mix")}
+          empty={translateInstant("userProfile.noProviderUsage", { defaultValue: "No provider usage attributed yet." })}
+          rows={providerUsageRows}
+        />
       </div>
     </div>
   );

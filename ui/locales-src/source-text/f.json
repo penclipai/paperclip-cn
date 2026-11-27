@@ -784,6 +784,11 @@
     "zh-CN": "请完成此账户的连接。",
     "reviewedEnglishHash": "91131e5e04431eadfaf2566c9f37bfda2a234a3240a63db1962b1226525636ca"
   },
+  "Finish setup": {
+    "en": "Finish setup",
+    "zh-CN": "完成设置",
+    "reviewedEnglishHash": "bc01ae77f37cf304f0ba95bda60cb93340d6f73a0a2ce4f7fa3ec417512d071f"
+  },
   "Finish the existing request below. Use Reset only when you intend to start a new call.": {
     "en": "Finish the existing request below. Use Reset only when you intend to start a new call.",
     "zh-CN": "请完成下方已有的请求。仅在打算发起新调用时使用“重置”。",

@@ -1,3 +1,4 @@
+import { translateInstant } from "@/i18n";
 import type { TaskChatItem, TaskChatMarkerItem, TaskChatMessageItem } from "./task-chat-model";
 
 const RECOVERY_STATEMENT = /^Paperclip tried to (?:start|continue) this task again, but it still could not (?:start|continue)\b/i;
@@ -74,5 +75,12 @@ export function compactAdjacentErrors(items: readonly TaskChatItem[]): {
 const RETRYABLE_FAILURE_LABELS = new Set(["Run failed", "Usage limit reached", "Model unavailable", "Swarm did not finish"]);
 
 export function isRetryableFailureMarker(marker: Pick<TaskChatMarkerItem, "variant" | "label">) {
-  return marker.variant === "interrupted" && RETRYABLE_FAILURE_LABELS.has(marker.label);
+  if (marker.variant !== "interrupted") return false;
+  if (RETRYABLE_FAILURE_LABELS.has(marker.label)) return true;
+  return (
+    marker.label === translateInstant("taskChat.swarmDidNotFinish", { defaultValue: "Swarm did not finish" }) ||
+    marker.label === translateInstant("taskChat.interrupted.runFailed", { defaultValue: "Run failed" }) ||
+    marker.label === translateInstant("taskChat.interrupted.usageLimitReached", { defaultValue: "Usage limit reached" }) ||
+    marker.label === translateInstant("taskChat.interrupted.modelUnavailable", { defaultValue: "Model unavailable" })
+  );
 }

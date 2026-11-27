@@ -1,4 +1,5 @@
 import { attentionReceiptText, type AttentionItem, type AttentionFeedView, type AttentionPersonalView, type DecisionHistoryItem, type DecisionHistoryOutcomeFilter, type DecisionHistoryScope } from "@penclipai/shared";
+import { translateInstant } from "@/i18n";
 import { queryKeys } from "./queryKeys";
 import { isInlineResolvable } from "./attention";
 
@@ -35,15 +36,15 @@ export function coordinatorCardTitle(item: AttentionItem) {
  */
 function coordinatorCardAsk(item: AttentionItem, taskTitle: string | null): string | null {
   const title = item.subject.title?.trim() || null;
-  if (item.sourceKind === "blocker_attention" && title) return `Get “${title}” moving again`;
+  if (item.sourceKind === "blocker_attention" && title) return translateInstant("decisions.cardAsk.blocker", { title, defaultValue: `Get “${title}” moving again` });
   if (item.sourceKind === "agent_error_alert") {
     const agent = item.detail?.kind === "agent_error" ? item.detail.agentName ?? title : title;
-    return agent ? `${agent} hit an error and needs help` : null;
+    return agent ? translateInstant("decisions.cardAsk.agentError", { agent, defaultValue: `${agent} hit an error and needs help` }) : null;
   }
-  if (item.sourceKind === "review" && title && title === taskTitle) return `Review “${title}”`;
+  if (item.sourceKind === "review" && title && title === taskTitle) return translateInstant("decisions.cardAsk.review", { title, defaultValue: `Review “${title}”` });
   // PAP-775 (UI1): approvals and join requests are answered on the card now.
-  if (item.sourceKind === "approval" && title && !/^approve\b/i.test(title)) return `Approve “${title}”?`;
-  if (item.sourceKind === "join_request" && title) return `Let ${title} join the company?`;
+  if (item.sourceKind === "approval" && title && !/^approve\b/i.test(title)) return translateInstant("decisions.cardAsk.approval", { title, defaultValue: `Approve “${title}”?` });
+  if (item.sourceKind === "join_request" && title) return translateInstant("decisions.cardAsk.joinRequest", { title, defaultValue: `Let ${title} join the company?` });
   return null;
 }
 
@@ -51,8 +52,9 @@ function coordinatorCardAsk(item: AttentionItem, taskTitle: string | null): stri
 export function coordinatorCardDetail(item: AttentionItem, detailLine: string | null): string | null {
   if (item.sourceKind === "blocker_attention" && item.detail?.kind === "blocker" && !item.detail.blockingIssue) {
     const count = item.detail.blockedTaskCount ?? 0;
-    const holding = count > 0 ? `It's holding up ${count} ${count === 1 ? "task" : "tasks"}, and no` : "No";
-    return `${holding} one is working on it. Unblock it, reassign it, or nudge its owner.`;
+    return count > 0
+      ? translateInstant("decisions.cardDetail.blockerWithCount", { count, defaultValue: `It's holding up ${count} ${count === 1 ? "task" : "tasks"}, and no one is working on it. Unblock it, reassign it, or nudge its owner.` })
+      : translateInstant("decisions.cardDetail.blockerNone", { defaultValue: "No one is working on it. Unblock it, reassign it, or nudge its owner." });
   }
   return detailLine ?? item.whyNow;
 }
@@ -77,14 +79,14 @@ export function pendingDecisionTaskIds(items: AttentionItem[]) {
  * it is not an outcome here.
  */
 export const DECISION_HISTORY_OUTCOME_OPTIONS: ReadonlyArray<{ value: DecisionHistoryOutcomeFilter; label: string }> = [
-  { value: "accepted", label: "Approved" },
-  { value: "answered", label: "Answered" },
-  { value: "rejected", label: "Changes requested" },
-  { value: "decided", label: "Decided" },
-  { value: "withdrawn", label: "Withdrawn" },
-  { value: "expired", label: "Expired" },
-  { value: "issue_closed", label: "Closed with task" },
-  { value: "cancelled", label: "Cancelled" },
+  { value: "accepted", get label() { return translateInstant("Approved"); } },
+  { value: "answered", get label() { return translateInstant("decisions.history.outcome.answered", { defaultValue: "Answered" }); } },
+  { value: "rejected", get label() { return translateInstant("issueThreadInteraction.status.changesRequested", { defaultValue: "Changes requested" }); } },
+  { value: "decided", get label() { return translateInstant("whatNeedsMe.decided", { defaultValue: "Decided" }); } },
+  { value: "withdrawn", get label() { return translateInstant("Withdrawn", { defaultValue: "Withdrawn" }); } },
+  { value: "expired", get label() { return translateInstant("Expired", { defaultValue: "Expired" }); } },
+  { value: "issue_closed", get label() { return translateInstant("decisions.history.outcome.closedWithTask", { defaultValue: "Closed with task" }); } },
+  { value: "cancelled", get label() { return translateInstant("Cancelled", { defaultValue: "Cancelled" }); } },
 ];
 
 /**
@@ -93,8 +95,8 @@ export const DECISION_HISTORY_OUTCOME_OPTIONS: ReadonlyArray<{ value: DecisionHi
  * different person handled for you, and the cards that were for you.
  */
 export const DECISION_HISTORY_SCOPE_OPTIONS: ReadonlyArray<{ value: DecisionHistoryScope; label: string }> = [
-  { value: "mine", label: "Handled by me or for me" },
-  { value: "all", label: "Everyone" },
+  { value: "mine", get label() { return translateInstant("decisions.history.scope.mine", { defaultValue: "Handled by me or for me" }); } },
+  { value: "all", get label() { return translateInstant("decisions.history.scope.all", { defaultValue: "Everyone" }); } },
 ];
 export const DEFAULT_DECISION_HISTORY_SCOPE: DecisionHistoryScope = "mine";
 
@@ -105,18 +107,18 @@ export const DEFAULT_DECISION_HISTORY_SCOPE: DecisionHistoryScope = "mine";
  * item review its verdict counts. Everything else keeps the server's label.
  */
 export function decisionHistoryHeadline(item: DecisionHistoryItem, userLabelMap?: ReadonlyMap<string, string> | null) {
-  const actorLabel = item.resolvedByUserId ? userLabelMap?.get(item.resolvedByUserId) ?? "someone" : null;
+  const actorLabel = item.resolvedByUserId ? userLabelMap?.get(item.resolvedByUserId) ?? translateInstant("decisions.someone", { defaultValue: "someone" }) : null;
   if (item.action && actorLabel) {
     const line = attentionReceiptText({ outcome: item.action.outcome, actorLabel });
     return item.action.detail ? `${line}: ${item.action.detail}` : line;
   }
-  if (item.resultOutcome === "withdrawn" && actorLabel) return `Withdrawn by @${actorLabel}`;
+  if (item.resultOutcome === "withdrawn" && actorLabel) return translateInstant("decisions.history.withdrawnBy", { actor: actorLabel, defaultValue: `Withdrawn by @${actorLabel}` });
   return item.label;
 }
 
 /** The task line of a history entry; an approval with no task names itself instead. */
 export function decisionHistoryContext(item: DecisionHistoryItem) {
-  if (!item.issueId) return item.sourceKind === "approval" ? `Approval · ${item.title}` : item.title;
+  if (!item.issueId) return item.sourceKind === "approval" ? translateInstant("decisions.history.approvalContext", { title: item.title, defaultValue: `Approval · ${item.title}` }) : item.title;
   return [item.issueIdentifier, item.issueTitle].filter(Boolean).join(" · ");
 }
 

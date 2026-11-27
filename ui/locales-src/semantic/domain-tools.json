@@ -446,7 +446,7 @@
   },
   "tools.audit.immutabilityNotice": {
     "en": "Recorded by Paperclip — entries can't be edited. Sensitive values are never stored.",
-    "zh-CN": "由 Paperclip 录制 — 条目无法编辑。敏感值永远不会被存储。",
+    "zh-CN": "由 Paperclip CN 记录 — 条目无法编辑。敏感值永远不会被存储。",
     "reviewedEnglishHash": "f95bb996afcd3e03e5ccaf34e6b2d8faa73d9f03a1ec9b290bb5800bc0277258"
   },
   "tools.audit.loadMore": {
@@ -486,7 +486,7 @@
   },
   "tools.audit.outcomes.recorded": {
     "en": "Recorded",
-    "zh-CN": "已录制",
+    "zh-CN": "已记录",
     "reviewedEnglishHash": "c7175fa7a0db0d3ca4b26d27675d2e4e0776634ce5ffa35c88daa749b57d6846"
   },
   "tools.audit.outcomes.waiting": {
@@ -526,7 +526,7 @@
   },
   "tools.audit.reasons.recorded": {
     "en": "Recorded by Paperclip.",
-    "zh-CN": "由Paperclip录制。",
+    "zh-CN": "由 Paperclip 记录。",
     "reviewedEnglishHash": "987d2ccee528e0ddcfc7a6bcb098bcd84389e7f179f56d244b13efac126f7bce"
   },
   "tools.audit.reasons.secretBlocked": {

@@ -53,14 +53,15 @@ export function ProjectAccessMembers({ project, canManage }: { project: Project;
     [membersQuery.data],
   );
   const groups = useMemo<SearchableSelectGroup<string, AccessSelectOption>[]>(() => {
+    const unknownUserLabel = translateInstant("Unknown user");
     const people = (directoryQuery.data?.users ?? [])
       .filter((entry) => entry.user && !activeKeys.has(`user:${entry.user.id}`))
       .map((entry) => ({
         key: `user:${entry.user!.id}`,
         value: `user:${entry.user!.id}`,
-        label: entry.user!.name ?? entry.user!.email ?? "Unknown user",
+        label: entry.user!.name ?? entry.user!.email ?? unknownUserLabel,
         searchText: entry.user!.email ?? "",
-        identity: <Identity name={entry.user!.name ?? entry.user!.email ?? "Unknown user"} avatarUrl={entry.user!.image} size="sm" />,
+        identity: <Identity name={entry.user!.name ?? entry.user!.email ?? unknownUserLabel} avatarUrl={entry.user!.image} size="sm" />,
       }));
     const agentOptions = (agentsQuery.data ?? [])
       .filter((agent) => !activeKeys.has(`agent:${agent.id}`))
@@ -102,7 +103,7 @@ export function ProjectAccessMembers({ project, canManage }: { project: Project;
   return (
     <>
       <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-        <Lock className="h-3.5 w-3.5" aria-hidden="true" /> {canManage ? "Manage access" : "View access"}
+        <Lock className="h-3.5 w-3.5" aria-hidden="true" /> {canManage ? translateInstant("Manage access") : translateInstant("View access")}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
@@ -113,17 +114,17 @@ export function ProjectAccessMembers({ project, canManage }: { project: Project;
           </DialogHeader>
           <div className="space-y-3">
             {directoryView.kind === "error" || agentsView.kind === "error" ? (
-              <p className="text-sm text-destructive">{translateInstant("Couldn&apos;t load the company access directory.")}</p>
+              <p className="text-sm text-destructive">{translateInstant("Couldn't load the company access directory.")}</p>
             ) : null}
             <div className="flex items-end gap-2">
               <SearchableSelect
                 value={selection}
                 groups={groups}
-                renderValue={(option) => option ? renderAccessIdentity(option) : "Add a person or agent"}
+                renderValue={(option) => option ? renderAccessIdentity(option) : translateInstant("Add a person or agent")}
                 renderOption={renderAccessIdentity}
                 onValueChange={(value) => setSelection(value)}
                 placeholder={translateInstant("Add a person or agent")}
-                searchPlaceholder="Search people and agents"
+                searchPlaceholder={translateInstant("Search people and agents")}
                 emptyMessage={translateInstant("No more company members to add")}
                 loading={[directoryView.kind, agentsView.kind].some(kind => ["loading", "reconnecting"].includes(kind))}
                 className="min-w-0 flex-1"
@@ -141,16 +142,16 @@ export function ProjectAccessMembers({ project, canManage }: { project: Project;
                 return (
                   <div key={member.id} className="flex items-center gap-3 py-2">
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium">{member.subjectDisplayName ?? "Unknown member"}</div>
+                      <div className="truncate text-sm font-medium">{member.subjectDisplayName ?? translateInstant("Unknown member")}</div>
                       <div className="text-xs text-muted-foreground">
-                        {isPersonalOwner ? "Owner" : member.subjectType === "agent" ? "Agent" : "Person"}
+                        {isPersonalOwner ? translateInstant("Owner") : member.subjectType === "agent" ? translateInstant("Agent") : translateInstant("Person")}
                       </div>
                     </div>
                     {!isPersonalOwner ? (
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        aria-label={`Remove ${member.subjectDisplayName ?? "member"}`}
+                        aria-label={translateInstant("projectAccess.removeMemberAria", { name: member.subjectDisplayName ?? translateInstant("member"), defaultValue: "Remove {{name}}" })}
                         disabled={!canManage || removeMember.isPending}
                         onClick={() => removeMember.mutate(member.id)}
                       >
@@ -162,7 +163,7 @@ export function ProjectAccessMembers({ project, canManage }: { project: Project;
               })}
               {membersWaiting ? <p className="py-3 text-sm text-muted-foreground">{translateInstant("Loading access…")}</p> : null}
               {membersView.kind === "error" ? (
-                <p className="py-3 text-sm text-destructive">{translateInstant("Couldn&apos;t load project access members.")}</p>
+                <p className="py-3 text-sm text-destructive">{translateInstant("Couldn't load project access members.")}</p>
               ) : null}
             </div>
           </div>

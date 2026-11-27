@@ -176,7 +176,7 @@ export function AgentBasicsDialog({
       else onContinue({ name: agent.name, adapterType: nextAdapter, runnerProvider: nextProvider,
         runner: nextRunner, setupAgentId: agent.id });
     } catch (cause) {
-      if (active.current) setSaveError(cause instanceof Error ? cause.message : "Could not save agent setup.");
+      if (active.current) setSaveError(cause instanceof Error ? cause.message : translateInstant("newAgent.basics.saveError", { defaultValue: "Could not save agent setup." }));
     } finally {
       busy.current = false;
       if (active.current) setSaving(false);
@@ -222,13 +222,13 @@ export function AgentBasicsDialog({
               <div className="space-y-2">
                 <DialogTitle className="text-3xl font-semibold tracking-tight">
                   {step === "name"
-                    ? "Meet your next agent"
-                    : "Choose an adapter"}
+                    ? translateInstant("newAgent.basics.meetTitle", { defaultValue: "Meet your next agent" })
+                    : translateInstant("newAgent.basics.chooseAdapterTitle", { defaultValue: "Choose an adapter" })}
                 </DialogTitle>
                 <DialogDescription className="text-base">
                   {step === "name"
-                    ? "Start with a name. Make them your own."
-                    : `How should ${name.trim()} work?`}
+                    ? translateInstant("newAgent.basics.meetDescription", { defaultValue: "Start with a name. Make them your own." })
+                    : translateInstant("newAgent.basics.howShouldWork", { name: name.trim(), defaultValue: "How should {{name}} work?" })}
                 </DialogDescription>
               </div>
             </div>
@@ -241,7 +241,7 @@ export function AgentBasicsDialog({
                   autoFocus
                   disabled={saving}
                   maxLength={100}
-                  placeholder="e.g. Darnold"
+                  placeholder={translateInstant("newAgent.basics.namePlaceholder", { defaultValue: "e.g. Darnold" })}
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   className="h-12 text-base"
@@ -303,7 +303,11 @@ export function AgentBasicsDialog({
                             {display.label}
                           </span>
                           {adapter.type === "antigravity_runtime" && !antigravityQualified && (
-                            <span className="text-xs text-muted-foreground">{antigravityCandidate ? "Candidate" : "Not available yet"}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {antigravityCandidate
+                                ? translateInstant("newAgent.basics.candidate", { defaultValue: "Candidate" })
+                                : translateInstant("newAgent.basics.notAvailableYet", { defaultValue: "Not available yet" })}
+                            </span>
                           )}
                           {adapterType === adapter.type && (
                             <Check className="absolute right-2 top-2 size-3.5" />
@@ -325,7 +329,7 @@ export function AgentBasicsDialog({
               onClick={() => (step === "name" ? onClose() : setStep("name"))}
             >
               {step === "name" ? (
-                "Cancel"
+                translateInstant("Cancel", { defaultValue: "Cancel" })
               ) : (
                 <>
                   <ArrowLeft className="size-4" />
@@ -336,7 +340,11 @@ export function AgentBasicsDialog({
               type="submit"
               disabled={saving || !name.trim() || (step === "adapter" && !validAdapter)}
             >
-              {saving ? "Saving…" : step === "name" ? "Choose adapter" : "Configure agent"}
+              {saving
+                ? translateInstant("Saving…", { defaultValue: "Saving…" })
+                : step === "name"
+                  ? translateInstant("newAgent.basics.chooseAdapterAction", { defaultValue: "Choose adapter" })
+                  : translateInstant("newAgent.basics.configureAgentAction", { defaultValue: "Configure agent" })}
               <ArrowRight className="size-4" />
             </Button>
           </div>

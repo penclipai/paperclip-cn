@@ -559,6 +559,11 @@
     "zh-CN": "先将技能安装到组织，再为此智能体启用。",
     "reviewedEnglishHash": "20cac58dcb6ab2523484e49cce6efb996215c6aeebd55788c3a3100c682467e8"
   },
+  "Install system plugin": {
+    "en": "Install system plugin",
+    "zh-CN": "安装系统插件",
+    "reviewedEnglishHash": "92748f07e659619588a9ee17ca7e0b3ecc50dfedb67b6a7d125f9c447fabb058"
+  },
   "Install update": {
     "en": "Install update",
     "zh-CN": "安装更新",
@@ -603,6 +608,11 @@
     "en": "Installed skills",
     "zh-CN": "已安装的技能",
     "reviewedEnglishHash": "39cd5c4eaaade8b3052242d9f57115b85a6bd7000431c41227a19bfcceaf2e55"
+  },
+  "Installed system plugins": {
+    "en": "Installed system plugins",
+    "zh-CN": "已安装的系统插件",
+    "reviewedEnglishHash": "a27eb72b2492902eff73a2956a767f5a0f9f01449d6f1792016b7e2a4ec092d5"
   },
   "Installed ·": {
     "en": "Installed ·",

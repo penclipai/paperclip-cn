@@ -74,6 +74,11 @@
     "zh-CN": "保存",
     "reviewedEnglishHash": "1509f561f2416598629b886ad7d3c05a7e221e4e0675c84bbff4ee6d9e03913d"
   },
+  "Save & exit": {
+    "en": "Save & exit",
+    "zh-CN": "保存并退出",
+    "reviewedEnglishHash": "0bd63bf3d32e9119f4d06f9847c36eb39e5931a59fffedec476460146348802e"
+  },
   "Save &amp; exit": {
     "en": "Save & exit",
     "zh-CN": "保存并退出",
@@ -351,7 +356,7 @@
   },
   "Search agents by name or role": {
     "en": "Search agents by name or role",
-    "zh-CN": "按姓名或角色搜索智能体",
+    "zh-CN": "按名称或角色搜索智能体",
     "reviewedEnglishHash": "e5d13d38a2502fd4e0775b95a1c7076764cba96af609b45a908dda8d87e9775d"
   },
   "Search agents...": {
@@ -391,7 +396,7 @@
   },
   "Search by name or role…": {
     "en": "Search by name or role…",
-    "zh-CN": "按姓名或角色搜索……",
+    "zh-CN": "按名称或角色搜索……",
     "reviewedEnglishHash": "ada757655c29db18ff9912d63cff148d8f987be79835da00a0e370d8c92354e8"
   },
   "Search by name, key, ref": {
@@ -484,6 +489,11 @@
     "zh-CN": "搜索标签...",
     "reviewedEnglishHash": "8b2837c0480a2a77560ea210a259598bd38e71d637d2a29a44682da59c137863"
   },
+  "Search meeting notes, transcripts, and action items.": {
+    "en": "Search meeting notes, transcripts, and action items.",
+    "zh-CN": "搜索会议纪要、转录文本和行动项。",
+    "reviewedEnglishHash": "6179c4876e0f2e4fe36cbb98e26a5c1d1d6a8546378612fcf6d8c10532c20a18"
+  },
   "Search models...": {
     "en": "Search models...",
     "zh-CN": "搜索模型...",
@@ -498,6 +508,11 @@
     "en": "Search or paste a model ID",
     "zh-CN": "搜索或粘贴模型 ID",
     "reviewedEnglishHash": "a38cd2700cc443928df678edd5efb60747e3dbcf134e89a564c501794867c49b"
+  },
+  "Search people and agents": {
+    "en": "Search people and agents",
+    "zh-CN": "搜索人员与智能体",
+    "reviewedEnglishHash": "cdc7a830bcd7d22de03164578541160c0d757416cc66f74b422aa7620101f3b2"
   },
   "Search projects...": {
     "en": "Search projects...",
@@ -574,10 +589,20 @@
     "zh-CN": "正在搜索 “",
     "reviewedEnglishHash": "28838cdaf9d9945ec42b3f57cdd140e61db02f2dc5345b9aac6d5befa8244183"
   },
+  "Search…": {
+    "en": "Search…",
+    "zh-CN": "搜索…",
+    "reviewedEnglishHash": "7336265a0467a2551d6a88f1661d8c4397c71e6bd68e77882973e0eb52fb2de8"
+  },
   "Secondary": {
     "en": "Secondary",
     "zh-CN": "次级色",
     "reviewedEnglishHash": "62f2ccfffcc5103eabb193172833e6d95db890898849ea1ce84b8d7843997539"
+  },
+  "Secret": {
+    "en": "Secret",
+    "zh-CN": "密钥",
+    "reviewedEnglishHash": "7e32a729b1226ed1270f282a8c63054d09b26bc9ec53ea69771ce38158dfade8"
   },
   "Secret key": {
     "en": "Secret key",
@@ -603,6 +628,11 @@
     "en": "Section title example",
     "zh-CN": "分区标题示例",
     "reviewedEnglishHash": "7eb1effab7a699b3566396842a12940403cf11fb0d5d3e80a7e5e1b4d02ff18d"
+  },
+  "Secure sign-in": {
+    "en": "Secure sign-in",
+    "zh-CN": "安全登录",
+    "reviewedEnglishHash": "a7a80f28ec150c0e88a21f66531d67a04872a7ec906b6d99771269156050a9c7"
   },
   "See All": {
     "en": "See All",
@@ -2109,6 +2139,11 @@
     "zh-CN": "标准卡片",
     "reviewedEnglishHash": "e00864532bc4725524158cdf614294b45d8f55fab6627ff91fd2ea01d8823118"
   },
+  "Start a comment on a Google Antigravity agent's task with /swarm to run its native swarm: a coordinator, helpers and a checker that work together in the task folder.": {
+    "en": "Start a comment on a Google Antigravity agent's task with /swarm to run its native swarm: a coordinator, helpers and a checker that work together in the task folder.",
+    "zh-CN": "在 Google Antigravity 智能体的任务评论中以 /swarm 开头，即可运行其原生集群：由协调者、助手和检查者在任务文件夹中协同工作。",
+    "reviewedEnglishHash": "f49edb2c6bd552eb1baa2c56f9c4ca9c7718690b32059146a3a16d7b018ccf9e"
+  },
   "Start a new Paperclip task in this chat": {
     "en": "Start a new Paperclip task in this chat",
     "zh-CN": "在此聊天中启动新的 Paperclip 任务",
@@ -2219,6 +2254,11 @@
     "zh-CN": "停止",
     "reviewedEnglishHash": "cae7d57bc067a514b8e34c9589631a95c7dc051638ddd2a190773269279a99df"
   },
+  "Stop Paperclip work": {
+    "en": "Stop Paperclip work",
+    "zh-CN": "停止 Paperclip 工作",
+    "reviewedEnglishHash": "0f716c77db9b3f0d62354983a0b98d7b19fba7e38015f3e7e5b05a89d01e9134"
+  },
   "Stop browsing": {
     "en": "Stop browsing",
     "zh-CN": "停止浏览",
@@ -2253,6 +2293,11 @@
     "en": "Stop the agent’s browser work and leave the browser open.",
     "zh-CN": "停止智能体的浏览器工作并保持浏览器打开。",
     "reviewedEnglishHash": "8a3f8971039360b97fa41d5fcab79441014b4eeae1f05a898cc88c8285b93500"
+  },
+  "Stopping Paperclip work…": {
+    "en": "Stopping Paperclip work…",
+    "zh-CN": "正在停止 Paperclip 工作…",
+    "reviewedEnglishHash": "6be3c86a15d0f335f9db8dd012dc579ca1eae49eb188d4f39149ca11022a3e73"
   },
   "Stopping…": {
     "en": "Stopping…",
@@ -2454,6 +2499,11 @@
     "zh-CN": "建议邮箱地址",
     "reviewedEnglishHash": "5b8d1fe750e1d55413a663c0f7f59102995b254ba811d8e8b8e9b49140be140b"
   },
+  "Suggestions": {
+    "en": "Suggestions",
+    "zh-CN": "建议",
+    "reviewedEnglishHash": "16c1d601fc66950402ca8d54257acea0f5d21be1e00b9eb99224e436da66c950"
+  },
   "Summarizer tracks workspace activity, live services, and follow-up needs across projects.": {
     "en": "Summarizer tracks workspace activity, live services, and follow-up needs across projects.",
     "zh-CN": "摘要器会跨项目跟踪工作区活动、正在运行的服务和待跟进事项。",
@@ -2518,6 +2568,16 @@
     "en": "System",
     "zh-CN": "系统",
     "reviewedEnglishHash": "6725e7bbcd28f3a8a586fa34bf191fd72dde8b61756932cd3237c17a6f196f1a"
+  },
+  "System plugins": {
+    "en": "System plugins",
+    "zh-CN": "系统插件",
+    "reviewedEnglishHash": "8ba378268e6675516dd9117729a7142f1c11425e1e6b7783d12c65b7f77287ca"
+  },
+  "System plugins are alpha.": {
+    "en": "System plugins are alpha.",
+    "zh-CN": "系统插件处于 Alpha 测试阶段。",
+    "reviewedEnglishHash": "4c5f43d8bad0d75324e039288e446585e482292207394f7566d7b4739d209fdc"
   },
   "saved": {
     "en": "saved",

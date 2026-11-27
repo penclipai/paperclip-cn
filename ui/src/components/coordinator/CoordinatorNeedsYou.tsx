@@ -3,7 +3,9 @@ import { InboxRunHistory } from "./InboxRunHistory";
 import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { useCallback, useEffect, useMemo, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, ArrowUpRight, ChevronDown, FileText, Image as ImageIcon, Loader2 } from "lucide-react";
+import { translateInstant } from "@/i18n";
 import { LayoutGroup, motion, useReducedMotion } from "motion/react";
 import { attentionCardType, type AttentionCloseMode, type AttentionItem, type AttentionPersonalView } from "@penclipai/shared";
 import { accessApi } from "@/api/access";
@@ -47,17 +49,17 @@ import { NEEDS_YOU_SECTIONS, NeedsYouPanelRow, needsYouSection, type NeedsYouSec
 import { NeedsYouAudience, NeedsYouReceiptCard, NeedsYouRequester, NeedsYouTaskLink, NeedsYouTypeLabel, needsYouTaskRef } from "./NeedsYouCardParts";
 import { CoordinatorNeedsYouSidePanel, needsYouReviewTab, needsYouReviewTabId, needsYouTabArtifact, type NeedsYouReviewPayload } from "./CoordinatorNeedsYouSidePanel";
 import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
+import { cn, formatDateTime } from "@/lib/utils";
 
 const inboxFolders = [
-  { value: "needs", label: "Needs you", description: "Review open requests and decide what happens next." },
-  { value: "waiting", label: "Waiting", description: "See what you’ve snoozed and which tasks are waiting for an automatic retry." },
-  { value: "history", label: "History", description: "Look back at past decisions and see what happened to failed runs." },
+  { value: "needs", labelKey: "decisions.folders.needsYou", defaultLabel: "Needs you", descriptionKey: "decisions.folders.needsYouDesc", defaultDescription: "Review open requests and decide what happens next." },
+  { value: "waiting", labelKey: "decisions.folders.waiting", defaultLabel: "Waiting", descriptionKey: "decisions.folders.waitingDesc", defaultDescription: "See what you’ve snoozed and which tasks are waiting for an automatic retry." },
+  { value: "history", labelKey: "decisions.folders.history", defaultLabel: "History", descriptionKey: "decisions.folders.historyDesc", defaultDescription: "Look back at past decisions and see what happened to failed runs." },
 ] as const;
 
 /** Rule 7: a card that cannot answer inline links to the exact control, named by its verb. */
 function openLabel(item: AttentionItem) {
-  return (item.decisionVerbs ?? []).find((verb) => verb.id === "open_recovery" || verb.id === "inspect")?.label ?? "Open to review";
+  return (item.decisionVerbs ?? []).find((verb) => verb.id === "open_recovery" || verb.id === "inspect")?.label ?? translateInstant("decisions.openToReview", { defaultValue: "Open to review" });
 }
 
 /** Say each thing once (IA4): a quoted excerpt of the title is not a second line. */
@@ -74,15 +76,16 @@ function documentKeyLabel(key: string) {
   return words.charAt(0).toLocaleUpperCase() + words.slice(1);
 }
 
-const EMPTY_VIEW_TEXT: Record<AttentionPersonalView, string> = {
-  mine: "You're caught up.",
-  unassigned: "No cards need an owner.",
-  company: "No company alerts right now.",
-  archived: "Nothing archived. Cards you archive or snooze for yourself show here.",
-  all: "No open cards for anyone.",
+const EMPTY_VIEW_TEXT: Record<AttentionPersonalView, () => string> = {
+  mine: () => translateInstant("decisions.empty.caughtUp", { defaultValue: "You're caught up." }),
+  unassigned: () => translateInstant("whatNeedsMe.empty.caughtUp.unassigned", { defaultValue: "No cards need an owner." }),
+  company: () => translateInstant("whatNeedsMe.empty.caughtUp.company", { defaultValue: "No company alerts right now." }),
+  archived: () => translateInstant("decisions.empty.archived", { defaultValue: "Nothing archived. Cards you archive or snooze for yourself show here." }),
+  all: () => translateInstant("whatNeedsMe.empty.caughtUp.all", { defaultValue: "No open cards for anyone." }),
 };
 
 export function CoordinatorNeedsYou() {
+  const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { userId } = useCoordinatorWorkspaceEnabled();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -226,13 +229,13 @@ export function CoordinatorNeedsYou() {
   const groups = useMemo(() => {
     const result = new Map<string, AttentionItem[]>();
     for (const item of currentItems.slice(0, renderLimit)) {
-      const label = groupBy === "type" ? needsYouSection(item) : groupBy === "task" ? item.relatedIssue?.identifier ?? item.relatedIssue?.title ?? "Other decisions"
-        : groupBy === "agent" ? item.originAgentName ?? "Other agents" : groupBy === "project" ? item.project?.name ?? "No project" : "";
+      const label = groupBy === "type" ? needsYouSection(item) : groupBy === "task" ? item.relatedIssue?.identifier ?? item.relatedIssue?.title ?? t("decisions.group.otherDecisions", { defaultValue: "Other decisions" })
+        : groupBy === "agent" ? item.originAgentName ?? t("decisions.history.otherAgents", { defaultValue: "Other agents" }) : groupBy === "project" ? item.project?.name ?? t("No project") : "";
       result.set(label, [...(result.get(label) ?? []), item]);
     }
     // By type, decisions come before problems (Paper "A · Compact cards").
     return groupBy === "type" ? [...result].sort(([a], [b]) => (a === "decisions" ? 0 : 1) - (b === "decisions" ? 0 : 1)) : [...result];
-  }, [currentItems, groupBy, renderLimit]);
+  }, [currentItems, groupBy, renderLimit, t]);
   useEffect(() => {
     if (!deepLinkDecisionId || !selectedCompanyId) return;
     if (!pendingItems.some(item => item.sourceKind === "decision" && item.subject.id === deepLinkDecisionId)) {
@@ -257,26 +260,26 @@ export function CoordinatorNeedsYou() {
   const projects = useMemo(() => {
     const entries = inboxProjectOptions(obligations, pendingItems, recentItems);
     if (keptProjectId && !entries.some(([id]) => id === keptProjectId)) {
-      return [...entries, [keptProjectId, keptProjectName || "Unnamed project"] as const];
+      return [...entries, [keptProjectId, keptProjectName || t("decisions.unnamedProject", { defaultValue: "Unnamed project" })] as const];
     }
     return entries;
-  }, [obligations, pendingItems, recentItems, keptProjectId, keptProjectName]);
+  }, [obligations, pendingItems, recentItems, keptProjectId, keptProjectName, t]);
   const chooseAgent = (agentId: string) => waitingOpen
     ? setWaitingFilters(current => ({ ...current, agentId }))
     : keepToolbar({ agentId });
   const chooseProject = (id: string) => waitingOpen
     ? setWaitingFilters(current => ({ ...current, projectId: id }))
-    : keepToolbar({ project: id ? { id, name: projects.find(([projectId]) => projectId === id)?.[1] ?? "Unnamed project" } : null });
+    : keepToolbar({ project: id ? { id, name: projects.find(([projectId]) => projectId === id)?.[1] ?? t("decisions.unnamedProject", { defaultValue: "Unnamed project" }) } : null });
   // Assigned to you, everyone the viewer may see, one person, no owner yet, or company alerts.
   const assigneeOptions = useMemo(() => {
     const people = [...userLabelMap].filter(([id]) => id !== userId).sort(([, a], [, b]) => a.localeCompare(b));
     return [
-      { value: "me" as CoordinatorAssignee, label: "Assigned to you" },
-      ...(mayOpenEveryone ? [{ value: "all" as CoordinatorAssignee, label: "All assignees" }, ...people.map(([id, name]) => ({ value: `user:${id}` as CoordinatorAssignee, label: name }))] : []),
-      { value: "unassigned" as CoordinatorAssignee, label: "No owner yet" },
-      { value: "company" as CoordinatorAssignee, label: "Company alerts" },
+      { value: "me" as CoordinatorAssignee, label: t("decisions.assignee.assignedToYou", { defaultValue: "Assigned to you" }) },
+      ...(mayOpenEveryone ? [{ value: "all" as CoordinatorAssignee, label: t("decisions.assignee.allAssignees", { defaultValue: "All assignees" }) }, ...people.map(([id, name]) => ({ value: `user:${id}` as CoordinatorAssignee, label: name }))] : []),
+      { value: "unassigned" as CoordinatorAssignee, label: t("decisions.noOwnerYet", { defaultValue: "No owner yet" }) },
+      { value: "company" as CoordinatorAssignee, label: t("decisions.assignee.companyAlerts", { defaultValue: "Company alerts" }) },
     ];
-  }, [userLabelMap, userId, mayOpenEveryone]);
+  }, [userLabelMap, userId, mayOpenEveryone, t]);
   const chooseAssignee = (value: CoordinatorAssignee) => {
     const target = coordinatorAssigneeTarget(value, userId);
     keepToolbar({ assignee: value });
@@ -298,7 +301,7 @@ export function CoordinatorNeedsYou() {
     const open = new Set(pendingItems.map(item => item.id));
     for (const tab of reviewTabs.tabs) if (!open.has(tab.payload.itemId)) closeReviewTab(tab.id);
   }, [pendingItems, reviewTabs.tabs, closeReviewTab]);
-  useEffect(() => { setBreadcrumbs([{ label: "Inbox" }]); }, [setBreadcrumbs]);
+  useEffect(() => { setBreadcrumbs([{ label: t("Inbox") }]); }, [setBreadcrumbs, t]);
   useEffect(() => {
     setSettling([]); setReviewPanelOpen(false); resetReviewTabs({ tabs: [], activeTabId: null }); setNow(Date.now()); closePanel();
     return closePanel;
@@ -353,9 +356,11 @@ export function CoordinatorNeedsYou() {
     // The artifact opens beside the card from the first row of its context panel (IA5).
     const artifactRow = artifact && artifact.kind !== "approval" ? <NeedsYouPanelRow
       icon={artifact.kind === "images" ? <ImageIcon /> : <FileText />}
-      title={artifact.kind === "document" && !artifact.title ? (artifact.key === "plan" ? "Plan" : documentKeyLabel(artifact.key)) : needsYouArtifactLabel(artifact)}
-      meta={reviewingOwn ? "Open in sidebar · Showing" : "Open in sidebar"}
-      label={`${reviewingOwn ? "Close" : "Open"} ${needsYouArtifactLabel(artifact)} in the sidebar`}
+      title={artifact.kind === "document" && !artifact.title ? (artifact.key === "plan" ? t("Plan") : documentKeyLabel(artifact.key)) : needsYouArtifactLabel(artifact)}
+      meta={reviewingOwn ? t("decisions.openInSidebarShowing", { defaultValue: "Open in sidebar · Showing" }) : t("decisions.openInSidebar", { defaultValue: "Open in sidebar" })}
+      label={reviewingOwn
+        ? t("decisions.closeInSidebarAria", { name: needsYouArtifactLabel(artifact), defaultValue: `Close ${needsYouArtifactLabel(artifact)} in the sidebar` })
+        : t("decisions.openInSidebarAria", { name: needsYouArtifactLabel(artifact), defaultValue: `Open ${needsYouArtifactLabel(artifact)} in the sidebar` })}
       onOpen={() => reviewingOwn ? closeReviewTab(needsYouReviewTabId(item)) : showReview(item)} /> : null;
     // A plan, document, approval or attachment the card links to opens as a
     // side-panel tab beside the card, not a page change (PAP-775, IA5).
@@ -383,14 +388,14 @@ export function CoordinatorNeedsYou() {
       {/* What to do (with whose card it is) on the left; who asked, when, and ⋯ on the right (Paper "A · Compact cards"). */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          {item.providerLimit ? <span className="text-sm font-medium">Provider usage limit</span> : <NeedsYouTypeLabel item={item} currentUserId={userId} userLabelMap={userLabelMap} />}
+          {item.providerLimit ? <span className="text-sm font-medium">{t("decisions.providerUsageLimit", { defaultValue: "Provider usage limit" })}</span> : <NeedsYouTypeLabel item={item} currentUserId={userId} userLabelMap={userLabelMap} />}
           <AttentionHiddenChip item={item} />
           <AttentionStaleChip item={item} />
         </div>
         <div className="flex min-w-0 flex-wrap items-center gap-3" data-attention-context>
           <NeedsYouAudience item={item} currentUserId={userId} userLabelMap={userLabelMap} onClaim={entry => claim.mutate(entry)} claiming={claim.isPending && claim.variables?.id === item.id} />
           <NeedsYouRequester item={item} agentMap={agentMap} userLabelMap={userLabelMap} currentUserId={userId} />
-          <time dateTime={item.activityAt} title={new Date(item.activityAt).toLocaleString()} className="shrink-0 text-xs leading-4.5 text-muted-foreground">{timeAgo(item.activityAt)}</time>
+          <time dateTime={item.activityAt} title={formatDateTime(item.activityAt)} className="shrink-0 text-xs leading-4.5 text-muted-foreground">{timeAgo(item.activityAt)}</time>
           <AttentionCloseMenu item={item} currentUserId={userId} userLabelMap={userLabelMap}
           busy={closeActions.closingItemId === item.id || closeActions.transferringItemId === item.id}
           onWithdraw={(entry, reason) => closeActions.close({ item: entry, mode: "withdraw", reason })}
@@ -407,7 +412,7 @@ export function CoordinatorNeedsYou() {
         onResolved(item);
       }} />
         : decision ? <DecisionResolver companyId={selectedCompanyId!} decisionId={item.subject.id} originIssue={item.relatedIssue} agentMap={agentMap} leading={taskLink} onResolved={() => onResolved(item)} />
-        : stalledReview ? <><div className="space-y-1.5"><h2>Choose how this task continues</h2><p className="text-sm text-muted-foreground">This task is still in review with no active reviewer or continuation. Return it to work, request changes, or mark the task done.</p></div><BlockedTaskCardBody item={item} companyId={selectedCompanyId!} agentMap={agentMap} userLabelMap={userLabelMap} leading={taskLink} footerContext={footerContext} onOpen={navigate} onResolved={refetchAll} /></>
+        : stalledReview ? <><div className="space-y-1.5"><h2>{t("decisions.stalledReview.title", { defaultValue: "Choose how this task continues" })}</h2><p className="text-sm text-muted-foreground">{t("decisions.stalledReview.description", { defaultValue: "This task is still in review with no active reviewer or continuation. Return it to work, request changes, or mark the task done." })}</p></div><BlockedTaskCardBody item={item} companyId={selectedCompanyId!} agentMap={agentMap} userLabelMap={userLabelMap} leading={taskLink} footerContext={footerContext} onOpen={navigate} onResolved={refetchAll} /></>
         : failedRun ? <>{heading}<FailedRunActions item={item} companyId={selectedCompanyId!} leading={taskLink} footerContext={footerContext} presentation="card" onResolved={refetchAll} /></>
         : budget ? <>{heading}<BudgetAlertActions item={item} companyId={selectedCompanyId!} leading={taskLink} footerContext={footerContext} presentation="card" onResolved={refetchAll} /></>
         : approval ? <>{heading}<ApprovalResolver item={item} companyId={selectedCompanyId!} toggle={taskLink} footerContext={footerContext} presentation="card" onViewDetails={isMobile ? undefined : () => showReview(item)} shareDraft onResolved={() => onResolved(item)} /></>
@@ -421,27 +426,27 @@ export function CoordinatorNeedsYou() {
     </CoordinatorTaskMotion>
     </motion.div>;
   };
-  if (!selectedCompanyId) return <p className="text-sm text-muted-foreground">Choose a company to see its decisions.</p>;
+  if (!selectedCompanyId) return <p className="text-sm text-muted-foreground">{t("decisions.selectCompany", { defaultValue: "Choose a company to see its decisions." })}</p>;
   // Decision history is a view of the main pane (PAP-770), not a side panel
   // that repeats Recent Decisions beside them.
   const activeFolder = inboxFolders.find(({ value }) =>
     value === "needs" ? !waitingOpen && !historyOpen && !archivedView : value === folder);
   const folders = <div className="space-y-2" data-inbox-folders>
-    <nav className="flex gap-1" aria-label="Inbox views">{inboxFolders.map(({ value, label }) => {
+    <nav className="flex gap-1" aria-label={t("decisions.folders.navAria", { defaultValue: "Inbox views" })}>{inboxFolders.map(({ value, labelKey, defaultLabel }) => {
       const selected = value === activeFolder?.value;
       const waitingCount = feed.data?.waitingCount;
       return <Button key={value} size="sm" variant={selected ? "secondary" : "ghost"} aria-current={selected ? "page" : undefined}
-        onClick={() => changeFolder(value)}>{label}{value === "waiting" && waitingCount ? ` · ${waitingCount}` : ""}</Button>;
+        onClick={() => changeFolder(value)}>{t(labelKey, { defaultValue: defaultLabel })}{value === "waiting" && waitingCount ? ` · ${waitingCount}` : ""}</Button>;
     })}</nav>
-    {activeFolder && <p className="text-sm text-muted-foreground">{activeFolder.description}</p>}
+    {activeFolder && <p className="text-sm text-muted-foreground">{t(activeFolder.descriptionKey, { defaultValue: activeFolder.defaultDescription })}</p>}
   </div>;
   const receipts = feed.data?.receipts ?? [];
-  if (historyOpen) return <section className="coordinator-needs-you w-full space-y-6" aria-label="Decision history" data-coordinator-decision-history>
+  if (historyOpen) return <section className="coordinator-needs-you w-full space-y-6" aria-label={t("whatNeedsMe.decisionHistory", { defaultValue: "Decision history" })} data-coordinator-decision-history>
     <DecisionHistoryPanel companyId={selectedCompanyId} agents={agentQuery.data ?? []} userLabelMap={userLabelMap} afterControls={<>
       {folders}
-      {receipts.length > 0 && <section className="space-y-3"><h2>Updates</h2>{receipts.map(entry => <NeedsYouReceiptCard key={entry.id} receipt={entry} userLabelMap={userLabelMap} onOpen={navigate}
+      {receipts.length > 0 && <section className="space-y-3"><h2>{t("decisions.section.updates", { defaultValue: "Updates" })}</h2>{receipts.map(entry => <NeedsYouReceiptCard key={entry.id} receipt={entry} userLabelMap={userLabelMap} onOpen={navigate}
           onDismiss={receiptActions.dismiss} dismissing={receiptActions.dismissingId === entry.id} />)}</section>}
-      <h1 className="text-2xl font-medium">Decision history</h1>
+      <h1 className="text-2xl font-medium">{t("whatNeedsMe.decisionHistory", { defaultValue: "Decision history" })}</h1>
     </>} />
     <InboxRunHistory companyId={selectedCompanyId} userId={userId} />
   </section>;
@@ -452,53 +457,62 @@ export function CoordinatorNeedsYou() {
   const sectionHeading = (section: NeedsYouSection) => <h2 className="text-base font-medium" data-needs-you-section={section}>
     {NEEDS_YOU_SECTIONS[section].title}
   </h2>;
-  return <LayoutGroup id="coordinator-decisions"><section className="coordinator-needs-you w-full space-y-6" aria-label="Inbox">
-    {archivedView ? <div className="flex items-center gap-2"><Button variant="ghost" size="icon-sm" aria-label="Back to Needs You" onClick={() => setView(null)}><ArrowLeft className="size-4" /></Button><h1 className="text-2xl font-medium">Archived</h1></div> : null}
-    <div data-canonical-toolbar="inbox" className="design-page-toolbar" role="toolbar" aria-label="Decisions controls">
-      <ToolbarSearch query={query} onQueryChange={setQuery} label="Search decisions" placeholder="Search…" />
+  return <LayoutGroup id="coordinator-decisions"><section className="coordinator-needs-you w-full space-y-6" aria-label={t("Inbox")}>
+    {archivedView ? <div className="flex items-center gap-2"><Button variant="ghost" size="icon-sm" aria-label={t("decisions.backToNeedsYouAria", { defaultValue: "Back to Needs You" })} onClick={() => setView(null)}><ArrowLeft className="size-4" /></Button><h1 className="text-2xl font-medium">{t("Archived")}</h1></div> : null}
+    <div data-canonical-toolbar="inbox" className="design-page-toolbar" role="toolbar" aria-label={t("decisions.toolbar.aria", { defaultValue: "Decisions controls" })}>
+      <ToolbarSearch query={query} onQueryChange={setQuery} label={t("decisions.toolbar.searchAria", { defaultValue: "Search decisions" })} placeholder={t("Search…", { defaultValue: "Search…" })} />
       <div className="design-toolbar-actions">
-        <InboxFilter label="Filter decisions by agent" heading="Agents" value={agentFilter} onChange={chooseAgent}
-          defaultLabel={agentFilter ? undefined : "By agents"}
-          options={[{ value: "", label: "All agents" }, ...(agentQuery.data ?? []).map(agent => ({ value: agent.id, label: agent.name }))]} />
-        <InboxFilter label="Filter decisions by project" heading="Projects" value={projectFilter} onChange={chooseProject}
-          defaultLabel={projectFilter ? undefined : "By projects"}
-          options={[{ value: "", label: "All projects" }, ...projects.map(([value, label]) => ({ value, label }))]} />
-        {!waitingOpen && assignee && <InboxFilter label="Filter decisions by assignee" heading="Assigned to" value={assignee} onChange={chooseAssignee}
+        <InboxFilter label={t("decisions.toolbar.filterByAgentAria", { defaultValue: "Filter decisions by agent" })} heading={t("Agents")} value={agentFilter} onChange={chooseAgent}
+          defaultLabel={agentFilter ? undefined : t("decisions.toolbar.byAgents", { defaultValue: "By agents" })}
+          options={[{ value: "", label: t("All agents") }, ...(agentQuery.data ?? []).map(agent => ({ value: agent.id, label: agent.name }))]} />
+        <InboxFilter label={t("decisions.toolbar.filterByProjectAria", { defaultValue: "Filter decisions by project" })} heading={t("Projects")} value={projectFilter} onChange={chooseProject}
+          defaultLabel={projectFilter ? undefined : t("decisions.toolbar.byProjects", { defaultValue: "By projects" })}
+          options={[{ value: "", label: t("All projects") }, ...projects.map(([value, label]) => ({ value, label }))]} />
+        {!waitingOpen && assignee && <InboxFilter label={t("decisions.toolbar.filterByAssigneeAria", { defaultValue: "Filter decisions by assignee" })} heading={t("decisions.toolbar.assignedTo", { defaultValue: "Assigned to" })} value={assignee} onChange={chooseAssignee}
           disabled={awaitingEveryone}
           options={assignee.startsWith("user:") && !assigneeOptions.some(option => option.value === assignee)
-            ? [...assigneeOptions, { value: assignee, label: "Someone else" }] : assigneeOptions} />}
-        <InboxFilter<NeedsYouGroup> label="Group decisions" heading="Group by" value={groupBy} onChange={next => keepToolbar({ groupBy: next })}
-          options={[{ value: "type", label: "By type" }, { value: "task", label: "By task" }, { value: "agent", label: "By agent" },
-            { value: "project", label: "By project" }, { value: "none", label: "No grouping" }]} />
+            ? [...assigneeOptions, { value: assignee, label: t("decisions.someoneElseCapitalized", { defaultValue: "Someone else" }) }] : assigneeOptions} />}
+        <InboxFilter<NeedsYouGroup> label={t("decisions.toolbar.groupAria", { defaultValue: "Group decisions" })} heading={t("decisions.groupHeading", { defaultValue: "Group by" })} value={groupBy} onChange={next => keepToolbar({ groupBy: next })}
+          options={[{ value: "type", label: t("decisions.group.type", { defaultValue: "By type" }) }, { value: "task", label: t("decisions.group.task", { defaultValue: "By task" }) }, { value: "agent", label: t("decisions.group.agent", { defaultValue: "By agent" }) },
+            { value: "project", label: t("decisions.group.project", { defaultValue: "By project" }) }, { value: "none", label: t("decisions.group.none", { defaultValue: "No grouping" }) }]} />
         <DropdownMenu>
-          <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" data-attention-view-menu>View<ChevronDown className="size-4" /></Button></DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" data-attention-view-menu>{t("decisions.toolbar.viewMenu", { defaultValue: "View" })}<ChevronDown className="size-4" /></Button></DropdownMenuTrigger>
           <DropdownMenuContent align="end" collisionPadding={8} className="w-(--sz-260px)">
-            <DropdownMenuLabel>View</DropdownMenuLabel>
-            <DropdownMenuItem onSelect={() => setView("archived")}>Archived{viewCounts.archived ? ` · ${viewCounts.archived}` : ""}</DropdownMenuItem>
-            <DropdownMenuItem onSelect={showHistory}>Decision history</DropdownMenuItem>
+            <DropdownMenuLabel>{t("decisions.toolbar.viewMenu", { defaultValue: "View" })}</DropdownMenuLabel>
+            <DropdownMenuItem onSelect={() => setView("archived")}>{t("Archived")}{viewCounts.archived ? ` · ${viewCounts.archived}` : ""}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={showHistory}>{t("whatNeedsMe.decisionHistory", { defaultValue: "Decision history" })}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
     </div>
     {folders}
     {feed.data && !waitingOpen && summarySections.length > 0 ? <p className="text-sm text-muted-foreground" data-needs-you-summary>
-      {summarySections.map((section, index) => {
-        const label = NEEDS_YOU_SECTIONS[section].title.toLocaleLowerCase();
-        return <span key={section}>{index ? " · " : ""}{counts[section]} {counts[section] === 1 ? label.slice(0, -1) : label}</span>;
-      })}
+      {summarySections.map((section, index) => (
+        <span key={section}>
+          {index ? " · " : ""}
+          {t(`decisions.summary.${section}`, {
+            count: counts[section],
+            defaultValue: section === "decisions"
+              ? `${counts[section]} ${counts[section] === 1 ? "decision" : "decisions"}`
+              : section === "problems"
+                ? `${counts[section]} ${counts[section] === 1 ? "problem" : "problems"}`
+                : `${counts[section]} ${counts[section] === 1 ? "update" : "updates"}`,
+          })}
+        </span>
+      ))}
     </p> : null}
-    {feedWaiting ? <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />Loading decisions…</p> : null}
+    {feedWaiting ? <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />{t("decisions.loading", { defaultValue: "Loading decisions…" })}</p> : null}
     {feedView.kind === "error" ? <QueryErrorState error={feedView.error} onRetry={feedView.retry} /> : null}
     {!feedWaiting && feedView.kind !== "error" && currentItems.length === 0 && (
       staleItems.length || snoozedItems.length
-        ? <p className="py-8 text-center text-sm text-muted-foreground">{staleItems.length ? "No current cards. Stale cards are below." : "No archived cards. Snoozed cards are below."}</p>
-        : <EmptyState placement="upper" message={pendingItems.length ? "No open decisions match these filters." : waitingOpen ? "Nothing is waiting." : view === "mine" && feed.data?.waitingCount ? `You’re caught up. ${feed.data.waitingCount} ${feed.data.waitingCount === 1 ? "item is" : "items are"} waiting.` : EMPTY_VIEW_TEXT[view]} />
+        ? <p className="py-8 text-center text-sm text-muted-foreground">{staleItems.length ? t("decisions.empty.staleBelow", { defaultValue: "No current cards. Stale cards are below." }) : t("whatNeedsMe.empty.snoozedBelow", { defaultValue: "No archived cards. Snoozed cards are below." })}</p>
+        : <EmptyState placement="upper" message={pendingItems.length ? t("decisions.empty.noOpenMatches", { defaultValue: "No open decisions match these filters." }) : waitingOpen ? t("decisions.empty.nothingWaiting", { defaultValue: "Nothing is waiting." }) : view === "mine" && feed.data?.waitingCount ? t("decisions.empty.caughtUpWithWaiting", { count: feed.data.waitingCount, defaultValue: `You’re caught up. ${feed.data.waitingCount} ${feed.data.waitingCount === 1 ? "item is" : "items are"} waiting.` }) : EMPTY_VIEW_TEXT[view]()} />
     )}
     {groups.map(([label, items], index) => <div key={label} className="space-y-3" role={groupBy === "type" ? "group" : undefined} aria-label={groupBy === "type" ? NEEDS_YOU_SECTIONS[label as NeedsYouSection].title : undefined}>
       {groupBy === "type" ? index > 0 ? sectionHeading(label as NeedsYouSection) : null : label ? <h2 className="text-sm font-medium text-muted-foreground">{label}</h2> : null}
       <InboxLimitCards items={items} renderCard={renderCard} />
     </div>)}
-    {currentItems.length > renderLimit ? <Button variant="outline" onClick={() => setRenderLimit((value) => value + 40)}>Show more decisions</Button> : null}
+    {currentItems.length > renderLimit ? <Button variant="outline" onClick={() => setRenderLimit((value) => value + 40)}>{t("decisions.showMore", { defaultValue: "Show more decisions" })}</Button> : null}
     <AttentionStaleGroup items={staleItems} open={staleOpen} onToggle={() => setStaleOpen(open => !open)} onWithdrawAll={closeActions.withdrawAll}
       busy={closeActions.bulkPending} currentUserId={userId} userLabelMap={userLabelMap} titleOf={coordinatorCardTitle}>
       <InboxLimitCards items={staleItems} renderCard={renderCard} />

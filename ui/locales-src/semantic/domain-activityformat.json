@@ -14,6 +14,11 @@
     "zh-CN": "暂停了智能体",
     "reviewedEnglishHash": "61e9f80058c03b4283846ccada1a52d0686e851b32a5e5931433bc737fed315a"
   },
+  "activityFormat.action.agent.permissions_updated": {
+    "en": "updated agent permissions",
+    "zh-CN": "更新了智能体权限",
+    "reviewedEnglishHash": "b330b08de4cab96b0b82327e057e2c67036b55b4e7e7d2d274514dd0c422350e"
+  },
   "activityFormat.action.agent.resumed": {
     "en": "resumed the agent",
     "zh-CN": "恢复了智能体",
@@ -168,6 +173,11 @@
     "en": "read issue file content",
     "zh-CN": "读取了任务文件内容",
     "reviewedEnglishHash": "a75cb139b30d1988ccbba86e604c118245cec4b2bc6f4d681bdd09cb4e64341c"
+  },
+  "activityFormat.action.issue.file_resource_download": {
+    "en": "downloaded an issue file",
+    "zh-CN": "下载了任务文件",
+    "reviewedEnglishHash": "0b009e7ec1fb101c6607abc067c9cfab4edde3e2119d324f46991507cba8cc32"
   },
   "activityFormat.action.issue.file_resource_list": {
     "en": "listed issue files",
@@ -341,7 +351,7 @@
   },
   "activityFormat.board": {
     "en": "Board",
-    "zh-CN": "看板",
+    "zh-CN": "董事会",
     "reviewedEnglishHash": "4816cbfd74aa8297b9c9cdaae89e2f0d2ced6041e952dfcd114e01b4c82e9c6d"
   },
   "activityFormat.changedPriorityFrom": {
@@ -449,6 +459,21 @@
     "zh-CN": "组织",
     "reviewedEnglishHash": "7b4eb2793b4bbcc2399b9c8cc56fa1e912202842211e0cc272fdcf5221134fa1"
   },
+  "activityFormat.entity.costEvent": {
+    "en": "a cost event",
+    "zh-CN": "成本事件",
+    "reviewedEnglishHash": "074329ac1e9f878b6557c5db4172edba58de43a453b24c664dc863a0fd1256be"
+  },
+  "activityFormat.entity.environmentLease": {
+    "en": "an environment lease",
+    "zh-CN": "环境租约",
+    "reviewedEnglishHash": "fa2459d7309a91ce90513ee6b815d5aabde06412885d51c518ebe5dbb05a7d3e"
+  },
+  "activityFormat.entity.executionWorkspace": {
+    "en": "an execution workspace",
+    "zh-CN": "执行工作区",
+    "reviewedEnglishHash": "3c9dca5de409574ee72537a6d38f936b9fbafd82135c51bb531d2b9b44de2bae"
+  },
   "activityFormat.entity.goal": {
     "en": "a goal",
     "zh-CN": "目标",
@@ -464,15 +489,30 @@
     "zh-CN": "一次运行",
     "reviewedEnglishHash": "7666f0507e9b2d38e9dee8b3a19b4379c41fe8b33413fdc329fcf115b2c76a65"
   },
+  "activityFormat.entity.issue": {
+    "en": "a task",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "d3dab2cc59c3e65bb85c495a79f0d6ac836b72b4723308c859dbfcee1ac3ba2c"
+  },
   "activityFormat.entity.project": {
     "en": "a project",
     "zh-CN": "项目",
     "reviewedEnglishHash": "8d24f5bc0a858d02c625ad2ee5650d947963bc3086eeca94926f51a8295159f2"
   },
+  "activityFormat.entity.providerTrace": {
+    "en": "a provider trace",
+    "zh-CN": "提供方追踪",
+    "reviewedEnglishHash": "6749ea73f3c81b24a27928921cad121dc141fd440ce930e42d1721f338177ba0"
+  },
   "activityFormat.entity.routine": {
     "en": "a routine",
     "zh-CN": "例行任务",
     "reviewedEnglishHash": "ce5e3e7f40e5f531689f912c9d93ffc7429eba3d3008f15d51e612145952d061"
+  },
+  "activityFormat.entity.secret": {
+    "en": "a secret",
+    "zh-CN": "密钥",
+    "reviewedEnglishHash": "984ca5162200734c592148f1820b71057f098573d138666b48663e4e30cd8d3a"
   },
   "activityFormat.entity.toolApplication": {
     "en": "the app",
@@ -483,6 +523,11 @@
     "en": "the connection",
     "zh-CN": "连接",
     "reviewedEnglishHash": "03001d4d5dfc42592aefe882739d179ffcc2adfa35a20553401b3ae0770c4b60"
+  },
+  "activityFormat.entity.userPreference": {
+    "en": "user preferences",
+    "zh-CN": "用户偏好",
+    "reviewedEnglishHash": "048375e06262752f274dd92433906be01661feb74e4de33d98fb028ed7b88065"
   },
   "activityFormat.interaction.acceptedAnswers": {
     "en": "accepted the answers",
@@ -639,6 +684,11 @@
     "zh-CN": "暂停了",
     "reviewedEnglishHash": "a7a9dc5bcf71adb2edc202814060a5ab6fca515382e9f1133dcc47d52d9090a2"
   },
+  "activityFormat.row.agent.permissions_updated": {
+    "en": "updated permissions for",
+    "zh-CN": "更新了权限：",
+    "reviewedEnglishHash": "68037b6ede9829f7a1bfb0356f602164ed45bcfba26f7925ca9c184d0494cf52"
+  },
   "activityFormat.row.agent.resumed": {
     "en": "resumed",
     "zh-CN": "恢复了",
@@ -758,6 +808,21 @@
     "en": "released environment lease",
     "zh-CN": "释放了环境租约",
     "reviewedEnglishHash": "d837473eab5d8b74703b1fe933b0a6350824134f1b2d63966d087f2a0e7fea6e"
+  },
+  "activityFormat.row.environment.lease_replacement_requested": {
+    "en": "requested replacement environment lease for",
+    "zh-CN": "请求替换环境租约：",
+    "reviewedEnglishHash": "10d773c37c2d0c8ff77c8f90f7dcf87bcbf2c63acb2f714ecc7fac52d2a2bf07"
+  },
+  "activityFormat.row.environment_lease.cleanup_retried": {
+    "en": "retried environment lease cleanup for",
+    "zh-CN": "重试了环境租约清理：",
+    "reviewedEnglishHash": "0f68a5ac01dfbab98680cb4087515c368ef5c405ee18242456f121e8c5b534c3"
+  },
+  "activityFormat.row.execution_workspace.runtime_lease_released": {
+    "en": "released runtime lease for",
+    "zh-CN": "释放了运行时租约：",
+    "reviewedEnglishHash": "94e07f43059d53888679447ec714c477d40c3cda6358c32ab88b35abc24be93d"
   },
   "activityFormat.row.goal.created": {
     "en": "created",
@@ -893,6 +958,11 @@
     "en": "read issue file content on",
     "zh-CN": "读取了文件内容：",
     "reviewedEnglishHash": "35a555a63816af8b2970b8cb4089a2282643b53e40479861c6b87f2f61139d39"
+  },
+  "activityFormat.row.issue.file_resource_download": {
+    "en": "downloaded issue file from",
+    "zh-CN": "下载了任务文件：",
+    "reviewedEnglishHash": "c0ead0fbffa053c75b4bb8bfea1256965a37921bd5787de7e14f717efb3f4343"
   },
   "activityFormat.row.issue.file_resource_list": {
     "en": "listed issue files for",
@@ -1174,6 +1244,11 @@
     "zh-CN": "更新了",
     "reviewedEnglishHash": "27eb5e51506c911f6fc4bb345c0d9db6f60415fceab7c18e1e9b862637415777"
   },
+  "activityFormat.row.provider_trace.expired": {
+    "en": "expired provider trace",
+    "zh-CN": "提供方追踪已过期",
+    "reviewedEnglishHash": "1972e946f42f73f74723854c1d4583e98383db3fc8243aa6b8c4522713426ee1"
+  },
   "activityFormat.row.resource_membership.starred": {
     "en": "starred",
     "zh-CN": "收藏了",
@@ -1239,6 +1314,11 @@
     "zh-CN": "请求删除以下位置存储的内容：",
     "reviewedEnglishHash": "79783696f4cf322a635f5d7ab39fd45e08ef638b4d2a15a59983d9df53da2099"
   },
+  "activityFormat.row.tool_connection.content_deletion_started": {
+    "en": "started deleting stored content from",
+    "zh-CN": "已开始删除以下位置存储的内容：",
+    "reviewedEnglishHash": "5c916c8a887be3e0a7e71cb33039bd25027e203ab390442399ae50377dd93a60"
+  },
   "activityFormat.row.tool_connection.google_access_ended": {
     "en": "confirmed Google access ended for",
     "zh-CN": "已确认结束 Google 访问权限：",
@@ -1288,6 +1368,11 @@
     "en": "cancelled sign-in for",
     "zh-CN": "取消了登录：",
     "reviewedEnglishHash": "2629e8a9e71e4f855708fcc041ade7ad0feef534af821ed58d33d13c1b8994f5"
+  },
+  "activityFormat.row.workspace_preferences.updated": {
+    "en": "updated workspace preferences",
+    "zh-CN": "更新了工作区偏好",
+    "reviewedEnglishHash": "464b128f645cfef6c861a8c1b7d95f16b54cda41617cde2c11e80f120ec77096"
   },
   "activityFormat.stalledReview.approved": {
     "en": "approved the review",

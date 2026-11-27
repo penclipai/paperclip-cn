@@ -156,22 +156,22 @@ export function AppsConnect({
   }
   if (aiLoginId && selectedCompanyId) {
     if (loginView.kind === "loading" || loginView.kind === "reconnecting")
-      return <p role="status">Loading saved sign-in…</p>;
+      return <p role="status">{translateInstant("apps.connect.loadingSavedSignIn", { defaultValue: "Loading saved sign-in…" })}</p>;
     if (!login.data)
       return (
         <p role="alert">
           {login.error
             ? describeError(login.error).body
-            : "This sign-in is unavailable."}
+            : translateInstant("apps.connect.signInUnavailable", { defaultValue: "This sign-in is unavailable." })}
         </p>
       );
     const { intent, environmentId, connectionId, grantId } = login.data;
     if (connectionId && grantId)
       return (
         <div className="space-y-4">
-          <p role="status">This account is connected.</p>
+          <p role="status">{translateInstant("apps.connect.accountConnected", { defaultValue: "This account is connected." })}</p>
           <Button onClick={() => navigate(`/apps/${connectionId}/permissions`)}>
-            View connection
+            {translateInstant("apps.connect.viewConnection", { defaultValue: "View connection" })}
           </Button>
         </div>
       );
@@ -239,7 +239,7 @@ export function AppsConnect({
     if (!router)
       return (
         <p role="alert">
-          This connection pool plugin is unavailable. Enable it in Plugins.
+          {translateInstant("apps.connect.poolPluginUnavailable", { defaultValue: "This connection pool plugin is unavailable. Enable it in Plugins." })}
         </p>
       );
     return <AiConnectionPoolConnector pluginKey={router.pluginKey} />;

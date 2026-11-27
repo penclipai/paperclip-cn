@@ -21,6 +21,7 @@ import { ProviderLimitMessage } from "../ProviderLimitMessage";
 import { Button } from "@/components/ui/button";
 import { getCurrentLocale, translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { translateSystemGeneratedText } from "../../lib/system-generated-message-i18n";
 import { RunTranscriptView, type TranscriptMode } from "../transcript/RunTranscriptView";
 import { LIVE_TRANSCRIPT_RENDER_LIMIT, MAX_LIVE_EVENTS, MAX_LIVE_LOG_LINES } from "../../lib/live-log-buffer";
 import { type HeartbeatRun, type HeartbeatRunEvent } from "@penclipai/shared";
@@ -45,7 +46,7 @@ import {
 import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType: string }) {
-  useTranslation();
+  const { t } = useTranslation();
   const { visible } = usePageVisibility();
   const connection = useConnectivityStore();
   const [events, setEvents] = useState<HeartbeatRunEvent[]>([]);
@@ -625,7 +626,7 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
                   </span>
                   <span className={cn("break-all", color)}>
                     {evt.message
-                      ? <ProviderLimitMessage>{redactPathText(evt.message, censorUsernameInLogs)}</ProviderLimitMessage>
+                      ? <ProviderLimitMessage>{redactPathText(translateSystemGeneratedText(t, evt.message), censorUsernameInLogs)}</ProviderLimitMessage>
                       : evt.payload
                         ? JSON.stringify(redactPathValue(evt.payload, censorUsernameInLogs))
                         : ""}

@@ -182,7 +182,7 @@ function ProjectTilePicker({
                     : "hover:ring-2 hover:ring-foreground/30"
                 }`}
                 style={{ backgroundColor: swatch }}
-                aria-label={`Select color ${swatch}`}
+                aria-label={translateInstant("projectDetail.selectColorAria", { color: swatch, defaultValue: "Select color {{color}}" })}
               />
             ))}
           </div>
@@ -477,7 +477,7 @@ export function ProjectDetail() {
       projectsApi.update(projectLookupRef, data, resolvedCompanyId ?? lookupCompanyId),
     onSuccess: (updated, data) => {
       const notice = configurationWarningMessages(updated);
-      if (notice) pushToast({ title: "Project saved", body: notice, tone: "warn" });
+      if (notice) pushToast({ title: translateInstant("Project saved"), body: notice, tone: "warn" });
       invalidateProject();
       if (data.visibility !== undefined) queryClient.invalidateQueries({ queryKey: ["issues"] });
     },
@@ -492,12 +492,12 @@ export function ProjectDetail() {
       ),
     onSuccess: (updatedProject, archived) => {
       invalidateProject();
-      const name = updatedProject?.name ?? project?.name ?? "Project";
+      const name = updatedProject?.name ?? project?.name ?? translateInstant("Project");
       if (archived) {
-        pushToast({ title: `"${name}" has been archived`, tone: "success" });
+        pushToast({ title: translateInstant("projectDetail.archivedToast", { name, defaultValue: '"{{name}}" has been archived' }), tone: "success" });
         navigate("/dashboard");
       } else {
-        pushToast({ title: `"${name}" has been unarchived`, tone: "success" });
+        pushToast({ title: translateInstant("projectDetail.unarchivedToast", { name, defaultValue: '"{{name}}" has been unarchived' }), tone: "success" });
       }
     },
     onError: (_, archived) => {
@@ -611,7 +611,7 @@ export function ProjectDetail() {
     try {
       const updated = await projectsApi.update(projectLookupRef, data, resolvedCompanyId ?? lookupCompanyId);
       const notice = configurationWarningMessages(updated);
-      if (notice) pushToast({ title: "Project saved", body: notice, tone: "warn" });
+      if (notice) pushToast({ title: translateInstant("Project saved"), body: notice, tone: "warn" });
       invalidateProject();
       if (data.visibility !== undefined) queryClient.invalidateQueries({ queryKey: ["issues"] });
       if (fieldSaveRequestIds.current[field] !== requestId) return;

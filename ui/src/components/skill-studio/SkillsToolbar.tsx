@@ -10,12 +10,12 @@ import { useTranslation } from "react-i18next";
 
 export type DiscoverySort = "agents" | "stars" | "forks" | "recent" | "alphabetical";
 
-const DISCOVERY_SORT_LABELS: Record<DiscoverySort, string> = {
-  agents: "Most agents",
-  stars: "Most stars",
-  forks: "Most forks",
-  recent: "Recently updated",
-  alphabetical: "Alphabetical",
+const DISCOVERY_SORT_LABEL_KEYS: Record<DiscoverySort, { key: string; defaultValue: string }> = {
+  agents: { key: "Most agents", defaultValue: "Most agents" },
+  stars: { key: "companySkills.sort.stars", defaultValue: "Most stars" },
+  forks: { key: "companySkills.sort.forks", defaultValue: "Most forks" },
+  recent: { key: "companySkills.sort.recent", defaultValue: "Recently updated" },
+  alphabetical: { key: "companySkills.sort.alphabetical", defaultValue: "Alphabetical" },
 };
 
 const DISCOVERY_SORTS: DiscoverySort[] = ["agents", "stars", "forks", "recent", "alphabetical"];
@@ -47,8 +47,9 @@ export interface SkillsToolbarProps {
 /** Shared shipped Skills controls. Canonical proposal: Components / Toolbars / Skills. */
 export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search, onSearchChange, sort, onSortChange, availableSources, sourceBadgeFilter, setSourceBadgeFilter, onScan, scanPending, onCreate, onBrowseDiscover, onImport, onImportFromProject, folderControl, onCreateFolder, selectMode, onToggleSelectMode, navigation }: SkillsToolbarProps) {
   const { t } = useTranslation();
+  const sortLabel = (option: DiscoverySort) => t(DISCOVERY_SORT_LABEL_KEYS[option].key, { defaultValue: DISCOVERY_SORT_LABEL_KEYS[option].defaultValue });
   return (
-    <div data-canonical-toolbar="skills" role="toolbar" aria-label="Skills controls" className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3">
+    <div data-canonical-toolbar="skills" role="toolbar" aria-label={t("companySkills.toolbar.ariaLabel", { defaultValue: "Skills controls" })} className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3">
       <div className="w-full">
         <h1 className="text-lg font-semibold text-foreground">{viewTitle}</h1>
         <p className="text-xs text-muted-foreground">{viewDescription}</p>
@@ -57,8 +58,8 @@ export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search,
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
-            <span className="text-muted-foreground">Sort</span>
-            <span>{DISCOVERY_SORT_LABELS[sort]}</span>
+            <span className="text-muted-foreground">{t("companySkills.toolbar.sort", { defaultValue: "Sort" })}</span>
+            <span>{sortLabel(sort)}</span>
             <ChevronDown className="ml-1 h-3.5 w-3.5" />
           </Button>
         </DropdownMenuTrigger>
@@ -66,7 +67,7 @@ export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search,
           <DropdownMenuRadioGroup value={sort} onValueChange={(value) => onSortChange(value as DiscoverySort)}>
             {DISCOVERY_SORTS.map((option) => (
               <DropdownMenuRadioItem key={option} value={option}>
-                {DISCOVERY_SORT_LABELS[option]}
+                {sortLabel(option)}
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>
@@ -76,11 +77,11 @@ export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search,
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
-              <span className="text-muted-foreground">Source</span>
+              <span className="text-muted-foreground">{t("companySkills.toolbar.source", { defaultValue: "Source" })}</span>
               <span>
                 {sourceBadgeFilter === "all"
                   ? t("companySkills.allSources")
-                  : availableSources.find((source) => source.value === sourceBadgeFilter)?.label ?? "All"}
+                  : availableSources.find((source) => source.value === sourceBadgeFilter)?.label ?? t("All", { defaultValue: "All" })}
               </span>
               <ChevronDown className="ml-1 h-3.5 w-3.5" />
             </Button>
@@ -116,35 +117,35 @@ export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search,
       ) : null}
       {onToggleSelectMode ? (
         <Button variant="outline" size="sm" aria-pressed={selectMode} onClick={onToggleSelectMode}>
-          {selectMode ? "Done" : "Select"}
+          {selectMode ? t("Done", { defaultValue: "Done" }) : t("Select", { defaultValue: "Select" })}
         </Button>
       ) : null}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button size="sm" variant="default" data-toolbar-primary>
             <Plus className="mr-1 h-3.5 w-3.5" />
-            New
+            {t("companySkills.toolbar.newMenu", { defaultValue: "New" })}
             <ChevronDown className="ml-1 h-3.5 w-3.5" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onSelect={onCreate}>
             <Pencil className="mr-2 h-4 w-4" />
-            Create new skill
+            {t("companySkills.toolbar.createNewSkill", { defaultValue: "Create new skill" })}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={onBrowseDiscover}>
             <Compass className="mr-2 h-4 w-4" />
-            Discover skills
+            {t("Discover skills", { defaultValue: "Discover skills" })}
           </DropdownMenuItem>
-          <DropdownMenuItem asChild><Link to="/skills/sources/new"><GithubIcon className="mr-2 h-4 w-4" />Import from GitHub</Link></DropdownMenuItem>
-          <DropdownMenuItem asChild><Link to="/skills/sources">Manage sources</Link></DropdownMenuItem>
+          <DropdownMenuItem asChild><Link to="/skills/sources/new"><GithubIcon className="mr-2 h-4 w-4" />{t("Import from GitHub", { defaultValue: "Import from GitHub" })}</Link></DropdownMenuItem>
+          <DropdownMenuItem asChild><Link to="/skills/sources">{t("companySkills.toolbar.manageSources", { defaultValue: "Manage sources" })}</Link></DropdownMenuItem>
           <DropdownMenuItem onSelect={onImport}>
             <Globe className="mr-2 h-4 w-4" />
-            Import from path or URL
+            {t("companySkills.toolbar.importFromPathOrUrl", { defaultValue: "Import from path or URL" })}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={onImportFromProject}>
             <FolderSearch className="mr-2 h-4 w-4" />
-            Import skills from project
+            {t("companySkills.toolbar.importFromProject", { defaultValue: "Import skills from project" })}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -92,13 +92,16 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
   const showFeedbackDataSharing = !hiddenSettings.has("instance.general.feedbackDataSharingPreference");
   const showSignOut = !hiddenSettings.has("instance.general.signOut");
   const visibleTopics = [
-    ...(showCensorUsernameInLogs ? ["log display"] : []),
-    ...(showBackupRetention ? ["backup retention"] : []),
-    ...(showFeedbackDataSharing ? ["data sharing"] : []),
+    ...(showCensorUsernameInLogs ? [translateInstant("instanceGeneralSettings.topic.logDisplay", { defaultValue: "log display" })] : []),
+    ...(showBackupRetention ? [translateInstant("instanceGeneralSettings.topic.backupRetention", { defaultValue: "backup retention" })] : []),
+    ...(showFeedbackDataSharing ? [translateInstant("instanceGeneralSettings.topic.dataSharing", { defaultValue: "data sharing" })] : []),
   ];
+  const topicSeparator = translateInstant("instanceGeneralSettings.topicSeparator", { defaultValue: ", " });
+  const topicLastJoiner = translateInstant("instanceGeneralSettings.topicLastJoiner", { defaultValue: ", and " });
+  const topicPairJoiner = translateInstant("instanceGeneralSettings.topicPairJoiner", { defaultValue: " and " });
   const topicSummary = visibleTopics.length > 2
-    ? `${visibleTopics.slice(0, -1).join(", ")}, and ${visibleTopics[visibleTopics.length - 1]}`
-    : visibleTopics.join(" and ");
+    ? `${visibleTopics.slice(0, -1).join(topicSeparator)}${topicLastJoiner}${visibleTopics[visibleTopics.length - 1]}`
+    : visibleTopics.join(topicPairJoiner);
   const visibleActionError = signOutMutation.error
     ? describeError(signOutMutation.error).body
     : actionError;
@@ -112,7 +115,15 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
             <h1 className="text-lg font-semibold">{translateInstant("General")}</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            {translateInstant("Configure instance-wide preferences")}{visibleTopics.length > 0 ? <> including {topicSummary}</> : null}{translateInstant(".")}</p>
+            {visibleTopics.length > 0
+              ? translateInstant("instanceGeneralSettings.subtitleWithTopics", {
+                  topics: topicSummary,
+                  defaultValue: `Configure instance-wide preferences including ${topicSummary}.`,
+                })
+              : translateInstant("instanceGeneralSettings.subtitle", {
+                  defaultValue: "Configure instance-wide preferences.",
+                })}
+          </p>
         </div>
       ) : null}
 
@@ -342,7 +353,12 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
             {translateInstant("instanceGeneralSettings.feedbackSharingRetestPrefix")}{" "}
             <code>feedbackDataSharingPreference</code> {translateInstant("instanceGeneralSettings.feedbackSharingRetestMiddle")}{" "}
             <code>instance_settings.general</code> {translateInstant("instanceGeneralSettings.feedbackSharingRetestSuffix")}{" "}
-            <code>"prompt"</code>{translateInstant(". Unset and")}{" "}<code>"prompt"</code> {translateInstant("both mean no default has been chosen yet.")}</p>
+            <code>"prompt"</code>
+            {translateInstant("instanceGeneralSettings.feedbackSharingPromptPeriod", { defaultValue: ". " })}
+            {translateInstant("instanceGeneralSettings.feedbackSharingBothUnset", {
+              defaultValue: "Unset and \"prompt\" both mean no default has been chosen yet.",
+            })}
+          </p>
         </div>
       </section>
 

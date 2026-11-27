@@ -1209,6 +1209,11 @@
     "zh-CN": "云同步",
     "reviewedEnglishHash": "d4ff35ab440696afdc1d9b41f7c959ad075ac2ecdbd96b8b7a07c84523a0c1e0"
   },
+  "Cloud starter inference": {
+    "en": "Cloud starter inference",
+    "zh-CN": "Cloud 入门推理",
+    "reviewedEnglishHash": "8ed91b3db470dc9ce68f0e1fd0eeed82950ef10a4f4596718cb1e35174053009"
+  },
   "Cloud sync is disabled. Enable it in": {
     "en": "Cloud sync is disabled. Enable it in",
     "zh-CN": "云同步已禁用。请在",
@@ -1296,7 +1301,7 @@
   },
   "Collapse {{label}}": {
     "en": "Collapse {{label}}",
-    "zh-CN": "折叠 {{label}}",
+    "zh-CN": "折叠{{label}}",
     "reviewedEnglishHash": "41cf121810da52cef2098142ec0238d68c53b304155f70e598f64cfafc891dcf"
   },
   "Collapse {{name}}": {
@@ -1313,6 +1318,11 @@
     "en": "Colors",
     "zh-CN": "颜色",
     "reviewedEnglishHash": "88c45d9e526c08dd7f8b9d1d3ab96a72d68205232090be5da57e05251bfea650"
+  },
+  "Columns": {
+    "en": "Columns",
+    "zh-CN": "列",
+    "reviewedEnglishHash": "53aade77cd69a77bbb51bf8ca4e7ea8b282db75edce8883775e47042478d35b5"
   },
   "Combined Inbox + Task List": {
     "en": "Combined Inbox + Task List",
@@ -1809,6 +1819,11 @@
     "zh-CN": "请确认此服务器的准确地址，Cloud 才能向其返回加密的 Google 凭据。",
     "reviewedEnglishHash": "895b87768fb3b3d8b53ca4764dc970ab5fec6c811bf38c86984f4e8025258ee6"
   },
+  "Confirmation": {
+    "en": "Confirmation",
+    "zh-CN": "确认",
+    "reviewedEnglishHash": "d743070540a1268e32cc405c1d735593fdcd5349939773c0d64f197f4b762756"
+  },
   "Confirmation link copied": {
     "en": "Confirmation link copied",
     "zh-CN": "确认链接已复制",
@@ -2014,6 +2029,11 @@
     "zh-CN": "将您的助手连接到 Paperclip，使用您账户在此组织中的权限审核工作、创建任务并跟进进展。",
     "reviewedEnglishHash": "fcaf015934f39aab1870582c82d76aea4ef904c9fb6da33b30f882ea7f06136f"
   },
+  "Connected": {
+    "en": "Connected",
+    "zh-CN": "已连接",
+    "reviewedEnglishHash": "22965568d22a14ee17af055d2870b50afcfe9fd94a83eec3196e266932297bb2"
+  },
   "Connected accounts could not be checked. Existing subscription estimates are still shown.": {
     "en": "Connected accounts could not be checked. Existing subscription estimates are still shown.",
     "zh-CN": "无法检查已连接账户，仍显示现有的订阅估算。",
@@ -2031,7 +2051,7 @@
   },
   "Connected. This account is saved in Connections and can be reused.": {
     "en": "Connected. This account is saved in Connections and can be reused.",
-    "zh-CN": "已连接。该账户保存在 Connections 中并且可以重复使用。",
+    "zh-CN": "已连接。该账户已保存至连接设置中，可供复用。",
     "reviewedEnglishHash": "95a419a808a60634b90dc2fc0308a2d4cb63842fb5c92a165853c6d795f0745f"
   },
   "Connecting to browser…": {
@@ -2144,6 +2164,11 @@
     "zh-CN": "连接：",
     "reviewedEnglishHash": "5d80f54b901ccb8c124c4b91013a7828fad1923f5c22295edc9dd7b43c1f2e14"
   },
+  "Connections": {
+    "en": "Connections",
+    "zh-CN": "连接",
+    "reviewedEnglishHash": "dc273117482b4429ada500ecd2e0c75532454194892cb901ca64cc7df369fdf6"
+  },
   "Connector catalog pages": {
     "en": "Connector catalog pages",
     "zh-CN": "连接器目录分页",
@@ -2188,6 +2213,11 @@
     "en": "Context",
     "zh-CN": "上下文",
     "reviewedEnglishHash": "a6e600a10fede40f648be37a700467776215ed2da3c271e9d02fa2987190a0a0"
+  },
+  "Continue": {
+    "en": "Continue",
+    "zh-CN": "继续",
+    "reviewedEnglishHash": "31fbef162594de01bab0cd525c51f74de7bcb15063029fa1a54b2cf5944c80d8"
   },
   "Continue at": {
     "en": "Continue at",
@@ -2973,6 +3003,16 @@
     "en": "Couldn't load people.",
     "zh-CN": "无法加载人员。",
     "reviewedEnglishHash": "199d602a516d8136ff1b8a7d4d31bfbeada904c9dd64edf01811720282e8a237"
+  },
+  "Couldn't load project access members.": {
+    "en": "Couldn't load project access members.",
+    "zh-CN": "无法加载项目访问成员。",
+    "reviewedEnglishHash": "9569287ec54073bf7affdb7e7d4fe58a09f503144c44bbb4093820aac3028305"
+  },
+  "Couldn't load the company access directory.": {
+    "en": "Couldn't load the company access directory.",
+    "zh-CN": "无法加载组织访问目录。",
+    "reviewedEnglishHash": "3ee135718a4a3091a7facdbad4d82e5773d107ea355f39f679781b3d88e02ca5"
   },
   "Couldn't load worktrees.": {
     "en": "Couldn't load worktrees.",

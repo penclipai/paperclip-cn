@@ -1,4 +1,34 @@
 {
+  "adapterLogin.antigravityOptionalRedirectHelp": {
+    "en": "Finish signing in in the Antigravity browser window, then return here. If your browser is on another machine and the 127.0.0.1 redirect page won’t load, copy the full URL from your address bar and paste it below.",
+    "zh-CN": "请在 Antigravity 浏览器窗口中完成登录，然后返回此处。如果你的浏览器位于另一台设备上且无法加载 127.0.0.1 重定向页面，请从地址栏复制完整 URL 并粘贴到下方。",
+    "reviewedEnglishHash": "01183463255a182b187bb64f31534cd53d83d1a0033535b9d2d1226f13b28afd"
+  },
+  "adapterLogin.antigravityRedirectHelp": {
+    "en": "After signing in to Antigravity, your browser will redirect to a 127.0.0.1 page that won’t load. Copy the full URL from your browser’s address bar and paste it below.",
+    "zh-CN": "登录 Antigravity 后，浏览器会跳转到无法加载的 127.0.0.1 页面。请从浏览器地址栏复制完整 URL 并粘贴到下方。",
+    "reviewedEnglishHash": "c206e22075907df177577f20ad81cf43cd943848fb8376e10b13b32143a16c14"
+  },
+  "adapterLogin.antigravityRedirectUrlLabel": {
+    "en": "Antigravity redirect URL",
+    "zh-CN": "Antigravity 重定向 URL",
+    "reviewedEnglishHash": "663579ce114ee9b1c32ed4ba595c103e7aa680f8947b99e1d3b2a3bebf60d2b7"
+  },
+  "adapterLogin.antigravityRedirectUrlPlaceholder": {
+    "en": "Paste http://127.0.0.1:... URL here",
+    "zh-CN": "将 http://127.0.0.1:... URL 粘贴到此处",
+    "reviewedEnglishHash": "26552f18f1f3bc800ea3da423b027f91f1cb6295451a923fbbc425b38af3fcc5"
+  },
+  "adapterLogin.checkAgain": {
+    "en": "Check again",
+    "zh-CN": "重新检查",
+    "reviewedEnglishHash": "fb7099ad8e818d42eceefe0d97c824fd54ddb0eeef54c263ec72c77d39198ac9"
+  },
+  "adapterLogin.finishAntigravitySignIn": {
+    "en": "Finish signing in in the Antigravity browser window, then return here.",
+    "zh-CN": "请在 Antigravity 浏览器窗口中完成登录，然后返回此处。",
+    "reviewedEnglishHash": "342a5fdedd1d9d687002adf9991efeac2b4cb51501645d25311cc82e3d8a7837"
+  },
   "adapterLogin.finishGoogleSignIn": {
     "en": "Finish signing in in the Google browser window, then return here.",
     "zh-CN": "请在 Google 登录窗口中完成登录，再返回此处。",
@@ -9,6 +39,41 @@
     "zh-CN": "正在完成登录…",
     "reviewedEnglishHash": "50c6e1d175afe4112e418c79d08c33e6fb904af800ab7bf3d4eedac3c0137936"
   },
+  "adapterLogin.instruction.browserRedirect": {
+    "en": "then return here",
+    "zh-CN": "然后返回此处",
+    "reviewedEnglishHash": "81a57c6011799885cf37fe4e9c5299199c30774b2f7040a3fbc61a09c1a148b5"
+  },
+  "adapterLogin.instruction.displayedCode": {
+    "en": "by providing the authorization code below",
+    "zh-CN": "在下方填入授权码",
+    "reviewedEnglishHash": "169171232a0b46c79144b81043b927413b4fdd3edd2dfa0ab2e54cfec71bf508"
+  },
+  "adapterLogin.instruction.hostedRedirect": {
+    "en": "then paste the redirect URL below",
+    "zh-CN": "然后将重定向 URL 粘贴到下方",
+    "reviewedEnglishHash": "2362a2a53f78a14b62d8f4dcfd92908538d1c7ee76e1756d051154a2eb6ef331"
+  },
+  "adapterLogin.instruction.submittedCode": {
+    "en": "then come back and enter authorization code",
+    "zh-CN": "然后返回并输入授权码",
+    "reviewedEnglishHash": "f19b7c77ffece1e26ecafb75c704ad62e5b014a890599ac9e54a96bb2be829f4"
+  },
+  "adapterLogin.localIsolated": {
+    "en": "Sign in to {{provider}} for this connection on the machine running Paperclip. Your existing terminal login stays separate.",
+    "zh-CN": "在运行 Paperclip 的机器上为此连接登录 {{provider}}。你现有的终端登录将保持独立。",
+    "reviewedEnglishHash": "b5c6aa761661b5b2e8ba3323852becd036099bd1e92de0e5eea9e8bddfc1564a"
+  },
+  "adapterLogin.localShared": {
+    "en": "Connect uses your local {{provider}} account on the machine running Paperclip.",
+    "zh-CN": "连接将使用运行 Paperclip 的机器上的本地 {{provider}} 账户。",
+    "reviewedEnglishHash": "471bae0076ae6826a28b95e25b3ff61abde8719bbf9f49ca8df3e678a98b34ba"
+  },
+  "adapterLogin.provideApiKey": {
+    "en": "Provide your {{providerName}} API key to connect",
+    "zh-CN": "提供你的 {{providerName}} API 密钥以连接",
+    "reviewedEnglishHash": "f4907f35c97630f5a39524043e2d23249b390dca530e9ca1bba8ce32e5c5184b"
+  },
   "adapterLogin.retrySignIn": {
     "en": "Retry sign-in",
     "zh-CN": "重新登录",
@@ -18,5 +83,25 @@
     "en": "Retry sign-in to get a fresh code. Your setup is saved.",
     "zh-CN": "重新登录以获取新的授权码，你的设置已保存。",
     "reviewedEnglishHash": "6cdcba7d8cc4bfb9e853749a35d4520676fc1f166c92f90a2d741ae7866ee812"
+  },
+  "adapterLogin.signInDidntFinish": {
+    "en": "Sign-in didn’t finish",
+    "zh-CN": "登录未完成",
+    "reviewedEnglishHash": "9a6a5efcf339addb4efbd9ad7f623470350976df4bca2cdd54a304c7c6fe2bc0"
+  },
+  "adapterLogin.signInExpired": {
+    "en": "This sign-in expired",
+    "zh-CN": "此登录已过期",
+    "reviewedEnglishHash": "f72d3ee3c927cea9aa43f1711b39aabbd42ad11be9aa5b6ec1674475204728ba"
+  },
+  "adapterLogin.startSignInAgain": {
+    "en": "Start sign-in again",
+    "zh-CN": "重新开始登录",
+    "reviewedEnglishHash": "cf00ad59c7cef67b83c67fc922f08263f02f1c6c015edcf6e7f39e7ba85df3b6"
+  },
+  "adapterLogin.submitRedirectUrl": {
+    "en": "Submit redirect URL",
+    "zh-CN": "提交重定向 URL",
+    "reviewedEnglishHash": "514e68b4e0e15076e75038f5511cdc594f39671627050ba5a70faf4cd0205107"
   }
 }

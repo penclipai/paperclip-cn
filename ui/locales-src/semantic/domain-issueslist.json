@@ -49,6 +49,11 @@
     "zh-CN": "折叠子任务",
     "reviewedEnglishHash": "b533f9e83cfd41b7b69494992ecd557214d6ddef70c09696c123151f2186438f"
   },
+  "issuesList.collapseSubtasksAria": {
+    "en": "Collapse sub-tasks",
+    "zh-CN": "折叠子任务",
+    "reviewedEnglishHash": "b533f9e83cfd41b7b69494992ecd557214d6ddef70c09696c123151f2186438f"
+  },
   "issuesList.columns": {
     "en": "Columns",
     "zh-CN": "列",
@@ -63,6 +68,16 @@
     "en": "Runs: {{runs}} · Sub-tasks: {{tasks}}",
     "zh-CN": "运行：{{runs}} · 子任务：{{tasks}}",
     "reviewedEnglishHash": "f721b969074523c27a9227c42e4dd7d139205b4a3e86d16bdad1bd2c95c3fac0"
+  },
+  "issuesList.createLabeled": {
+    "en": "Create {{label}}",
+    "zh-CN": "创建{{label}}",
+    "reviewedEnglishHash": "e493e4eb9fa834c482d33c5d59d9cd74ec2b18c1be03e779e56740e37b9e2270"
+  },
+  "issuesList.createTask": {
+    "en": "Create Task",
+    "zh-CN": "创建任务",
+    "reviewedEnglishHash": "5a9133cebfab753158e869331c7b1bac58020ede2b8499ada93711bd4954e8d6"
   },
   "issuesList.defaultColumnsSummary": {
     "en": "status, id, updated",
@@ -85,6 +100,11 @@
     "reviewedEnglishHash": "59f3f0fda28f7e6489494cc9f748f98e01cad6ebcf70dbd8bac696ec18abfc9b"
   },
   "issuesList.expandSubtasks": {
+    "en": "Expand sub-tasks",
+    "zh-CN": "展开子任务",
+    "reviewedEnglishHash": "45dcdcbb82678e42caa57ef4bed6ce3e9eb0b0fa2a01194ba53c7329d2b83492"
+  },
+  "issuesList.expandSubtasksAria": {
     "en": "Expand sub-tasks",
     "zh-CN": "展开子任务",
     "reviewedEnglishHash": "45dcdcbb82678e42caa57ef4bed6ce3e9eb0b0fa2a01194ba53c7329d2b83492"
@@ -139,6 +159,16 @@
     "zh-CN": "在 {{group}} 中新建任务",
     "reviewedEnglishHash": "b6d83c020839504a3a0f4837090cd29de9f6626147070ac658b27bed5c8ecaa6"
   },
+  "issuesList.newLabeled": {
+    "en": "New {{label}}",
+    "zh-CN": "新建{{label}}",
+    "reviewedEnglishHash": "5d95787c231becd9b8176cf0f8d7fabf6de1c0806a40e08fd1d0d504441ad4a2"
+  },
+  "issuesList.newTaskInGroup": {
+    "en": "New task in {{group}}",
+    "zh-CN": "在“{{group}}”中新建任务",
+    "reviewedEnglishHash": "3acd861db6db7b23cfdbc8142cbdd2e8e7dec729f284325942723013d84d3f30"
+  },
   "issuesList.nextUp": {
     "en": "Next up",
     "zh-CN": "下一步",
@@ -151,7 +181,7 @@
   },
   "issuesList.noActionableSubtasks": {
     "en": "No actionable sub-tasks",
-    "zh-CN": "无可执行子任务",
+    "zh-CN": "暂无可操作的子任务",
     "reviewedEnglishHash": "0b9b040df28c5a1966fe2663b4efa52036399af706e53024928354549071a07c"
   },
   "issuesList.noActiveSubIssues": {
@@ -161,7 +191,7 @@
   },
   "issuesList.noActiveSubtasks": {
     "en": "No active sub-tasks",
-    "zh-CN": "无活跃子任务",
+    "zh-CN": "暂无活跃子任务",
     "reviewedEnglishHash": "f699b33aa6398d063780e4cfe2e1e087b39833e07f629ec22271ab323e182ecb"
   },
   "issuesList.noIssuesMatch": {
@@ -214,6 +244,11 @@
     "zh-CN": "重置看板密度",
     "reviewedEnglishHash": "78a955456b087edcb003ecf8d9f91b3b0e7f8489fa32a66b576cbe8150027c16"
   },
+  "issuesList.runsAcrossSubtasksTitle": {
+    "en": "{{formattedRunCount}} runs across {{issueCount}} sub-tasks",
+    "zh-CN": "{{issueCount}} 个子任务共执行 {{formattedRunCount}} 次运行",
+    "reviewedEnglishHash": "19882103361e9d00aa56be3fb92a5d95e9b1e7c43765b1f2c406b5e568825b59"
+  },
   "issuesList.runtime": {
     "en": "runtime",
     "zh-CN": "运行时长",
@@ -235,14 +270,19 @@
     "reviewedEnglishHash": "46c6f1dea7e9258082e020741ba70be8509a940520d0e5343e54cec46bb4c328"
   },
   "issuesList.searchPlaceholder": {
-    "en": "Search tasks...",
-    "zh-CN": "搜索任务...",
-    "reviewedEnglishHash": "c1af8370c5f6898615094c9c38f59b3dc1c07d41ede16bcef24a024217f47bc5"
+    "en": "Search tasks…",
+    "zh-CN": "搜索任务…",
+    "reviewedEnglishHash": "945d1c210c42783b3bf35d306971e2e3c163647eaa6e8de547507df1bd289aa3"
   },
   "issuesList.searchResponsible": {
     "en": "Search responsible...",
     "zh-CN": "搜索责任人...",
     "reviewedEnglishHash": "9cb8d79fc8b40d38d1394f46e89e24851c22f20e8987707576b42f55c5e7054f"
+  },
+  "issuesList.selectCompany": {
+    "en": "Select a company to view tasks.",
+    "zh-CN": "请选择一个公司以查看任务。",
+    "reviewedEnglishHash": "7d3df2ae49f4c9bdd8e175e8171950e6677c95f6e4c7619dad3fba55d64ba5e1"
   },
   "issuesList.showingUpTo": {
     "en": "Showing up to",
@@ -289,6 +329,26 @@
     "zh-CN": "子任务完成进度",
     "reviewedEnglishHash": "43b10c32144fc33ad0714e686063382ed4355baf1f9ce3f2716e30096f1c857b"
   },
+  "issuesList.subtasksCountParenthetical_one": {
+    "en": "({{count}} sub-task)",
+    "zh-CN": "（{{count}} 个子任务）",
+    "reviewedEnglishHash": "3fee8d23c771d20b94ac641c774abbbcf5e7ee2bbdbef224fff962ce1aa8e0ce"
+  },
+  "issuesList.subtasksCountParenthetical_other": {
+    "en": "({{count}} sub-tasks)",
+    "zh-CN": "（{{count}} 个子任务）",
+    "reviewedEnglishHash": "05d6f7abcbc11f6a6f2d7557d457fe814e7d3a88bfa463fbfaa08588058e835e"
+  },
+  "issuesList.subtasksParenthetical": {
+    "en": "(sub-tasks)",
+    "zh-CN": "（子任务）",
+    "reviewedEnglishHash": "7e8530d3c0c613cc77dbf37c36678046009305cb742640b46d266baff6beca3d"
+  },
+  "issuesList.subtasksProgressAria": {
+    "en": "Sub-tasks completion progress",
+    "zh-CN": "子任务完成进度",
+    "reviewedEnglishHash": "43b10c32144fc33ad0714e686063382ed4355baf1f9ce3f2716e30096f1c857b"
+  },
   "issuesList.taskControls": {
     "en": "Task controls",
     "zh-CN": "任务控制",
@@ -321,7 +381,7 @@
   },
   "issuesList.waitingOnBlockers": {
     "en": "Waiting on blockers",
-    "zh-CN": "等待阻塞项",
+    "zh-CN": "等待阻塞项解除",
     "reviewedEnglishHash": "65f8a4c52b9702c5074ae10d0096ac959a74f4a37006bca76de7df3d1866e644"
   }
 }

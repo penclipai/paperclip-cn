@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Inbox, Boxes, CircleCheck, Compass, Folder, History, LayoutDashboard, MessageCircle, MoreHorizontal, Network, Plus, Repeat, Search, Settings, SquarePen, Unplug, type LucideIcon } from "lucide-react";
 import type { Agent, IssueSummary, Project } from "@penclipai/shared";
@@ -38,16 +39,16 @@ const TASK_PIN_ID_PATTERN = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
 const taskPinKey = (companyId: string, id: string) => `task:${companyId}:${id}`;
 
 const moreDestinations = [
-  { label: "Search", to: "/search", icon: Search },
-  { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
-  { label: "Projects", to: "/projects", icon: Folder },
-  { label: "Routines", to: "/routines", icon: Repeat },
-  { label: "Artifacts", to: "/artifacts", icon: Boxes },
-  { label: "Agents", to: "/agents/all", icon: Network },
-  { label: "Skills", to: "/skills", icon: Boxes },
-  { label: "Plugins", to: "/apps", icon: Unplug },
-  { label: "Audit", to: "/activity", icon: History },
-  { label: "Settings", to: "/settings", icon: Settings },
+  { labelKey: "Search", defaultLabel: "Search", to: "/search", icon: Search },
+  { labelKey: "sidebar.dashboard", defaultLabel: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
+  { labelKey: "Projects", defaultLabel: "Projects", to: "/projects", icon: Folder },
+  { labelKey: "sidebar.routines", defaultLabel: "Routines", to: "/routines", icon: Repeat },
+  { labelKey: "sidebar.artifacts", defaultLabel: "Artifacts", to: "/artifacts", icon: Boxes },
+  { labelKey: "Agents", defaultLabel: "Agents", to: "/agents/all", icon: Network },
+  { labelKey: "sidebar.skills", defaultLabel: "Skills", to: "/skills", icon: Boxes },
+  { labelKey: "Plugins", defaultLabel: "Plugins", to: "/apps", icon: Unplug },
+  { labelKey: "auditFeed.title", defaultLabel: "Audit", to: "/activity", icon: History },
+  { labelKey: "Settings", defaultLabel: "Settings", to: "/settings", icon: Settings },
 ] as const;
 
 export function buildPinnedNavigationItems(
@@ -95,6 +96,7 @@ function RecentTaskPinRow({ task, pins }: { task: RecentTaskLink; pins: PinContr
 }
 
 function RecentNavigationList({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const handleScroll = useScrollbarWhileScrolling();
@@ -112,7 +114,7 @@ function RecentNavigationList({ children }: { children: ReactNode }) {
     if (contentRef.current) observer?.observe(contentRef.current);
     return () => { viewport.removeEventListener("scroll", measure); observer?.disconnect(); };
   }, []);
-  return <div ref={scrollRef} className="design-sidebar-recent-list scrollbar-while-scrolling" onScroll={handleScroll} role="region" aria-label="Recents" tabIndex={0}>
+  return <div ref={scrollRef} className="design-sidebar-recent-list scrollbar-while-scrolling" onScroll={handleScroll} role="region" aria-label={t("sidebar.recents", { defaultValue: "Recents" })} tabIndex={0}>
     <div ref={contentRef} className="design-sidebar-recent-content">{children}</div>
   </div>;
 }
@@ -120,6 +122,7 @@ function RecentNavigationList({ children }: { children: ReactNode }) {
 /** The navigation is a view of the existing records; it never creates a chat
  * or task just because someone visits or switches agents. */
 export function CoordinatorSidebar({ children }: { children?: ReactNode }) {
+  const { t, i18n } = useTranslation();
   const { companyId, userId, agents, chats, session } = useAgentChatNavigation();
   const unreadChatCount = chats.data?.filter(chat => chat.isUnreadForMe).length ?? 0;
   const pinnedNavigation = usePinnedNavigation(userId);
@@ -140,11 +143,18 @@ export function CoordinatorSidebar({ children }: { children?: ReactNode }) {
   // Tasks and Inbox. The classic dashboard leaves More: one Dashboard at a time.
   const { enabled: responsibilitiesHome } = useResponsibilitiesEnabled();
   const destinations = useMemo(() => {
-    const base = responsibilitiesHome
+    const base = (responsibilitiesHome
       ? moreDestinations.filter((item) => item.to !== "/dashboard")
-      : moreDestinations;
-    return experimental?.enableCases ? [...base, { label: "Cases", to: "/cases", icon: Boxes }] : base;
-  }, [experimental?.enableCases, responsibilitiesHome]);
+      : moreDestinations
+    ).map((item) => ({
+      to: item.to,
+      icon: item.icon,
+      label: t(item.labelKey, { defaultValue: item.defaultLabel }),
+    }));
+    return experimental?.enableCases
+      ? [...base, { label: t("Cases", { defaultValue: "Cases" }), to: "/cases", icon: Boxes }]
+      : base;
+  }, [experimental?.enableCases, i18n.language, responsibilitiesHome, t]);
   const [moreOpen, setMoreOpen] = useState(false);
   const [recentsOpen, setRecentsOpen] = useState(true);
   const moreContentRef = useRef<HTMLDivElement>(null);
@@ -179,32 +189,33 @@ export function CoordinatorSidebar({ children }: { children?: ReactNode }) {
       ? [{ kind: "project" as const, id: project.id, time: projectVisits.entries[project.id]!, project }] : []);
     return [...taskRows, ...chatRows, ...projectRows].sort((a, b) => b.time - a.time);
   }, [agents.data, chats.data, recentTasks, projects, projectVisits, scope]);
-  const newTaskButton = <Button type="button" variant="ghost" className="design-sidebar-new-task rounded-lg" aria-label="New task" onClick={() => openNewIssue()}>
+  const newTaskLabel = t("newIssue.newTaskTitle", { defaultValue: "New task" });
+  const newTaskButton = <Button type="button" variant="ghost" className="design-sidebar-new-task rounded-lg" aria-label={newTaskLabel} onClick={() => openNewIssue()}>
     <SquarePen aria-hidden />
-    <span className="truncate">New task</span>
+    <span className="truncate">{newTaskLabel}</span>
   </Button>;
   return <FlyoutAppearanceProvider><TruncatedTextMarqueeProvider><aside className="coordinator-sidebar design-sidebar w-full">
     <div className="design-sidebar-brand">
       <SidebarCompanyMenu showChevron={false} />
-      <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon-sm" className="design-sidebar-search" aria-label="Global search" onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true, cancelable: true }))}><Search aria-hidden /></Button></TooltipTrigger><TooltipContent side="right">Search tasks, agents, projects</TooltipContent></Tooltip>
+      <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon-sm" className="design-sidebar-search" aria-label={t("sidebar.globalSearch", { defaultValue: "Global search" })} onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true, cancelable: true }))}><Search aria-hidden /></Button></TooltipTrigger><TooltipContent side="right">{t("sidebar.searchTooltip", { defaultValue: "Search tasks, agents, projects" })}</TooltipContent></Tooltip>
     </div>
-    <nav className="design-sidebar-navigation" aria-label="Workspace navigation">
+    <nav className="design-sidebar-navigation" aria-label={t("sidebar.workspaceNavigation", { defaultValue: "Workspace navigation" })}>
       <div className="design-sidebar-primary">
         {newTaskButton}
         <div className="design-sidebar-primary my-2">
-          {responsibilitiesHome && <SidebarNavItem className="design-sidebar-item" to="/responsibilities" label="Dashboard" icon={Compass} />}
-          <SidebarNavItem className="design-sidebar-item" to="/chats" label="Chat" icon={MessageCircle} badge={unreadChatCount} badgeLabel="unread chats" />
+          {responsibilitiesHome && <SidebarNavItem className="design-sidebar-item" to="/responsibilities" label={t("sidebar.dashboard", { defaultValue: "Dashboard" })} icon={Compass} />}
+          <SidebarNavItem className="design-sidebar-item" to="/chats" label={t("Chat", { defaultValue: "Chat" })} icon={MessageCircle} badge={unreadChatCount} badgeLabel={t("sidebar.unreadChats", { defaultValue: "unread chats" })} />
           <div className="group/coordinator-new relative">
-            <SidebarNavItem to="/issues" label="Tasks" icon={CircleCheck} className="design-sidebar-item pr-9" />
-            <button type="button" aria-label="New task" title="New task" onClick={() => openNewIssue()}
+            <SidebarNavItem to="/issues" label={t("sidebar.issues", { defaultValue: "Tasks" })} icon={CircleCheck} className="design-sidebar-item pr-9" />
+            <button type="button" aria-label={newTaskLabel} title={newTaskLabel} onClick={() => openNewIssue()}
               className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground opacity-0 transition-opacity group-hover/coordinator-new:opacity-100 group-focus-within/coordinator-new:opacity-100 pointer-coarse:opacity-100 hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-ring"><Plus className="size-4" /></button>
           </div>
-          <SidebarNavItem className="design-sidebar-item" to="/decisions" label="Inbox" icon={Inbox} badge={attentionCount} badgeLabel="decisions" />
+          <SidebarNavItem className="design-sidebar-item" to="/decisions" label={t("sidebar.inbox", { defaultValue: "Inbox" })} icon={Inbox} badge={attentionCount} badgeLabel={t("sidebar.decisions", { defaultValue: "decisions" })} />
           {orderedPins.length > 0 && <PinnedNavigationList key={`${companyId}:${userId}`} items={orderedPins} userId={userId} onReorder={pinnedNavigation.reorder} onUnpin={pinnedNavigation.toggle} />}
         </div>
         <Flyout open={moreOpen} onOpenChange={setMoreOpen}>
-          <FlyoutTrigger asChild><button type="button" aria-label="More workspace pages" className="design-sidebar-item flex w-auto items-center gap-2.5 rounded-lg py-1.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-ring"><MoreHorizontal className="size-4 shrink-0" /><span>More</span></button></FlyoutTrigger>
-          <FlyoutContent ref={moreContentRef} tabIndex={-1} onOpenAutoFocus={(event) => { event.preventDefault(); moreContentRef.current?.focus(); }} side={isMobile ? "bottom" : "right"} align="start" className="w-56 p-1" aria-label="More workspace pages">
+          <FlyoutTrigger asChild><button type="button" aria-label={t("sidebar.moreWorkspacePages", { defaultValue: "More workspace pages" })} className="design-sidebar-item flex w-auto items-center gap-2.5 rounded-lg py-1.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-ring"><MoreHorizontal className="size-4 shrink-0" /><span>{t("More", { defaultValue: "More" })}</span></button></FlyoutTrigger>
+          <FlyoutContent ref={moreContentRef} tabIndex={-1} onOpenAutoFocus={(event) => { event.preventDefault(); moreContentRef.current?.focus(); }} side={isMobile ? "bottom" : "right"} align="start" className="w-56 p-1" aria-label={t("sidebar.moreWorkspacePages", { defaultValue: "More workspace pages" })}>
             {destinations.map(({ label, to, icon: Icon }, index) => <div key={to}>
                 {index === 6 || index === 10 ? <div role="separator" className="my-1 border-t border-border" /> : null}
                 <div className="group/navigation-pin relative flex items-center rounded-sm transition-colors hover:bg-accent">
@@ -218,7 +229,7 @@ export function CoordinatorSidebar({ children }: { children?: ReactNode }) {
         </Flyout>
       </div>
       {pinnedNavigation.error && <p role="alert" className="px-4 py-2 text-xs text-destructive">{pinnedNavigation.error}</p>}
-      {session.isSuccess && recents.length > 0 && <div className="design-sidebar-recents"><SidebarSection label="Recents" collapsible={{ open: recentsOpen, onOpenChange: setRecentsOpen }}>
+      {session.isSuccess && recents.length > 0 && <div className="design-sidebar-recents"><SidebarSection label={t("sidebar.recents", { defaultValue: "Recents" })} collapsible={{ open: recentsOpen, onOpenChange: setRecentsOpen }}>
         <RecentNavigationList>
         {recents.map(item => item.kind === "task"
           ? <RecentTaskPinRow key={`${scope}:${item.id}`} task={item.task} pins={pinnedNavigation} />

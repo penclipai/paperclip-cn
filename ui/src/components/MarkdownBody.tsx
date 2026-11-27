@@ -648,8 +648,14 @@ function CodeBlock({
     }, 1500);
   }, [children, patchText]);
 
-  const copyLabel = failed ? "Copy failed" : copied ? "Copied!" : "Copy";
-  const wrapLabel = wrapLines ? "Unwrap lines" : "Wrap lines";
+  const copyLabel = failed
+    ? translateInstant("Copy failed")
+    : copied
+      ? translateInstant("Copied!")
+      : translateInstant("Copy");
+  const wrapLabel = wrapLines
+    ? translateInstant("Unwrap lines")
+    : translateInstant("Wrap lines");
 
   return (
     <div className="paperclip-markdown-codeblock" data-wrap-lines={wrapLines || undefined}>

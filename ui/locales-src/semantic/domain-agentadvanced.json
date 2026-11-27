@@ -1,0 +1,92 @@
+{
+  "agentAdvanced.agentSaved": {
+    "en": "Agent saved",
+    "zh-CN": "智能体已保存",
+    "reviewedEnglishHash": "8ed40b78471d95dc3867a13226ec780d09ec06391d639fbd10e82f5b035825fd"
+  },
+  "agentAdvanced.changesOrderNote": {
+    "en": "Changes save in this order. If one fails, earlier changes remain saved.",
+    "zh-CN": "更改将按以下顺序保存。如果某一步失败，此前保存的更改仍会保留。",
+    "reviewedEnglishHash": "e830952646cd240f0837c60dca6a8e08f9376e969bb1a79153c6954f8f7edf53"
+  },
+  "agentAdvanced.changesToApply_one": {
+    "en": "{{count}} change to apply",
+    "zh-CN": "将应用 {{count}} 项更改",
+    "reviewedEnglishHash": "0f16786c761508519dccb75b223656235752e647ac0bcab36d600d88bf71cf0c"
+  },
+  "agentAdvanced.changesToApply_other": {
+    "en": "{{count}} changes to apply",
+    "zh-CN": "将应用 {{count}} 项更改",
+    "reviewedEnglishHash": "528b8570ef6269ab46f15445900d77cd00515648337ae8b3f728641461f86b19"
+  },
+  "agentAdvanced.configurationWord": {
+    "en": "configuration",
+    "zh-CN": "配置",
+    "reviewedEnglishHash": "b7d64a9221007dfd5390f7df6cd5b8f3ea4f82faa1237141e35ebf161f5511a1"
+  },
+  "agentAdvanced.copyKeyOnce": {
+    "en": "Copy this key now. It won’t be shown again after leaving this page.",
+    "zh-CN": "请立即复制此密钥。离开本页面后将不再显示。",
+    "reviewedEnglishHash": "27f03edf1da01b0a4e7808e3450ea1cff7773845acbb3e75032bdc9ed4149c4b"
+  },
+  "agentAdvanced.createdCredentialsAria": {
+    "en": "Created credentials",
+    "zh-CN": "已创建的凭据",
+    "reviewedEnglishHash": "90401171902dc435b17dee83088ffe4ab0d9ea1dcab547d367a084dca06eb1fb"
+  },
+  "agentAdvanced.invalidYaml": {
+    "en": "Invalid YAML",
+    "zh-CN": "YAML 格式无效",
+    "reviewedEnglishHash": "416381f553aab5296a45d8038d7614a5f574b5d455df453c2a957eb22cd79601"
+  },
+  "agentAdvanced.loadingConfiguration": {
+    "en": "Loading configuration…",
+    "zh-CN": "正在加载配置…",
+    "reviewedEnglishHash": "bc8fd86dcffdd94e41dbdf3e40312419dcb1a2360395a59b7b015be3c7aa54a5"
+  },
+  "agentAdvanced.noConfigChanges": {
+    "en": "No configuration changes",
+    "zh-CN": "暂无配置更改",
+    "reviewedEnglishHash": "f90760149aeaa163298f24ca85177afa4bc766e21e1aab0ef88919ac53c2f96b"
+  },
+  "agentAdvanced.noUnsavedChanges": {
+    "en": "No unsaved changes",
+    "zh-CN": "暂无未保存的更改",
+    "reviewedEnglishHash": "e5c2dd49c1981243a3c93ef4adc8aa459c5bbd082b43049f2cf0e49b9531f2fb"
+  },
+  "agentAdvanced.omittedSettingsNote": {
+    "en": "Omitted settings stay unchanged. Instruction file contents, inherited access, and history are available in their settings tabs.",
+    "zh-CN": "未列出的设置将保持不变。说明文件内容、继承权限和历史记录可在对应的设置选项卡中查看。",
+    "reviewedEnglishHash": "ad3820f3587432c4325ebefe2f596df2e6fdc1d54a33adc99442f03a5f149083"
+  },
+  "agentAdvanced.receiptTokenAria": {
+    "en": "{{label}} token",
+    "zh-CN": "{{label}} 令牌",
+    "reviewedEnglishHash": "400380d015ae7cc70a56793f5b57fb00763cbde4d1d533c5fa6080cc335e2ffb"
+  },
+  "agentAdvanced.reloadBeforeSaving": {
+    "en": "Reload saved before saving again.",
+    "zh-CN": "请先重新加载已保存配置再重试保存。",
+    "reviewedEnglishHash": "d2dc3569d9761655c8223ac99156e88c44d2ed049fde80f8ba86fa011ce0e233"
+  },
+  "agentAdvanced.reloadSaved": {
+    "en": "Reload saved",
+    "zh-CN": "重新加载已保存配置",
+    "reviewedEnglishHash": "0348fff1a53bc11869d5a7f48d1788dccbebc65d65a0c608eac577e263a50561"
+  },
+  "agentAdvanced.savingProgress": {
+    "en": "configuration",
+    "zh-CN": "配置",
+    "reviewedEnglishHash": "b7d64a9221007dfd5390f7df6cd5b8f3ea4f82faa1237141e35ebf161f5511a1"
+  },
+  "agentAdvanced.unsavedChanges": {
+    "en": "Unsaved changes",
+    "zh-CN": "有未保存的更改",
+    "reviewedEnglishHash": "a710c2b90913b5375ca6ac865341e49dd6daa42f6d95182e6ed1a7b1b650ff4c"
+  },
+  "agentAdvanced.yamlAriaLabel": {
+    "en": "Agent YAML configuration",
+    "zh-CN": "智能体 YAML 配置",
+    "reviewedEnglishHash": "b5da8cecbe5beafd64d4e58cf634e8119416adebc9b8b51b0e1f7df5a68535ee"
+  }
+}

@@ -869,6 +869,11 @@
     "zh-CN": "移除中...",
     "reviewedEnglishHash": "60d18e42fd5a5b252f9d3bc8722e75c46fbfa92d7d1ebddc0ad6f98424d4fe3a"
   },
+  "Removing…": {
+    "en": "Removing…",
+    "zh-CN": "正在移除…",
+    "reviewedEnglishHash": "d4b09919ec929f15c19802296a06e97a0d0862e29e23c453d638fc0c3b87c641"
+  },
   "Rename": {
     "en": "Rename",
     "zh-CN": "重命名",
@@ -978,6 +983,11 @@
     "en": "Reports To",
     "zh-CN": "汇报对象",
     "reviewedEnglishHash": "8b48a53f35fc7b383e76257bf143b2317040a6e22642bafafe1eda3e51a33ee5"
+  },
+  "Reports to": {
+    "en": "Reports to",
+    "zh-CN": "汇报给",
+    "reviewedEnglishHash": "2b488c09391b5a54cb283a166cfb24d789ceaa0005285711bfda88ff87764b6f"
   },
   "Reports to {{name}}": {
     "en": "Reports to {{name}}",
@@ -1629,6 +1639,11 @@
     "zh-CN": "重用工作树",
     "reviewedEnglishHash": "b15c650efb5b88ae65c17e8a44f523e58afd1238918e8608cd9555d3951d4880"
   },
+  "Reuse approved product copy and follow your style guide.": {
+    "en": "Reuse approved product copy and follow your style guide.",
+    "zh-CN": "复用已批准的产品文案并遵循你的风格指南。",
+    "reviewedEnglishHash": "01c6d83ef21589b1300cfab11b19fbff0dd1062379fa074e3f9eb2adba04fc5f"
+  },
   "Reuse existing workspace…": {
     "en": "Reuse existing workspace…",
     "zh-CN": "重用现有工作区...",
@@ -2023,6 +2038,11 @@
     "en": "Routine not found",
     "zh-CN": "未找到例行任务",
     "reviewedEnglishHash": "531544c573bdaf68ee94cb0bfa64813ed94fdf812c00212e212e729650861dec"
+  },
+  "Routine run": {
+    "en": "Routine run",
+    "zh-CN": "例行任务运行",
+    "reviewedEnglishHash": "dda37a7a9c9f94efb42676588254d1f7cc4e80af610d566f09eae57bef818cda"
   },
   "Routine run failed": {
     "en": "Routine run failed",

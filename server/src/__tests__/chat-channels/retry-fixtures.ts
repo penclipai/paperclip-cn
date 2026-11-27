@@ -3,6 +3,7 @@ import { requestTaskRetry } from "../../services/task-retry.js";
 import { withQueuedCommentIdsInWakePayload } from "../../services/issue-queued-comment-queue.js";
 import { createSystemRecovery } from "../../services/system-recovery-state.js";
 import { githubChatManagementService } from "../../services/chat-github-management.js";
+import { remoteTerminationReceipt } from "../../services/remote-execution-termination.js";
 import { githubResponseCommentService } from "../../services/chat-github-response-comments.js";
 import { chatGitHubConfigurations } from "@penclipai/db";
 import { randomUUID } from "node:crypto";
@@ -107,7 +108,11 @@ export function createRetryFixtures(h: ChatChannelHarness, gh: GitHubHarness) {
     return { ...context, issue, action, receipt, runId };
   }
 
-  async function currentGitHubTaskRetryFixture(withPending = false, pendingCount = 1) {
+  async function currentGitHubTaskRetryFixture(
+    withPending = false,
+    pendingCount = 1,
+    { terminationAuthority = "local" }: { terminationAuthority?: "local" | "remote" } = {},
+  ) {
     const f = await failedChatRetryFixture("github", "42", true);
     const companyId = f.fixture.companyId, issueId = f.issue.id;
     await githubResponseCommentService(db, f.providerFetch).tryAcknowledge(f.action.deliveryId!);
@@ -116,6 +121,28 @@ export function createRetryFixtures(h: ChatChannelHarness, gh: GitHubHarness) {
     await db.insert(nativeRunFinalizations).values({ companyId, issueId, runId: f.runId, phase: "terminal_failure" });
     await db.insert(heartbeatRunEvents).values({ companyId, agentId: f.fixture.assignedAgentId, runId: f.runId,
       seq: 1, eventType: "native.local_process_stopped", payload: { processPid: 999999999, processGroupId: null } });
+    if (terminationAuthority === "remote") {
+      const lease = {
+        id: randomUUID(),
+        providerLeaseId: randomUUID(),
+        companyId,
+        issueId,
+        heartbeatRunId: f.runId,
+        provider: "daytona" as const,
+        status: "released" as const,
+        cleanupStatus: "success" as const,
+        releasedAt: new Date(),
+      };
+      await db.insert(environmentLeases).values({
+        ...lease,
+        metadata: {
+          remoteExecutionTermination: remoteTerminationReceipt(lease, {
+            providerLeaseId: lease.providerLeaseId,
+            state: "destroyed",
+          }),
+        },
+      });
+    }
     let pending: typeof chatActions.$inferSelect | undefined;
     if (withPending) {
       for (let index = 0; index < pendingCount; index++) {
@@ -145,7 +172,9 @@ export function createRetryFixtures(h: ChatChannelHarness, gh: GitHubHarness) {
   }
 
   async function busyChatRetryHttpFixture(withPending = false) {
-    const f = await currentGitHubTaskRetryFixture(withPending);
+    const f = await currentGitHubTaskRetryFixture(withPending, 1, {
+      terminationAuthority: process.platform === "win32" ? "remote" : "local",
+    });
     const originalPublications = await readChatPublicationsByEndpointId(f.endpoint.id);
     const { issueRoutes } = await import("../../routes/issues.js");
     const companyId = f.fixture.companyId, issueId = f.issue.id;

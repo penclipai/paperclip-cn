@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { attentionCardKind, attentionCardType, type AttentionCardType, type AttentionItem } from "@penclipai/shared";
+import { translateInstant } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
@@ -11,46 +12,46 @@ import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
  * card type fills the panel and the actions with its own content.
  */
 
-const CARD_TYPE_LABELS: Record<AttentionCardType, string> = {
-  answer_questions: "Answer questions",
-  make_choice: "Make a choice",
-  review_plan: "Review a plan",
-  confirm: "Confirm or decline",
-  suggested_tasks: "Accept suggested tasks",
-  review_deliverable: "Review a deliverable",
-  review_items: "Review items",
-  board_approval: "Approve a request",
-  join_request: "Review a join request",
-  tool_access: "Approve tool or secret access",
-  connect_service: "Connect a service",
-  review_task: "Review a task",
-  failed_run: "Fix a failed run",
-  budget_stop: "Resolve a budget stop",
-  blocked_task: "Unblock a task",
-  recovery: "Recover a run",
+const CARD_TYPE_LABELS: Record<AttentionCardType, () => string> = {
+  answer_questions: () => translateInstant("decisions.cardType.answerQuestions", { defaultValue: "Answer questions" }),
+  make_choice: () => translateInstant("decisions.cardType.makeChoice", { defaultValue: "Make a choice" }),
+  review_plan: () => translateInstant("decisions.cardType.reviewPlan", { defaultValue: "Review a plan" }),
+  confirm: () => translateInstant("decisions.cardType.confirm", { defaultValue: "Confirm or decline" }),
+  suggested_tasks: () => translateInstant("decisions.cardType.suggestedTasks", { defaultValue: "Accept suggested tasks" }),
+  review_deliverable: () => translateInstant("decisions.cardType.reviewDeliverable", { defaultValue: "Review a deliverable" }),
+  review_items: () => translateInstant("decisions.cardType.reviewItems", { defaultValue: "Review items" }),
+  board_approval: () => translateInstant("decisions.cardType.boardApproval", { defaultValue: "Approve a request" }),
+  join_request: () => translateInstant("decisions.cardType.joinRequest", { defaultValue: "Review a join request" }),
+  tool_access: () => translateInstant("decisions.cardType.toolAccess", { defaultValue: "Approve tool or secret access" }),
+  connect_service: () => translateInstant("decisions.cardType.connectService", { defaultValue: "Connect a service" }),
+  review_task: () => translateInstant("decisions.cardType.reviewTask", { defaultValue: "Review a task" }),
+  failed_run: () => translateInstant("decisions.cardType.failedRun", { defaultValue: "Fix a failed run" }),
+  budget_stop: () => translateInstant("decisions.cardType.budgetStop", { defaultValue: "Resolve a budget stop" }),
+  blocked_task: () => translateInstant("decisions.cardType.blockedTask", { defaultValue: "Unblock a task" }),
+  recovery: () => translateInstant("decisions.cardType.recovery", { defaultValue: "Recover a run" }),
 };
 
-const APPROVAL_LABELS: Record<string, string> = {
-  hire_agent: "Approve an agent hire",
-  approve_ceo_strategy: "Approve a strategy",
-  budget_override_required: "Approve a budget override",
+const APPROVAL_LABELS: Record<string, () => string> = {
+  hire_agent: () => translateInstant("decisions.cardType.hireAgent", { defaultValue: "Approve an agent hire" }),
+  approve_ceo_strategy: () => translateInstant("decisions.cardType.approveStrategy", { defaultValue: "Approve a strategy" }),
+  budget_override_required: () => translateInstant("decisions.cardType.budgetOverride", { defaultValue: "Approve a budget override" }),
 };
 
 /** The card's type, said as what to do ("Review a plan"). */
 export function needsYouCardLabel(item: AttentionItem): string {
   const type = attentionCardType(item);
-  if (type === "board_approval") return APPROVAL_LABELS[String(item.subject.metadata?.type ?? "")] ?? CARD_TYPE_LABELS.board_approval;
-  if (type === "failed_run" && item.sourceKind === "agent_error_alert") return "Fix an agent error";
-  if (type === "budget_stop" && item.subject.metadata?.thresholdType === "soft") return "Review a budget warning";
-  return CARD_TYPE_LABELS[type];
+  if (type === "board_approval") return APPROVAL_LABELS[String(item.subject.metadata?.type ?? "")]?.() ?? CARD_TYPE_LABELS.board_approval();
+  if (type === "failed_run" && item.sourceKind === "agent_error_alert") return translateInstant("decisions.cardType.agentError", { defaultValue: "Fix an agent error" });
+  if (type === "budget_stop" && item.subject.metadata?.thresholdType === "soft") return translateInstant("decisions.cardType.budgetWarning", { defaultValue: "Review a budget warning" });
+  return CARD_TYPE_LABELS[type]();
 }
 
 export type NeedsYouSection = "decisions" | "problems" | "updates";
 
 export const NEEDS_YOU_SECTIONS: Record<NeedsYouSection, { title: string }> = {
-  decisions: { title: "Decisions" },
-  problems: { title: "Problems" },
-  updates: { title: "Updates" },
+  decisions: { get title() { return translateInstant("whatNeedsMe.title"); } },
+  problems: { get title() { return translateInstant("decisions.section.problems", { defaultValue: "Problems" }); } },
+  updates: { get title() { return translateInstant("decisions.section.updates", { defaultValue: "Updates" }); } },
 };
 
 export function needsYouSection(item: AttentionItem): NeedsYouSection {

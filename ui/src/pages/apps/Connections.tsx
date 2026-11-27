@@ -88,9 +88,9 @@ type AppRow = {
  * pill's `attention` tone and the row highlight are now the *same* predicate.
  */
 function statusFor(application: ToolApplication, connections: ToolConnection[]): AppStatus {
-  if (connections.some(isRetiredComposioConnection)) return { label: "Retired", tone: "attention" };
+  if (connections.some(isRetiredComposioConnection)) return { label: translateInstant("apps.connectionState.retired", { defaultValue: "Retired" }), tone: "attention" };
   if (connections.length === 0) {
-    return { label: "Not connected", tone: "not_connected" };
+    return { label: translateInstant("apps.notConnected.notConnected"), tone: "not_connected" };
   }
   if (
     application.status === "disabled" ||
@@ -438,12 +438,12 @@ export function Connections() {
                     connection && isRetiredComposioConnection(connection) ? RETIRED_COMPOSIO_MESSAGE :
                     status.tone === "attention"
                       ? connection?.authKind === "oauth"
-                        ? "Reconnect required — sign in again to restore access."
-                        : "The key stopped working — reconnect to fix."
+                        ? translateInstant("apps.connections.hint.oauthReconnect", { defaultValue: "Reconnect required — sign in again to restore access." })
+                        : translateInstant("apps.connections.hint.keyReconnect", { defaultValue: "The key stopped working — reconnect to fix." })
                       : status.tone === "paused"
-                        ? "Paused — agents can’t use it right now."
+                        ? translateInstant("apps.connections.hint.paused", { defaultValue: "Paused — agents can’t use it right now." })
                         : status.tone === "not_connected"
-                          ? "Connect it so agents can use it."
+                          ? translateInstant("apps.connections.hint.notConnected", { defaultValue: "Connect it so agents can use it." })
                           : row.displayName !== application.name
                             ? application.name
                             : null;
@@ -454,7 +454,7 @@ export function Connections() {
                     ? translateInstant("Connect")
                     : connection && isRetiredComposioConnection(connection) ? translateInstant("Review")
                     : status.tone === "attention"
-                      ? "Reconnect"
+                      ? translateInstant("apps.notConnected.reconnect")
                       : translateInstant("Permissions");
                   return (
                     <tr
@@ -571,8 +571,14 @@ export function Connections() {
               {translateInstant("Delete")}{" "}{connectionToDelete?.appName ?? "this"} {translateInstant("connection?")}</AlertDialogTitle>
             <AlertDialogDescription>
               {connectionToDelete && connectionToDelete.remainingConnectionCount > 0
-                ? `This connection's saved credentials are deleted and agents lose access through it immediately. Agents can still use ${connectionToDelete.appName} through ${connectionToDelete.remainingConnectionCount} other active ${connectionToDelete.remainingConnectionCount === 1 ? "connection" : "connections"}.`
-                : "The saved credentials are deleted and agents lose access immediately. Connecting it again later needs a new sign-in or key."}
+                ? translateInstant("apps.connections.deleteRemainingNotice", {
+                    appName: connectionToDelete.appName,
+                    count: connectionToDelete.remainingConnectionCount,
+                    defaultValue: `This connection's saved credentials are deleted and agents lose access through it immediately. Agents can still use ${connectionToDelete.appName} through ${connectionToDelete.remainingConnectionCount} other active ${connectionToDelete.remainingConnectionCount === 1 ? "connection" : "connections"}.`,
+                  })
+                : translateInstant("apps.connections.deleteLastNotice", {
+                    defaultValue: "The saved credentials are deleted and agents lose access immediately. Connecting it again later needs a new sign-in or key.",
+                  })}
               {connectionToDelete?.googleWorkspace ? ` ${GOOGLE_CONTENT_DELETION_NOTICE}` : null}
             </AlertDialogDescription>
           </AlertDialogHeader>

@@ -1,10 +1,11 @@
 import type { Issue } from "@penclipai/shared";
+import { translateInstant } from "@/i18n";
 
 export const taskListViews = [
-  { value: "inbox", label: "Mine" },
-  { value: "unread", label: "Unread" },
-  { value: "blocked", label: "Needs attention" },
-  { value: "all", label: "All tasks" },
+  { value: "inbox", get label() { return translateInstant("Mine"); } },
+  { value: "unread", get label() { return translateInstant("Unread"); } },
+  { value: "blocked", get label() { return translateInstant("Needs attention"); } },
+  { value: "all", get label() { return translateInstant("taskViews.labels.allTasks", { defaultValue: "All tasks" }); } },
 ] as const;
 
 export type TaskListView = typeof taskListViews[number]["value"];

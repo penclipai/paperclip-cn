@@ -94,10 +94,60 @@
     "zh-CN": "正在导出",
     "reviewedEnglishHash": "eb9b51193618c1a172014167484ef491d9e9ba6b222f0e4dd993f1339b7dfec0"
   },
+  "companyExport.fidelity.activity_history_not_exported": {
+    "en": "{{count}} activity log entries are not included in the export bundle.",
+    "zh-CN": "导出包未包含 {{count}} 条活动日志记录。",
+    "reviewedEnglishHash": "d33c9e247c45a0b2eb4328a2ae338309d597b109c41d55d298727fed0e629ca6"
+  },
+  "companyExport.fidelity.activity_history_not_exported_one": {
+    "en": "{{count}} activity log entry is not included in the export bundle.",
+    "zh-CN": "导出包未包含 {{count}} 条活动日志记录。",
+    "reviewedEnglishHash": "5725f73cb2360bd0304f7722999c8c1785e92c8b6eeb9d02d8dea44b0e1a29f0"
+  },
+  "companyExport.fidelity.activity_history_not_exported_other": {
+    "en": "{{count}} activity log entries are not included in the export bundle.",
+    "zh-CN": "导出包未包含 {{count}} 条活动日志记录。",
+    "reviewedEnglishHash": "d33c9e247c45a0b2eb4328a2ae338309d597b109c41d55d298727fed0e629ca6"
+  },
+  "companyExport.fidelity.approvals_not_exported": {
+    "en": "{{count}} approvals are not included in the export bundle.",
+    "zh-CN": "导出包未包含 {{count}} 条审批记录。",
+    "reviewedEnglishHash": "b3cc692c3bd351033283717304a791d47366dc4e6b30bf1682abea05c0d0a5a4"
+  },
+  "companyExport.fidelity.approvals_not_exported_one": {
+    "en": "{{count}} approval is not included in the export bundle.",
+    "zh-CN": "导出包未包含 {{count}} 条审批记录。",
+    "reviewedEnglishHash": "2afc247901f47e05bd362cc8a7223f4a30c624f9937a55381c767ab2076f457b"
+  },
+  "companyExport.fidelity.approvals_not_exported_other": {
+    "en": "{{count}} approvals are not included in the export bundle.",
+    "zh-CN": "导出包未包含 {{count}} 条审批记录。",
+    "reviewedEnglishHash": "b3cc692c3bd351033283717304a791d47366dc4e6b30bf1682abea05c0d0a5a4"
+  },
+  "companyExport.fidelity.cost_history_not_exported": {
+    "en": "{{count}} cost events are not included in the export bundle.",
+    "zh-CN": "导出包未包含 {{count}} 条成本事件。",
+    "reviewedEnglishHash": "df91bcd08ef798031486aad1627db8950636e6e79cc43e2734f6e82db3b684ee"
+  },
+  "companyExport.fidelity.cost_history_not_exported_one": {
+    "en": "{{count}} cost event is not included in the export bundle.",
+    "zh-CN": "导出包未包含 {{count}} 条成本事件。",
+    "reviewedEnglishHash": "ffa578c9f790ad99d7f5e6bc8a70f84b57c659f88b9c49dcf648a02e9ff3e645"
+  },
+  "companyExport.fidelity.cost_history_not_exported_other": {
+    "en": "{{count}} cost events are not included in the export bundle.",
+    "zh-CN": "导出包未包含 {{count}} 条成本事件。",
+    "reviewedEnglishHash": "df91bcd08ef798031486aad1627db8950636e6e79cc43e2734f6e82db3b684ee"
+  },
   "companyExport.header": {
     "en": "{{companyName}} export",
     "zh-CN": "{{companyName}} 导出",
     "reviewedEnglishHash": "b414f66a3c2073ae5b3111dadb382e0326dcb90be6476a45d3111ebed76b9654"
+  },
+  "companyExport.loadPreview": {
+    "en": "Load preview",
+    "zh-CN": "加载预览",
+    "reviewedEnglishHash": "a66fb2d83b094c635041b6b1bc0ed16f16fd36ecdef1cfde1018f57a22c3df25"
   },
   "companyExport.loadingData": {
     "en": "Loading export data...",
@@ -233,6 +283,51 @@
     "en": "warning",
     "zh-CN": "警告",
     "reviewedEnglishHash": "4bd9354bb652233497a0f42647464b81b83a83654fcf1511263a5d0120d74c91"
+  },
+  "companyExport.warning.skippedBuiltIn.agent": {
+    "en": "Skipped {{count}} built-in managed agents from export.",
+    "zh-CN": "已跳过导出 {{count}} 个内置托管智能体。",
+    "reviewedEnglishHash": "fa55fbe3268b6fdc464114867974234138627a6bef612490ecf8eabc98ead0ab"
+  },
+  "companyExport.warning.skippedBuiltIn.agent_one": {
+    "en": "Skipped {{count}} built-in managed agent from export.",
+    "zh-CN": "已跳过导出 {{count}} 个内置托管智能体。",
+    "reviewedEnglishHash": "1ee42f08ba28590e9ccef1157497e68d10544910436ae448c175ef3a43e3bbe9"
+  },
+  "companyExport.warning.skippedBuiltIn.agent_other": {
+    "en": "Skipped {{count}} built-in managed agents from export.",
+    "zh-CN": "已跳过导出 {{count}} 个内置托管智能体。",
+    "reviewedEnglishHash": "fa55fbe3268b6fdc464114867974234138627a6bef612490ecf8eabc98ead0ab"
+  },
+  "companyExport.warning.skippedBuiltIn.routine": {
+    "en": "Skipped {{count}} built-in managed routines from export.",
+    "zh-CN": "已跳过导出 {{count}} 个内置托管例行任务。",
+    "reviewedEnglishHash": "b1e4909ce7909355a23aad5cdca8e2d4249708e797fc1a4e8e4fe4693a1c2ee2"
+  },
+  "companyExport.warning.skippedBuiltIn.routine_one": {
+    "en": "Skipped {{count}} built-in managed routine from export.",
+    "zh-CN": "已跳过导出 {{count}} 个内置托管例行任务。",
+    "reviewedEnglishHash": "b3c72efeaa9c47132080c481fb5fc0a914fddcb4d27717effa2c510999924987"
+  },
+  "companyExport.warning.skippedBuiltIn.routine_other": {
+    "en": "Skipped {{count}} built-in managed routines from export.",
+    "zh-CN": "已跳过导出 {{count}} 个内置托管例行任务。",
+    "reviewedEnglishHash": "b1e4909ce7909355a23aad5cdca8e2d4249708e797fc1a4e8e4fe4693a1c2ee2"
+  },
+  "companyExport.warning.skippedBuiltIn.skill": {
+    "en": "Skipped {{count}} built-in managed skills from export.",
+    "zh-CN": "已跳过导出 {{count}} 个内置托管技能。",
+    "reviewedEnglishHash": "bbdbc077819fa7d1a5ca5261e4f3139cf0bf8e4ca9afd0697a356b2c85b35632"
+  },
+  "companyExport.warning.skippedBuiltIn.skill_one": {
+    "en": "Skipped {{count}} built-in managed skill from export.",
+    "zh-CN": "已跳过导出 {{count}} 个内置托管技能。",
+    "reviewedEnglishHash": "f15590baa3bbe1f7dfc8efc1bfee03bd0dea4e5a5c41a9b97ad20b0d2890881e"
+  },
+  "companyExport.warning.skippedBuiltIn.skill_other": {
+    "en": "Skipped {{count}} built-in managed skills from export.",
+    "zh-CN": "已跳过导出 {{count}} 个内置托管技能。",
+    "reviewedEnglishHash": "bbdbc077819fa7d1a5ca5261e4f3139cf0bf8e4ca9afd0697a356b2c85b35632"
   },
   "companyExport.warningCount": {
     "en": "{{count}} warnings",

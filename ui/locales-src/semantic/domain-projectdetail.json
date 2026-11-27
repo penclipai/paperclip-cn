@@ -1,4 +1,9 @@
 {
+  "projectDetail.archivedToast": {
+    "en": "\"{{name}}\" has been archived",
+    "zh-CN": "“{{name}}”已归档",
+    "reviewedEnglishHash": "8fa164a6adf4f70129a2af858dd3def2cd040a5ea26952e57444251e617e4552"
+  },
   "projectDetail.changeIconAndColor": {
     "en": "Change project icon and color",
     "zh-CN": "更改项目图标和颜色",
@@ -44,6 +49,11 @@
     "zh-CN": "搜索图标...",
     "reviewedEnglishHash": "d47dbbe19a63e486ec061c26e9f3b69f24a98569bb52bc184060f8879e6806c4"
   },
+  "projectDetail.selectColorAria": {
+    "en": "Select color {{color}}",
+    "zh-CN": "选择颜色 {{color}}",
+    "reviewedEnglishHash": "2970d9b1e225ac4677a030aa635c694cc43b90e2fc9e1d17a29c299a522b34be"
+  },
   "projectDetail.summaryDescription": {
     "en": "Summarizer keeps the latest project status, next step, and operator-needed items here.",
     "zh-CN": "汇总智能体会在此维护最新项目状态、下一步和需要操作员处理的事项。",
@@ -53,5 +63,10 @@
     "en": "Project summary",
     "zh-CN": "项目摘要",
     "reviewedEnglishHash": "34c863b318b5fff4854be4f978a4afda481db44152c20504d99e1de84b948d59"
+  },
+  "projectDetail.unarchivedToast": {
+    "en": "\"{{name}}\" has been unarchived",
+    "zh-CN": "“{{name}}”已取消归档",
+    "reviewedEnglishHash": "4e6e368e892bf7a67cd6edee76125ff7ab7e38dcc977f19c4ff8acaccfd1273c"
   }
 }

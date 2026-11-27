@@ -28,7 +28,7 @@ export function AppsReview() {
   useEffect(() => {
     setBreadcrumbs([
       { label: translateInstant("Plugins"), href: "/apps" },
-      { label: translateInstant("Reviews") },
+      { label: translateInstant("apps.plugins.header.reviews", { defaultValue: "Reviews" }) },
     ]);
     return () => setBreadcrumbs([]);
   }, [setBreadcrumbs]);
@@ -44,12 +44,12 @@ export function AppsReview() {
           <Link to="/apps"><ArrowLeft className="size-4" aria-hidden />{translateInstant("Plugins")}</Link>
         </Button>
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl leading-8 font-semibold tracking-tight text-foreground">{translateInstant("Reviews")}</h1>
+          <h1 className="text-2xl leading-8 font-semibold tracking-tight text-foreground">{translateInstant("apps.plugins.header.reviews", { defaultValue: "Reviews" })}</h1>
           {queue.loaded ? (
             <p className="text-sm leading-5 text-muted-foreground">
               {queue.count === 0
                 ? translateInstant("Nothing is waiting on you.")
-                : `${queue.count} ${queue.count === 1 ? "request" : "requests"} from your plugins ${queue.count === 1 ? "is" : "are"} waiting on you.`}
+                : translateInstant("apps.reviews.waitingCount", { count: queue.count, defaultValue: `${queue.count} ${queue.count === 1 ? "request" : "requests"} from your plugins ${queue.count === 1 ? "is" : "are"} waiting on you.` })}
             </p>
           ) : null}
         </div>

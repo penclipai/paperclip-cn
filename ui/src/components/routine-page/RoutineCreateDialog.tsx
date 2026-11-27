@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Routine } from "@penclipai/shared";
 import { describeError } from "@/api/errors";
@@ -28,6 +29,7 @@ export function RoutineCreateDialog({
   onOpenChange: (open: boolean) => void;
   folderId?: string | null;
 }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { pushToast } = useToastActions();
@@ -44,15 +46,15 @@ export function RoutineCreateDialog({
       // Anything after this point is best effort: the routine exists, so report what is missing instead of failing.
       const missing: string[] = [];
       if (draft.responsibleUserId && draft.responsibleUserId !== routine.responsibleUserId) {
-        await routinesApi.update(routine.id, { responsibleUserId: draft.responsibleUserId }).catch(() => missing.push("the responsible user"));
+        await routinesApi.update(routine.id, { responsibleUserId: draft.responsibleUserId }).catch(() => missing.push(t("routineCreate.missingResponsibleUser", { defaultValue: "the responsible user" })));
       }
       if (draft.schedule) {
         await routinesApi
           .createTrigger(routine.id, { kind: "schedule", cronExpression: draft.schedule.cronExpression, timezone: draft.schedule.timezone })
-          .catch(() => missing.push("the schedule"));
+          .catch(() => missing.push(t("routineCreate.missingSchedule", { defaultValue: "the schedule" })));
       }
       if (options.responsibilitiesOn && draft.responsibilityId) {
-        await syncRoutineResponsibility(routine.id, "", draft.responsibilityId).catch(() => missing.push("the responsibility"));
+        await syncRoutineResponsibility(routine.id, "", draft.responsibilityId).catch(() => missing.push(t("routineCreate.missingResponsibility", { defaultValue: "the responsibility" })));
       }
       return { routine, missing };
     },
@@ -61,8 +63,15 @@ export function RoutineCreateDialog({
       onOpenChange(false);
       pushToast(
         missing.length > 0
-          ? { title: "Routine created", body: `Couldn’t save ${missing.join(" and ")}. Open Edit to try again.`, tone: "warn" }
-          : { title: "Routine created", tone: "success" },
+          ? {
+              title: t("routines.createSuccess", { defaultValue: "Routine created" }),
+              body: t("routineCreate.couldNotSaveMissing", {
+                missing: missing.join(t("routineCreate.missingSeparator", { defaultValue: " and " })),
+                defaultValue: "Couldn’t save {{missing}}. Open Edit to try again.",
+              }),
+              tone: "warn",
+            }
+          : { title: t("routines.createSuccess", { defaultValue: "Routine created" }), tone: "success" },
       );
       await queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(companyId) });
       navigate(routinePath(routine.id));
@@ -86,7 +95,7 @@ export function RoutineCreateDialog({
       responsibilities={options.responsibilities}
       mentions={options.mentions}
       saving={create.isPending}
-      error={error ?? (options.loadErrors.length > 0 ? "Some choices couldn’t be loaded. Close this and try again." : null)}
+      error={error ?? (options.loadErrors.length > 0 ? t("routineDetail.choicesLoadFailed", { defaultValue: "Some choices couldn’t be loaded. Close this and try again." }) : null)}
       onSave={(draft) => create.mutate(draft)}
       onCreateSecret={options.createSecret}
     />

@@ -40,7 +40,7 @@ export function AppsSidebar() {
         className={contextualSidebarStyles.nav}
       >
         <div data-slot="contextual-sidebar-group" className={contextualSidebarStyles.group}>
-          <SidebarNavItem to="/apps" label="All plugins" icon={Store} end />
+          <SidebarNavItem to="/apps" label={translateInstant("apps.sidebar.allPlugins", { defaultValue: "All plugins" })} icon={Store} end />
         </div>
         {developerTabs.length > 0 ? (
           <div data-slot="contextual-sidebar-section" className={contextualSidebarStyles.section}>
@@ -59,7 +59,7 @@ export function AppsSidebar() {
                 <SidebarNavItem
                   key={tab.key}
                   to={advancedTabHref(tab.key)}
-                  label={tab.label}
+                  label={translateInstant(`tools.tabs.${tab.key === "smoke-lab" ? "smokeLab" : tab.key}`, { defaultValue: tab.label })}
                   icon={tab.icon}
                   end
                 />

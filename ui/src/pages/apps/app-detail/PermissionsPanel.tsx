@@ -452,7 +452,7 @@ function ActionGroup({
             >
               {groupValue === "" ? <option value="">{translateInstant("Mixed")}</option> : null}
               {PERMISSION_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>{`Set all: ${option.label}`}</option>
+                <option key={option.value} value={option.value}>{translateInstant("apps.detail.permissions.setAllOption", { option: option.label, defaultValue: `Set all: ${option.label}` })}</option>
               ))}
             </select>
           </label>
@@ -492,9 +492,9 @@ const PERMISSION_OPTIONS: Array<{
   description: string;
   icon: typeof Ban;
 }> = [
-  { value: "off", get label() { return translateInstant("Off"); }, description: "Agents cannot run this action.", icon: Ban },
-  { value: "ask", label: "Ask first", description: "A human must approve each call.", icon: ShieldQuestion },
-  { value: "allowed", label: "Allowed", description: "Runs without approval.", icon: Check },
+  { value: "off", get label() { return translateInstant("Off"); }, get description() { return translateInstant("apps.detail.permissions.offDescription", { defaultValue: "Agents cannot run this action." }); }, icon: Ban },
+  { value: "ask", get label() { return translateInstant("apps.detail.permissions.askFirst", { defaultValue: "Ask first" }); }, get description() { return translateInstant("apps.detail.permissions.askDescription", { defaultValue: "A human must approve each call." }); }, icon: ShieldQuestion },
+  { value: "allowed", get label() { return translateInstant("apps.plugins.permissions.allowed", { defaultValue: "Allowed" }); }, get description() { return translateInstant("apps.detail.permissions.allowedDescription", { defaultValue: "Runs without approval." }); }, icon: Check },
 ];
 
 const ActionRow = memo(function ActionRow({
@@ -546,9 +546,9 @@ const ActionRow = memo(function ActionRow({
                 glance to spot and one click to move. */}
             <span
               className="rounded-md bg-foreground/5 px-1.5 py-px text-xs text-muted-foreground"
-              title={`Paperclip classified this action as ${action.riskLevel}`}
+              title={translateInstant("apps.detail.permissions.classifiedAsTitle", { level: action.riskLevel, defaultValue: `Paperclip classified this action as ${action.riskLevel}` })}
             >
-              {action.riskLevel}
+              {translateInstant(`apps.riskLevel.${action.riskLevel}`, { defaultValue: action.riskLevel })}
             </span>
           </div>
           {action.description ? (
@@ -559,7 +559,7 @@ const ActionRow = memo(function ActionRow({
           {canConfigure ? (
               <div
                 role="radiogroup"
-                aria-label={`${title} permission`}
+                aria-label={translateInstant("apps.detail.permissions.actionPermissionAria", { title, defaultValue: `${title} permission` })}
                 className="inline-flex rounded-lg bg-foreground/5 p-0.5"
               >
               {PERMISSION_OPTIONS.map((option) => {
